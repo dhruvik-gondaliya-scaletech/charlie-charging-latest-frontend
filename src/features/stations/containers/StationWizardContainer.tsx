@@ -11,6 +11,7 @@ import { Station, ConnectorType } from '@/types';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { FRONTEND_ROUTES } from '@/constants/constants';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface StationWizardContainerProps {
     stationId?: string;
@@ -19,12 +20,26 @@ interface StationWizardContainerProps {
 
 export function StationWizardContainer({ stationId, mode }: StationWizardContainerProps) {
     const router = useRouter();
+    const { tenant } = useAuth();
     const isEdit = mode === 'edit';
     const { data: station, isLoading: stationLoading, error } = useStation(stationId || '', { enabled: isEdit && !!stationId });
     const { data: locations, isLoading: locationsLoading } = useLocations();
     const updateStation = useUpdateStation();
     const createStation = useCreateStation();
     const isPending = isEdit ? updateStation.isPending : createStation.isPending;
+
+    // Normalize data: ensure connectorTypes is populated from connectors if missing
+    // CRITICAL: Do NOT use Set here, as it reduces count if types are duplicate (e.g. 2x Type2)
+    const normalizedStation = useMemo(() => {
+        if (!station) return isEdit ? null : {};
+
+        return {
+            ...station,
+            connectorTypes: station.connectorTypes?.length
+                ? station.connectorTypes
+                : station.connectors?.map(c => c.type as ConnectorType).filter(Boolean) || []
+        };
+    }, [station, isEdit]);
 
     if ((isEdit && stationLoading) || locationsLoading) {
         return (
@@ -81,19 +96,6 @@ export function StationWizardContainer({ stationId, mode }: StationWizardContain
         }
     };
 
-    // Normalize data: ensure connectorTypes is populated from connectors if missing
-    // CRITICAL: Do NOT use Set here, as it reduces count if types are duplicate (e.g. 2x Type2)
-    const normalizedStation = useMemo(() => {
-        if (!station) return isEdit ? null : {};
-
-        return {
-            ...station,
-            connectorTypes: station.connectorTypes?.length
-                ? station.connectorTypes
-                : station.connectors?.map(c => c.type as ConnectorType).filter(Boolean) || []
-        };
-    }, [station, isEdit]);
-
     if (isEdit && !normalizedStation) return null;
 
     return (
@@ -105,6 +107,7 @@ export function StationWizardContainer({ stationId, mode }: StationWizardContain
             isLoading={isPending}
             onCancel={() => router.back()}
             isEdit={isEdit}
+            tenantId={tenant?.id || ''}
         />
     );
 }

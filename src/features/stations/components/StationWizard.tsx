@@ -41,6 +41,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import WebSocketUrlDisplay from '@/components/shared/WebSocketUrlDisplay';
 
 type WizardValues = z.infer<typeof stationSchema>;
 
@@ -52,6 +53,7 @@ interface StationWizardProps {
     isLoading: boolean;
     onCancel: () => void;
     isEdit?: boolean;
+    tenantId: string;
 }
 
 const STEPS = [
@@ -59,6 +61,7 @@ const STEPS = [
     { id: 2, title: 'Technical', icon: Cpu, description: 'Hardware specifications' },
     { id: 3, title: 'Network', icon: MapPin, description: 'Location and connectivity' },
     { id: 4, title: 'Connectors', icon: Activity, description: 'Charging port configuration' },
+    { id: 5, title: 'Connection', icon: ShieldCheck, description: 'OCPP WebSocket Setup' },
 ];
 
 
@@ -69,7 +72,8 @@ export function StationWizard({
     onSubmit,
     isLoading,
     onCancel,
-    isEdit = true
+    isEdit = true,
+    tenantId
 }: StationWizardProps) {
     const [step, setStep] = useState(1);
 
@@ -121,15 +125,15 @@ export function StationWizard({
         if (step === 3) fieldsToValidate = ['locationId', 'ocppVersion'];
 
         const isValid = await form.trigger(fieldsToValidate);
-        if (isValid) setStep(prev => Math.min(prev + 1, 4));
+        if (isValid) setStep(prev => Math.min(prev + 1, 5));
     };
 
     const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
 
     const onFormSubmit = (data: WizardValues) => {
         // CRITICAL: Double guard to prevent early submission
-        // Only allow if we are on step 4 AND not already loading
-        if (step === 4 && !isLoading) {
+        // Only allow if we are on step 5 AND not already loading
+        if (step === 5 && !isLoading) {
             console.log('Wizard submitting data:', data);
             onSubmit(data);
         }
@@ -142,7 +146,7 @@ export function StationWizard({
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-black tracking-tight">{isEdit ? (initialData.name || 'Edit Station') : 'Register New Station'}</h1>
-                        <p className="text-muted-foreground font-medium">Step {step} of 4: {STEPS[step - 1].description}</p>
+                        <p className="text-muted-foreground font-medium">Step {step} of 5: {STEPS[step - 1].description}</p>
                     </div>
                     <Button variant="ghost" onClick={onCancel} className="font-bold text-muted-foreground">
                         Cancel
@@ -161,7 +165,7 @@ export function StationWizard({
                     ))}
                 </div>
 
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-5 gap-4">
                     {STEPS.map((s) => (
                         <div
                             key={s.id}
@@ -185,7 +189,7 @@ export function StationWizard({
             <Form {...form}>
                 <form
                     onKeyDown={(e) => {
-                        if (e.key === 'Enter' && step < 4) {
+                        if (e.key === 'Enter' && step < 5) {
                             e.preventDefault();
                             e.stopPropagation();
                             nextStep();
@@ -500,6 +504,52 @@ export function StationWizard({
                                     </div>
                                 </div>
                             )}
+
+                            {step === 5 && (
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-500">
+                                            <ShieldCheck className="h-6 w-6" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-xl font-black">Connection Details</h2>
+                                            <p className="text-sm text-muted-foreground font-medium">Finalize and configure hardware connection</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        <p className="text-sm text-muted-foreground font-medium leading-relaxed">
+                                            The charging station is almost ready. Use the following URL in your station's configuration local web interface or via its management API to connect it to the CSMS.
+                                        </p>
+
+                                        <WebSocketUrlDisplay
+                                            chargePointId={form.watch('chargePointId')}
+                                            tenantId={tenantId}
+                                        />
+
+                                        <div className="p-4 bg-muted/20 border border-border/40 rounded-2xl">
+                                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
+                                                <Info className="h-3 w-3 text-primary" />
+                                                Next Steps
+                                            </p>
+                                            <ul className="space-y-2">
+                                                <li className="text-xs font-medium text-muted-foreground flex items-start gap-2">
+                                                    <div className="w-4 h-4 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[10px] font-black shrink-0 mt-0.5">1</div>
+                                                    Access your hardware console or web interface
+                                                </li>
+                                                <li className="text-xs font-medium text-muted-foreground flex items-start gap-2">
+                                                    <div className="w-4 h-4 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[10px] font-black shrink-0 mt-0.5">2</div>
+                                                    Paste the WebSocket URL provided above
+                                                </li>
+                                                <li className="text-xs font-medium text-muted-foreground flex items-start gap-2">
+                                                    <div className="w-4 h-4 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[10px] font-black shrink-0 mt-0.5">3</div>
+                                                    Save and verify connection in the Live Logs
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </motion.div>
                     </AnimatePresence>
 
@@ -516,7 +566,7 @@ export function StationWizard({
                         </Button>
 
                         <div className="flex gap-4">
-                            {step < 4 ? (
+                            {step < 5 ? (
                                 <Button
                                     type="button"
                                     onClick={nextStep}
