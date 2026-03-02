@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -14,18 +15,18 @@ const overlayVariants: Variants = {
 
 const modalVariants: Variants = {
   initial: { opacity: 0, scale: 0.95, y: 20 },
-  animate: { 
-    opacity: 1, 
-    scale: 1, 
+  animate: {
+    opacity: 1,
+    scale: 1,
     y: 0,
     transition: {
       duration: 0.2,
       ease: 'easeOut',
     },
   },
-  exit: { 
-    opacity: 0, 
-    scale: 0.95, 
+  exit: {
+    opacity: 0,
+    scale: 0.95,
     y: 20,
     transition: {
       duration: 0.15,
@@ -77,6 +78,12 @@ export function AnimatedModal({
   headerClassName,
   footerClassName,
 }: AnimatedModalProps) {
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   React.useEffect(() => {
     if (!closeOnEscape) return;
 
@@ -108,11 +115,11 @@ export function AnimatedModal({
     }
   };
 
-  return (
+  const modalContent = (
     <AnimatePresence mode="wait">
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6"
           role="dialog"
           aria-modal="true"
           aria-labelledby={title ? 'modal-title' : undefined}
@@ -124,7 +131,7 @@ export function AnimatedModal({
             animate="animate"
             exit="exit"
             className={cn(
-              'fixed inset-0 bg-black/50 backdrop-blur-sm',
+              'fixed inset-0 bg-background/80 backdrop-blur-sm',
               overlayClassName
             )}
             onClick={handleOverlayClick}
@@ -137,7 +144,7 @@ export function AnimatedModal({
             animate="animate"
             exit="exit"
             className={cn(
-              'relative z-50 w-full rounded-lg border bg-background shadow-lg',
+              'relative z-[101] w-full rounded-3xl border bg-background shadow-2xl ring-1 ring-border/50',
               sizeClasses[size],
               className
             )}
@@ -145,22 +152,22 @@ export function AnimatedModal({
           >
             <div
               className={cn(
-                'flex max-h-[90vh] flex-col',
+                'flex max-h-[85vh] flex-col',
                 contentClassName
               )}
             >
               {(title || description || showCloseButton) && (
                 <div
                   className={cn(
-                    'flex items-start justify-between border-b p-6',
+                    'flex items-start justify-between border-b border-border/40 p-6 md:p-8',
                     headerClassName
                   )}
                 >
-                  <div className="flex-1 space-y-1">
+                  <div className="flex-1 space-y-1.5">
                     {title && (
                       <h2
                         id="modal-title"
-                        className="text-lg font-semibold leading-none tracking-tight"
+                        className="text-2xl font-black leading-none tracking-tight"
                       >
                         {title}
                       </h2>
@@ -168,7 +175,7 @@ export function AnimatedModal({
                     {description && (
                       <p
                         id="modal-description"
-                        className="text-sm text-muted-foreground"
+                        className="text-sm font-medium text-muted-foreground"
                       >
                         {description}
                       </p>
@@ -178,24 +185,24 @@ export function AnimatedModal({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                      className="h-9 w-9 rounded-xl opacity-70 transition-all hover:opacity-100 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                       onClick={onClose}
                       aria-label="Close modal"
                     >
-                      <X className="h-4 w-4" />
+                      <X className="h-5 w-5" />
                     </Button>
                   )}
                 </div>
               )}
 
-              <div className="flex-1 overflow-y-auto p-6">
+              <div className="flex-1 overflow-y-auto p-6 md:p-8">
                 {children}
               </div>
 
               {footer && (
                 <div
                   className={cn(
-                    'flex flex-col-reverse gap-2 border-t p-6 sm:flex-row sm:justify-end',
+                    'flex flex-col-reverse gap-3 border-t border-border/40 p-6 md:p-8 sm:flex-row sm:justify-end bg-muted/5 rounded-b-3xl',
                     footerClassName
                   )}
                 >
@@ -208,4 +215,8 @@ export function AnimatedModal({
       )}
     </AnimatePresence>
   );
+
+  if (!mounted) return null;
+
+  return createPortal(modalContent, document.body);
 }

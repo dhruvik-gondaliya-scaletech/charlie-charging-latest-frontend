@@ -1,0 +1,440 @@
+'use client';
+
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { useLocations } from '@/hooks/get/useLocations';
+import { useAuth } from '@/contexts/AuthContext';
+import { Station, ConnectorType } from '@/types';
+import { Info, Zap, MapPin, Cpu, Link as LinkIcon, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
+const stationSchema = z.object({
+    name: z.string().min(1, 'Name is required'),
+    chargePointId: z.string().min(1, 'Charge Point ID is required')
+        .regex(/^[A-Za-z0-9_-]+$/, 'Only letters, numbers, underscores and hyphens allowed'),
+    serialNumber: z.string().min(1, 'Serial Number is required'),
+    model: z.string().min(1, 'Model is required'),
+    vendor: z.string().min(1, 'Vendor is required'),
+    firmware: z.string().min(1, 'Firmware is required'),
+    maxPower: z.coerce.number().min(1, 'Max Power must be positive'),
+    locationId: z.string().min(1, 'Location is required'),
+    ocppVersion: z.string().default('1.6'),
+    connectorTypes: z.array(z.nativeEnum(ConnectorType)).min(1, 'At least one connector type is required'),
+});
+
+const CONNECTOR_OPTIONS = [
+    { type: ConnectorType.TYPE_1, label: 'Type 1', description: 'AC charging' },
+    { type: ConnectorType.TYPE_2, label: 'Type 2', description: 'European AC' },
+    { type: ConnectorType.CCS1, label: 'CCS1', description: 'North American' },
+    { type: ConnectorType.CCS2, label: 'CCS2', description: 'European standard' },
+    { type: ConnectorType.CHADEMO, label: 'CHAdeMO', description: 'Japanese standard' },
+    { type: ConnectorType.TESLA, label: 'Tesla', description: 'Tesla proprietary' },
+    { type: ConnectorType.GB_T, label: 'GB/T', description: 'Chinese standard' },
+];
+
+export type StationFormValues = z.infer<typeof stationSchema>;
+
+interface StationFormProps {
+    initialData?: Partial<StationFormValues>;
+    onSubmit: (data: StationFormValues) => void;
+    isLoading?: boolean;
+    onCancel: () => void;
+}
+
+export function StationForm({ initialData, onSubmit, isLoading, onCancel }: StationFormProps) {
+    const { data: locations, isLoading: locationsLoading } = useLocations();
+    const { tenant } = useAuth();
+    const isEdit = !!initialData?.serialNumber;
+
+    const form = useForm<StationFormValues>({
+        resolver: zodResolver(stationSchema) as any,
+        defaultValues: {
+            name: initialData?.name || '',
+            chargePointId: initialData?.chargePointId || '',
+            serialNumber: initialData?.serialNumber || '',
+            model: initialData?.model || '',
+            vendor: initialData?.vendor || '',
+            firmware: initialData?.firmware || '',
+            maxPower: initialData?.maxPower || 22, // Defaulting to 22kW
+            locationId: initialData?.locationId || '',
+            ocppVersion: initialData?.ocppVersion || '1.6',
+            connectorTypes: (initialData?.connectorTypes as ConnectorType[]) || [ConnectorType.TYPE_2],
+        },
+    });
+
+    const onFormSubmit = (data: StationFormValues) => {
+        onSubmit(data);
+    };
+
+    const wsUrl = `ws://${typeof window !== 'undefined' ? window.location.hostname : 'localhost'}:8020/ocpp/${tenant?.id || 'tenant-id'}/${form.watch('chargePointId') || 'charge-point-id'}`;
+
+    return (
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onFormSubmit as any)} className="space-y-8">
+                {/* Basic Information */}
+                <div className="space-y-6">
+                    <div className="flex items-center gap-2 pb-2 border-b border-border/40">
+                        <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                            <Info className="h-5 w-5" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-black tracking-tight">Basic Information</h3>
+                            <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Essential details for station identification</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <FormField
+                            control={form.control as any}
+                            name="name"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="flex items-center gap-1.5 font-bold">
+                                        <Zap className="h-3.5 w-3.5 text-primary" />
+                                        Station Name*
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Enter a descriptive name" className="bg-muted/30 border-border/60 focus:bg-background transition-all font-medium py-6" {...field} />
+                                    </FormControl>
+                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">Choose a descriptive name for easy identification</p>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <FormField
+                                control={form.control as any}
+                                name="serialNumber"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="font-bold">Serial Number*</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="Unique hardware serial"
+                                                className="bg-muted/30 border-border/60 focus:bg-background transition-all font-medium py-6"
+                                                disabled={isEdit}
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter flex items-center gap-1">
+                                            <ShieldCheck className="h-3 w-3" />
+                                            {isEdit ? "Serial number cannot be changed" : "Must be globally unique"}
+                                        </p>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control as any}
+                                name="chargePointId"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="font-bold">Charge Point ID*</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="OCPP Identifier"
+                                                className="bg-muted/30 border-border/60 focus:bg-background transition-all font-medium py-6"
+                                                disabled={isEdit}
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter flex items-center gap-1">
+                                            <Cpu className="h-3 w-3" />
+                                            {isEdit ? "Charge Point ID cannot be changed" : "Internal identifier used by OCPP protocol"}
+                                        </p>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <FormField
+                                control={form.control as any}
+                                name="vendor"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-70">Vendor</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="e.g. ABB, Delta" className="bg-muted/10 border-border/40 font-medium h-10" {...field} />
+                                        </FormControl>
+                                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">Charging station manufacturer</p>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control as any}
+                                name="model"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-70">Model</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="e.g. Terra 54" className="bg-muted/10 border-border/40 font-medium h-10" {...field} />
+                                        </FormControl>
+                                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">Specific model designation</p>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <FormField
+                                control={form.control as any}
+                                name="firmware"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-70">Firmware Version</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="e.g. 1.0.4" className="bg-muted/10 border-border/40 font-medium h-10" {...field} />
+                                        </FormControl>
+                                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">Current firmware version</p>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control as any}
+                                name="maxPower"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="font-bold text-xs uppercase tracking-widest items-center flex gap-1.5 opacity-70">
+                                            <Zap className="h-3 w-3 text-amber-500" />
+                                            Max Power (kW)
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input type="number" className="bg-muted/10 border-border/40 font-medium h-10" {...field} />
+                                        </FormControl>
+                                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">Maximum charging power in kilowatts</p>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Location */}
+                <div className="space-y-6">
+                    <div className="flex items-center gap-2 pb-2 border-b border-border/40">
+                        <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500">
+                            <MapPin className="h-5 w-5" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-black tracking-tight">Location</h3>
+                            <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Assign station to a physical site</p>
+                        </div>
+                    </div>
+
+                    <FormField
+                        control={form.control as any}
+                        name="locationId"
+                        render={({ field }) => (
+                            <FormItem>
+                                <Select
+                                    onValueChange={field.onChange}
+                                    defaultValue={field.value}
+                                    disabled={locationsLoading}
+                                >
+                                    <FormControl>
+                                        <SelectTrigger className="bg-muted/30 border-border/60 py-6 font-bold">
+                                            <SelectValue placeholder="Choose a location..." />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {locations?.map((location) => (
+                                            <SelectItem key={location.id} value={location.id} className="font-bold">
+                                                {location.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter flex items-center gap-1">
+                                    <Info className="h-3 w-3" />
+                                    Optional - Associate this station with a physical location
+                                </p>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+
+                {/* Connector Types */}
+                <div className="space-y-6">
+                    <div className="flex items-center gap-2 pb-2 border-b border-border/40">
+                        <div className="p-2 rounded-xl bg-blue-500/10 text-blue-500">
+                            <Zap className="h-5 w-5" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-black tracking-tight">Connector Types*</h3>
+                            <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Select the types of connectors available on this station</p>
+                        </div>
+                    </div>
+
+                    <FormField
+                        control={form.control as any}
+                        name="connectorTypes"
+                        render={({ field }) => (
+                            <FormItem>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                    {CONNECTOR_OPTIONS.map((option) => {
+                                        const isSelected = field.value?.includes(option.type);
+                                        return (
+                                            <Card
+                                                key={option.type}
+                                                className={cn(
+                                                    "cursor-pointer transition-all border-border/40 hover:border-primary/40",
+                                                    isSelected ? "bg-primary/5 border-primary/50 ring-1 ring-primary/20 shadow-lg shadow-primary/10" : "bg-card/40"
+                                                )}
+                                                onClick={() => {
+                                                    const current = field.value || [];
+                                                    const updated = isSelected
+                                                        ? current.filter((t: string) => t !== option.type)
+                                                        : [...current, option.type];
+                                                    field.onChange(updated);
+                                                }}
+                                            >
+                                                <CardContent className="p-4 flex items-start gap-3">
+                                                    <div className={cn(
+                                                        "p-2 rounded-lg transition-colors",
+                                                        isSelected ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground"
+                                                    )}>
+                                                        <Zap className="h-4 w-4" />
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <div className="flex items-center gap-2">
+                                                            <p className="text-sm font-black truncate">{option.label}</p>
+                                                            {isSelected && <CheckCircle2 className="h-3.5 w-3.5 text-primary" />}
+                                                        </div>
+                                                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">{option.description}</p>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        );
+                                    })}
+                                </div>
+                                <div className="p-4 bg-muted/20 border border-border/40 rounded-2xl">
+                                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
+                                        <CheckCircle2 className="h-3 w-3 text-primary" />
+                                        {field.value?.length || 0} Connector type selected
+                                    </p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {field.value?.map((type: string) => (
+                                            <Badge key={type} className="bg-primary/10 text-primary border-primary/20 font-bold px-3 py-1">
+                                                {type}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                </div>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+
+                {/* OCPP Configuration Note */}
+                <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl flex gap-4 items-center">
+                    <div className="p-3 rounded-full bg-primary/10 text-primary">
+                        <Info className="h-5 w-5" />
+                    </div>
+                    <div>
+                        <p className="text-sm font-black tracking-tight">OCPP Configuration</p>
+                        <p className="text-xs text-muted-foreground font-bold leading-relaxed">
+                            OCPP settings will be automatically configured by the system. Default OCPP version: {form.watch('ocppVersion')}.
+                            The station will use these settings to communicate with the CSMS platform.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Connection Details */}
+                <div className="space-y-6">
+                    <div className="flex items-center gap-2 pb-2 border-b border-border/40">
+                        <div className="p-2 rounded-xl bg-violet-500/10 text-violet-500">
+                            <LinkIcon className="h-5 w-5" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-black tracking-tight">Connection Details</h3>
+                            <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">WebSocket URL for station configuration</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <div className="p-6 bg-muted/30 border border-border/40 rounded-3xl space-y-4">
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">WebSocket Connection URL</p>
+                                <p className="text-xs font-bold leading-relaxed text-muted-foreground/80">
+                                    Use this URL to configure your charging station's connection to the CSMS. The station will use this endpoint for OCPP communication.
+                                </p>
+                            </div>
+
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 right-3 flex items-center">
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(wsUrl);
+                                                        toast.success('Connection URL copied to clipboard');
+                                                    }}
+                                                    className="p-2 rounded-lg bg-background border border-border shadow-sm hover:scale-110 active:scale-95 transition-all text-muted-foreground hover:text-primary"
+                                                >
+                                                    <LinkIcon className="h-4 w-4" />
+                                                </button>
+                                            </TooltipTrigger>
+                                            <TooltipContent className="font-bold">Copy URL</TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                </div>
+                                <div className="w-full bg-muted/50 border border-border/60 rounded-xl p-4 pr-14 font-mono text-sm tracking-tight text-foreground break-all">
+                                    {wsUrl}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-between p-6 bg-linear-to-r from-muted/20 to-transparent border-t border-border/40 rounded-b-3xl -mx-6 -mb-6">
+                    <div className="hidden md:block">
+                        <p className="text-sm font-black tracking-tight">Ready to {isEdit ? 'update' : 'register'} the charging station?</p>
+                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Your changes will be saved and applied to the station configuration</p>
+                    </div>
+                    <div className="flex gap-4 w-full md:w-auto">
+                        <Button type="button" variant="ghost" className="flex-1 md:flex-none font-bold text-muted-foreground hover:bg-muted" onClick={onCancel} disabled={isLoading}>
+                            Cancel
+                        </Button>
+                        <Button type="submit" className="flex-1 md:flex-none bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 px-8 font-black" disabled={isLoading}>
+                            {isLoading ? 'Processing...' : isEdit ? 'Update Station' : 'Register Station'}
+                        </Button>
+                    </div>
+                </div>
+            </form>
+        </Form>
+    );
+}

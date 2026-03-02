@@ -1,12 +1,3 @@
-export enum StationStatus {
-  AVAILABLE = 'available',
-  CHARGING = 'charging',
-  IN_USE = 'in_use',
-  OFFLINE = 'offline',
-  MAINTENANCE = 'maintenance',
-  FAULTED = 'faulted',
-}
-
 export enum ChargingStatus {
   AVAILABLE = 'Available',
   PREPARING = 'Preparing',
@@ -21,6 +12,27 @@ export enum ChargingStatus {
   MAINTENANCE = 'Maintenance',
 }
 
+export enum ConnectorType {
+  TYPE_1 = 'Type1',
+  TYPE_2 = 'Type2',
+  CCS1 = 'CCS1',
+  CCS2 = 'CCS2',
+  CHADEMO = 'CHAdeMO',
+  TESLA = 'Tesla',
+  GB_T = 'GB/T',
+}
+
+export interface Connector {
+  id: string;
+  connectorId: number;
+  type: ConnectorType;
+  status: ChargingStatus;
+  maxPower: number;
+  stationId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Station {
   id: string;
   name: string;
@@ -28,18 +40,19 @@ export interface Station {
   model: string;
   vendor: string;
   firmware: string;
-  status: StationStatus | string;
+  status: ChargingStatus;
   isOccupied: boolean;
   isActive: boolean;
   maxPower: number;
   lastActiveDate?: string;
-  connectorTypes: string[];
-  location?: Location | string;
+  connectorTypes: ConnectorType[];
+  location?: Location;
   locationId: string;
   chargePointId: string;
   ocppVersion: string;
   connectorCount: number;
   ocppConfiguration?: Record<string, unknown>;
+  connectors: Connector[];
   createdAt?: string;
   updatedAt?: string;
 }

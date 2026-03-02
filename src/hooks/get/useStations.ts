@@ -9,11 +9,11 @@ export const useStations = (params?: GetStationsParams) => {
   });
 };
 
-export const useStation = (id: string) => {
+export const useStation = (id: string, options: { enabled?: boolean } = {}) => {
   return useQuery({
     queryKey: ['station', id],
     queryFn: () => stationService.getStationById(id),
-    enabled: !!id,
+    enabled: options.enabled !== undefined ? options.enabled && !!id : !!id,
     staleTime: 30000,
   });
 };

@@ -1,6 +1,6 @@
 import httpService from '@/lib/http-service';
 import { API_CONFIG } from '@/constants/constants';
-import { Station, OcppLog, GetConfigurationResponse, SetConfigurationResponse, BulkSetConfigurationResponse } from '@/types';
+import { Station, OcppLog, GetConfigurationResponse, SetConfigurationResponse, BulkSetConfigurationResponse, ChargingStatus, ConnectorType } from '@/types';
 
 export interface CreateStationData {
   name: string;
@@ -11,8 +11,7 @@ export interface CreateStationData {
   isOccupied?: boolean;
   isActive?: boolean;
   maxPower: number;
-  connectorTypes: string[];
-  connectorCount: number;
+  connectorTypes: ConnectorType[];
   locationId: string;
   chargePointId: string;
   ocppVersion: string;
@@ -21,20 +20,16 @@ export interface CreateStationData {
 
 export interface UpdateStationData {
   name?: string;
-  serialNumber?: string;
   model?: string;
   vendor?: string;
   firmware?: string;
   isOccupied?: boolean;
   isActive?: boolean;
   maxPower?: number;
-  connectorTypes?: string[];
-  connectorCount?: number;
+  connectorTypes?: ConnectorType[];
   locationId?: string;
-  chargePointId?: string;
-  ocppVersion?: string;
   ocppConfiguration?: Record<string, unknown>;
-  status?: string;
+  status?: ChargingStatus;
 }
 
 export interface GetStationsParams {
@@ -73,7 +68,7 @@ class StationService {
   }
 
   async updateStation(id: string, stationData: UpdateStationData) {
-    return httpService.put<Station>(API_CONFIG.endpoints.stations.byId(id), stationData);
+    return httpService.patch<Station>(API_CONFIG.endpoints.stations.byId(id), stationData);
   }
 
   async deleteStation(id: string) {
@@ -100,8 +95,8 @@ class StationService {
     });
   }
 
-  async getConfiguration(stationId: string, keys?: string[], category?: string) {
-    return httpService.get(API_CONFIG.endpoints.stations.configuration(stationId), {
+  async getConfiguration(stationId: string, keys?: string[], category?: string): Promise<GetConfigurationResponse> {
+    return httpService.get<GetConfigurationResponse>(API_CONFIG.endpoints.stations.configuration(stationId), {
       params: { keys, category },
     });
   }

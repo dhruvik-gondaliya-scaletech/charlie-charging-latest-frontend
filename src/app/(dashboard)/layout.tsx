@@ -17,7 +17,7 @@ export default function DashboardLayout({
         </aside>
         <div className="flex-1 flex flex-col overflow-hidden">
           <Header />
-          <main className="flex-1 overflow-y-auto bg-background p-6">
+          <main className="flex-1 overflow-y-auto bg-background p-6 no-scrollbar">
             {children}
           </main>
         </div>
