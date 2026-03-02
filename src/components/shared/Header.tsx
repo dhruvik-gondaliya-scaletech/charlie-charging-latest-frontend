@@ -5,6 +5,7 @@ import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Breadcrumbs } from './Breadcrumbs';
 
 export function Header() {
   const { theme, setTheme } = useTheme();
@@ -18,13 +19,8 @@ export function Header() {
   return (
     <header className="border-b bg-card">
       <div className="flex items-center justify-between px-6 py-4">
-        <div>
-          <h2 className="text-lg font-semibold">
-            Welcome back, {user?.firstName || 'User'}
-          </h2>
-          {tenant && (
-            <p className="text-sm text-muted-foreground">{tenant.name}</p>
-          )}
+        <div className="flex items-center gap-4">
+          <Breadcrumbs />
         </div>
 
         <div className="flex items-center gap-4">

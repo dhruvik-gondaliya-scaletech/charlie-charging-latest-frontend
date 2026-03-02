@@ -1,76 +1,72 @@
-# Kollabary Base Frontend Template
+# Charlie Charging - EV Management Platform
 
-A premium, production-ready frontend template built with **Next.js 15+** and **Tailwind CSS 4**. This template is designed for high-performance, scalable web applications with a focus on developer experience and modern design aesthetics.
+Charlie Charging is a premium, production-ready EV Charging Management Platform built with **Next.js 16** and **Tailwind CSS 4**. It provides a comprehensive solution for managing charging locations, stations, tenants, and user access with a focus on real-time monitoring and professional aesthetics.
 
 ## 🚀 Quick Start
 
 ### 1. Installation
 ```bash
 npm install
-# or
-yarn install
-# or
-pnpm install
 ```
 
-### 2. Run the Development Server
+### 2. Configure Environment
+Copy `.env.example` to `.env` and configure your API endpoints:
+```bash
+NEXT_PUBLIC_API_URL=your_api_url
+```
+
+### 3. Run the Development Server
 ```bash
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to access the dashboard.
 
 ## 🛠 Tech Stack
 
-- **Framework:** [Next.js 15 (App Router)](https://nextjs.org/)
-- **Language:** [TypeScript](https://www.typescriptlang.org/)
-- **Styling:** [Tailwind CSS 4](https://tailwindcss.com/) with [CSS Variables](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
-- **UI Components:** [Radix UI](https://www.radix-ui.com/) & [Lucide React](https://lucide.dev/)
+- **Framework:** [Next.js 16 (App Router)](https://nextjs.org/)
+- **Styling:** [Tailwind CSS 4](https://tailwindcss.com/) with [Framer Motion](https://www.framer.com/motion/)
 - **State Management:** [TanStack React Query v5](https://tanstack.com/query/latest)
-- **API Client:** [Axios](https://axios-http.com/)
+- **Tables:** [TanStack Table v8](https://tanstack.com/table/latest)
 - **Forms:** [React Hook Form](https://react-hook-form.com/) & [Zod](https://zod.dev/)
-- **Utilities:** `clsx`, `tailwind-merge`, `class-variance-authority`
-- **Feedback:** [Sonner](https://react-hot-toast.com/) (Toast notifications)
+- **Real-time:** [Socket.io Client](https://socket.io/)
+- **Charts:** [Recharts](https://recharts.org/)
+- **UI Components:** Radix UI & Lucide React
 
 ## 📂 Project Structure
 
 ```text
-├── public/          # Static assets
 ├── src/
-│   ├── app/         # Next.js App Router (Pages, Layouts, API)
-│   ├── components/  # Reusable UI components (Shared)
-│   ├── hooks/       # Custom React hooks
-│   ├── lib/         # Utility functions and shared logic
-│   ├── services/    # API services and data fetching
-│   ├── types/       # TypeScript definitions
-│   └── styles/      # Global CSS and Tailwind configurations
+│   ├── app/             # App Router: Auth, Dashboard, Management
+│   ├── components/      # Shared UI & Layout components
+│   ├── features/        # Business logic modules (Auth, Stations, etc.)
+│   ├── services/        # API communication layer (Axios)
+│   ├── lib/             # Utilities (Auth guards, session, formatting)
+│   ├── hooks/           # Custom React hooks
+│   ├── types/           # Global TypeScript definitions
+│   └── constants/       # App-wide configuration & navigation
 ```
 
-## ✨ Key Features
+## ✨ Core Modules
 
-- **Modern Design:** Built with a focus on responsiveness, dark mode support, and premium aesthetics.
-- **Type Safety:** Full TypeScript integration for better developer experience and reliability.
-- **Form Handling:** Robust form validation and submission using React Hook Form and Zod.
-- **Data Fetching:** Efficient and cached data fetching with React Query.
-- **Optimized Fonts:** Uses Geist and Geist Mono for professional typography.
-- **Linting & Formatting:** Pre-configured ESLint and TypeScript rules.
+- **Authentication:** Secure login, registration, and email verification flow.
+- **Dashboard:** Interactive analytics and real-time status overview.
+- **Location Management:** Manage charging sites and geographical data.
+- **Station Management:** Monitor and configure individual charging stations.
+- **Tenant Management:** Multi-tenant support for organizational isolation.
+- **User Management:** RBAC system for managing platform administrators and users.
+- **Webhooks:** Integration layer for external system notifications.
 
-## 🎨 Styling Guidelines
+## 🎨 Design System
 
-This project uses **Tailwind CSS 4** which leverages CSS variables for theme management. 
-- Use the `cn` utility in `src/lib/utils.ts` for conditional class merging.
-- Follow the [Shadcn UI](https://ui.shadcn.com/) patterns for consistent component design.
-
-## 📚 Learn More
-
-To learn more about the tools used in this template:
-- [Next.js Documentation](https://nextjs.org/docs)
-- [React Query Guide](https://tanstack.com/query/latest/docs/framework/react/overview)
-- [Tailwind CSS Docs](https://tailwindcss.com/docs)
+The platform uses a dark-themed, glassmorphic design system:
+- **Glassmorphism:** Elegant use of `backdrop-blur` and translucent layers.
+- **Micro-animations:** Smooth transitions powered by Framer Motion.
+- **Responsive:** Fully optimized for mobile, tablet, and desktop views.
 
 ## 🚢 Deployment
 
-The easiest way to deploy is using the [Vercel Platform](https://vercel.com/new).
+Optimized for deployment on [Vercel](https://vercel.com).
 
 ---
-Built with ❤️ for the Kollabary ecosystem.
+Built with ❤️ for the Charlie Charging ecosystem.
 
