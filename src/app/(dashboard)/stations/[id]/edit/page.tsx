@@ -16,7 +16,7 @@ export default function StationEditPage() {
             className="p-4 md:p-8 max-w-5xl mx-auto"
         >
             <motion.div variants={fadeInUp}>
-                <StationWizardContainer stationId={id as string} />
+                <StationWizardContainer stationId={id as string} mode="edit" />
             </motion.div>
         </motion.div>
     );

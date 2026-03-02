@@ -1,9 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { stationSchema } from '@/lib/validations/station.schema';
 import {
     Form,
     FormControl,
@@ -15,6 +16,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { CONNECTOR_OPTIONS } from '@/constants/constants';
 import {
     Select,
     SelectContent,
@@ -30,30 +32,6 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-
-const stationSchema = z.object({
-    name: z.string().min(1, 'Name is required'),
-    chargePointId: z.string().min(1, 'Charge Point ID is required')
-        .regex(/^[A-Za-z0-9_-]+$/, 'Only letters, numbers, underscores and hyphens allowed'),
-    serialNumber: z.string().min(1, 'Serial Number is required'),
-    model: z.string().min(1, 'Model is required'),
-    vendor: z.string().min(1, 'Vendor is required'),
-    firmware: z.string().min(1, 'Firmware is required'),
-    maxPower: z.coerce.number().min(1, 'Max Power must be positive'),
-    locationId: z.string().min(1, 'Location is required'),
-    ocppVersion: z.string().default('1.6'),
-    connectorTypes: z.array(z.nativeEnum(ConnectorType)).min(1, 'At least one connector type is required'),
-});
-
-const CONNECTOR_OPTIONS = [
-    { type: ConnectorType.TYPE_1, label: 'Type 1', description: 'AC charging' },
-    { type: ConnectorType.TYPE_2, label: 'Type 2', description: 'European AC' },
-    { type: ConnectorType.CCS1, label: 'CCS1', description: 'North American' },
-    { type: ConnectorType.CCS2, label: 'CCS2', description: 'European standard' },
-    { type: ConnectorType.CHADEMO, label: 'CHAdeMO', description: 'Japanese standard' },
-    { type: ConnectorType.TESLA, label: 'Tesla', description: 'Tesla proprietary' },
-    { type: ConnectorType.GB_T, label: 'GB/T', description: 'Chinese standard' },
-];
 
 export type StationFormValues = z.infer<typeof stationSchema>;
 
@@ -84,6 +62,30 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
             connectorTypes: (initialData?.connectorTypes as ConnectorType[]) || [ConnectorType.TYPE_2],
         },
     });
+
+    const hasInitialized = useRef(false);
+
+    // Handle auto-filling when initialData is loaded asynchronously
+    useEffect(() => {
+        const hasData = initialData && Object.keys(initialData).length > 0;
+        if (hasData && !hasInitialized.current) {
+            form.reset({
+                name: initialData.name || '',
+                chargePointId: initialData.chargePointId || '',
+                serialNumber: initialData.serialNumber || '',
+                model: initialData.model || '',
+                vendor: initialData.vendor || '',
+                firmware: initialData.firmware || '',
+                maxPower: initialData.maxPower ?? 22,
+                locationId: initialData.locationId || '',
+                ocppVersion: initialData.ocppVersion || '1.6',
+                connectorTypes: (initialData.connectorTypes as ConnectorType[]) || [],
+            }, {
+                keepDirtyValues: true,
+            });
+            hasInitialized.current = true;
+        }
+    }, [initialData, form]);
 
     const onFormSubmit = (data: StationFormValues) => {
         onSubmit(data);
@@ -302,7 +304,7 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
                         render={({ field }) => (
                             <FormItem>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                                    {CONNECTOR_OPTIONS.map((option) => {
+                                    {CONNECTOR_OPTIONS.map((option: any) => {
                                         const isSelected = field.value?.includes(option.type);
                                         return (
                                             <Card

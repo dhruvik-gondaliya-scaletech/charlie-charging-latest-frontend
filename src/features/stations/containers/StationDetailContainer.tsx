@@ -1,42 +1,73 @@
 'use client';
 
+import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useStation } from '@/hooks/get/useStations';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ChargingStatus } from '@/types';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     ArrowLeft,
-    Settings,
     Zap,
+    Activity,
+    ShieldCheck,
+    Settings,
     MapPin,
-    History,
     Terminal,
     Cpu,
-    ShieldCheck,
-    Activity,
+    History,
     ChevronRight
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { fadeIn, fadeInUp, staggerContainer } from '@/lib/motion';
+import { fadeInUp, staggerContainer } from '@/lib/motion';
+import { ChargingStatus } from '@/types';
 import { formatDate } from '@/lib/date';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RemoteOperations } from '../components/RemoteOperations';
 import { ConfigurationManager } from '../components/ConfigurationManager';
 import { StatCard } from '../../dashboard/components/StatCard';
+import { StationSessions } from '../components/StationSessions';
+import { StationLogs } from '../components/StationLogs';
+import { FRONTEND_ROUTES } from '@/constants/constants';
 
 export function StationDetailContainer() {
     const { id } = useParams();
     const router = useRouter();
     const { data: station, isLoading, error } = useStation(id as string);
+    const [activeTab, setActiveTab] = useState('overview');
 
     if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[600px] gap-4">
-                <Activity className="h-12 w-12 text-primary animate-pulse" />
-                <p className="text-muted-foreground font-medium animate-pulse">Establishing secure link to charging station...</p>
+            <div className="space-y-8 p-4 md:p-8 max-w-[1600px] mx-auto">
+                <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+                    <div className="space-y-4">
+                        <Skeleton className="h-4 w-32" />
+                        <div className="flex items-center gap-3">
+                            <Skeleton className="h-10 w-64" />
+                            <Skeleton className="h-6 w-24 rounded-full" />
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Skeleton className="h-4 w-48" />
+                        </div>
+                    </div>
+                    <div className="flex gap-3">
+                        <Skeleton className="h-10 w-40" />
+                        <Skeleton className="h-10 w-40" />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {Array(4).fill(0).map((_, i) => (
+                        <Skeleton key={i} className="h-32 rounded-3xl" />
+                    ))}
+                </div>
+
+                <div className="space-y-6">
+                    <Skeleton className="h-12 w-full max-w-2xl rounded-2xl" />
+                    <Skeleton className="h-[400px] w-full rounded-3xl" />
+                </div>
             </div>
         );
     }
@@ -50,8 +81,8 @@ export function StationDetailContainer() {
                     </div>
                     <h2 className="text-2xl font-bold">Station Not Found</h2>
                     <p className="text-muted-foreground">The requested charging station could not be found or you don't have permission to access it.</p>
-                    <Button onClick={() => router.push('/stations')} variant="outline" className="mt-4">
-                        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Fleet
+                    <Button onClick={() => router.push(FRONTEND_ROUTES.STATIONS)} variant="outline" className="mt-4">
+                        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Stations
                     </Button>
                 </div>
             </div>
@@ -69,11 +100,11 @@ export function StationDetailContainer() {
             <motion.div variants={fadeInUp} className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                 <div className="space-y-1">
                     <button
-                        onClick={() => router.push('/stations')}
+                        onClick={() => router.push(FRONTEND_ROUTES.STATIONS)}
                         className="flex items-center text-sm font-medium text-muted-foreground hover:text-primary mb-4 transition-colors group"
                     >
                         <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-                        Return to Fleet Management
+                        Return to Stations
                     </button>
                     <div className="flex flex-wrap items-center gap-3">
                         <h1 className="text-4xl font-black tracking-tight text-foreground">{station.name}</h1>
@@ -103,11 +134,21 @@ export function StationDetailContainer() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <Button variant="outline" className="border-border/60 hover:bg-muted font-bold">
+                    <Button
+                        variant="outline"
+                        onClick={() => setActiveTab('sessions')}
+                        className={cn(
+                            "border-border/60 hover:bg-muted font-bold",
+                            activeTab === 'sessions' && "bg-muted border-primary/40 shadow-sm"
+                        )}
+                    >
                         <History className="h-4 w-4 mr-2" />
                         Transaction History
                     </Button>
-                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 font-bold">
+                    <Button
+                        onClick={() => setActiveTab('remote')}
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 font-bold"
+                    >
                         <Settings className="h-4 w-4 mr-2" />
                         Hardware Tools
                     </Button>
@@ -135,12 +176,14 @@ export function StationDetailContainer() {
 
             {/* Main Content Tabs */}
             <motion.div variants={fadeInUp}>
-                <Tabs defaultValue="overview" className="space-y-6">
-                    <TabsList className="bg-muted/40 p-1 border border-border/40 rounded-2xl backdrop-blur-md">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+                    <TabsList className="bg-muted/40 p-1 border border-border/40 rounded-2xl backdrop-blur-md overflow-x-auto h-auto flex-wrap sm:flex-nowrap">
                         <TabsTrigger value="overview" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Overview</TabsTrigger>
                         <TabsTrigger value="connectors" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Connectors</TabsTrigger>
                         <TabsTrigger value="remote" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Remote Control</TabsTrigger>
-                        <TabsTrigger value="config" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">OCPP Data</TabsTrigger>
+                        <TabsTrigger value="sessions" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Sessions</TabsTrigger>
+                        <TabsTrigger value="config" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Config</TabsTrigger>
+                        <TabsTrigger value="logs" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Live Logs</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="overview">
@@ -212,9 +255,6 @@ export function StationDetailContainer() {
                                             </div>
                                         </div>
                                     ))}
-                                    <Button variant="link" className="text-primary font-bold p-0 h-auto text-xs hover:no-underline flex items-center gap-1">
-                                        View full diagnostic log <ChevronRight className="h-3 w-3" />
-                                    </Button>
                                 </CardContent>
                             </Card>
                         </div>
@@ -312,6 +352,14 @@ export function StationDetailContainer() {
                         </Card>
                     </TabsContent>
 
+                    <TabsContent value="sessions">
+                        <Card className="border-border/40 bg-card/20 backdrop-blur-sm rounded-3xl overflow-hidden border">
+                            <CardContent className="p-6">
+                                <StationSessions stationId={station.id} />
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
                     <TabsContent value="config" className="no-scrollbar">
                         <Card className="border-border/40 bg-card/20 backdrop-blur-sm rounded-3xl overflow-hidden border">
                             <CardHeader className="flex flex-row items-center justify-between">
@@ -326,6 +374,21 @@ export function StationDetailContainer() {
                             </CardHeader>
                             <CardContent>
                                 <ConfigurationManager stationId={station.id} />
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="logs">
+                        <Card className="border-border/40 bg-card/20 backdrop-blur-sm rounded-3xl overflow-hidden border">
+                            <CardHeader>
+                                <CardTitle className="text-xl font-black flex items-center gap-2">
+                                    <Terminal className="h-5 w-5 text-primary" />
+                                    OCPP Diagnostic Stream
+                                </CardTitle>
+                                <CardDescription>Real-time machine communication logs</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-6">
+                                <StationLogs stationId={station.id} />
                             </CardContent>
                         </Card>
                     </TabsContent>

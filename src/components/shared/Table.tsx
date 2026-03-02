@@ -70,6 +70,7 @@ interface TableProps<T> {
   rightPinnedColumnIds?: string[];
   renderRowDetails?: (row: T) => ReactNode;
   onRowClick?: (row: T) => void;
+  emptyState?: ReactNode;
 }
 
 // Helper to get nested value by dot notation
@@ -154,6 +155,7 @@ export function Table<T>({
   rightPinnedColumnIds = [],
   renderRowDetails,
   onRowClick,
+  emptyState,
 }: TableProps<T>) {
   const [sorting, setSorting] = useState<SortingState>(() =>
     sortByKey && sortOrder
@@ -566,7 +568,7 @@ export function Table<T>({
                         colSpan={columns.length}
                         className="px-4 py-8 text-center text-muted-foreground"
                       >
-                        No data available
+                        {emptyState || "No data available"}
                       </td>
                     </tr>
                   )}

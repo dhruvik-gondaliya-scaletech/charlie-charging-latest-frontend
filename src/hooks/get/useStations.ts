@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { stationService, GetStationsParams } from '@/services/station.service';
+import { stationService, GetStationsParams, GetOcppLogsParams } from '@/services/station.service';
 
 export const useStations = (params?: GetStationsParams) => {
   return useQuery({
@@ -27,11 +27,20 @@ export const useStationConfiguration = (stationId: string, keys?: string[], cate
   });
 };
 
-export const useOcppLogs = (stationId: string, filters?: any) => {
+export const useOcppLogs = (stationId: string, params?: GetOcppLogsParams) => {
   return useQuery({
-    queryKey: ['ocpp-logs', stationId, filters],
-    queryFn: () => stationService.getOcppLogs(stationId, filters),
+    queryKey: ['station-logs', stationId, params],
+    queryFn: () => stationService.getOcppLogs(stationId, params),
+    staleTime: 5000,
+    refetchInterval: 10000,
+  });
+};
+
+export const useStationSessions = (stationId: string) => {
+  return useQuery({
+    queryKey: ['station-sessions', stationId],
+    queryFn: () => stationService.getStationSessions(stationId),
     enabled: !!stationId,
-    staleTime: 10000,
+    staleTime: 30000,
   });
 };

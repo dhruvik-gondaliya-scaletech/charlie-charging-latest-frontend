@@ -22,7 +22,8 @@ export const API_CONFIG = {
             remoteStop: (id: string) => `/stations/${id}/remote-stop`,
             configuration: (id: string) => `/stations/${id}/configuration`,
             setConfiguration: (id: string) => `/stations/${id}/configuration`,
-            ocppLogs: (id: string) => `/stations/${id}/ocpp-logs`,
+            ocppLogs: (id: string) => `/ocpp-logs?stationId=${id}`,
+            sessions: (id: string) => `/stations/${id}/sessions`,
         },
         locations: {
             base: "/locations",
@@ -60,6 +61,9 @@ export const FRONTEND_ROUTES = {
     DASHBOARD: "/dashboard",
     LOCATIONS: "/locations",
     STATIONS: "/stations",
+    STATIONS_REGISTER: "/stations/register",
+    STATIONS_DETAILS: (id: string) => `/stations/${id}`,
+    STATIONS_EDIT: (id: string) => `/stations/${id}/edit`,
     SESSIONS: "/sessions",
     TENANTS: "/tenants",
     WEBHOOKS: "/webhooks",
@@ -80,3 +84,13 @@ export const AUTH_CONFIG = {
 export const WEBSOCKET_CONFIG = {
     url: process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3000",
 }
+
+export const CONNECTOR_OPTIONS = [
+    { type: 'Type1', label: 'Type 1', description: 'AC charging' },
+    { type: 'Type2', label: 'Type 2', description: 'European AC' },
+    { type: 'CCS1', label: 'CCS1', description: 'North American' },
+    { type: 'CCS2', label: 'CCS2', description: 'European standard' },
+    { type: 'CHAdeMO', label: 'CHAdeMO', description: 'Japanese standard' },
+    { type: 'Tesla', label: 'Tesla', description: 'Tesla proprietary' },
+    { type: 'GB_T', label: 'GB/T', description: 'Chinese standard' },
+];

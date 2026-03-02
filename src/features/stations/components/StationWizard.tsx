@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { stationSchema } from '@/lib/validations/station.schema';
+import { CONNECTOR_OPTIONS } from '@/constants/constants';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Form,
@@ -40,20 +42,7 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
-const wizardSchema = z.object({
-    name: z.string().min(1, 'Name is required'),
-    chargePointId: z.string().min(1, 'Charge Point ID is required'),
-    serialNumber: z.string().min(1, 'Serial Number is required'),
-    model: z.string().min(1, 'Model is required'),
-    vendor: z.string().min(1, 'Vendor is required'),
-    firmware: z.string().min(1, 'Firmware is required'),
-    maxPower: z.coerce.number().min(1, 'Max Power must be positive'),
-    locationId: z.string().min(1, 'Location is required'),
-    ocppVersion: z.string().default('1.6'),
-    connectorTypes: z.array(z.nativeEnum(ConnectorType)).min(1, 'At least one connector type is required'),
-});
-
-type WizardValues = z.infer<typeof wizardSchema>;
+type WizardValues = z.infer<typeof stationSchema>;
 
 interface StationWizardProps {
     initialData?: Partial<Station>;
@@ -72,15 +61,6 @@ const STEPS = [
     { id: 4, title: 'Connectors', icon: Activity, description: 'Charging port configuration' },
 ];
 
-const CONNECTOR_OPTIONS = [
-    { type: ConnectorType.TYPE_1, label: 'Type 1', description: 'AC charging' },
-    { type: ConnectorType.TYPE_2, label: 'Type 2', description: 'European AC' },
-    { type: ConnectorType.CCS1, label: 'CCS1', description: 'North American' },
-    { type: ConnectorType.CCS2, label: 'CCS2', description: 'European standard' },
-    { type: ConnectorType.CHADEMO, label: 'CHAdeMO', description: 'Japanese standard' },
-    { type: ConnectorType.TESLA, label: 'Tesla', description: 'Tesla proprietary' },
-    { type: ConnectorType.GB_T, label: 'GB/T', description: 'Chinese standard' },
-];
 
 export function StationWizard({
     initialData = {},
@@ -94,7 +74,7 @@ export function StationWizard({
     const [step, setStep] = useState(1);
 
     const form = useForm<WizardValues>({
-        resolver: zodResolver(wizardSchema) as any,
+        resolver: zodResolver(stationSchema) as any,
         defaultValues: {
             name: initialData.name || '',
             chargePointId: initialData.chargePointId || '',
@@ -104,10 +84,35 @@ export function StationWizard({
             firmware: initialData.firmware || '',
             maxPower: initialData.maxPower || 22,
             locationId: (initialData.location && typeof initialData.location === 'object' ? (initialData.location as any).id : initialData.locationId) || '',
-            ocppVersion: initialData.ocppVersion || '1.6',
+            ocppVersion: (initialData.ocppVersion as any) || '1.6',
             connectorTypes: initialData.connectorTypes || [],
         },
     });
+
+    const hasInitialized = useRef(false);
+
+    // Handle auto-filling when initialData is loaded asynchronously
+    useEffect(() => {
+        const hasData = initialData && Object.keys(initialData).length > 0;
+
+        if (hasData && !hasInitialized.current) {
+            form.reset({
+                name: initialData.name || '',
+                chargePointId: initialData.chargePointId || '',
+                serialNumber: initialData.serialNumber || '',
+                model: initialData.model || '',
+                vendor: initialData.vendor || '',
+                firmware: initialData.firmware || '',
+                maxPower: initialData.maxPower ?? 22,
+                locationId: (initialData.location && typeof initialData.location === 'object' ? (initialData.location as any).id : initialData.locationId) || '',
+                ocppVersion: (initialData.ocppVersion as any) || '1.6',
+                connectorTypes: initialData.connectorTypes || [],
+            }, {
+                keepDirtyValues: true, // Don't overwrite what user already typed if they started
+            });
+            hasInitialized.current = true;
+        }
+    }, [initialData, form]);
 
     const nextStep = async () => {
         let fieldsToValidate: (keyof WizardValues)[] = [];
@@ -439,7 +444,7 @@ export function StationWizard({
                                         render={({ field }) => (
                                             <FormItem>
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                                    {CONNECTOR_OPTIONS.map((option) => {
+                                                    {CONNECTOR_OPTIONS.map((option: any) => {
                                                         const isSelected = field.value?.includes(option.type);
                                                         return (
                                                             <Card
@@ -525,7 +530,7 @@ export function StationWizard({
                                     disabled={isLoading}
                                     onClick={() => {
                                         console.log('Manual save trigger initiated');
-                                        form.handleSubmit(onFormSubmit)();
+                                        form.handleSubmit(onFormSubmit as any)();
                                     }}
                                     className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 font-black px-10"
                                 >

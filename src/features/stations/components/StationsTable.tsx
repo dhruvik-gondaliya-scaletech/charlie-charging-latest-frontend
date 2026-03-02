@@ -14,6 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { formatDate } from '@/lib/date';
+import { FRONTEND_ROUTES } from '@/constants/constants';
 
 interface StationsTableProps {
   stations: Station[];
@@ -46,9 +47,9 @@ export function StationsTable({ stations, globalFilter, onGlobalFilterChange, on
           <Badge
             variant={
               status === 'available' ? 'default' :
-              status === 'charging' ? 'secondary' :
-              status === 'offline' ? 'destructive' :
-              'outline'
+                status === 'charging' ? 'secondary' :
+                  status === 'offline' ? 'destructive' :
+                    'outline'
             }
           >
             {status}
@@ -82,14 +83,14 @@ export function StationsTable({ stations, globalFilter, onGlobalFilterChange, on
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => router.push(`/stations/${row.original.id}`)}
+            onClick={() => router.push(FRONTEND_ROUTES.STATIONS_DETAILS(row.original.id))}
           >
             <Eye className="h-4 w-4" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => router.push(`/stations/${row.original.id}/edit`)}
+            onClick={() => router.push(FRONTEND_ROUTES.STATIONS_EDIT(row.original.id))}
           >
             <Pencil className="h-4 w-4" />
           </Button>
@@ -134,9 +135,9 @@ export function StationsTable({ stations, globalFilter, onGlobalFilterChange, on
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
                   </TableHead>
                 ))}
               </TableRow>

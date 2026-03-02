@@ -19,6 +19,7 @@ import {
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { ConfigurationKey } from '@/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface ConfigurationManagerProps {
     stationId: string;
@@ -63,9 +64,16 @@ export function ConfigurationManager({ stationId }: ConfigurationManagerProps) {
 
     if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <Loader2 className="h-10 w-10 text-primary animate-spin" />
-                <p className="text-sm font-medium text-muted-foreground animate-pulse">Requesting station configuration via OCPP...</p>
+            <div className="space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-muted/30 p-4 rounded-2xl border border-border/40">
+                    <Skeleton className="h-10 flex-1 rounded-xl" />
+                    <Skeleton className="h-10 w-32 rounded-xl" />
+                </div>
+                <div className="space-y-3">
+                    {Array(8).fill(0).map((_, i) => (
+                        <Skeleton key={i} className="h-24 w-full rounded-2xl" />
+                    ))}
+                </div>
             </div>
         );
     }

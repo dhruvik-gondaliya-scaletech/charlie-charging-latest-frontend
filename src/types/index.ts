@@ -91,6 +91,13 @@ export interface OcppLog {
   createdAt: string;
 }
 
+export interface OcppLogResponse {
+  logs: OcppLog[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
 export interface DashboardStats {
   totalStations: number;
   availableStations: number;
@@ -235,6 +242,12 @@ export interface WebhookDelivery {
   nextRetryAt?: string;
   createdAt: string;
   webhookConfigName: string;
+}
+
+export enum SessionStatus {
+  IN_PROGRESS = 'in-progress',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
 }
 
 export interface Session {

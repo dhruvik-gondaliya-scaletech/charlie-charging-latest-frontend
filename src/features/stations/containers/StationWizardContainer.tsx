@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useStation } from '@/hooks/get/useStations';
 import { useLocations } from '@/hooks/get/useLocations';
@@ -10,6 +10,7 @@ import { Activity, ShieldCheck, ArrowLeft } from 'lucide-react';
 import { Station, ConnectorType } from '@/types';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { FRONTEND_ROUTES } from '@/constants/constants';
 
 interface StationWizardContainerProps {
     stationId?: string;
@@ -45,7 +46,7 @@ export function StationWizardContainer({ stationId, mode }: StationWizardContain
                     </div>
                     <h2 className="text-2xl font-bold">Station Not Found</h2>
                     <p className="text-muted-foreground">We couldn't locate the charging station you're trying to edit.</p>
-                    <Button onClick={() => router.push('/stations')} variant="outline" className="mt-4">
+                    <Button onClick={() => router.push(FRONTEND_ROUTES.STATIONS)} variant="outline" className="mt-4">
                         <ArrowLeft className="mr-2 h-4 w-4" /> Back to Fleet
                     </Button>
                 </div>
@@ -53,14 +54,27 @@ export function StationWizardContainer({ stationId, mode }: StationWizardContain
         );
     }
 
-    const handleSubmit = async (data: any) => {
+    const handleSubmit = async (values: any) => {
         try {
+            // Create station data object matching old validation/flow
+            const stationData = {
+                ...values,
+                connectorCount: values.connectorTypes?.length || 0,
+                isOccupied: isEdit ? station?.isOccupied : false,
+                isActive: isEdit ? station?.isActive : true,
+                locationId: values.locationId || undefined,
+            };
+
             if (isEdit && stationId) {
-                await updateStation.mutateAsync({ id: stationId, data });
-                router.push(`/stations/${stationId}`);
+                await updateStation.mutateAsync({ id: stationId, data: stationData });
+                router.push(FRONTEND_ROUTES.STATIONS_DETAILS(stationId));
             } else {
-                const result = await createStation.mutateAsync(data);
-                router.push(`/stations/${result.id}`);
+                const result = await createStation.mutateAsync({
+                    ...stationData,
+                    ocppVersion: values.ocppVersion || "1.6",
+                    ocppConfiguration: {}
+                } as any);
+                router.push(FRONTEND_ROUTES.STATIONS_DETAILS(result.id));
             }
         } catch (err) {
             console.log("Error in StationWizardContainer", err)
@@ -69,12 +83,16 @@ export function StationWizardContainer({ stationId, mode }: StationWizardContain
 
     // Normalize data: ensure connectorTypes is populated from connectors if missing
     // CRITICAL: Do NOT use Set here, as it reduces count if types are duplicate (e.g. 2x Type2)
-    const normalizedStation = station ? {
-        ...station,
-        connectorTypes: station.connectorTypes?.length
-            ? station.connectorTypes
-            : station.connectors?.map(c => c.type as ConnectorType).filter(Boolean) || []
-    } : (isEdit ? null : {});
+    const normalizedStation = useMemo(() => {
+        if (!station) return isEdit ? null : {};
+
+        return {
+            ...station,
+            connectorTypes: station.connectorTypes?.length
+                ? station.connectorTypes
+                : station.connectors?.map(c => c.type as ConnectorType).filter(Boolean) || []
+        };
+    }, [station, isEdit]);
 
     if (isEdit && !normalizedStation) return null;
 

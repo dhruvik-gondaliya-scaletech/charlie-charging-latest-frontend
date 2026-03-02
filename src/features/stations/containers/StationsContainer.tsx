@@ -12,13 +12,15 @@ import {
 } from '@/hooks/delete/useStationMutations';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Eye, Pencil, Trash2, AlertTriangle } from 'lucide-react';
+import { Plus, Eye, Pencil, Trash2, AlertTriangle, Zap } from 'lucide-react';
 import { staggerContainer, staggerItem } from '@/lib/motion';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Table } from '@/components/shared/Table';
 import { Station, ChargingStatus } from '@/types';
 import { formatDate } from '@/lib/date';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import { cn } from '@/lib/utils';
+import { FRONTEND_ROUTES } from '@/constants/constants';
 
 export function StationsContainer() {
   const router = useRouter();
@@ -33,7 +35,7 @@ export function StationsContainer() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedStation, setSelectedStation] = useState<Station | null>(null);
   const handleEdit = (station: Station) => {
-    router.push(`/stations/${station.id}/edit`);
+    router.push(FRONTEND_ROUTES.STATIONS_EDIT(station.id));
   };
 
   const handleDelete = (station: Station) => {
@@ -124,7 +126,7 @@ export function StationsContainer() {
               variant="ghost"
               size="icon"
               className="h-8 w-8 hover:bg-muted"
-              onClick={() => router.push(`/stations/${row.original.id}`)}
+              onClick={() => router.push(FRONTEND_ROUTES.STATIONS_DETAILS(row.original.id))}
             >
               <Eye className="h-4 w-4 text-muted-foreground" />
             </Button>
@@ -150,6 +152,41 @@ export function StationsContainer() {
     ],
     [router]
   );
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8 p-4 md:p-8 max-w-[1600px] mx-auto">
+        <div className="space-y-2">
+          <Skeleton className="h-10 w-48" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <Skeleton className="h-10 w-64" />
+            <Skeleton className="h-10 w-40" />
+          </div>
+          <div className="rounded-2xl border border-border/40 overflow-hidden">
+            <div className="bg-muted/30 p-4 border-b border-border/40 space-y-2">
+              <div className="flex gap-4">
+                {Array(6).fill(0).map((_, i) => (
+                  <Skeleton key={i} className="h-4 flex-1" />
+                ))}
+              </div>
+            </div>
+            <div className="p-4 space-y-4">
+              {Array(5).fill(0).map((_, i) => (
+                <div key={i} className="flex gap-4">
+                  {Array(6).fill(0).map((_, j) => (
+                    <Skeleton key={j} className="h-12 flex-1 rounded-xl" />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (error) {
     return (
@@ -187,7 +224,7 @@ export function StationsContainer() {
           searchPosition="end"
           appendWithSearch={
             <Button
-              onClick={() => router.push('/stations/register')}
+              onClick={() => router.push(FRONTEND_ROUTES.STATIONS_REGISTER)}
               className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -197,6 +234,26 @@ export function StationsContainer() {
           pageSize={25}
           maxHeight="650px"
           className="border-none shadow-none"
+          emptyState={
+            <div className="py-20 flex flex-col items-center justify-center text-center gap-6 bg-card/10 rounded-[2.5rem] border-2 border-dashed border-border/40">
+              <div className="p-6 rounded-full bg-primary/5 text-primary/40 ring-1 ring-primary/10">
+                <Zap className="h-16 w-16" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-black tracking-tight text-foreground">No stations found</h3>
+                <p className="max-w-xs text-muted-foreground font-medium text-sm leading-relaxed mx-auto">
+                  Your decentralized charging network is empty. Start by registering your first charging station.
+                </p>
+              </div>
+              <Button
+                onClick={() => router.push(FRONTEND_ROUTES.STATIONS_REGISTER)}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xl shadow-primary/30 font-black px-8"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Register New Station
+              </Button>
+            </div>
+          }
         />
       </motion.div>
 

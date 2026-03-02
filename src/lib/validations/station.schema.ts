@@ -1,20 +1,18 @@
 import { z } from 'zod';
+import { ConnectorType } from '@/types';
 
 export const stationSchema = z.object({
-  name: z.string().min(2, 'Station name must be at least 2 characters'),
-  serialNumber: z.string().min(3, 'Serial number must be at least 3 characters'),
-  model: z.string().min(2, 'Model must be at least 2 characters'),
-  vendor: z.string().min(2, 'Vendor must be at least 2 characters'),
+  name: z.string().min(1, 'Name is required'),
+  chargePointId: z.string().min(1, 'Charge Point ID is required')
+    .regex(/^[A-Za-z0-9_-]+$/, 'Only letters, numbers, underscores and hyphens allowed'),
+  serialNumber: z.string().min(1, 'Serial Number is required'),
+  model: z.string().min(1, 'Model is required'),
+  vendor: z.string().min(1, 'Vendor is required'),
   firmware: z.string().min(1, 'Firmware version is required'),
-  isOccupied: z.boolean().default(false),
-  isActive: z.boolean().default(true),
-  maxPower: z.number().min(1, 'Max power must be at least 1 kW'),
-  connectorTypes: z.array(z.string()).min(1, 'At least one connector type is required'),
-  connectorCount: z.number().min(1, 'At least one connector is required'),
+  maxPower: z.coerce.number().min(1, 'Max power must be at least 1kW').max(1000, 'Max power cannot exceed 1000kW').default(22),
   locationId: z.string().min(1, 'Location is required'),
-  chargePointId: z.string().min(1, 'Charge Point ID is required'),
-  ocppVersion: z.string().min(1, 'OCPP version is required'),
-  ocppConfiguration: z.record(z.string(), z.unknown()).optional(),
+  ocppVersion: z.enum(['1.6', '2.0.1']).default('1.6'),
+  connectorTypes: z.array(z.nativeEnum(ConnectorType)).min(1, 'At least one connector type is required'),
 });
 
 export const remoteStartSchema = z.object({
