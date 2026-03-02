@@ -9,7 +9,7 @@ export const locationSchema = z.object({
   zipCode: z.string().min(3, 'Zip code must be at least 3 characters'),
   latitude: z.number().optional(),
   longitude: z.number().optional(),
-  isActive: z.boolean().default(true),
+  isActive: z.boolean(),
 });
 
 export type LocationFormData = z.infer<typeof locationSchema>;
