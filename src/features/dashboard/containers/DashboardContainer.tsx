@@ -142,12 +142,12 @@ export function DashboardContainer() {
         </motion.div>
 
         {/* Main Dashboard Layout */}
-        <div className="grid gap-8 lg:grid-cols-12">
-          {/* Left Column: Quick Actions & Capacity */}
-          <div className="lg:col-span-4 space-y-8 h-full flex flex-col">
+        <div className="space-y-8">
+          {/* Top Row: Quick Actions & Capacity Side-by-Side */}
+          <div className="grid gap-8 md:grid-cols-2">
             {/* Quick Actions Card */}
-            <motion.div variants={staggerItem} className="flex-1">
-              <Card className="relative h-full overflow-hidden border-border/40 shadow-xl">
+            {/* <motion.div variants={staggerItem}>
+              <Card className="relative h-full overflow-hidden border-border/40 shadow-xl min-h-[320px]">
                 <CardHeader className="pb-4">
                   <div className="flex items-center gap-2">
                     <div className="p-1.5 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
@@ -171,11 +171,11 @@ export function DashboardContainer() {
                   ))}
                 </CardContent>
               </Card>
-            </motion.div>
+            </motion.div> */}
 
             {/* Capacity Utilization Card */}
-            <motion.div variants={staggerItem}>
-              <Card className="relative overflow-hidden border-border/40 shadow-xl">
+            {/* <motion.div variants={staggerItem}>
+              <Card className="relative overflow-hidden border-border/40 shadow-xl min-h-[320px]">
                 <CardHeader className="pb-4">
                   <div className="flex items-center gap-2">
                     <div className="p-1.5 rounded-lg bg-orange-500/10 border border-orange-500/20">
@@ -215,32 +215,36 @@ export function DashboardContainer() {
                 </CardContent>
                 <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-orange-500/5 blur-3xl pointer-events-none" />
               </Card>
-            </motion.div>
+            </motion.div> */}
           </div>
 
-          {/* Right Column: Recent Activity */}
-          <motion.div variants={staggerItem} className="lg:col-span-8">
-            <Card className="relative h-full flex flex-col overflow-hidden border-border/40 shadow-2xl ring-1 ring-border/5">
-              <CardHeader className="flex flex-row items-center justify-between border-b border-border/10 backdrop-blur-2xl bg-muted/10 px-8 py-5">
-                <div className="flex items-center gap-3">
-                  <div className="p-1.5 rounded-lg bg-primary/10 border border-primary/20">
-                    <Activity className="h-5 w-5 text-primary" />
-                  </div>
-                  <CardTitle className="text-xl font-bold tracking-tight">Recent Activity</CardTitle>
+          {/* Bottom Row: Recent Activity Full Width (No Card Wrapper) */}
+          <motion.div variants={staggerItem} className="w-full space-y-4">
+            <div className="flex items-center justify-between px-2">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-primary/10 border border-primary/20 shadow-sm">
+                  <Activity className="h-5 w-5 text-primary" />
                 </div>
-                <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold bg-muted/50 px-3 py-1.5 rounded-full border border-border/40 shadow-sm">
-                  Last 10 Events
+                <div>
+                  <h2 className="text-2xl font-bold tracking-tight">Recent Activity</h2>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest opacity-60">Real-time event stream</p>
                 </div>
-              </CardHeader>
-              <CardContent className="p-0">
+              </div>
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold bg-muted/30 px-4 py-2 rounded-full border border-border/40 backdrop-blur-md shadow-sm">
+                Last 10 Events
+              </div>
+            </div>
+
+            <div className="relative overflow-hidden rounded-3xl border border-border/40 bg-card/20 backdrop-blur-xl shadow-2xl transition-all hover:bg-card/30">
+              <div className="p-0">
                 {activitiesLoading ? (
                   <div className="p-8"><ActivityListSkeleton /></div>
                 ) : (
                   <ActivityList activities={activities || []} isLoading={activitiesLoading} />
                 )}
                 {(!activitiesLoading && (!activities || activities.length === 0)) && <div className="p-8 text-center"><EmptyActivity /></div>}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </motion.div>
         </div>
       </motion.div>
