@@ -273,7 +273,7 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
                         onKeyDown={handleKeyDown}
                         placeholder={placeholder}
                         disabled={disabled}
-                        className="pl-10 pr-10 bg-background/50 backdrop-blur-sm border-border/50 focus:border-primary/50 focus:ring-0 transition-all h-11"
+                        className="pl-10 pr-10 bg-background/50 backdrop-blur-md border-border/40 focus:border-primary/40 focus:ring-0 transition-all h-12 rounded-xl text-sm font-medium"
                     />
                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
                         {isLoading && (
@@ -316,34 +316,34 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
                         initial={{ opacity: 0, y: 10, scale: 0.98 }}
                         animate={{ opacity: 1, y: 4, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.98 }}
-                        className="absolute top-full left-0 right-0 z-[60]"
+                        className="absolute top-full left-0 right-0 z-[100] mt-3"
                     >
-                        <Card className="shadow-2xl border-border/50 bg-background/80 backdrop-blur-xl overflow-hidden rounded-xl">
-                            <CardContent className="p-1 max-h-64 overflow-y-auto custom-scrollbar">
+                        <Card className="shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] border-border/60 bg-background/98 dark:bg-zinc-950 backdrop-blur-xl overflow-hidden rounded-2xl ring-1 ring-white/10">
+                            <CardContent className="p-2 max-h-[350px] overflow-y-auto custom-scrollbar">
                                 <div ref={resultsRef}>
                                     {results.map((result, index) => (
                                         <button
                                             key={result.place_id}
                                             type="button"
                                             className={cn(
-                                                "w-full flex items-start gap-3 p-3 text-left rounded-lg transition-all duration-200",
+                                                "w-full flex items-start gap-3.5 p-3.5 text-left rounded-xl transition-all duration-300",
                                                 selectedIndex === index
-                                                    ? "bg-primary/10 text-primary"
-                                                    : "hover:bg-muted/50 text-foreground/80 hover:text-foreground"
+                                                    ? "bg-primary/15 text-primary scale-[1.01] shadow-lg shadow-primary/5"
+                                                    : "hover:bg-primary/5 text-foreground/80 hover:text-foreground hover:translate-x-1"
                                             )}
                                             onClick={() => handleResultSelect(result)}
                                         >
                                             <div className={cn(
-                                                "p-1.5 rounded-md shrink-0 mt-0.5",
-                                                selectedIndex === index ? "bg-primary/20" : "bg-muted"
+                                                "p-2 rounded-lg shrink-0 mt-0.5 transition-colors duration-300",
+                                                selectedIndex === index ? "bg-primary/20 text-primary" : "bg-muted/50 text-muted-foreground"
                                             )}>
-                                                <MapPin className="h-3.5 w-3.5" />
+                                                <MapPin className="h-4 w-4" />
                                             </div>
                                             <div className="min-w-0 flex-1">
-                                                <div className="text-sm font-semibold truncate">
+                                                <div className="text-[13px] font-bold tracking-tight truncate text-foreground">
                                                     {parseAddress(result).address}
                                                 </div>
-                                                <div className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
+                                                <div className="text-[11px] text-muted-foreground font-semibold line-clamp-1 mt-1 leading-relaxed">
                                                     {result.display_name}
                                                 </div>
                                             </div>

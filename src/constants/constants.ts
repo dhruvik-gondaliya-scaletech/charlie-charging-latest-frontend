@@ -60,6 +60,9 @@ export const API_CONFIG = {
 export const FRONTEND_ROUTES = {
     DASHBOARD: "/dashboard",
     LOCATIONS: "/locations",
+    LOCATIONS_NEW: "/locations/new",
+    LOCATIONS_DETAILS: (id: string) => `/locations/${id}`,
+    LOCATIONS_EDIT: (id: string) => `/locations/${id}/edit`,
     STATIONS: "/stations",
     STATIONS_REGISTER: "/stations/register",
     STATIONS_DETAILS: (id: string) => `/stations/${id}`,

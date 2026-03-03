@@ -5,15 +5,13 @@ import { motion } from 'framer-motion';
 import { ColumnDef } from '@tanstack/react-table';
 import { useLocations } from '@/hooks/get/useLocations';
 import { useDeleteLocation } from '@/hooks/delete/useLocationMutations';
-import { useCreateLocation } from '@/hooks/post/useLocationMutations';
-import { useUpdateLocation } from '@/hooks/put/useLocationMutations';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, MapPin, Trash2, Pencil, Zap, AlertTriangle } from 'lucide-react';
+import { Plus, MapPin, Trash2, Pencil, Zap, AlertTriangle, Eye } from 'lucide-react';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Table } from '@/components/shared/Table';
 import { Location } from '@/types';
-import { LocationDialog } from '../components/LocationDialog';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import { cn } from '@/lib/utils';
 import {
@@ -22,28 +20,26 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { FRONTEND_ROUTES } from '@/constants/constants';
 
 export function LocationsContainer() {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const router = useRouter();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
-  const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create');
 
   const { data: locations, isLoading, error } = useLocations();
   const deleteLocation = useDeleteLocation();
-  const createLocation = useCreateLocation();
-  const updateLocation = useUpdateLocation();
 
   const handleCreate = () => {
-    setSelectedLocation(null);
-    setDialogMode('create');
-    setIsDialogOpen(true);
+    router.push(FRONTEND_ROUTES.LOCATIONS_NEW);
   };
 
   const handleEdit = (location: Location) => {
-    setSelectedLocation(location);
-    setDialogMode('edit');
-    setIsDialogOpen(true);
+    router.push(FRONTEND_ROUTES.LOCATIONS_EDIT(location.id));
+  };
+
+  const handleViewDetails = (location: Location) => {
+    router.push(FRONTEND_ROUTES.LOCATIONS_DETAILS(location.id));
   };
 
   const handleDelete = (location: Location) => {
@@ -51,20 +47,7 @@ export function LocationsContainer() {
     setIsDeleteModalOpen(true);
   };
 
-  const handleSubmit = (data: any) => {
-    if (dialogMode === 'create') {
-      createLocation.mutate(data, {
-        onSuccess: () => setIsDialogOpen(false),
-      });
-    } else if (selectedLocation) {
-      updateLocation.mutate(
-        { id: selectedLocation.id, data },
-        {
-          onSuccess: () => setIsDialogOpen(false),
-        }
-      );
-    }
-  };
+
 
   const columns: ColumnDef<Location>[] = useMemo(
     () => [
@@ -136,6 +119,14 @@ export function LocationsContainer() {
         header: 'Actions',
         cell: ({ row }) => (
           <div className="flex justify-start gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 hover:bg-muted"
+              onClick={() => handleViewDetails(row.original)}
+            >
+              <Eye className="h-4 w-4 text-muted-foreground" />
+            </Button>
             <Button
               variant="ghost"
               size="icon"
@@ -229,14 +220,7 @@ export function LocationsContainer() {
           />
         </motion.div>
 
-        <LocationDialog
-          isOpen={isDialogOpen}
-          onOpenChange={setIsDialogOpen}
-          mode={dialogMode}
-          initialData={selectedLocation || undefined}
-          onSubmit={handleSubmit}
-          isLoading={createLocation.isPending || updateLocation.isPending}
-        />
+
 
         {/* Delete Confirmation Modal */}
         <AnimatedModal

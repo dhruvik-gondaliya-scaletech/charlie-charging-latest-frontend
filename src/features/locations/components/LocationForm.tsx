@@ -132,10 +132,8 @@ export function LocationForm({
                         {mode === 'create' && (
                             <Button
                                 type="button"
-                                variant="ghost"
                                 size="sm"
                                 onClick={() => setUseManualEntry(!useManualEntry)}
-                                className="text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary/5 transition-all"
                             >
                                 {useManualEntry ? "Use Address Search" : "Manual Override"}
                             </Button>
