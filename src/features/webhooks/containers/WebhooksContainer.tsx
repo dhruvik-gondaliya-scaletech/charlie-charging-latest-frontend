@@ -111,9 +111,6 @@ export function WebhooksContainer() {
         header: 'Webhook Integration',
         cell: ({ row }) => (
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <WebhookIcon className="h-5 w-5 text-primary" />
-            </div>
             <div className="flex flex-col">
               <span className="font-bold text-foreground tracking-tight leading-none mb-1">
                 {row.getValue('name')}
@@ -238,7 +235,7 @@ export function WebhooksContainer() {
       },
       {
         id: 'actions',
-        header: '',
+        header: 'Actions',
         cell: ({ row }) => (
           <div className="flex items-center justify-end gap-1 px-2">
             <Tooltip>
@@ -331,7 +328,7 @@ export function WebhooksContainer() {
             </Tooltip>
           </div>
         ),
-        meta: { headerAlign: 'right' }
+        meta: { headerAlign: 'center' }
       },
     ],
     [handleDelete, handleToggleStatus]

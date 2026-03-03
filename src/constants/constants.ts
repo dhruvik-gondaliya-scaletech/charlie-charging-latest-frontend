@@ -52,7 +52,7 @@ export const API_CONFIG = {
             byId: (id: string) => `/tenants/${id}`,
             activate: (id: string) => `/tenants/${id}/activate`,
             deactivate: (id: string) => `/tenants/${id}/deactivate`,
-            regenerateSecret: (id: string) => `/tenants/${id}/regenerate-secret`,
+            regenerateSecret: (id: string) => `/tenants/${id}/regenerate-api-secret`,
         },
     }
 }
