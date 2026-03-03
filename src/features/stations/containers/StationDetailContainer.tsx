@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useStation } from '@/hooks/get/useStations';
 import { Badge } from '@/components/ui/badge';
@@ -11,12 +11,11 @@ import {
     Zap,
     Activity,
     ShieldCheck,
-    Settings,
     MapPin,
     Terminal,
     Cpu,
     History,
-    ChevronRight
+    Edit,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeInUp, staggerContainer } from '@/lib/motion';
@@ -136,21 +135,14 @@ export function StationDetailContainer() {
                 <div className="flex items-center gap-3">
                     <Button
                         variant="outline"
-                        onClick={() => setActiveTab('sessions')}
+                        onClick={() => router.push(FRONTEND_ROUTES.STATIONS_EDIT(id as string))}
                         className={cn(
                             "border-border/60 hover:bg-muted font-bold",
                             activeTab === 'sessions' && "bg-muted border-primary/40 shadow-sm"
                         )}
                     >
-                        <History className="h-4 w-4 mr-2" />
-                        Transaction History
-                    </Button>
-                    <Button
-                        onClick={() => setActiveTab('remote')}
-                        className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 font-bold"
-                    >
-                        <Settings className="h-4 w-4 mr-2" />
-                        Hardware Tools
+                        <Edit className="h-4 w-4 mr-2" />
+                        Configure Station
                     </Button>
                 </div>
             </motion.div>
