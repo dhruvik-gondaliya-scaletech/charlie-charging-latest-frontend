@@ -16,16 +16,15 @@ import {
   Calendar,
   Activity,
   ShieldAlert,
-  Search
 } from 'lucide-react';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Table } from '@/components/shared/Table';
 import { User } from '@/types';
 import { formatDate } from '@/lib/date';
-import { cn } from '@/lib/utils';
 import { UserInvitationModal } from '../components/UserInvitationModal';
 import { StatCard } from '../../dashboard/components/StatCard';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
 
 export function UsersContainer() {
   const { data: users, isLoading, error } = useUsers();
@@ -151,6 +150,7 @@ export function UsersContainer() {
             value={stats.total}
             icon={UsersIcon}
             color="text-primary"
+            bottomRightGlobe="bg-primary"
             description="Enrolled accounts in workspace"
           />
           <StatCard
@@ -159,6 +159,7 @@ export function UsersContainer() {
             secondary={{ value: stats.total - stats.active, label: 'Unverified' }}
             icon={CheckCircle2}
             color="text-emerald-500"
+            bottomRightGlobe="bg-emerald-500"
             description="Fully authenticated operators"
           />
           <StatCard
@@ -166,6 +167,7 @@ export function UsersContainer() {
             value={stats.pending}
             icon={Activity}
             color="text-amber-500"
+            bottomRightGlobe="bg-amber-500"
             description="Users waiting for activation"
           />
         </motion.div>
@@ -187,7 +189,7 @@ export function UsersContainer() {
                 Invite Operator
               </Button>
             }
-            pageSize={15}
+            pageSize={DEFAULT_PAGE_SIZE}
             maxHeight="700px"
             className="border-none shadow-none"
             emptyState={

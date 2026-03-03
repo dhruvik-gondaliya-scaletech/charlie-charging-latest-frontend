@@ -56,6 +56,7 @@ export function DashboardContainer() {
       },
       icon: Battery,
       color: 'text-emerald-500',
+      bottomRightGlobe: 'bg-emerald-500',
       description: 'Network-wide status',
     },
     {
@@ -63,6 +64,7 @@ export function DashboardContainer() {
       value: stats?.activeSessions ?? 0,
       icon: Activity,
       color: 'text-orange-500',
+      bottomRightGlobe: 'bg-orange-500',
       description: 'Currently charging',
     },
     {
@@ -70,6 +72,7 @@ export function DashboardContainer() {
       value: stats?.activeUsers ?? 0,
       icon: Users,
       color: 'text-purple-500',
+      bottomRightGlobe: 'bg-purple-500',
       description: 'Users today',
     },
     {
@@ -77,6 +80,7 @@ export function DashboardContainer() {
       value: `${stats?.energyDelivered ?? 0} kWh`,
       icon: Zap,
       color: 'text-blue-500',
+      bottomRightGlobe: 'bg-blue-500',
       description: 'Total output',
     },
   ];
@@ -135,6 +139,7 @@ export function DashboardContainer() {
                 secondary={(stat as any).secondary}
                 icon={stat.icon}
                 color={stat.color}
+                bottomRightGlobe={stat.bottomRightGlobe}
                 description={stat.description}
                 loading={statsLoading}
               />

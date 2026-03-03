@@ -20,7 +20,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { FRONTEND_ROUTES } from '@/constants/constants';
+import { DEFAULT_PAGE_SIZE, FRONTEND_ROUTES } from '@/constants/constants';
 
 export function LocationsContainer() {
   const router = useRouter();
@@ -194,7 +194,7 @@ export function LocationsContainer() {
                 Define New Location
               </Button>
             }
-            pageSize={25}
+            pageSize={DEFAULT_PAGE_SIZE || 25}
             maxHeight="650px"
             className="border-none shadow-none"
             emptyState={

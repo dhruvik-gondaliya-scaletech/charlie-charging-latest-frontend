@@ -29,6 +29,13 @@ export const API_CONFIG = {
             base: "/locations",
             byId: (id: string) => `/locations/${id}`,
         },
+        webhooks: {
+            base: "/webhooks",
+            byId: (id: string) => `/webhooks/${id}`,
+            secret: (id: string) => `/webhooks/${id}/secret`,
+            deliveries: "/webhooks/deliveries/all",
+            retry: (deliveryId: string) => `/webhooks/deliveries/${deliveryId}/retry`,
+        },
         sessions: {
             base: "/sessions",
             byId: (id: string) => `/sessions/${id}`,
@@ -47,13 +54,6 @@ export const API_CONFIG = {
             deactivate: (id: string) => `/tenants/${id}/deactivate`,
             regenerateSecret: (id: string) => `/tenants/${id}/regenerate-secret`,
         },
-        webhooks: {
-            base: "/webhooks",
-            byId: (id: string) => `/webhooks/${id}`,
-            secret: (id: string) => `/webhooks/${id}/secret`,
-            deliveries: "/webhooks/deliveries",
-            retry: (deliveryId: string) => `/webhooks/deliveries/${deliveryId}/retry`,
-        },
     }
 }
 
@@ -70,6 +70,7 @@ export const FRONTEND_ROUTES = {
     SESSIONS: "/sessions",
     TENANTS: "/tenants",
     WEBHOOKS: "/webhooks",
+    WEBHOOKS_LOGS: (id: string) => `/webhooks/${id}/logs`,
     REGISTER: "/register",
     LOGIN: "/login",
     PROFILE: "/profile",
@@ -98,3 +99,5 @@ export const CONNECTOR_OPTIONS = [
     { type: 'Tesla', label: 'Tesla', description: 'Tesla proprietary' },
     { type: 'GB_T', label: 'GB/T', description: 'Chinese standard' },
 ];
+
+export const DEFAULT_PAGE_SIZE = 10;

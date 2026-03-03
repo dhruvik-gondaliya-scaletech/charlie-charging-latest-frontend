@@ -13,6 +13,7 @@ interface StatCardProps {
   value: string | number;
   icon: LucideIcon;
   color: string;
+  bottomRightGlobe?: string;
   description?: string;
   secondary?: SecondaryStat;
   loading?: boolean;
@@ -24,6 +25,7 @@ export function StatCard({
   value,
   icon: Icon,
   color,
+  bottomRightGlobe,
   description,
   secondary,
   loading = false,
@@ -126,7 +128,7 @@ export function StatCard({
 
         <div className={cn(
           "absolute -right-6 -bottom-6 h-28 w-28 rounded-full blur-3xl pointer-events-none opacity-5 transition-opacity group-hover:opacity-10",
-          color.replace('text-', 'bg-')
+          bottomRightGlobe
         )} />
       </Card>
     </motion.div>

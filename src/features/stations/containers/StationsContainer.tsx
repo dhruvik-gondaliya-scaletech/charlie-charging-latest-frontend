@@ -20,7 +20,7 @@ import { Station, ChargingStatus } from '@/types';
 import { formatDate } from '@/lib/date';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import { cn } from '@/lib/utils';
-import { FRONTEND_ROUTES } from '@/constants/constants';
+import { DEFAULT_PAGE_SIZE, FRONTEND_ROUTES } from '@/constants/constants';
 
 export function StationsContainer() {
   const router = useRouter();
@@ -231,7 +231,7 @@ export function StationsContainer() {
               Register Station
             </Button>
           }
-          pageSize={25}
+          pageSize={DEFAULT_PAGE_SIZE || 25}
           maxHeight="650px"
           className="border-none shadow-none"
           emptyState={

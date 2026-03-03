@@ -6,12 +6,13 @@ export interface CreateWebhookData {
   name: string;
   url: string;
   events: string[];
+  isActive: boolean;
   headers?: Record<string, string>;
   maxRetries?: number;
   timeoutSeconds?: number;
 }
 
-export interface UpdateWebhookData extends Partial<CreateWebhookData> {}
+export type UpdateWebhookData = Partial<CreateWebhookData>;
 
 export interface GetWebhookDeliveriesParams {
   webhookId?: string;
@@ -36,7 +37,7 @@ class WebhookService {
   }
 
   async update(id: string, data: UpdateWebhookData) {
-    return httpService.put<WebhookConfiguration>(API_CONFIG.endpoints.webhooks.byId(id), data);
+    return httpService.patch<WebhookConfiguration>(API_CONFIG.endpoints.webhooks.byId(id), data);
   }
 
   async delete(id: string) {
@@ -44,7 +45,7 @@ class WebhookService {
   }
 
   async getSecret(id: string) {
-    return httpService.get<{ secret: string }>(API_CONFIG.endpoints.webhooks.secret(id));
+    return httpService.get<{ secretKey: string }>(API_CONFIG.endpoints.webhooks.secret(id));
   }
 
   async getDeliveries(params?: GetWebhookDeliveriesParams) {

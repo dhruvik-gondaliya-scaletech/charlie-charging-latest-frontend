@@ -232,7 +232,7 @@ export interface BulkSetConfigurationResponse {
 export interface WebhookDelivery {
   id: string;
   eventType: string;
-  payload: Record<string, any>;
+  payload: Record<string, unknown>;
   status: WebhookDeliveryStatus;
   responseStatus?: number;
   responseBody?: string | null;
