@@ -122,9 +122,6 @@ export function TenantsContainer() {
           const name = row.getValue('name') as string;
           return (
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center font-bold text-primary group-hover:scale-110 transition-transform duration-300">
-                {name?.[0]?.toUpperCase()}
-              </div>
               <div className="flex flex-col">
                 <span className="font-bold text-foreground tracking-tight leading-none mb-1">
                   {name}
