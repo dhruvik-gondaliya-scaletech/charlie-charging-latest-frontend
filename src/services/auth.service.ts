@@ -52,7 +52,7 @@ class AuthService {
   }
 
   async acceptInvitation(token: string, data: AcceptInvitationData) {
-    return httpService.post(API_CONFIG.endpoints.auth.acceptInvitation, { token, ...data });
+    return httpService.post(`${API_CONFIG.endpoints.auth.acceptInvitation}?token=${token}`, data);
   }
 
   async logout() {
