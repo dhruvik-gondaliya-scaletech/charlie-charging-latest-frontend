@@ -152,7 +152,7 @@ export interface User {
   firstName: string;
   lastName: string;
   role: string;
-  phoneNumber?: string;
+  phoneNumber?: string | null;
   isEmailVerified: boolean;
   isActive: boolean;
   createdAt: string;
