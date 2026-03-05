@@ -119,7 +119,7 @@ export function DashboardContainer() {
               size="sm"
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="bg-card/40 backdrop-blur-md border-border/40 hover:bg-muted/50 transition-all shadow-sm ring-1 ring-border/5"
+              className="bg-card/40 backdrop-blur-md border-border/40 hover:bg-muted/50 transition-all ring-1 ring-border/5"
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
               {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
@@ -165,7 +165,7 @@ export function DashboardContainer() {
                   {quickActions.map((action, idx) => (
                     <Link key={idx} href={action.href} className="group">
                       <div className="flex flex-col items-center justify-center p-5 rounded-2xl border border-border/10 bg-muted/20 hover:bg-muted/40 transition-all hover:scale-[1.03] hover:shadow-lg h-full group">
-                        <div className={`p-3 rounded-xl bg-background/50 mb-3 group-hover:scale-110 transition-transform shadow-sm ring-1 ring-border/5`}>
+                        <div className={`p-3 rounded-xl bg-background/50 mb-3 group-hover:scale-110 transition-transform ring-1 ring-border/5`}>
                           <action.icon className={cn("h-5 w-5", action.color.split(' ').pop())} />
                         </div>
                         <span className="text-[10px] font-bold text-center tracking-widest uppercase opacity-60 group-hover:opacity-100 transition-opacity">
@@ -227,7 +227,7 @@ export function DashboardContainer() {
           <motion.div variants={staggerItem} className="w-full space-y-4">
             <div className="flex items-center justify-between px-2">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-primary/10 border border-primary/20 shadow-sm">
+                <div className="p-2 rounded-xl bg-primary/10 border border-primary/20">
                   <Activity className="h-5 w-5 text-primary" />
                 </div>
                 <div>
@@ -235,19 +235,19 @@ export function DashboardContainer() {
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest opacity-60">Real-time event stream</p>
                 </div>
               </div>
-              <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold bg-muted/30 px-4 py-2 rounded-full border border-border/40 backdrop-blur-md shadow-sm">
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold bg-muted/30 px-4 py-2 rounded-full border border-border/40 backdrop-blur-md">
                 Last 10 Events
               </div>
             </div>
 
-            <div className="relative overflow-hidden rounded-3xl border border-border/40 bg-card/20 backdrop-blur-xl shadow-2xl transition-all hover:bg-card/30">
+            <div className="relative overflow-hidden rounded-3xl border border-border/40 bg-card/20 backdrop-blur-xl transition-all hover:bg-card/30">
               <div className="p-0">
                 {activitiesLoading ? (
                   <div className="p-8"><ActivityListSkeleton /></div>
                 ) : (
                   <ActivityList activities={activities || []} isLoading={activitiesLoading} />
                 )}
-                {(!activitiesLoading && (!activities || activities.length === 0)) && <div className="p-8 text-center"><EmptyActivity /></div>}
+                {/* {(!activitiesLoading && (!activities || activities.length === 0)) && <div className="p-8 text-center"><EmptyActivity /></div>} */}
               </div>
             </div>
           </motion.div>

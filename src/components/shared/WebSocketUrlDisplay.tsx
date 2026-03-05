@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Copy, Check, Terminal } from 'lucide-react';
 import { WEBSOCKET_CONFIG } from '@/constants/constants';
 import { motion, AnimatePresence } from 'framer-motion';

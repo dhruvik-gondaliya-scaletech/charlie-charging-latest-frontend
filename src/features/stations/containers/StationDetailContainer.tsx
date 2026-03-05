@@ -16,6 +16,9 @@ import {
     Cpu,
     History,
     Edit,
+    AlertCircle,
+    LogOut,
+    Loader2,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeInUp, staggerContainer } from '@/lib/motion';
@@ -24,18 +27,73 @@ import { formatDate } from '@/lib/date';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { RemoteOperations } from '../components/RemoteOperations';
 import { ConfigurationManager } from '../components/ConfigurationManager';
 import { StatCard } from '../../dashboard/components/StatCard';
 import { StationSessions } from '../components/StationSessions';
 import { StationLogs } from '../components/StationLogs';
+import { ConnectorCard } from '../components/ConnectorCard';
+import { useRemoteStart, useRemoteStop } from '@/hooks/delete/useStationMutations';
+import { useStationSessions } from '@/hooks/get/useStations';
+import { useAuth } from '@/contexts/AuthContext';
+import { AnimatedModal } from '@/components/shared/AnimatedModal';
+import WebSocketUrlDisplay from '@/components/shared/WebSocketUrlDisplay';
+import { toast } from 'sonner';
 import { FRONTEND_ROUTES } from '@/constants/constants';
+import { SessionStatus } from '@/types';
 
 export function StationDetailContainer() {
     const { id } = useParams();
     const router = useRouter();
+    const { user, tenant } = useAuth();
     const { data: station, isLoading, error } = useStation(id as string);
+    const { data: sessions } = useStationSessions(id as string);
     const [activeTab, setActiveTab] = useState('overview');
+
+    const [isStopModalOpen, setIsStopModalOpen] = useState(false);
+    const [selectedConnectorId, setSelectedConnectorId] = useState<number | null>(null);
+    const [stopTransactionId, setStopTransactionId] = useState<string>('');
+
+    const remoteStart = useRemoteStart();
+    const remoteStop = useRemoteStop();
+
+    const handleStartConnector = (connectorId: number) => {
+        remoteStart.mutate({
+            id: station?.id || '',
+            connectorId,
+            idTag: 'ADMIN_TAG',
+            userId: user?.id || 'admin-user',
+        });
+    };
+
+    const handleStopConnector = (connectorId: number) => {
+        // Find active session for this connector
+        const activeSession = sessions?.find(s =>
+            s.connectorId === connectorId &&
+            (s.status === 'in-progress' || s.status === 'IN_PROGRESS' || s.status === SessionStatus.IN_PROGRESS)
+        );
+
+        if (!activeSession) {
+            toast.error(`No active charging session found on Connector #${connectorId}`);
+            return;
+        }
+
+        setSelectedConnectorId(connectorId);
+        setStopTransactionId(activeSession.transactionId.toString());
+        setIsStopModalOpen(true);
+    };
+
+    const confirmStop = () => {
+        if (!stopTransactionId) return;
+
+        remoteStop.mutate({
+            id: station?.id || '',
+            transactionId: parseInt(stopTransactionId),
+        }, {
+            onSuccess: () => {
+                setIsStopModalOpen(false);
+            }
+        });
+    };
 
     if (isLoading) {
         return (
@@ -79,7 +137,7 @@ export function StationDetailContainer() {
                         <ShieldCheck className="h-10 w-10" />
                     </div>
                     <h2 className="text-2xl font-bold">Station Not Found</h2>
-                    <p className="text-muted-foreground">The requested charging station could not be found or you don't have permission to access it.</p>
+                    <p className="text-muted-foreground">The requested charging station could not be found or you don&apos;t have permission to access it.</p>
                     <Button onClick={() => router.push(FRONTEND_ROUTES.STATIONS)} variant="outline" className="mt-4">
                         <ArrowLeft className="mr-2 h-4 w-4" /> Back to Stations
                     </Button>
@@ -172,7 +230,6 @@ export function StationDetailContainer() {
                     <TabsList className="bg-muted/40 p-1 border border-border/40 rounded-2xl backdrop-blur-md overflow-x-auto h-auto flex-wrap sm:flex-nowrap">
                         <TabsTrigger value="overview" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Overview</TabsTrigger>
                         <TabsTrigger value="connectors" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Connectors</TabsTrigger>
-                        <TabsTrigger value="remote" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Remote Control</TabsTrigger>
                         <TabsTrigger value="sessions" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Sessions</TabsTrigger>
                         <TabsTrigger value="config" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Config</TabsTrigger>
                         <TabsTrigger value="logs" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Live Logs</TabsTrigger>
@@ -194,7 +251,7 @@ export function StationDetailContainer() {
                                             </div>
                                         </div>
                                     </CardHeader>
-                                    <CardContent>
+                                    <CardContent className="space-y-8">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6 p-2">
                                             {[
                                                 { label: 'Manufacturer', value: station.vendor, icon: ShieldCheck },
@@ -219,36 +276,57 @@ export function StationDetailContainer() {
                                                 </div>
                                             ))}
                                         </div>
+
+                                        <div className="pt-8 border-t border-border/10 space-y-4">
+                                            <div className="flex items-center gap-2 px-2">
+                                                <History className="h-4 w-4 text-primary shadow-[0_0_10px_rgba(var(--primary),0.3)]" />
+                                                <h4 className="text-sm font-black uppercase tracking-widest">Live System Timeline</h4>
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-2">
+                                                {[
+                                                    { type: 'Status', msg: 'Heartbeat received', time: 'Just now' },
+                                                    { type: 'Status', msg: 'Status verified: Available', time: '2 mins ago' },
+                                                    { type: 'Update', msg: 'Configuration synced', time: '1 hour ago' },
+                                                ].map((event, i) => (
+                                                    <div key={i} className="flex gap-4 group">
+                                                        <div className="flex flex-col items-center">
+                                                            <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
+                                                            <div className="w-[1px] flex-1 bg-border/40 my-1 group-last:hidden" />
+                                                        </div>
+                                                        <div className="flex-1 -mt-1">
+                                                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{event.time}</p>
+                                                            <p className="text-sm font-bold tracking-tight">{event.msg}</p>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
                                     </CardContent>
                                 </Card>
                             </div>
 
-                            <Card className="border-primary/20 bg-primary/5 backdrop-blur-sm rounded-3xl overflow-hidden border-2 h-full">
-                                <CardHeader>
-                                    <CardTitle className="text-xl font-black text-primary flex items-center gap-2">
-                                        <History className="h-5 w-5" />
-                                        Live Timeline
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    {[
-                                        { type: 'Status', msg: 'Heartbeat received', time: 'Just now' },
-                                        { type: 'Status', msg: 'Status verified: Available', time: '2 mins ago' },
-                                        { type: 'Update', msg: 'Configuration synced', time: '1 hour ago' },
-                                    ].map((event, i) => (
-                                        <div key={i} className="flex gap-4 group">
-                                            <div className="flex flex-col items-center">
-                                                <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
-                                                <div className="w-[1px] flex-1 bg-border/40 my-1 group-last:hidden" />
+                            <div className="lg:col-span-1 space-y-6">
+                                {/* Connection URL */}
+                                <Card className="border-border/40 bg-card/20 backdrop-blur-sm rounded-3xl overflow-hidden border shadow-sm">
+                                    <CardHeader className="pb-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className="p-2 rounded-lg bg-violet-500/10 text-violet-500">
+                                                <Terminal className="h-4 w-4" />
                                             </div>
-                                            <div className="flex-1 -mt-1 pb-4">
-                                                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">{event.time}</p>
-                                                <p className="text-sm font-bold">{event.msg}</p>
+                                            <div>
+                                                <CardTitle className="text-xl font-black">CSMS Connection</CardTitle>
+                                                <CardDescription>Remote OCPP configuration endpoint</CardDescription>
                                             </div>
                                         </div>
-                                    ))}
-                                </CardContent>
-                            </Card>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <WebSocketUrlDisplay
+                                            chargePointId={station.chargePointId}
+                                            tenantId={tenant?.id || ''}
+                                        />
+                                    </CardContent>
+                                </Card>
+                            </div>
                         </div>
                     </TabsContent>
 
@@ -266,57 +344,15 @@ export function StationDetailContainer() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {station.connectors?.map((connector) => (
-                                    <Card key={connector.id} className="border-border/40 bg-card/10 backdrop-blur-md rounded-3xl border hover:bg-card/20 transition-all group overflow-hidden">
-                                        <CardContent className="p-6 flex items-center justify-between gap-4">
-                                            <div className="flex items-center gap-4">
-                                                <div className={cn(
-                                                    "p-4 rounded-2xl relative overflow-hidden",
-                                                    connector.status === ChargingStatus.AVAILABLE ? "bg-emerald-500/10 text-emerald-500" :
-                                                        connector.status === ChargingStatus.CHARGING ? "bg-blue-500/10 text-blue-500" :
-                                                            "bg-muted/40 text-muted-foreground"
-                                                )}>
-                                                    <div className="relative z-10 flex flex-col items-center">
-                                                        <span className="text-[10px] font-black leading-none mb-1">ID</span>
-                                                        <span className="text-2xl font-black leading-none">#{connector.connectorId}</span>
-                                                    </div>
-                                                    <div className="absolute top-0 right-0 p-1 opacity-20">
-                                                        <Zap className="h-10 w-10 -m-2" />
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <p className="text-lg font-black tracking-tight">{connector.type}</p>
-                                                        <Badge className={cn(
-                                                            "h-1.5 w-1.5 p-0 rounded-full animate-pulse",
-                                                            connector.status === ChargingStatus.AVAILABLE ? "bg-emerald-500 shadow-[0_0_8px_#10b981]" :
-                                                                connector.status === ChargingStatus.CHARGING ? "bg-blue-500 shadow-[0_0_8px_#3b82f6]" :
-                                                                    "bg-muted-foreground"
-                                                        )} />
-                                                    </div>
-                                                    <div className="flex items-center gap-3">
-                                                        <span className={cn(
-                                                            "text-[10px] font-black uppercase tracking-widest",
-                                                            connector.status === ChargingStatus.AVAILABLE ? "text-emerald-500" :
-                                                                connector.status === ChargingStatus.CHARGING ? "text-blue-500" :
-                                                                    "text-muted-foreground"
-                                                        )}>
-                                                            {connector.status}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Max Power</p>
-                                                <p className="text-xl font-black tracking-tighter">{connector.maxPower} kW</p>
-                                            </div>
-                                        </CardContent>
-                                        <div className={cn(
-                                            "h-1.5 w-full mt-auto opacity-40",
-                                            connector.status === ChargingStatus.AVAILABLE ? "bg-emerald-500" :
-                                                connector.status === ChargingStatus.CHARGING ? "bg-blue-500" :
-                                                    "bg-muted-foreground"
-                                        )} />
-                                    </Card>
+                                    <ConnectorCard
+                                        key={connector.id}
+                                        connector={connector}
+                                        onStart={handleStartConnector}
+                                        onStop={handleStopConnector}
+                                        isStarting={remoteStart.isPending}
+                                        isStopping={remoteStop.isPending}
+                                        disabled={station.status === ChargingStatus.OFFLINE}
+                                    />
                                 ))}
 
                                 {(!station.connectors || station.connectors.length === 0) && (
@@ -324,24 +360,12 @@ export function StationDetailContainer() {
                                         <Zap className="h-12 w-12 text-muted-foreground/40" />
                                         <div>
                                             <p className="text-xl font-bold text-muted-foreground">No connectors found</p>
-                                            <p className="text-sm text-muted-foreground opacity-60">This station hasn't reported any connectors yet.</p>
+                                            <p className="text-sm text-muted-foreground opacity-60">This station hasn&apos;t reported any connectors yet.</p>
                                         </div>
                                     </div>
                                 )}
                             </div>
                         </div>
-                    </TabsContent>
-
-                    <TabsContent value="remote">
-                        <Card className="border-border/40 bg-card/20 backdrop-blur-sm rounded-3xl overflow-hidden border">
-                            <CardHeader>
-                                <CardTitle className="text-xl font-black">Remote Operations</CardTitle>
-                                <CardDescription>Trigger actions directly from the central management system</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <RemoteOperations station={station} />
-                            </CardContent>
-                        </Card>
                     </TabsContent>
 
                     <TabsContent value="sessions">
@@ -386,6 +410,65 @@ export function StationDetailContainer() {
                     </TabsContent>
                 </Tabs>
             </motion.div>
+
+            <AnimatedModal
+                isOpen={isStopModalOpen}
+                onClose={() => setIsStopModalOpen(false)}
+                title="Stop Charging Session"
+                description={`Stop the active charging session on Connector #${selectedConnectorId}.`}
+                size="md"
+                footer={
+                    <div className="flex gap-3 justify-end w-full">
+                        <Button variant="outline" onClick={() => setIsStopModalOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={confirmStop}
+                            disabled={remoteStop.isPending}
+                            className="font-bold"
+                        >
+                            {remoteStop.isPending ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    Stopping...
+                                </>
+                            ) : (
+                                'Stop Transaction'
+                            )}
+                        </Button>
+                    </div>
+                }
+            >
+                <div className="space-y-4">
+                    <div className="flex flex-col items-center justify-center py-6 text-center">
+                        <div className="h-20 w-20 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
+                            <LogOut className="h-10 w-10 text-destructive" />
+                        </div>
+                        <p className="text-muted-foreground">
+                            You are about to stop the charging session on <strong>Connector #{selectedConnectorId}</strong>.
+                        </p>
+                    </div>
+
+                    <div className="flex items-center gap-3 p-4 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-600 text-sm font-medium">
+                        <AlertCircle className="h-5 w-5 shrink-0" />
+                        <p>This will send a remote stop command to the station for the active transaction.</p>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-muted/30 border border-border/40 space-y-3">
+                        <div className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground font-medium">Transaction ID</span>
+                            <code className="px-2 py-1 rounded bg-background border font-mono text-sm font-bold text-primary">
+                                {stopTransactionId}
+                            </code>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground font-medium">Connector</span>
+                            <span className="font-bold">Port #{selectedConnectorId}</span>
+                        </div>
+                    </div>
+                </div>
+            </AnimatedModal>
         </motion.div>
     );
 }

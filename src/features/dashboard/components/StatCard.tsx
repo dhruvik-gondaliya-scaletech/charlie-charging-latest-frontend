@@ -43,7 +43,7 @@ export function StatCard({
       transition={{ duration: 0.2 }}
       className={cn("h-full", className)}
     >
-      <Card className="relative h-full overflow-hidden border-border/40 transition-all hover:bg-card/80 dark:hover:bg-white/10 hover:shadow-2xl hover:shadow-primary/10 group bg-card/40 backdrop-blur-xl">
+      <Card className="relative h-full overflow-hidden border-border/40 transition-all hover:bg-card/80 dark:hover:bg-white/10 group bg-card/40 backdrop-blur-xl">
         <div className={cn(
           "absolute top-0 left-0 h-[2px] w-full bg-linear-to-r from-transparent via-current to-transparent opacity-20 group-hover:opacity-40 transition-opacity",
           color
@@ -64,7 +64,7 @@ export function StatCard({
               </div>
 
               <div className={cn(
-                "flex h-8 w-8 items-center justify-center rounded-lg border border-border/10 shadow-sm transition-all group-hover:scale-110 bg-muted/20"
+                "flex h-8 w-8 items-center justify-center rounded-lg border border-border/10 transition-all group-hover:scale-110 bg-muted/20"
               )}>
                 <Icon className={cn("h-4 w-4", color)} />
               </div>
@@ -114,7 +114,7 @@ export function StatCard({
                       initial={{ width: 0 }}
                       animate={{ width: `${progressPercent}%` }}
                       transition={{ duration: 1, ease: "easeOut" }}
-                      className={cn("h-full bg-linear-to-r from-primary/80 to-primary/100 shadow-[0_0_10px_rgba(var(--primary),0.3)] relative")}
+                      className={cn("h-full bg-linear-to-r from-primary/80 to-primary/100 relative")}
                     >
                       <div className="absolute inset-0 bg-linear-to-r from-white/20 to-transparent animate-shimmer" />
                     </motion.div>
