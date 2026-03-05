@@ -208,10 +208,10 @@ export function StationDetailContainer() {
             {/* Stats Grid */}
             <motion.div variants={fadeInUp} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
-                    { label: 'Voltage Output', value: '400 V', icon: Zap, color: 'text-amber-500', description: 'Real-time voltage reporting' },
-                    { label: 'Active Power', value: `${station.maxPower} kW`, icon: Activity, color: 'text-primary', description: 'Current power throughput' },
-                    { label: 'Fleet Status', value: station.isActive ? 'Active' : 'Inactive', icon: ShieldCheck, color: 'text-emerald-500', description: 'System availability' },
-                    { label: 'Connectors', value: String(station.connectors?.length || station.connectorCount || 0), icon: Cpu, color: 'text-blue-500', description: 'Available charging ports' },
+                    { label: 'Voltage Output', value: '400 V', icon: Zap, color: 'text-amber-500', bottomRightGlobe: "bg-amber-500", description: 'Real-time voltage reporting' },
+                    { label: 'Active Power', value: `${station.maxPower} kW`, icon: Activity, color: 'text-primary', bottomRightGlobe: "bg-primary", description: 'Current power throughput' },
+                    { label: 'Fleet Status', value: station.isActive ? 'Active' : 'Inactive', icon: ShieldCheck, color: 'text-emerald-500', bottomRightGlobe: "bg-emerald-500", description: 'System availability' },
+                    { label: 'Connectors', value: String(station.connectors?.length || station.connectorCount || 0), icon: Cpu, color: 'text-blue-500', bottomRightGlobe: "bg-blue-500", description: 'Available charging ports' },
                 ].map((stat, i) => (
                     <StatCard
                         key={i}
@@ -220,6 +220,7 @@ export function StationDetailContainer() {
                         icon={stat.icon}
                         color={stat.color}
                         description={stat.description}
+                        bottomRightGlobe={stat.bottomRightGlobe}
                     />
                 ))}
             </motion.div>

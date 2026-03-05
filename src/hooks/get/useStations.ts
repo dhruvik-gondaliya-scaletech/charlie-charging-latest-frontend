@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import { stationService, GetStationsParams, GetOcppLogsParams } from '@/services/station.service';
 
 export const useStations = (params?: GetStationsParams) => {
@@ -33,6 +33,20 @@ export const useOcppLogs = (stationId: string, params?: GetOcppLogsParams) => {
     queryFn: () => stationService.getOcppLogs(stationId, params),
     staleTime: 5000,
     refetchInterval: 10000,
+  });
+};
+
+export const useInfiniteOcppLogs = (stationId: string, params?: GetOcppLogsParams) => {
+  return useInfiniteQuery({
+    queryKey: ['station-logs-infinite', stationId, params],
+    queryFn: ({ pageParam = 0 }) =>
+      stationService.getOcppLogs(stationId, { ...params, offset: pageParam as number }),
+    getNextPageParam: (lastPage, allPages) => {
+      const nextOffset = lastPage.offset + lastPage.limit;
+      return nextOffset < lastPage.total ? nextOffset : undefined;
+    },
+    initialPageParam: 0,
+    staleTime: 5000,
   });
 };
 

@@ -131,6 +131,7 @@ export function LocationDetailContainer() {
                     value={stations?.length || 0}
                     icon={Zap}
                     color="text-primary"
+                    bottomRightGlobe="bg-primary"
                     description="Equipment connected to site"
                 />
                 <StatCard
@@ -138,6 +139,7 @@ export function LocationDetailContainer() {
                     value={location.isActive ? '100%' : '0%'}
                     icon={Activity}
                     color="text-emerald-500"
+                    bottomRightGlobe="bg-emerald-500"
                     description="Network reachability status"
                 />
                 <StatCard
@@ -145,6 +147,7 @@ export function LocationDetailContainer() {
                     value={location.isActive ? 'Active' : 'Offline'}
                     icon={ShieldCheck}
                     color={location.isActive ? "text-blue-500" : "text-destructive"}
+                    bottomRightGlobe={location.isActive ? "bg-blue-500" : "bg-destructive"}
                     description="Global system state"
                 />
             </motion.div>

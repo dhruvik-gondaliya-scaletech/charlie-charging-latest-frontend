@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useOcppLogs } from '@/hooks/get/useStations';
+import React, { useState, useEffect } from 'react';
+import { useInfiniteOcppLogs } from '@/hooks/get/useStations';
+import { useInView } from 'react-intersection-observer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/lib/date';
@@ -26,11 +27,28 @@ interface StationLogsProps {
 
 export function StationLogs({ stationId }: StationLogsProps) {
     const [searchTerm, setSearchTerm] = useState('');
-    const { data: logData, isLoading, isError, refetch } = useOcppLogs(stationId);
+    const {
+        data,
+        isLoading,
+        isError,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        refetch
+    } = useInfiniteOcppLogs(stationId, { limit: 15 });
+
+    const { ref, inView } = useInView();
+
+    useEffect(() => {
+        if (inView && hasNextPage) {
+            fetchNextPage();
+        }
+    }, [inView, hasNextPage, fetchNextPage]);
+
     const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
 
-    // Backend returns OcppLogResponse
-    const logs = logData?.logs || [];
+    // Flatten pages into a single logs array
+    const logs = data?.pages.flatMap(page => page.logs) || [];
 
     const filteredLogs = logs.filter((log: OcppLog) =>
         log.messageType.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -135,6 +153,21 @@ export function StationLogs({ stationId }: StationLogsProps) {
                         <p className="text-muted-foreground font-medium">No communication logs found for this filter.</p>
                     </div>
                 )}
+
+                {/* Observer element for infinite scroll */}
+                <div ref={ref} className="h-10 flex items-center justify-center">
+                    {isFetchingNextPage && (
+                        <div className="flex items-center gap-2 text-primary font-bold animate-pulse">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span className="text-[10px] uppercase tracking-widest">Loading more machine events...</span>
+                        </div>
+                    )}
+                    {!hasNextPage && logs.length > 0 && (
+                        <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest opacity-40">
+                            End of diagnostic stream
+                        </span>
+                    )}
+                </div>
             </div>
         </div>
     );
