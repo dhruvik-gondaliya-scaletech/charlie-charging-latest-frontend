@@ -124,7 +124,7 @@ export function UserProfileContainer() {
                     />
 
                     {/* Meta Info Card */}
-                    <div className="bg-card/20 backdrop-blur-sm border border-border/40 rounded-3xl p-6 space-y-6 shadow-sm border">
+                    {/* <div className="bg-card/20 backdrop-blur-sm border border-border/40 rounded-3xl p-6 space-y-6 shadow-sm border">
                         <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Account Protocol</h3>
                         <div className="space-y-4">
                             <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/5">
@@ -149,7 +149,7 @@ export function UserProfileContainer() {
                                 <span className="text-sm font-bold">{formatDate(user.createdAt || '')}</span>
                             </div>
                         </div>
-                    </div>
+                    </div> */}
                 </motion.div>
             </div>
         </motion.div>

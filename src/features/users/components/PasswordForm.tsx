@@ -43,7 +43,7 @@ export function PasswordForm({ onSubmit, isLoading }: PasswordFormProps) {
                     </div>
                     <div>
                         <CardTitle className="text-xl font-black">Security Protocols</CardTitle>
-                        <CardDescription className="font-medium text-xs uppercase tracking-widest opacity-60">Update your access credentials to maintain account integrity</CardDescription>
+                        <CardDescription className="font-medium text-xs uppercase tracking-widest opacity-60">Update your access credentials</CardDescription>
                     </div>
                 </div>
             </CardHeader>
