@@ -97,9 +97,9 @@ export function StationLogs({ stationId }: StationLogsProps) {
 
             <div className="space-y-3">
                 {filteredLogs.length > 0 ? (
-                    filteredLogs.map((log) => (
+                    filteredLogs.map((log, idx) => (
                         <div
-                            key={log.id}
+                            key={`${log.id}-${idx}`}
                             className={cn(
                                 "group border border-border/60 rounded-2xl overflow-hidden transition-all",
                                 expandedLogId === log.id ? "bg-card shadow-md border-primary/20" : "bg-card/40 hover:bg-card/60"

@@ -40,14 +40,118 @@ import WebSocketUrlDisplay from '@/components/shared/WebSocketUrlDisplay';
 import { toast } from 'sonner';
 import { FRONTEND_ROUTES } from '@/constants/constants';
 import { SessionStatus } from '@/types';
+import { useWebSocketConnection, useRealTimeEvent } from '@/hooks/useRealTime';
+import {
+    StationStatusChangeEvent,
+    ConnectorStatusChangeEvent,
+    MeterValuesEvent,
+    TransactionEvent
+} from '@/lib/realtime.service';
+import {
+    invalidateQueriesDebounced,
+    updateStationDetailCache
+} from '@/lib/query-utils';
+import { useQueryClient } from '@tanstack/react-query';
 
 export function StationDetailContainer() {
     const { id } = useParams();
     const router = useRouter();
+    const queryClient = useQueryClient();
     const { user, tenant } = useAuth();
     const { data: station, isLoading, error } = useStation(id as string);
     const { data: sessions } = useStationSessions(id as string);
     const [activeTab, setActiveTab] = useState('overview');
+
+    // Establish WebSocket connection
+    useWebSocketConnection();
+
+    // Listen for station status changes
+    useRealTimeEvent<StationStatusChangeEvent>(
+        'station-status-change',
+        (data) => {
+            if (data.stationId === id) {
+                console.log(`Station ${data.stationId} status updated to ${data.status}`);
+
+                // 1. Optimistically update the detailed station status
+                updateStationDetailCache(queryClient, id as string, { status: data.status });
+
+                // 2. Debounce the background refresh
+                invalidateQueriesDebounced(queryClient, ['station', id]);
+            }
+        },
+        [id]
+    );
+
+    // Listen for connector status changes
+    useRealTimeEvent<ConnectorStatusChangeEvent>(
+        'connector-status-change',
+        (data) => {
+            if (data.stationId === id) {
+                console.log(`Connector ${data.connectorId} on station ${data.stationId} status updated to ${data.status}`);
+
+                // 1. Optimistically update the specific connector status in the station detail cache
+                queryClient.setQueryData(['station', id], (oldData: any) => {
+                    if (!oldData || !oldData.connectors) return oldData;
+
+                    const updatedConnectors = oldData.connectors.map((c: any) =>
+                        c.id === data.connectorId || c.connectorId === data.connectorId
+                            ? { ...c, status: data.status }
+                            : c
+                    );
+
+                    return { ...oldData, connectors: updatedConnectors };
+                });
+
+                // 2. Debounce the background refresh for the station and sessions
+                invalidateQueriesDebounced(queryClient, ['station', id]);
+                invalidateQueriesDebounced(queryClient, ['station-sessions', id]);
+            }
+        },
+        [id]
+    );
+
+    // Listen for meter values
+    useRealTimeEvent<MeterValuesEvent>(
+        'meter-values',
+        (data) => {
+            if (data.stationId === id) {
+                console.log(`Received meter values for station ${data.stationId}`);
+                // Debounce log and session updates as meter values can be very frequent
+                invalidateQueriesDebounced(queryClient, ['station-logs', id]);
+                invalidateQueriesDebounced(queryClient, ['station-sessions', id]);
+            }
+        },
+        [id]
+    );
+
+    // Listen for transaction events
+    useRealTimeEvent<TransactionEvent>(
+        'transaction-start',
+        (data) => {
+            if (data.stationId === id) {
+                console.log(`Transaction started on station ${data.stationId}, connector ${data.connectorId}`);
+                invalidateQueriesDebounced(queryClient, ['station-sessions', id]);
+                invalidateQueriesDebounced(queryClient, ['station-logs', id]);
+                // Also refresh station to get updated connector status
+                invalidateQueriesDebounced(queryClient, ['station', id]);
+            }
+        },
+        [id]
+    );
+
+    useRealTimeEvent<TransactionEvent>(
+        'transaction-stop',
+        (data) => {
+            if (data.stationId === id) {
+                console.log(`Transaction stopped on station ${data.stationId}, connector ${data.connectorId}`);
+                invalidateQueriesDebounced(queryClient, ['station-sessions', id]);
+                invalidateQueriesDebounced(queryClient, ['station-logs', id]);
+                // Also refresh station to get updated connector status
+                invalidateQueriesDebounced(queryClient, ['station', id]);
+            }
+        },
+        [id]
+    );
 
     const [isStopModalOpen, setIsStopModalOpen] = useState(false);
     const [selectedConnectorId, setSelectedConnectorId] = useState<number | null>(null);
@@ -276,31 +380,6 @@ export function StationDetailContainer() {
                                                     </div>
                                                 </div>
                                             ))}
-                                        </div>
-
-                                        <div className="pt-8 border-t border-border/10 space-y-4">
-                                            <div className="flex items-center gap-2 px-2">
-                                                <History className="h-4 w-4 text-primary shadow-[0_0_10px_rgba(var(--primary),0.3)]" />
-                                                <h4 className="text-sm font-black uppercase tracking-widest">Live System Timeline</h4>
-                                            </div>
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-2">
-                                                {[
-                                                    { type: 'Status', msg: 'Heartbeat received', time: 'Just now' },
-                                                    { type: 'Status', msg: 'Status verified: Available', time: '2 mins ago' },
-                                                    { type: 'Update', msg: 'Configuration synced', time: '1 hour ago' },
-                                                ].map((event, i) => (
-                                                    <div key={i} className="flex gap-4 group">
-                                                        <div className="flex flex-col items-center">
-                                                            <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
-                                                            <div className="w-[1px] flex-1 bg-border/40 my-1 group-last:hidden" />
-                                                        </div>
-                                                        <div className="flex-1 -mt-1">
-                                                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{event.time}</p>
-                                                            <p className="text-sm font-bold tracking-tight">{event.msg}</p>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
                                         </div>
                                     </CardContent>
                                 </Card>

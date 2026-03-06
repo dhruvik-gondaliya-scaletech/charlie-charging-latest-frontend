@@ -10,6 +10,13 @@ import {
   useUpdateStation,
   useDeleteStation
 } from '@/hooks/delete/useStationMutations';
+import { useWebSocketConnection, useRealTimeEvent } from '@/hooks/useRealTime';
+import { StationStatusChangeEvent, ConnectorStatusChangeEvent } from '@/lib/realtime.service';
+import { useQueryClient } from '@tanstack/react-query';
+import {
+  invalidateQueriesDebounced,
+  updateStationInListCache
+} from '@/lib/query-utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Eye, Pencil, Trash2, AlertTriangle, Zap } from 'lucide-react';
@@ -24,7 +31,37 @@ import { DEFAULT_PAGE_SIZE, FRONTEND_ROUTES } from '@/constants/constants';
 
 export function StationsContainer() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { data: stations, isLoading, error } = useStations();
+
+  // Establish WebSocket connection
+  useWebSocketConnection();
+
+  // Listen for station status changes
+  useRealTimeEvent<StationStatusChangeEvent>(
+    'station-status-change',
+    (data) => {
+      console.log(`Station ${data.stationId} status updated to ${data.status}`);
+
+      // 1. Optimistic update in list
+      updateStationInListCache(queryClient, data.stationId, { status: data.status });
+
+      // 2. Debounced refresh
+      invalidateQueriesDebounced(queryClient, ['stations']);
+    }
+  );
+
+  // Listen for connector status changes
+  useRealTimeEvent<ConnectorStatusChangeEvent>(
+    'connector-status-change',
+    (data) => {
+      console.log(`Connector ${data.connectorId} on station ${data.stationId} status updated to ${data.status}`);
+
+      // Since connectors aren't directly shown in the main table list (it's usually a summary),
+      // we'll just debounce the refresh for the list.
+      invalidateQueriesDebounced(queryClient, ['stations']);
+    }
+  );
 
   // Mutations
   const createStation = useCreateStation();
