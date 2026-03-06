@@ -31,3 +31,29 @@ export const useAcceptInvitation = () => {
     },
   });
 };
+
+export const useResendVerification = () => {
+  return useMutation({
+    mutationFn: (email: string) => authService.resendVerification(email),
+    onSuccess: () => {
+      toast.success('Verification email sent successfully');
+    },
+    onError: (error: any) => {
+      const errorMessage = error.response?.data?.message || 'Failed to resend verification email';
+      toast.error(errorMessage);
+    },
+  });
+};
+
+export const useRegister = () => {
+  return useMutation({
+    mutationFn: (data: any) => authService.register(data),
+    onSuccess: () => {
+      toast.success('Registration successful. Please check your email to verify your account.');
+    },
+    onError: (error: any) => {
+      const errorMessage = error.response?.data?.message || 'Registration failed';
+      toast.error(errorMessage);
+    },
+  });
+};

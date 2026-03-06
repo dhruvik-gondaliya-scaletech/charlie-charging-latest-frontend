@@ -54,6 +54,13 @@ export const API_CONFIG = {
             deactivate: (id: string) => `/tenants/${id}/deactivate`,
             regenerateSecret: (id: string) => `/tenants/${id}/regenerate-api-secret`,
         },
+        ocpi: {
+            credentials: "/ocpi/mgmt/credentials",
+            generateToken: "/ocpi/mgmt/credentials/generate-token",
+            tokens: "/ocpi/mgmt/tokens",
+            sessions: "/ocpi/mgmt/sessions",
+            stats: "/ocpi/mgmt/stats",
+        }
     }
 }
 
@@ -71,6 +78,7 @@ export const FRONTEND_ROUTES = {
     TENANTS: "/tenants",
     WEBHOOKS: "/webhooks",
     WEBHOOKS_LOGS: (id: string) => `/webhooks/${id}/logs`,
+    OCPI: "/ocpi",
     REGISTER: "/register",
     LOGIN: "/login",
     PROFILE: "/profile",

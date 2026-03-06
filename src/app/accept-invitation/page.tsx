@@ -1,5 +1,10 @@
 import { AcceptInvitationContainer } from '@/features/auth/containers/AcceptInvitationContainer';
+import { Suspense } from 'react';
 
 export default function AcceptInvitationPage() {
-  return <AcceptInvitationContainer />;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AcceptInvitationContainer />
+    </Suspense>
+  );
 }
