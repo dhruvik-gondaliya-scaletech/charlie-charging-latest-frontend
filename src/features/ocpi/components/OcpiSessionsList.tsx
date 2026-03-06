@@ -14,6 +14,7 @@ import { Table } from '@/components/shared/Table';
 import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
 import { OcpiSession } from '@/services/ocpi.service';
 import { useOcpiSessions } from '@/hooks/get/useOcpi';
+import { cn } from '@/lib/utils';
 
 const columns: ColumnDef<OcpiSession>[] = [
     {
@@ -104,10 +105,10 @@ const columns: ColumnDef<OcpiSession>[] = [
         cell: ({ row }) => {
             const status = row.getValue<string>('status');
             const colorMap: Record<string, string> = {
-                ACTIVE: 'bg-blue-500',
-                COMPLETED: 'bg-green-500',
-                INVALID: 'bg-destructive',
-                PENDING: 'bg-amber-500',
+                ACTIVE: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+                COMPLETED: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+                INVALID: 'bg-destructive/10 text-destructive border-destructive/20',
+                PENDING: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
             };
             const labelMap: Record<string, string> = {
                 ACTIVE: 'Session is currently in progress',
@@ -119,7 +120,13 @@ const columns: ColumnDef<OcpiSession>[] = [
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Badge className={`${colorMap[status] ?? 'bg-muted text-muted-foreground'} cursor-default`}>
+                            <Badge
+                                variant="outline"
+                                className={cn(
+                                    'cursor-default capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm',
+                                    colorMap[status] ?? 'bg-muted text-muted-foreground border-border'
+                                )}
+                            >
                                 {status}
                             </Badge>
                         </TooltipTrigger>

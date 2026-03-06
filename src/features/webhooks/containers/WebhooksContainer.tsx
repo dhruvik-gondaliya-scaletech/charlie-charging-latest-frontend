@@ -168,7 +168,10 @@ export function WebhooksContainer() {
                 <Badge
                   key={event}
                   variant="outline"
-                  className={`${getEventColor(event)} text-[10px] uppercase font-bold px-2 whitespace-nowrap`}
+                  className={cn(
+                    'rounded-full border shadow-sm px-2.5 py-0.5 text-[10px] uppercase font-bold whitespace-nowrap',
+                    getEventColor(event)
+                  )}
                 >
                   {event}
                 </Badge>
@@ -176,7 +179,10 @@ export function WebhooksContainer() {
               {events.length > 2 && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Badge variant="ghost" className="text-[10px] font-bold text-muted-foreground cursor-help">
+                    <Badge
+                      variant="outline"
+                      className="rounded-full border shadow-sm px-2.5 py-0.5 text-[10px] font-bold text-muted-foreground cursor-help bg-muted"
+                    >
                       +{events.length - 2} MORE
                     </Badge>
                   </TooltipTrigger>
@@ -188,7 +194,10 @@ export function WebhooksContainer() {
                           <Badge
                             key={event}
                             variant="outline"
-                            className={`${getEventColor(event)} text-[10px] uppercase font-bold px-2 whitespace-nowrap`}
+                            className={cn(
+                              'rounded-full border shadow-sm px-2.5 py-0.5 text-[10px] uppercase font-bold whitespace-nowrap',
+                              getEventColor(event)
+                            )}
                           >
                             {event}
                           </Badge>
@@ -207,14 +216,18 @@ export function WebhooksContainer() {
         header: 'Status',
         cell: ({ row }) => {
           const isActive = row.getValue('isActive');
+          const colorClasses = isActive
+            ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+            : 'bg-muted text-muted-foreground border-border';
           return (
             <Badge
-              className={`
-                ${isActive ? 'bg-emerald-500 text-white shadow-sm' : 'bg-muted/50 text-muted-foreground'} 
-                px-3 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider
-              `}
+              variant="outline"
+              className={cn(
+                'capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm',
+                colorClasses
+              )}
             >
-              {isActive ? 'Live' : 'Paused'}
+              {isActive ? 'live' : 'paused'}
             </Badge>
           );
         },

@@ -41,7 +41,8 @@ import { TenantFormModal } from '../components/TenantFormModal';
 import { TenantSecretModal } from '../components/TenantSecretModal';
 import { TenantFormData } from '@/lib/validations/tenant.schema';
 import { toast } from 'sonner';
-import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
+import { cn } from '@/lib/utils';
+import { DEFAULT_PAGE_SIZE, FRONTEND_ROUTES } from '@/constants/constants';
 
 export function TenantsContainer() {
   const { data: tenantsResponse, isLoading } = useTenants();
@@ -152,14 +153,18 @@ export function TenantsContainer() {
         header: 'Status',
         cell: ({ row }) => {
           const isActive = row.getValue('isActive');
+          const colorClasses = isActive
+            ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+            : 'bg-muted text-muted-foreground border-border';
           return (
             <Badge
-              className={`
-                ${isActive ? 'bg-emerald-500 text-white shadow-sm' : 'bg-muted/50 text-muted-foreground'} 
-                px-3 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider
-              `}
+              variant="outline"
+              className={cn(
+                'capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm',
+                colorClasses
+              )}
             >
-              {isActive ? 'Active' : 'Deactivated'}
+              {isActive ? 'active' : 'deactivated'}
             </Badge>
           );
         },

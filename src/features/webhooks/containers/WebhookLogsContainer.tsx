@@ -36,6 +36,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { StatCard } from '@/features/dashboard/components/StatCard';
+import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
 
 export function WebhookLogsContainer() {
     const params = useParams();
@@ -68,28 +69,52 @@ export function WebhookLogsContainer() {
         switch (status) {
             case WebhookDeliveryStatus.SUCCESS:
                 return (
-                    <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20 gap-1.5 px-2.5 py-1">
+                    <Badge
+                        variant="outline"
+                        className={cn(
+                            'capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm gap-1.5',
+                            'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                        )}
+                    >
                         <CheckCircle2 className="h-3.5 w-3.5" />
                         <span className="capitalize font-bold text-[10px] tracking-tight">{status}</span>
                     </Badge>
                 );
             case WebhookDeliveryStatus.FAILED:
                 return (
-                    <Badge variant="destructive" className="gap-1.5 px-2.5 py-1">
+                    <Badge
+                        variant="outline"
+                        className={cn(
+                            'capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm gap-1.5',
+                            'bg-destructive/10 text-destructive border-destructive/20'
+                        )}
+                    >
                         <XCircle className="h-3.5 w-3.5" />
                         <span className="capitalize font-bold text-[10px] tracking-tight">{status}</span>
                     </Badge>
                 );
             case WebhookDeliveryStatus.RETRYING:
                 return (
-                    <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20 hover:bg-amber-500/20 gap-1.5 px-2.5 py-1">
+                    <Badge
+                        variant="outline"
+                        className={cn(
+                            'capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm gap-1.5',
+                            'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                        )}
+                    >
                         <RotateCcw className="h-3.5 w-3.5 animate-spin-slow" />
                         <span className="capitalize font-bold text-[10px] tracking-tight">{status}</span>
                     </Badge>
                 );
             default:
                 return (
-                    <Badge variant="secondary" className="gap-1.5 px-2.5 py-1">
+                    <Badge
+                        variant="outline"
+                        className={cn(
+                            'capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm gap-1.5',
+                            'bg-muted text-muted-foreground border-border'
+                        )}
+                    >
                         <Clock className="h-3.5 w-3.5" />
                         <span className="capitalize font-bold text-[10px] tracking-tight">{status}</span>
                     </Badge>
@@ -135,7 +160,10 @@ export function WebhookLogsContainer() {
                     <div className="flex items-center gap-3">
                         <Badge
                             variant="outline"
-                            className={`${getEventColor(row.original.eventType)} text-[10px] uppercase font-bold px-2 py-1 flex items-center gap-2`}
+                            className={cn(
+                                'rounded-full border shadow-sm px-2.5 py-0.5 text-[10px] uppercase font-bold flex items-center gap-2',
+                                getEventColor(row.original.eventType)
+                            )}
                         >
                             <Zap className="h-3 w-3" />
                             {row.original.eventType}
@@ -331,7 +359,7 @@ export function WebhookLogsContainer() {
                         showSearch
                         searchPosition="end"
                         prependWithSearch={InlineFilters}
-                        pageSize={15}
+                        pageSize={DEFAULT_PAGE_SIZE}
                         maxHeight="700px"
                         className="border-none shadow-none"
                     />
