@@ -26,6 +26,32 @@ export interface OcpiToken {
     lastUpdated: string;
 }
 
+export interface OcpiSession {
+    id: string;
+    party_id: string;
+    country_code: string;
+    location_id: string;
+    evse_uid?: string;
+    kwh: number;
+    status: string;
+    start_date_time: string;
+    end_date_time?: string;
+    auth_id?: string;
+}
+
+export interface PaginatedResponse<T> {
+    items: T[];
+    total: number;
+    page: number;
+    pageSize: number;
+}
+
+export interface OcpiSessionsParams {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+}
+
 export const ocpiService = {
     getCredentials: () => httpService.get<OcpiCredential[]>(API_CONFIG.endpoints.ocpi.credentials),
 
@@ -34,7 +60,15 @@ export const ocpiService = {
 
     getTokens: () => httpService.get<OcpiToken[]>(API_CONFIG.endpoints.ocpi.tokens),
 
-    getSessions: () => httpService.get<any[]>(API_CONFIG.endpoints.ocpi.sessions),
+    getSessions: (params?: OcpiSessionsParams) => {
+        const qp = new URLSearchParams();
+        if (params?.page !== undefined) qp.set('page', String(params.page));
+        if (params?.pageSize !== undefined) qp.set('pageSize', String(params.pageSize));
+        if (params?.search) qp.set('search', params.search);
+        const qs = qp.toString();
+        const url = `${API_CONFIG.endpoints.ocpi.sessions}${qs ? `?${qs}` : ''}`;
+        return httpService.get<PaginatedResponse<OcpiSession>>(url);
+    },
 
     getStats: () => httpService.get<{ tokenCount: number; connectedParties: number }>(API_CONFIG.endpoints.ocpi.stats),
 };

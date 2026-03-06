@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { ocpiService } from '@/services/ocpi.service';
+import { ocpiService, OcpiSessionsParams } from '@/services/ocpi.service';
 
 export const useOcpiCredentials = () => {
     return useQuery({
@@ -17,10 +17,10 @@ export const useOcpiTokens = () => {
     });
 };
 
-export const useOcpiSessions = () => {
+export const useOcpiSessions = (params?: OcpiSessionsParams) => {
     return useQuery({
-        queryKey: ['ocpi-sessions'],
-        queryFn: () => ocpiService.getSessions(),
+        queryKey: ['ocpi-sessions', params],
+        queryFn: () => ocpiService.getSessions(params),
         staleTime: 15000,
     });
 };

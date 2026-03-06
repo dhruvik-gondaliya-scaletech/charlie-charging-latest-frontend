@@ -1,14 +1,12 @@
 'use client';
 
-import * as React from 'react';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Share2, Plus, Users, ShieldCheck, Zap, Activity } from 'lucide-react';
+import { Share2, Plus, Users, ShieldCheck, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { staggerContainer, staggerItem } from '@/lib/motion';
-import { useOcpiCredentials, useOcpiTokens, useOcpiSessions, useOcpiStats } from '@/hooks/get/useOcpi';
+import { useOcpiCredentials, useOcpiTokens, useOcpiStats } from '@/hooks/get/useOcpi';
 import { OcpiCredentialsList } from '../components/OcpiCredentialsList';
 import { OcpiTokensList } from '../components/OcpiTokensList';
 import { OcpiSessionsList } from '../components/OcpiSessionsList';
@@ -20,7 +18,6 @@ export function OcpiContainer() {
 
     const { data: credentials, isLoading: isCredentialsLoading } = useOcpiCredentials();
     const { data: tokens, isLoading: isTokensLoading } = useOcpiTokens();
-    const { data: sessions, isLoading: isSessionsLoading } = useOcpiSessions();
     const { data: stats } = useOcpiStats();
 
     return (
@@ -80,7 +77,7 @@ export function OcpiContainer() {
                 />
                 <StatCard
                     title="Roaming Sessions"
-                    value={sessions?.length ?? 0}
+                    value={stats?.connectedParties ?? 0}
                     icon={Activity}
                     color="text-blue-500"
                     bottomRightGlobe="bg-blue-500"
@@ -106,7 +103,7 @@ export function OcpiContainer() {
                     </TabsContent>
 
                     <TabsContent value="sessions" className="pt-2">
-                        <OcpiSessionsList sessions={sessions} isLoading={isSessionsLoading} />
+                        <OcpiSessionsList />
                     </TabsContent>
                 </Tabs>
             </motion.div>
