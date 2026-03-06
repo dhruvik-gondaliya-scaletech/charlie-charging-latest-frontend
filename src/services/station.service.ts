@@ -1,6 +1,6 @@
 import httpService from '@/lib/http-service';
 import { API_CONFIG } from '@/constants/constants';
-import { Station, OcppLog, OcppLogResponse, GetConfigurationResponse, SetConfigurationResponse, BulkSetConfigurationResponse, ChargingStatus, ConnectorType, Session } from '@/types';
+import { Station, OcppLog, OcppLogResponse, GetConfigurationResponse, SetConfigurationResponse, BulkSetConfigurationResponse, ChargingStatus, ConnectorType, Session, SessionFilterParams } from '@/types';
 
 export interface CreateStationData {
   name: string;
@@ -96,8 +96,10 @@ class StationService {
     return data || { logs: [], total: 0, limit: 100, offset: 0 };
   }
 
-  async getStationSessions(stationId: string) {
-    return httpService.get<Session[]>(API_CONFIG.endpoints.stations.sessions(stationId));
+  async getStationSessions(stationId: string, filters?: SessionFilterParams) {
+    return httpService.get<Session[]>(API_CONFIG.endpoints.stations.sessions(stationId), {
+      params: filters,
+    });
   }
 
   async getConfiguration(stationId: string, keys?: string[], category?: string): Promise<GetConfigurationResponse> {

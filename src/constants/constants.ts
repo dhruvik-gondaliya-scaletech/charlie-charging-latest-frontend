@@ -90,14 +90,61 @@ export const WEBSOCKET_CONFIG = {
     ocppUrl: process.env.NEXT_PUBLIC_CSMS_WEBSOCKET_BASE_URL || "ws://localhost:9220/ocpp",
 }
 
-export const CONNECTOR_OPTIONS = [
-    { type: 'Type1', label: 'Type 1', description: 'AC charging' },
-    { type: 'Type2', label: 'Type 2', description: 'European AC' },
-    { type: 'CCS1', label: 'CCS1', description: 'North American' },
-    { type: 'CCS2', label: 'CCS2', description: 'European standard' },
-    { type: 'CHAdeMO', label: 'CHAdeMO', description: 'Japanese standard' },
-    { type: 'Tesla', label: 'Tesla', description: 'Tesla proprietary' },
-    { type: 'GB_T', label: 'GB/T', description: 'Chinese standard' },
-];
+export const CONNECTOR_OPTIONS = [{
+    type: "CHAdeMO",
+    label: "CHAdeMO",
+    description: "Japanese standard"
+},
+{
+    type: "Type2",
+    label: "Type 2",
+    description: "European AC"
+},
+{
+    type: "CCS",
+    label: "CCS",
+    description: "Combined Charging System"
+},
+{
+    type: "Type1",
+    label: "type1",
+    description: "North American standard"
+},
+{
+    type: "COMMANDO",
+    label: "Commando",
+    description: "Industrial connector"
+},
+{
+    type: "3PIN",
+    label: "3-Pin",
+    description: "Three-pin connector"
+},
+{
+    type: "SCHUKO",
+    label: "Schuko",
+    description: "European standard"
+},
+{
+    type: "TYPE3",
+    label: "Type 3",
+    description: "European standard"
+},
+{
+    type: "NACS",
+    label: "NACS",
+    description: "North American standard"
+},
+{
+    type: "CCS1",
+    label: "CCS1",
+    description: "Combined Charging System"
+},
+{
+    type: "MCS",
+    label: "MCS",
+    description: "Megawatt Charging System"
+}
+]
 
 export const DEFAULT_PAGE_SIZE = 10;

@@ -253,16 +253,34 @@ export enum SessionStatus {
 export interface Session {
   id: string;
   stationId: string;
-  userId: string;
+  stationName?: string;
+  userId: string | null;
+  userFirstName?: string | null;
+  userLastName?: string | null;
   connectorId: number;
+  connectorType?: string | null;
+  connectorMaxPower?: number | null;
   idTag: string;
   transactionId: number;
   status: string;
+  pluggedAt?: string;
   startTime: string;
   endTime?: string;
-  meterStart: number;
+  unpluggedAt?: string;
+  meterStart?: number;
   meterStop?: number;
   energyDelivered?: number;
+  energyDeliveredKwh?: number;
+  durationMinutes?: number;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface SessionFilterParams {
+  status?: string;
+  connectorId?: number;
+  startFrom?: string;
+  startTo?: string;
+  sortBy?: string;
+  sortOrder?: 'ASC' | 'DESC';
 }
