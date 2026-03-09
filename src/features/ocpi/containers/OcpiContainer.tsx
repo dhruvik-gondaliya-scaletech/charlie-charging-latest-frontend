@@ -10,6 +10,10 @@ import { useOcpiCredentials, useOcpiTokens, useOcpiStats } from '@/hooks/get/use
 import { OcpiCredentialsList } from '../components/OcpiCredentialsList';
 import { OcpiTokensList } from '../components/OcpiTokensList';
 import { OcpiSessionsList } from '../components/OcpiSessionsList';
+import { OcpiCdrsList } from '../components/OcpiCdrsList';
+import { OcpiTariffsList } from '../components/OcpiTariffsList';
+import { OcpiLocationsList } from '../components/OcpiLocationsList';
+import { OcpiCommandConsole } from '../components/OcpiCommandConsole';
 import { ConnectPartyModal } from '../components/ConnectPartyModal';
 import { StatCard } from '@/features/dashboard/components/StatCard';
 
@@ -92,6 +96,10 @@ export function OcpiContainer() {
                         <TabsTrigger value="credentials" className="rounded-lg px-6">Connected Parties</TabsTrigger>
                         <TabsTrigger value="tokens" className="rounded-lg px-6">Roaming Tokens</TabsTrigger>
                         <TabsTrigger value="sessions" className="rounded-lg px-6">Roaming Sessions</TabsTrigger>
+                        <TabsTrigger value="cdrs" className="rounded-lg px-6">Billing (CDRs)</TabsTrigger>
+                        <TabsTrigger value="tariffs" className="rounded-lg px-6">Tariffs</TabsTrigger>
+                        <TabsTrigger value="locations" className="rounded-lg px-6">Locations</TabsTrigger>
+                        <TabsTrigger value="commands" className="rounded-lg px-6 text-rose-500 font-bold">Command Console</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="credentials" className="pt-2">
@@ -104,6 +112,22 @@ export function OcpiContainer() {
 
                     <TabsContent value="sessions" className="pt-2">
                         <OcpiSessionsList />
+                    </TabsContent>
+
+                    <TabsContent value="cdrs" className="pt-2">
+                        <OcpiCdrsList />
+                    </TabsContent>
+
+                    <TabsContent value="tariffs" className="pt-2">
+                        <OcpiTariffsList />
+                    </TabsContent>
+
+                    <TabsContent value="locations" className="pt-2">
+                        <OcpiLocationsList />
+                    </TabsContent>
+
+                    <TabsContent value="commands" className="pt-2">
+                        <OcpiCommandConsole />
                     </TabsContent>
                 </Tabs>
             </motion.div>

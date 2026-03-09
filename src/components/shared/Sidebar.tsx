@@ -32,7 +32,6 @@ const navItems = [
   { href: FRONTEND_ROUTES.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard, roles: ['user', 'admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.STATIONS, label: 'Stations', icon: Zap, roles: ['user', 'admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.LOCATIONS, label: 'Locations', icon: MapPin, roles: ['user', 'admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.SESSIONS, label: 'Sessions', icon: LayoutDashboard, roles: ['user', 'admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.USERS, label: 'Users', icon: Users, roles: ['user', 'admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.WEBHOOKS, label: 'Webhooks', icon: Webhook, roles: ['user', 'admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.OCPI, label: 'OCPI', icon: Share2, roles: ['admin', 'super_admin'] },
