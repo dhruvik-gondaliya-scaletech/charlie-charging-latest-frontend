@@ -6,7 +6,8 @@ export const useGenerateOcpiToken = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (url: string) => ocpiService.generateRegistrationToken(url),
+        mutationFn: ({ url, email }: { url: string; email?: string }) =>
+            ocpiService.generateRegistrationToken(url, email),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['ocpi-credentials'] });
             queryClient.invalidateQueries({ queryKey: ['ocpi-stats'] });

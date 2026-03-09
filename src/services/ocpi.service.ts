@@ -105,8 +105,8 @@ export interface OcpiSessionsParams {
 export const ocpiService = {
     getCredentials: () => httpService.get<OcpiCredential[]>(API_CONFIG.endpoints.ocpi.credentials),
 
-    generateRegistrationToken: (url: string) =>
-        httpService.post<OcpiCredential>(API_CONFIG.endpoints.ocpi.generateToken, { url }),
+    generateRegistrationToken: (url: string, email?: string) =>
+        httpService.post<OcpiCredential>(API_CONFIG.endpoints.ocpi.generateToken, { url, email }),
 
     getTokens: () => httpService.get<OcpiToken[]>(API_CONFIG.endpoints.ocpi.tokens),
 

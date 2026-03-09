@@ -15,17 +15,19 @@ interface ConnectPartyModalProps {
 
 export function ConnectPartyModal({ isOpen, onClose }: ConnectPartyModalProps) {
     const [url, setUrl] = useState('');
+    const [email, setEmail] = useState('');
     const generateToken = useGenerateOcpiToken();
 
     const handleClose = () => {
         setUrl('');
+        setEmail('');
         onClose();
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!url) return;
-        await generateToken.mutateAsync(url);
+        await generateToken.mutateAsync({ url, email: email || undefined });
         handleClose();
     };
 
@@ -58,6 +60,20 @@ export function ConnectPartyModal({ isOpen, onClose }: ConnectPartyModalProps) {
                     />
                     <p className="text-xs text-muted-foreground">
                         This is the URL our system will call during the OCPI handshake.
+                    </p>
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="partner-email">Partner's Email Address (Optional)</Label>
+                    <Input
+                        id="partner-email"
+                        type="email"
+                        placeholder="technical@partner.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                        If provided, an automated invitation with the token will be sent to this address.
                     </p>
                 </div>
             </div>
