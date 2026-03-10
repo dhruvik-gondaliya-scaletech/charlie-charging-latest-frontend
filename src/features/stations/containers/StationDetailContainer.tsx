@@ -368,7 +368,7 @@ export function StationDetailContainer() {
                                                 { label: 'Connector Count', value: station.connectors?.length || station.connectorCount || 0, icon: Zap },
                                                 { label: 'Max Capacity', value: `${station.maxPower} kW`, icon: Activity },
                                                 { label: 'Registration Date', value: formatDate(station.createdAt || new Date().toISOString()), icon: History },
-                                                { label: 'Last Heartbeat', value: formatDate(station.updatedAt || new Date().toISOString()), icon: Activity },
+                                                { label: 'Station Type', value: station.type || 'AC', icon: Zap },
                                             ].map((item, i) => (
                                                 <div key={i} className="flex items-start gap-3 group">
                                                     <div className="mt-1 p-1.5 rounded-md bg-muted/40 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">

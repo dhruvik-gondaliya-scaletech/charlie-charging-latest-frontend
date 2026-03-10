@@ -54,6 +54,9 @@ export const API_CONFIG = {
             deactivate: (id: string) => `/tenants/${id}/deactivate`,
             regenerateSecret: (id: string) => `/tenants/${id}/regenerate-api-secret`,
         },
+        brands: {
+            base: "/brands",
+        }
     }
 }
 

@@ -80,7 +80,7 @@ export function StationSessions({ stationId }: StationSessionsProps) {
                     <div className="flex flex-col gap-0.5">
                         <div className="flex items-center gap-1.5 font-black text-primary uppercase tracking-widest text-[10px]">
                             <Zap className="h-3 w-3" />
-                            <span>{row.original.connectorType || 'CCS1'}</span>
+                            <span>{row.original.connectorTypes || 'CCS1'}</span>
                         </div>
                         <span className="text-[10px] font-bold text-muted-foreground ml-4">
                             ({row.original.connectorMaxPower || 22} kW)

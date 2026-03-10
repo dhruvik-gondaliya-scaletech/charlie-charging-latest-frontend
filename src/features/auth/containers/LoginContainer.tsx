@@ -43,8 +43,13 @@ export function LoginContainer() {
     setAlertMessage(null);
     try {
       await login(data.email, data.password);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login failed:', error);
+      const message = error.response?.data?.message || error.message || 'An unexpected error occurred. Please try again.';
+      setAlertMessage({
+        type: 'error',
+        message: message,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -56,19 +61,18 @@ export function LoginContainer() {
       description="Enter your credentials to access your account"
     >
       {alertMessage && (
-        <Alert className={`mb-4 ${
-          alertMessage.type === 'error' 
-            ? 'border-destructive bg-destructive/10' 
+        <Alert className={`mb-4 ${alertMessage.type === 'error'
+            ? 'border-destructive bg-destructive/10'
             : 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950'
-        }`}>
+          }`}>
           {alertMessage.type === 'error' ? (
             <XCircle className="h-4 w-4 text-destructive" />
           ) : (
             <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
           )}
           <AlertDescription className={
-            alertMessage.type === 'error' 
-              ? 'text-destructive' 
+            alertMessage.type === 'error'
+              ? 'text-destructive'
               : 'text-yellow-800 dark:text-yellow-200'
           }>
             {alertMessage.message}

@@ -13,13 +13,20 @@ export enum ChargingStatus {
 }
 
 export enum ConnectorType {
-  TYPE_1 = 'Type1',
-  TYPE_2 = 'Type2',
+  TYPE_1 = 'TYPE1',
+  TYPE_2 = 'TYPE2',
   CCS1 = 'CCS1',
   CCS2 = 'CCS2',
-  CHADEMO = 'CHAdeMO',
-  TESLA = 'Tesla',
-  GB_T = 'GB/T',
+  CCS = 'CCS',
+  CHADEMO = 'CHADEMO',
+  TESLA = 'TESLA',
+  GB_T = 'GB_T',
+  COMMANDO = 'COMMANDO',
+  THREE_PIN = '3PIN',
+  SCHUKO = 'SCHUKO',
+  TYPE_3 = 'TYPE3',
+  NACS = 'NACS',
+  MCS = 'MCS',
 }
 
 export interface Connector {
@@ -45,11 +52,12 @@ export interface Station {
   isActive: boolean;
   maxPower: number;
   lastActiveDate?: string;
-  connectorTypes: ConnectorType[];
+  connectorTypes: string[];
   location?: Location;
   locationId: string;
   chargePointId: string;
   ocppVersion: string;
+  type: 'AC' | 'DC';
   connectorCount: number;
   ocppConfiguration?: Record<string, unknown>;
   connectors: Connector[];
@@ -258,7 +266,7 @@ export interface Session {
   userFirstName?: string | null;
   userLastName?: string | null;
   connectorId: number;
-  connectorType?: string | null;
+  connectorTypes?: string | null;
   connectorMaxPower?: number | null;
   idTag: string;
   transactionId: number;
@@ -284,3 +292,25 @@ export interface SessionFilterParams {
   sortBy?: string;
   sortOrder?: 'ASC' | 'DESC';
 }
+
+export interface Brand {
+  id: number;
+  identifier: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PaginationMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  meta: PaginationMeta;
+}
+
+export interface BrandResponse extends PaginatedResponse<Brand> { }
