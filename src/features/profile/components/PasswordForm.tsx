@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { changePasswordSchema, ChangePasswordFormData } from '@/lib/validations/user.schema';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 
 interface PasswordFormProps {
@@ -29,9 +30,8 @@ export function PasswordForm({ onSubmit, isLoading }: PasswordFormProps) {
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="currentPassword">Current Password</Label>
-        <Input
+        <PasswordInput
           id="currentPassword"
-          type="password"
           {...register('currentPassword')}
           aria-invalid={!!errors.currentPassword}
         />
@@ -42,9 +42,8 @@ export function PasswordForm({ onSubmit, isLoading }: PasswordFormProps) {
 
       <div className="space-y-2">
         <Label htmlFor="newPassword">New Password</Label>
-        <Input
+        <PasswordInput
           id="newPassword"
-          type="password"
           {...register('newPassword')}
           aria-invalid={!!errors.newPassword}
         />
@@ -55,9 +54,8 @@ export function PasswordForm({ onSubmit, isLoading }: PasswordFormProps) {
 
       <div className="space-y-2">
         <Label htmlFor="confirmPassword">Confirm New Password</Label>
-        <Input
+        <PasswordInput
           id="confirmPassword"
-          type="password"
           {...register('confirmPassword')}
           aria-invalid={!!errors.confirmPassword}
         />

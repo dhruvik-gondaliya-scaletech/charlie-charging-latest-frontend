@@ -6,6 +6,7 @@ import { tenantSchema, TenantFormData } from '@/lib/validations/tenant.schema';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { Loader2, Building2, Mail, User, Lock, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
@@ -173,16 +174,12 @@ export function TenantFormModal({
 
                             <div className="space-y-2">
                                 <Label htmlFor="adminPassword">Password</Label>
-                                <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                    <Input
-                                        id="adminPassword"
-                                        type="password"
-                                        placeholder="••••••••"
-                                        className="pl-10 h-10 rounded-xl"
-                                        {...register('adminPassword')}
-                                    />
-                                </div>
+                                <PasswordInput
+                                    id="adminPassword"
+                                    placeholder="••••••••"
+                                    className="h-10 rounded-xl"
+                                    {...register('adminPassword')}
+                                />
                                 {errors.adminPassword && (
                                     <p className="text-xs text-destructive font-medium">{errors.adminPassword.message}</p>
                                 )}
