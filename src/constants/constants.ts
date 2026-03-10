@@ -67,6 +67,9 @@ export const API_CONFIG = {
                 stop: "/ocpi/mgmt/commands/stop",
             },
             stats: "/ocpi/mgmt/stats",
+        },
+        brands: {
+            base: "/brands",
         }
     }
 }

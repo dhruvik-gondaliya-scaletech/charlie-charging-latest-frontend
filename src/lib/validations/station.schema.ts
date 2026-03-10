@@ -12,7 +12,8 @@ export const stationSchema = z.object({
   maxPower: z.coerce.number().min(1, 'Max power must be at least 1kW').max(1000, 'Max power cannot exceed 1000kW').default(22),
   locationId: z.string().min(1, 'Location is required'),
   ocppVersion: z.enum(['1.6', '2.0.1']).default('1.6'),
-  connectorTypes: z.array(z.nativeEnum(ConnectorType)).min(1, 'At least one connector type is required'),
+  type: z.enum(['AC', 'DC'], { message: 'Station type is required' }),
+  connectorTypes: z.array(z.string()).min(1, 'At least one connector type is required'),
 });
 
 export const remoteStartSchema = z.object({

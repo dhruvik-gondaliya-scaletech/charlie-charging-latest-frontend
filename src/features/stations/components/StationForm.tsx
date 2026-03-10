@@ -16,7 +16,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { CONNECTOR_OPTIONS } from '@/constants/constants';
 import {
     Select,
     SelectContent,
@@ -26,12 +25,16 @@ import {
 } from '@/components/ui/select';
 import { useLocations } from '@/hooks/get/useLocations';
 import { useAuth } from '@/contexts/AuthContext';
-import { Station, ConnectorType } from '@/types';
-import { Info, Zap, MapPin, Cpu, Link as LinkIcon, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Station } from '@/types';
+import { Info, Zap, MapPin, Cpu, Link as LinkIcon, ShieldCheck, CheckCircle2, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { InfiniteScrollDropdown } from '@/components/shared/InfiniteScrollDropdown';
+import { useBrands } from '@/hooks/get/useBrands';
+import { Brand, ConnectorType } from '@/types';
+import { useConnectorTypes } from '@/hooks/get/useConnectorTypes';
 
 export type StationFormValues = z.infer<typeof stationSchema>;
 
@@ -47,6 +50,19 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
     const { tenant } = useAuth();
     const isEdit = !!initialData?.serialNumber;
 
+    const [brandSearch, setBrandSearch] = React.useState('');
+    const {
+        data: brandData,
+        fetchNextPage: fetchNextBrands,
+        hasNextPage: hasNextBrands,
+        isFetchingNextPage: isFetchingNextBrands,
+        isLoading: isBrandsLoading,
+    } = useBrands({ search: brandSearch, limit: 20 });
+
+    const brands = brandData?.pages.flatMap((page) => page.items) || [];
+    const { data: connectorTypesResponse, isLoading: isConnectorTypesLoading } = useConnectorTypes();
+    const connectorTypesFromApi = (connectorTypesResponse as any) || [];
+
     const form = useForm<StationFormValues>({
         resolver: zodResolver(stationSchema) as any,
         defaultValues: {
@@ -59,6 +75,7 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
             maxPower: initialData?.maxPower || 22, // Defaulting to 22kW
             locationId: initialData?.locationId || '',
             ocppVersion: initialData?.ocppVersion || '1.6',
+            type: initialData?.type || 'AC',
             connectorTypes: (initialData?.connectorTypes as ConnectorType[]) || [ConnectorType.TYPE_2],
         },
     });
@@ -79,6 +96,7 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
                 maxPower: initialData.maxPower ?? 22,
                 locationId: initialData.locationId || '',
                 ocppVersion: initialData.ocppVersion || '1.6',
+                type: initialData.type || 'AC',
                 connectorTypes: (initialData.connectorTypes as ConnectorType[]) || [],
             }, {
                 keepDirtyValues: true,
@@ -179,12 +197,26 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
                                 control={form.control as any}
                                 name="vendor"
                                 render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-70">Vendor</FormLabel>
+                                    <FormItem className="flex flex-col">
+                                        <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-70 mb-2">Vendor</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="e.g. ABB, Delta" className="bg-muted/10 border-border/40 font-medium h-10" {...field} />
+                                            <InfiniteScrollDropdown<Brand>
+                                                options={brands}
+                                                value={field.value}
+                                                onValueChange={field.onChange}
+                                                isLoading={isBrandsLoading}
+                                                isFetchingNextPage={isFetchingNextBrands}
+                                                hasNextPage={hasNextBrands}
+                                                fetchNextPage={fetchNextBrands}
+                                                onSearchChange={setBrandSearch}
+                                                getOptionLabel={(brand) => brand.name}
+                                                getOptionValue={(brand) => brand.name} // Payload sends the name
+                                                placeholder="Select Vendor"
+                                                searchPlaceholder="Search vendors..."
+                                                className="bg-muted/10 border-border/40 font-medium h-12 py-2 rounded-md w-full"
+                                            />
                                         </FormControl>
-                                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">Charging station manufacturer</p>
+                                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter mt-1">Charging station manufacturer</p>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -196,7 +228,7 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
                                     <FormItem>
                                         <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-70">Model</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="e.g. Terra 54" className="bg-muted/10 border-border/40 font-medium h-10" {...field} />
+                                            <Input placeholder="e.g. Terra 54" className="bg-muted/10 border-border/40 font-medium h-12 w-full" {...field} />
                                         </FormControl>
                                         <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">Specific model designation</p>
                                         <FormMessage />
@@ -208,18 +240,62 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <FormField
                                 control={form.control as any}
+                                name="type"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-70 flex items-center gap-1.5">
+                                            <Activity className="h-3.5 w-3.5 text-primary" />
+                                            Station Type*
+                                        </FormLabel>
+                                        <Select
+                                            onValueChange={field.onChange}
+                                            defaultValue={field.value}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger className="bg-muted/10 border-border/40 font-medium h-12 hover:bg-muted/20 transition-all">
+                                                    <SelectValue placeholder="Select AC or DC" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent className="rounded-xl border-border/60 shadow-2xl">
+                                                <SelectItem value="AC" className="font-bold py-2.5">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="p-1 rounded-lg bg-emerald-500/10 text-emerald-500">
+                                                            <Zap className="h-3 w-3" />
+                                                        </div>
+                                                        <span>AC (Alternating Current)</span>
+                                                    </div>
+                                                </SelectItem>
+                                                <SelectItem value="DC" className="font-bold py-2.5">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="p-1 rounded-lg bg-amber-500/10 text-amber-500">
+                                                            <Zap className="h-3 w-3" />
+                                                        </div>
+                                                        <span>DC (Direct Current)</span>
+                                                    </div>
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter mt-1 opacity-70">Power delivery classification</p>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control as any}
                                 name="firmware"
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-70">Firmware Version</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="e.g. 1.0.4" className="bg-muted/10 border-border/40 font-medium h-10" {...field} />
+                                            <Input placeholder="e.g. 1.0.4" className="bg-muted/10 border-border/40 font-medium h-12 w-full" {...field} />
                                         </FormControl>
                                         <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">Current firmware version</p>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <FormField
                                 control={form.control as any}
                                 name="maxPower"
@@ -304,11 +380,12 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
                         render={({ field }) => (
                             <FormItem>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                                    {CONNECTOR_OPTIONS.map((option: any) => {
-                                        const isSelected = field.value?.includes(option.type);
+                                    {connectorTypesFromApi.map((connector: any) => {
+                                        const connectorId = connector.identifier;
+                                        const isSelected = field.value?.includes(connectorId);
                                         return (
                                             <Card
-                                                key={option.type}
+                                                key={connector.id}
                                                 className={cn(
                                                     "cursor-pointer transition-all border-border/40 hover:border-primary/40",
                                                     isSelected ? "bg-primary/5 border-primary/50 ring-1 ring-primary/20 shadow-lg shadow-primary/10" : "bg-card/40"
@@ -316,24 +393,24 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
                                                 onClick={() => {
                                                     const current = field.value || [];
                                                     const updated = isSelected
-                                                        ? current.filter((t: string) => t !== option.type)
-                                                        : [...current, option.type];
+                                                        ? current.filter((t: string) => t !== connectorId)
+                                                        : [...current, connectorId];
                                                     field.onChange(updated);
                                                 }}
                                             >
-                                                <CardContent className="p-4 flex items-start gap-3">
+                                                <CardContent className="p-4 flex items-start gap-4">
                                                     <div className={cn(
-                                                        "p-2 rounded-lg transition-colors",
-                                                        isSelected ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground"
+                                                        "p-2.5 rounded-xl shrink-0 transition-colors",
+                                                        isSelected ? "bg-primary/20 text-primary" : "bg-muted/30 text-muted-foreground"
                                                     )}>
                                                         <Zap className="h-4 w-4" />
                                                     </div>
-                                                    <div className="min-w-0">
+                                                    <div className="flex-1 min-w-0">
                                                         <div className="flex items-center gap-2">
-                                                            <p className="text-sm font-black truncate">{option.label}</p>
+                                                            <p className="text-sm font-black truncate uppercase tracking-tight">{connector.name}</p>
                                                             {isSelected && <CheckCircle2 className="h-3.5 w-3.5 text-primary" />}
                                                         </div>
-                                                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">{option.description}</p>
+                                                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">{connector.identifier}</p>
                                                     </div>
                                                 </CardContent>
                                             </Card>

@@ -5,7 +5,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { stationSchema } from '@/lib/validations/station.schema';
-import { CONNECTOR_OPTIONS } from '@/constants/constants';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Form,
@@ -24,7 +23,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Station, ConnectorType } from '@/types';
+import { Station } from '@/types';
 import {
     Zap,
     MapPin,
@@ -42,6 +41,11 @@ import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import WebSocketUrlDisplay from '@/components/shared/WebSocketUrlDisplay';
+import { InfiniteScrollDropdown } from '@/components/shared/InfiniteScrollDropdown';
+import { useBrands } from '@/hooks/get/useBrands';
+import { useModels } from '@/hooks/get/useModels';
+import { useConnectorTypes } from '@/hooks/get/useConnectorTypes';
+import { Brand, ConnectorType } from '@/types';
 
 type WizardValues = z.infer<typeof stationSchema>;
 
@@ -89,11 +93,37 @@ export function StationWizard({
             maxPower: initialData.maxPower || 22,
             locationId: (initialData.location && typeof initialData.location === 'object' ? (initialData.location as any).id : initialData.locationId) || '',
             ocppVersion: (initialData.ocppVersion as any) || '1.6',
+            type: initialData.type || 'AC',
             connectorTypes: initialData.connectorTypes || [],
         },
     });
 
+    const [selectedBrandId, setSelectedBrandId] = useState<number | undefined>(undefined);
     const hasInitialized = useRef(false);
+    const [brandSearch, setBrandSearch] = useState('');
+    const {
+        data: brandData,
+        fetchNextPage: fetchNextBrands,
+        hasNextPage: hasNextBrands,
+        isFetchingNextPage: isFetchingNextBrands,
+        isLoading: isBrandsLoading,
+    } = useBrands({ search: brandSearch, limit: 20 });
+
+    const brands = brandData?.pages.flatMap((page) => page.items) || [];
+
+    const { data: modelsData, isLoading: isModelsLoading } = useModels(selectedBrandId);
+    const models = modelsData || [];
+
+    const { data: connectorTypesResponse, isLoading: isConnectorTypesLoading } = useConnectorTypes();
+    const connectorTypesFromApi = (connectorTypesResponse as any) || [];
+
+    // Handle auto-filling brand ID if initialData has a vendor name
+    useEffect(() => {
+        if (initialData?.vendor && brands.length > 0 && !selectedBrandId) {
+            const brand = brands.find(b => b.name === initialData.vendor);
+            if (brand) setSelectedBrandId(brand.id);
+        }
+    }, [initialData?.vendor, brands, selectedBrandId]);
 
     // Handle auto-filling when initialData is loaded asynchronously
     useEffect(() => {
@@ -110,6 +140,7 @@ export function StationWizard({
                 maxPower: initialData.maxPower ?? 22,
                 locationId: (initialData.location && typeof initialData.location === 'object' ? (initialData.location as any).id : initialData.locationId) || '',
                 ocppVersion: (initialData.ocppVersion as any) || '1.6',
+                type: initialData.type || 'AC',
                 connectorTypes: initialData.connectorTypes || [],
             }, {
                 keepDirtyValues: true, // Don't overwrite what user already typed if they started
@@ -121,7 +152,7 @@ export function StationWizard({
     const nextStep = async () => {
         let fieldsToValidate: (keyof WizardValues)[] = [];
         if (step === 1) fieldsToValidate = ['name', 'vendor', 'model', 'maxPower'];
-        if (step === 2) fieldsToValidate = ['serialNumber', 'chargePointId', 'firmware'];
+        if (step === 2) fieldsToValidate = ['serialNumber', 'chargePointId', 'firmware', 'type'];
         if (step === 3) fieldsToValidate = ['locationId', 'ocppVersion'];
 
         const isValid = await form.trigger(fieldsToValidate);
@@ -249,10 +280,30 @@ export function StationWizard({
                                             control={form.control as any}
                                             name="vendor"
                                             render={({ field }) => (
-                                                <FormItem>
+                                                <FormItem className="flex flex-col">
                                                     <FormLabel className="font-bold">Vendor*</FormLabel>
                                                     <FormControl>
-                                                        <Input placeholder="e.g. ABB, Schneider" className="bg-muted/30 py-6" {...field} />
+                                                        <InfiniteScrollDropdown<Brand>
+                                                            options={brands}
+                                                            value={field.value}
+                                                            onValueChange={(val) => {
+                                                                field.onChange(val);
+                                                                const brand = brands.find(b => b.name === val);
+                                                                setSelectedBrandId(brand?.id);
+                                                                // Reset model when brand changes
+                                                                form.setValue('model', '');
+                                                            }}
+                                                            isLoading={isBrandsLoading}
+                                                            isFetchingNextPage={isFetchingNextBrands}
+                                                            hasNextPage={hasNextBrands}
+                                                            fetchNextPage={fetchNextBrands}
+                                                            onSearchChange={setBrandSearch}
+                                                            getOptionLabel={(brand) => brand.name}
+                                                            getOptionValue={(brand) => brand.name}
+                                                            placeholder="Select Vendor"
+                                                            searchPlaceholder="Search vendors..."
+                                                            className="bg-muted/30 py-6 h-auto"
+                                                        />
                                                     </FormControl>
                                                     <FormMessage />
                                                 </FormItem>
@@ -262,10 +313,33 @@ export function StationWizard({
                                             control={form.control as any}
                                             name="model"
                                             render={({ field }) => (
-                                                <FormItem>
+                                                <FormItem className="flex flex-col">
                                                     <FormLabel className="font-bold">Model*</FormLabel>
                                                     <FormControl>
-                                                        <Input placeholder="e.g. Terra 54" className="bg-muted/30 py-6" {...field} />
+                                                        <InfiniteScrollDropdown<any>
+                                                            options={models}
+                                                            value={field.value}
+                                                            onValueChange={(val) => {
+                                                                field.onChange(val);
+                                                                // Auto-select connector types based on model
+                                                                const model = models.find((m: any) => m.name === val);
+                                                                if (model?.connectorTypes) {
+                                                                    const types = model.connectorTypes.map((ct: any) => {
+                                                                        const id = typeof ct === 'string' ? ct : ct.identifier;
+                                                                        return id;
+                                                                    }).filter(Boolean);
+                                                                    form.setValue('connectorTypes', types as string[]);
+                                                                }
+                                                            }}
+                                                            isLoading={isModelsLoading}
+                                                            fetchNextPage={() => { }} // Multi-page models not yet supported by backend API
+                                                            getOptionLabel={(model) => model.name}
+                                                            getOptionValue={(model) => model.name}
+                                                            placeholder={selectedBrandId ? "Select Model" : "Select Brand First"}
+                                                            searchPlaceholder="Search models..."
+                                                            disabled={!selectedBrandId}
+                                                            className="bg-muted/30 py-6 h-auto"
+                                                        />
                                                     </FormControl>
                                                     <FormMessage />
                                                 </FormItem>
@@ -300,16 +374,20 @@ export function StationWizard({
                                             name="serialNumber"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="font-bold">Serial Number*</FormLabel>
+                                                    <FormLabel className="font-bold flex items-center gap-1.5">
+                                                        <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                                                        Serial Number*
+                                                    </FormLabel>
                                                     <FormControl>
                                                         <Input
                                                             disabled={isEdit}
-                                                            className={cn("bg-muted/30 py-6", isEdit && "bg-muted/10 opacity-60")}
+                                                            className={cn("bg-muted/30 py-6 font-medium border-border/60", isEdit && "bg-muted/10 opacity-60")}
                                                             {...field}
                                                             placeholder="e.g. SN-123456"
                                                             title={isEdit ? "Serial number is locked" : ""}
                                                         />
                                                     </FormControl>
+                                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1.5 opacity-70">Hardware unique identifier</p>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
@@ -319,16 +397,62 @@ export function StationWizard({
                                             name="chargePointId"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="font-bold">Charge Point ID*</FormLabel>
+                                                    <FormLabel className="font-bold flex items-center gap-1.5">
+                                                        <Terminal className="h-3.5 w-3.5 text-primary" />
+                                                        Charge Point ID*
+                                                    </FormLabel>
                                                     <FormControl>
                                                         <Input
                                                             disabled={isEdit}
-                                                            className={cn("bg-muted/30 py-6", isEdit && "bg-muted/10 opacity-60")}
+                                                            className={cn("bg-muted/30 py-6 font-medium border-border/60", isEdit && "bg-muted/10 opacity-60")}
                                                             {...field}
                                                             placeholder="e.g. CP-789"
                                                             title={isEdit ? "Charge point ID is locked" : ""}
                                                         />
                                                     </FormControl>
+                                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1.5 opacity-70">OCPP network identifier</p>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={form.control as any}
+                                            name="type"
+                                            render={({ field }) => (
+                                                <FormItem className="md:col-span-1">
+                                                    <FormLabel className="font-bold flex items-center gap-1.5 focus:text-primary transition-colors">
+                                                        <Activity className="h-3.5 w-3.5 text-primary" />
+                                                        Station Type*
+                                                    </FormLabel>
+                                                    <Select
+                                                        onValueChange={field.onChange}
+                                                        defaultValue={field.value}
+                                                    >
+                                                        <FormControl>
+                                                            <SelectTrigger className="bg-muted/30 py-6 h-auto font-bold hover:bg-muted/40 transition-all border-border/60 w-full">
+                                                                <SelectValue placeholder="e.g. AC or DC" />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent className="rounded-xl border-border/60 shadow-2xl">
+                                                            <SelectItem value="AC" className="font-bold py-3 focus:bg-primary/5">
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-500">
+                                                                        <Zap className="h-3.5 w-3.5" />
+                                                                    </div>
+                                                                    <span>AC (Alternating Current)</span>
+                                                                </div>
+                                                            </SelectItem>
+                                                            <SelectItem value="DC" className="font-bold py-3 focus:bg-primary/5">
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-500">
+                                                                        <Zap className="h-3.5 w-3.5" />
+                                                                    </div>
+                                                                    <span>DC (Direct Current)</span>
+                                                                </div>
+                                                            </SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1.5 opacity-70">Power delivery classification</p>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
@@ -337,11 +461,15 @@ export function StationWizard({
                                             control={form.control as any}
                                             name="firmware"
                                             render={({ field }) => (
-                                                <FormItem className="md:col-span-2">
-                                                    <FormLabel className="font-bold">Firmware Version*</FormLabel>
+                                                <FormItem className="md:col-span-1">
+                                                    <FormLabel className="font-bold flex items-center gap-1.5">
+                                                        <Cpu className="h-3.5 w-3.5 text-primary" />
+                                                        Firmware Version*
+                                                    </FormLabel>
                                                     <FormControl>
-                                                        <Input className="bg-muted/30 py-6" {...field} />
+                                                        <Input placeholder="e.g. 1.0.4" className="bg-muted/30 py-6 font-medium border-border/60" {...field} />
                                                     </FormControl>
+                                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1.5 opacity-70">Current software version</p>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
@@ -448,11 +576,12 @@ export function StationWizard({
                                         render={({ field }) => (
                                             <FormItem>
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                                    {CONNECTOR_OPTIONS.map((option: any) => {
-                                                        const isSelected = field.value?.includes(option.type);
+                                                    {connectorTypesFromApi.map((connector: any) => {
+                                                        const connectorId = connector.identifier;
+                                                        const isSelected = field.value?.includes(connectorId);
                                                         return (
                                                             <Card
-                                                                key={option.type}
+                                                                key={connector.id}
                                                                 className={cn(
                                                                     "cursor-pointer transition-all border-border/40 hover:border-primary/40",
                                                                     isSelected ? "bg-primary/5 border-primary/50 ring-1 ring-primary/20 shadow-lg shadow-primary/10" : "bg-card/40"
@@ -460,25 +589,29 @@ export function StationWizard({
                                                                 onClick={() => {
                                                                     const current = field.value || [];
                                                                     const updated = isSelected
-                                                                        ? current.filter((t: string) => t !== option.type)
-                                                                        : [...current, option.type];
+                                                                        ? current.filter((t: string) => t !== connectorId)
+                                                                        : [...current, connectorId];
                                                                     field.onChange(updated);
                                                                 }}
                                                             >
-                                                                <CardContent className="p-4 flex items-start gap-3">
+                                                                <CardContent className="p-4 flex items-center gap-4">
                                                                     <div className={cn(
-                                                                        "p-2 rounded-lg transition-colors",
-                                                                        isSelected ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground"
+                                                                        "p-2.5 rounded-xl shrink-0 transition-colors",
+                                                                        isSelected ? "bg-primary/20 text-primary" : "bg-muted/30 text-muted-foreground"
                                                                     )}>
-                                                                        <Zap className="h-4 w-4" />
+                                                                        <Zap className="h-5 w-5" />
                                                                     </div>
-                                                                    <div className="min-w-0">
-                                                                        <div className="flex items-center gap-2">
-                                                                            <p className="text-sm font-black truncate">{option.label}</p>
-                                                                            {isSelected && <CheckCircle2 className="h-3.5 w-3.5 text-primary" />}
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <p className="font-black text-sm uppercase tracking-tight truncate">{connector.name}</p>
+                                                                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest opacity-60">
+                                                                            {connector.identifier}
+                                                                        </p>
+                                                                    </div>
+                                                                    {isSelected && (
+                                                                        <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                                                                            <CheckCircle2 className="h-3 w-3 text-primary-foreground" />
                                                                         </div>
-                                                                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">{option.description}</p>
-                                                                    </div>
+                                                                    )}
                                                                 </CardContent>
                                                             </Card>
                                                         );
@@ -488,7 +621,6 @@ export function StationWizard({
                                             </FormItem>
                                         )}
                                     />
-
                                     <div className="p-4 bg-muted/20 border border-border/40 rounded-2xl">
                                         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
                                             <CheckCircle2 className="h-3 w-3 text-primary" />
@@ -597,8 +729,8 @@ export function StationWizard({
                             )}
                         </div>
                     </div>
-                </form>
-            </Form>
-        </div>
+                </form >
+            </Form >
+        </div >
     );
 }
