@@ -12,7 +12,8 @@ import {
   Webhook,
   Building2,
   User,
-  LogOut
+  LogOut,
+  Share2
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
@@ -33,6 +34,7 @@ const navItems = [
   { href: FRONTEND_ROUTES.LOCATIONS, label: 'Locations', icon: MapPin, roles: ['user', 'admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.USERS, label: 'Users', icon: Users, roles: ['user', 'admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.WEBHOOKS, label: 'Webhooks', icon: Webhook, roles: ['user', 'admin', 'super_admin'] },
+  { href: FRONTEND_ROUTES.OCPI, label: 'OCPI', icon: Share2, roles: ['admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.TENANTS, label: 'Tenants', icon: Building2, roles: ['super_admin'] },
 ];
 

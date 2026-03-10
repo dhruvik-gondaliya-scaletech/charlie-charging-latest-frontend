@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Webhook, Pencil, Trash2, ExternalLink } from 'lucide-react';
 import { formatDate } from '@/lib/date';
+import { cn } from '@/lib/utils';
 
 interface WebhookCardProps {
   webhook: WebhookConfiguration;
@@ -24,8 +25,16 @@ export function WebhookCard({ webhook, onDelete }: WebhookCardProps) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant={webhook.isActive ? 'default' : 'secondary'}>
-            {webhook.isActive ? 'Active' : 'Inactive'}
+          <Badge
+            variant="outline"
+            className={cn(
+              'capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm',
+              webhook.isActive
+                ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                : 'bg-destructive/10 text-destructive border-destructive/20'
+            )}
+          >
+            {webhook.isActive ? 'active' : 'inactive'}
           </Badge>
           <Button variant="ghost" size="icon">
             <Pencil className="h-4 w-4" />
@@ -45,7 +54,11 @@ export function WebhookCard({ webhook, onDelete }: WebhookCardProps) {
       </div>
       <div className="flex items-center gap-2 flex-wrap">
         {webhook.events.map((event, idx) => (
-          <Badge key={idx} variant="outline">
+          <Badge
+            key={idx}
+            variant="outline"
+            className="px-2.5 py-0.5 rounded-full font-bold text-[10px] uppercase tracking-wide"
+          >
             {event}
           </Badge>
         ))}

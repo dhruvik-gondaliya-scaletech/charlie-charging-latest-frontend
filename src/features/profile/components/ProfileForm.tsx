@@ -1,30 +1,25 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { updateProfileSchema, UpdateProfileFormData } from '@/lib/validations/user.schema';
+import { userProfileSchema, UserProfileFormData } from '@/lib/validations/user.schema';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { User } from '@/types';
 
 interface ProfileFormProps {
-  profile: User;
-  onSubmit: (data: UpdateProfileFormData) => Promise<void>;
-  isLoading: boolean;
+  initialData?: UserProfileFormData;
+  onSubmit: (data: UserProfileFormData) => Promise<void>;
+  isLoading?: boolean;
 }
 
-export function ProfileForm({ profile, onSubmit, isLoading }: ProfileFormProps) {
+export function ProfileForm({ initialData, onSubmit, isLoading }: ProfileFormProps) {
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<UpdateProfileFormData>({
-    resolver: zodResolver(updateProfileSchema),
-    defaultValues: {
-      firstName: profile.firstName,
-      lastName: profile.lastName,
-      email: profile.email,
-      phoneNumber: profile.phoneNumber || '',
-    },
+  } = useForm<UserProfileFormData>({
+    resolver: zodResolver(userProfileSchema),
+    defaultValues: initialData,
   });
 
   return (

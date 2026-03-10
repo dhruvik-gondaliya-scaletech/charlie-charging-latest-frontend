@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserProfile } from '@/hooks/get/useUsers';
 import { useUpdateProfile, useChangePassword } from '@/hooks/put/useUserMutations';
-import { UpdateProfileFormData, ChangePasswordFormData } from '@/lib/validations/user.schema';
+import { UserProfileFormData, ChangePasswordFormData } from '@/lib/validations/user.schema';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { User, Lock } from 'lucide-react';
@@ -15,16 +15,16 @@ import { PasswordForm } from '../components/PasswordForm';
 
 export function ProfileContainer() {
   const { user } = useAuth();
-  const { data: profile, isLoading } = useUserProfile();
-  const updateProfile = useUpdateProfile();
-  const changePassword = useChangePassword();
+  const { data: profile, isLoading: isProfileLoading } = useUserProfile();
+  const updateProfileMutation = useUpdateProfile();
+  const changePasswordMutation = useChangePassword();
 
-  const handleProfileSubmit = async (data: UpdateProfileFormData) => {
-    await updateProfile.mutateAsync(data);
+  const handleUpdateProfile = async (data: UserProfileFormData) => {
+    await updateProfileMutation.mutateAsync(data);
   };
 
   const handlePasswordSubmit = async (data: ChangePasswordFormData) => {
-    await changePassword.mutateAsync({
+    await changePasswordMutation.mutateAsync({
       currentPassword: data.currentPassword,
       newPassword: data.newPassword,
     });
@@ -58,7 +58,7 @@ export function ProfileContainer() {
             <CardDescription>Update your personal details</CardDescription>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
+            {isProfileLoading ? (
               <div className="space-y-4">
                 {Array.from({ length: 4 }).map((_, i) => (
                   <Skeleton key={i} className="h-10 w-full" />
@@ -66,9 +66,14 @@ export function ProfileContainer() {
               </div>
             ) : profile ? (
               <ProfileForm
-                profile={profile}
-                onSubmit={handleProfileSubmit}
-                isLoading={updateProfile.isPending}
+                initialData={{
+                  firstName: profile.firstName,
+                  lastName: profile.lastName,
+                  email: profile.email,
+                  phoneNumber: profile.phoneNumber || '',
+                }}
+                onSubmit={handleUpdateProfile}
+                isLoading={updateProfileMutation.isPending}
               />
             ) : null}
           </CardContent>
@@ -87,7 +92,7 @@ export function ProfileContainer() {
           <CardContent>
             <PasswordForm
               onSubmit={handlePasswordSubmit}
-              isLoading={changePassword.isPending}
+              isLoading={changePasswordMutation.isPending}
             />
           </CardContent>
         </Card>
