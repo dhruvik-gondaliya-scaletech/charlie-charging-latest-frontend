@@ -20,6 +20,8 @@ export const API_CONFIG = {
             byId: (id: string) => `/stations/${id}`,
             remoteStart: (id: string) => `/stations/${id}/remote-start`,
             remoteStop: (id: string) => `/stations/${id}/remote-stop`,
+            reset: (id: string) => `/stations/${id}/reset`,
+            availability: (id: string) => `/stations/${id}/availability`,
             configuration: (id: string) => `/stations/${id}/configuration`,
             setConfiguration: (id: string) => `/stations/${id}/configuration`,
             ocppLogs: (id: string) => `/ocpp-logs?stationId=${id}`,
@@ -104,7 +106,7 @@ export const AUTH_CONFIG = {
 }
 
 export const WEBSOCKET_CONFIG = {
-    url: process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3000",
+    url: process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000",
     ocppUrl: process.env.NEXT_PUBLIC_CSMS_WEBSOCKET_BASE_URL || "ws://localhost:9220/ocpp",
 }
 

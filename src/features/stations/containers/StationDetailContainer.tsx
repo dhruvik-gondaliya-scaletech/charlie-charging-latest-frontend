@@ -32,7 +32,7 @@ import { StatCard } from '../../dashboard/components/StatCard';
 import { StationSessions } from '../components/StationSessions';
 import { StationLogs } from '../components/StationLogs';
 import { ConnectorCard } from '../components/ConnectorCard';
-import { useRemoteStart, useRemoteStop } from '@/hooks/delete/useStationMutations';
+import { useRemoteStart, useRemoteStop, useResetStation, useChangeAvailability } from '@/hooks/delete/useStationMutations';
 import { useStationSessions } from '@/hooks/get/useStations';
 import { useAuth } from '@/contexts/AuthContext';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
@@ -199,6 +199,24 @@ export function StationDetailContainer() {
         });
     };
 
+    const resetStation = useResetStation();
+    const changeAvailability = useChangeAvailability();
+
+    const [isRebootModalOpen, setIsRebootModalOpen] = useState(false);
+    const [isAvailabilityModalOpen, setIsAvailabilityModalOpen] = useState(false);
+
+    const confirmReboot = (type: 'Hard' | 'Soft') => {
+        resetStation.mutate({ id: station?.id || '', type }, {
+            onSuccess: () => setIsRebootModalOpen(false)
+        });
+    };
+
+    const confirmAvailability = (type: 'Operative' | 'Inoperative') => {
+        changeAvailability.mutate({ id: station?.id || '', type }, {
+            onSuccess: () => setIsAvailabilityModalOpen(false)
+        });
+    };
+
     if (isLoading) {
         return (
             <div className="space-y-8 p-4 md:p-8 max-w-[1600px] mx-auto">
@@ -295,6 +313,28 @@ export function StationDetailContainer() {
                 </div>
 
                 <div className="flex items-center gap-3">
+                    <div className="relative group">
+                        <Button
+                            variant="default"
+                            className="bg-primary/90 hover:bg-primary font-bold shadow-md"
+                        >
+                            Station Actions
+                        </Button>
+                        <div className="absolute right-0 top-full mt-2 w-48 bg-card border border-border pb-1 pt-1 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                            <button
+                                onClick={() => setIsRebootModalOpen(true)}
+                                className="w-full text-left px-4 py-2 text-sm font-medium hover:bg-muted transition-colors flex items-center"
+                            >
+                                <History className="mr-2 h-4 w-4" /> Reboot Station
+                            </button>
+                            <button
+                                onClick={() => setIsAvailabilityModalOpen(true)}
+                                className="w-full text-left px-4 py-2 text-sm font-medium hover:bg-muted transition-colors flex items-center"
+                            >
+                                <ShieldCheck className="mr-2 h-4 w-4" /> Change Availability
+                            </button>
+                        </div>
+                    </div>
                     <Button
                         variant="outline"
                         onClick={() => router.push(FRONTEND_ROUTES.STATIONS_EDIT(id as string))}
@@ -530,7 +570,7 @@ export function StationDetailContainer() {
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-3 p-4 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-600 text-sm font-medium">
+                    <div className="flex items-center gap-3 p-4 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-500 dark:text-orange-400 text-sm font-medium">
                         <AlertCircle className="h-5 w-5 shrink-0" />
                         <p>This will send a remote stop command to the station for the active transaction.</p>
                     </div>
@@ -546,6 +586,84 @@ export function StationDetailContainer() {
                             <span className="text-sm text-muted-foreground font-medium">Connector</span>
                             <span className="font-bold">Port #{selectedConnectorId}</span>
                         </div>
+                    </div>
+                </div>
+            </AnimatedModal>
+
+            {/* Reboot Modal */}
+            <AnimatedModal
+                isOpen={isRebootModalOpen}
+                onClose={() => setIsRebootModalOpen(false)}
+                title="Reboot Station"
+                description={`Send a reboot command to ${station.name}.`}
+                size="md"
+                footer={
+                    <div className="flex gap-3 justify-end w-full">
+                        <Button variant="outline" onClick={() => setIsRebootModalOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={() => confirmReboot('Soft')}
+                            disabled={resetStation.isPending}
+                            className="font-bold"
+                        >
+                            Soft Reset
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={() => confirmReboot('Hard')}
+                            disabled={resetStation.isPending}
+                            className="font-bold"
+                        >
+                            Hard Reset
+                        </Button>
+                    </div>
+                }
+            >
+                <div className="space-y-4">
+                    <div className="flex items-center gap-3 p-4 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-500 dark:text-orange-400 text-sm font-medium">
+                        <AlertCircle className="h-5 w-5 shrink-0" />
+                        <p>A soft reset will wait for active transactions to end. A hard reset is immediate and may interrupt charging.</p>
+                    </div>
+                </div>
+            </AnimatedModal>
+
+            {/* Change Availability Modal */}
+            <AnimatedModal
+                isOpen={isAvailabilityModalOpen}
+                onClose={() => setIsAvailabilityModalOpen(false)}
+                title="Change Station Availability"
+                description={`Turn ${station.name} on or off.`}
+                size="md"
+                footer={
+                    <div className="flex gap-3 justify-end w-full">
+                        <Button variant="outline" onClick={() => setIsAvailabilityModalOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={() => confirmAvailability('Inoperative')}
+                            disabled={changeAvailability.isPending}
+                            className="font-bold"
+                        >
+                            {changeAvailability.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : 'Turn OFF'}
+                        </Button>
+                        <Button
+                            variant="default"
+                            onClick={() => confirmAvailability('Operative')}
+                            disabled={changeAvailability.isPending}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                        >
+                            {changeAvailability.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : 'Turn ON'}
+                        </Button>
+                    </div>
+                }
+            >
+                <div className="space-y-4">
+                    <div className="flex items-center gap-3 p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-500 dark:text-blue-400 text-sm font-medium">
+                        <ShieldCheck className="h-5 w-5 shrink-0" />
+                        <p>Changes the station's operational status. This command will be sent directly to the charge point.</p>
                     </div>
                 </div>
             </AnimatedModal>

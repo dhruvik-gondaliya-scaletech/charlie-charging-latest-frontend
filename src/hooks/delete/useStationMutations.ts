@@ -75,6 +75,32 @@ export const useRemoteStop = () => {
   });
 };
 
+export const useResetStation = () => {
+  return useMutation({
+    mutationFn: ({ id, type }: { id: string; type: 'Hard' | 'Soft' }) =>
+      stationService.resetStation(id, type),
+    onSuccess: () => {
+      toast.success('Reset command sent successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to reset station');
+    },
+  });
+};
+
+export const useChangeAvailability = () => {
+  return useMutation({
+    mutationFn: ({ id, type, connectorId }: { id: string; type: 'Operative' | 'Inoperative'; connectorId?: number }) =>
+      stationService.changeAvailability(id, type, connectorId),
+    onSuccess: () => {
+      toast.success('Availability command sent successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to change availability');
+    },
+  });
+};
+
 export const useSetConfiguration = () => {
   const queryClient = useQueryClient();
 

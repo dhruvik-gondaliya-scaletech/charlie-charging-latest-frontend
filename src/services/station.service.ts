@@ -89,6 +89,19 @@ class StationService {
     });
   }
 
+  async resetStation(id: string, type: 'Hard' | 'Soft') {
+    return httpService.post(API_CONFIG.endpoints.stations.reset(id), {
+      type,
+    });
+  }
+
+  async changeAvailability(id: string, type: 'Operative' | 'Inoperative', connectorId?: number) {
+    return httpService.post(API_CONFIG.endpoints.stations.availability(id), {
+      type,
+      connectorId,
+    });
+  }
+
   async getOcppLogs(stationId: string, filters?: GetOcppLogsParams): Promise<OcppLogResponse> {
     const data = await httpService.get<OcppLogResponse>(API_CONFIG.endpoints.stations.ocppLogs(stationId), {
       params: filters,
