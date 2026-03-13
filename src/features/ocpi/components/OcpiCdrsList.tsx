@@ -8,13 +8,14 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Receipt, Zap, Clock } from 'lucide-react';
+import { Receipt, Zap, Clock, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { Table } from '@/components/shared/Table';
 import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
 import { OcpiCdr } from '@/services/ocpi.service';
 import { useOcpiCdrs } from '@/hooks/get/useOcpi';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 const columns: ColumnDef<OcpiCdr>[] = [
     {
@@ -110,13 +111,29 @@ const columns: ColumnDef<OcpiCdr>[] = [
 ];
 
 export function OcpiCdrsList() {
-    const { data, isLoading } = useOcpiCdrs({ page: 0, pageSize: 500 });
+    const { data, isLoading, isError, refetch } = useOcpiCdrs({ page: 0, pageSize: 500 });
+
+    if (isError) {
+        return (
+            <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-xl bg-destructive/5 text-center">
+                <AlertCircle className="h-12 w-12 text-destructive mb-4 opacity-50" />
+                <p className="text-lg font-medium text-destructive">Failed to load billing records</p>
+                <p className="text-sm text-muted-foreground mb-6">
+                    There was an error fetching CDR data.
+                </p>
+                <Button onClick={() => refetch()} variant="outline" size="sm">
+                    Try Again
+                </Button>
+            </div>
+        );
+    }
 
     return (
         <Table<OcpiCdr>
             data={data?.items ?? []}
             columns={columns}
             isLoading={isLoading}
+            loadingRowCount={5}
             showSearch
             searchPosition="end"
             showPagination

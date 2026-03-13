@@ -56,7 +56,9 @@ export const API_CONFIG = {
         },
         ocpi: {
             credentials: "/ocpi/mgmt/credentials",
+            deleteCredential: (id: string) => `/ocpi/mgmt/credentials/${id}/delete`,
             generateToken: "/ocpi/mgmt/credentials/generate-token",
+            syncAll: "/ocpi/mgmt/sync-all",
             tokens: "/ocpi/mgmt/tokens",
             sessions: "/ocpi/mgmt/sessions",
             cdrs: "/ocpi/mgmt/cdrs",

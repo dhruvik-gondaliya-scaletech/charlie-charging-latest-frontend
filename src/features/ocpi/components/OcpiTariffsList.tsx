@@ -2,13 +2,14 @@
 
 import { ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@/components/ui/badge';
-import { Tag, Zap, Clock, Coins } from 'lucide-react';
+import { Tag, Zap, Clock, Coins, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { Table } from '@/components/shared/Table';
 import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
 import { OcpiTariff } from '@/services/ocpi.service';
 import { useOcpiTariffs } from '@/hooks/get/useOcpi';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 const columns: ColumnDef<OcpiTariff>[] = [
     {
@@ -40,9 +41,9 @@ const columns: ColumnDef<OcpiTariff>[] = [
             const elements = row.original.elements || [];
             return (
                 <div className="flex flex-col gap-1">
-                    {elements.map((el, i) => (
+                    {elements.map((el, i: number) => (
                         <div key={i} className="flex flex-wrap gap-2">
-                            {el.price_components.map((pc, j) => (
+                            {el.price_components.map((pc, j: number) => (
                                 <Badge key={j} variant="outline" className="text-[10px] bg-background">
                                     {pc.type}: ₹{pc.price}/{pc.step_size}kWh
                                 </Badge>
@@ -68,13 +69,29 @@ const columns: ColumnDef<OcpiTariff>[] = [
 ];
 
 export function OcpiTariffsList() {
-    const { data: tariffs, isLoading } = useOcpiTariffs();
+    const { data: tariffs, isLoading, isError, refetch } = useOcpiTariffs();
+
+    if (isError) {
+        return (
+            <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-xl bg-destructive/5 text-center">
+                <AlertCircle className="h-12 w-12 text-destructive mb-4 opacity-50" />
+                <p className="text-lg font-medium text-destructive">Failed to load tariffs</p>
+                <p className="text-sm text-muted-foreground mb-6">
+                    There was an error fetching OCPI tariff data.
+                </p>
+                <Button onClick={() => refetch()} variant="outline" size="sm">
+                    Try Again
+                </Button>
+            </div>
+        );
+    }
 
     return (
         <Table<OcpiTariff>
             data={tariffs ?? []}
             columns={columns}
             isLoading={isLoading}
+            loadingRowCount={5}
             showSearch
             searchPosition="end"
             showPagination

@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Share2, Plus, Users, ShieldCheck, Activity } from 'lucide-react';
+import { Share2, Plus, Users, ShieldCheck, Activity, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { useOcpiCredentials, useOcpiTokens, useOcpiStats } from '@/hooks/get/useOcpi';
+import { useSyncAllOcpi, useDeleteOcpiCredential } from '@/hooks/post/useOcpiMutations';
 import { OcpiCredentialsList } from '../components/OcpiCredentialsList';
 import { OcpiTokensList } from '../components/OcpiTokensList';
 import { OcpiSessionsList } from '../components/OcpiSessionsList';
@@ -16,6 +17,7 @@ import { OcpiLocationsList } from '../components/OcpiLocationsList';
 import { OcpiCommandConsole } from '../components/OcpiCommandConsole';
 import { ConnectPartyModal } from '../components/ConnectPartyModal';
 import { StatCard } from '@/features/dashboard/components/StatCard';
+import { cn } from '@/lib/utils';
 
 export function OcpiContainer() {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,6 +25,8 @@ export function OcpiContainer() {
     const { data: credentials, isLoading: isCredentialsLoading } = useOcpiCredentials();
     const { data: tokens, isLoading: isTokensLoading } = useOcpiTokens();
     const { data: stats } = useOcpiStats();
+    const { mutate: syncAll, isPending: isSyncing } = useSyncAllOcpi();
+    const { mutate: deleteCredential } = useDeleteOcpiCredential();
 
     return (
         <motion.div
@@ -44,13 +48,24 @@ export function OcpiContainer() {
                         Monitor and manage OCPI roaming connections, credentials, and tokens.
                     </p>
                 </div>
-                <Button
-                    onClick={() => setIsModalOpen(true)}
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 font-bold shrink-0"
-                >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Connect New Party
-                </Button>
+                <div className="flex items-center gap-3">
+                    <Button
+                        variant="outline"
+                        onClick={() => syncAll()}
+                        disabled={isSyncing}
+                        className="bg-background/50 backdrop-blur-sm border shadow-sm font-bold shrink-0"
+                    >
+                        <RefreshCw className={cn("mr-2 h-4 w-4", isSyncing && "animate-spin")} />
+                        {isSyncing ? "Syncing..." : "Sync All"}
+                    </Button>
+                    <Button
+                        onClick={() => setIsModalOpen(true)}
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 font-bold shrink-0"
+                    >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Connect New Party
+                    </Button>
+                </div>
             </motion.div>
 
             {/* Stats */}
@@ -103,7 +118,15 @@ export function OcpiContainer() {
                     </TabsList>
 
                     <TabsContent value="credentials" className="pt-2">
-                        <OcpiCredentialsList credentials={credentials} isLoading={isCredentialsLoading} />
+                        <OcpiCredentialsList
+                            credentials={credentials}
+                            isLoading={isCredentialsLoading}
+                            onDelete={(id) => {
+                                if (confirm('Are you sure you want to delete this OCPI connection?')) {
+                                    deleteCredential(id);
+                                }
+                            }}
+                        />
                     </TabsContent>
 
                     <TabsContent value="tokens" className="pt-2">

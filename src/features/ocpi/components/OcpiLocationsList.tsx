@@ -2,12 +2,13 @@
 
 import { ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Zap, Globe, Share2 } from 'lucide-react';
+import { MapPin, Zap, Globe, Share2, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { Table } from '@/components/shared/Table';
 import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
 import { OcpiLocation } from '@/services/ocpi.service';
 import { useOcpiLocations } from '@/hooks/get/useOcpi';
+import { Button } from '@/components/ui/button';
 
 const columns: ColumnDef<OcpiLocation>[] = [
     {
@@ -64,13 +65,29 @@ const columns: ColumnDef<OcpiLocation>[] = [
 ];
 
 export function OcpiLocationsList() {
-    const { data: locations, isLoading } = useOcpiLocations();
+    const { data: locations, isLoading, isError, refetch } = useOcpiLocations();
+
+    if (isError) {
+        return (
+            <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-xl bg-destructive/5 text-center">
+                <AlertCircle className="h-12 w-12 text-destructive mb-4 opacity-50" />
+                <p className="text-lg font-medium text-destructive">Failed to load locations</p>
+                <p className="text-sm text-muted-foreground mb-6">
+                    There was an error fetching OCPI location data.
+                </p>
+                <Button onClick={() => refetch()} variant="outline" size="sm">
+                    Try Again
+                </Button>
+            </div>
+        );
+    }
 
     return (
         <Table<OcpiLocation>
             data={locations ?? []}
             columns={columns}
             isLoading={isLoading}
+            loadingRowCount={5}
             showSearch
             searchPosition="end"
             showPagination

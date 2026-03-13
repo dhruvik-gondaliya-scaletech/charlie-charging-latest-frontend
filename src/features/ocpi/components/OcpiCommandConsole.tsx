@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Play, Square, Terminal, Command } from 'lucide-react';
 import { format } from 'date-fns';
-import { useOcpiCommands, useOcpiLocations, useOcpiTokens } from '@/hooks/get/useOcpi';
+import { useOcpiLocations, useOcpiTokens } from '@/hooks/get/useOcpi';
+import { useOcpiCommands } from '@/hooks/post/useOcpiMutations';
 import {
     Select,
     SelectContent,
@@ -15,6 +16,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
+import { AlertCircle } from 'lucide-react';
 
 export function OcpiCommandConsole() {
     const [locationId, setLocationId] = useState('');

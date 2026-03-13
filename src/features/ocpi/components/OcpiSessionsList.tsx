@@ -8,13 +8,14 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Activity, Zap } from 'lucide-react';
+import { Activity, Zap, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { Table } from '@/components/shared/Table';
 import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
 import { OcpiSession } from '@/services/ocpi.service';
 import { useOcpiSessions } from '@/hooks/get/useOcpi';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 const columns: ColumnDef<OcpiSession>[] = [
     {
@@ -60,7 +61,7 @@ const columns: ColumnDef<OcpiSession>[] = [
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <div className="flex flex-col max-w-[160px] cursor-default">
+                            <div className="flex flex-col max-w-[1600px] cursor-default">
                                 <span className="truncate text-sm">{locationId || '—'}</span>
                                 {evseUid && (
                                     <span className="text-[10px] uppercase text-muted-foreground">{evseUid}</span>
@@ -165,13 +166,29 @@ const columns: ColumnDef<OcpiSession>[] = [
 
 export function OcpiSessionsList() {
     // Fetch with a high pageSize so the shared Table can handle client-side search + pagination
-    const { data, isLoading } = useOcpiSessions({ page: 0, pageSize: 500 });
+    const { data, isLoading, isError, refetch } = useOcpiSessions({ page: 0, pageSize: 500 });
+
+    if (isError) {
+        return (
+            <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-xl bg-destructive/5 text-center">
+                <AlertCircle className="h-12 w-12 text-destructive mb-4 opacity-50" />
+                <p className="text-lg font-medium text-destructive">Failed to load roaming sessions</p>
+                <p className="text-sm text-muted-foreground mb-6">
+                    There was an error fetching data from the backend.
+                </p>
+                <Button onClick={() => refetch()} variant="outline" size="sm">
+                    Try Again
+                </Button>
+            </div>
+        );
+    }
 
     return (
         <Table<OcpiSession>
             data={data?.items ?? []}
             columns={columns}
             isLoading={isLoading}
+            loadingRowCount={5}
             showSearch
             searchPosition="end"
             showPagination
