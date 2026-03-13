@@ -84,15 +84,15 @@ const columns: ColumnDef<OcpiCredential>[] = [
         header: 'Registration Token',
         size: 150,
         cell: ({ row }) => (
-             <TooltipProvider>
+            <TooltipProvider>
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <div className="flex flex-col gap-1 cursor-help">
-                <span className="text-[10px] text-muted-foreground uppercase font-bold">Token A</span>
-                <code className="text-[10px] bg-muted px-1.5 py-0.5 rounded truncate max-w-[120px] block">
-                    {row.original.token_a}
-                </code>
-            </div>
+                            <span className="text-[10px] text-muted-foreground uppercase font-bold">Token A</span>
+                            <code className="text-[10px] bg-muted px-1.5 py-0.5 rounded truncate max-w-[120px] block">
+                                {row.original.token_a}
+                            </code>
+                        </div>
                     </TooltipTrigger>
                     <TooltipContent>
                         <p className="text-xs">
