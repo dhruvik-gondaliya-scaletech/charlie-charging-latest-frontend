@@ -64,7 +64,7 @@ export const useRemoteStart = () => {
 
 export const useRemoteStop = () => {
   return useMutation({
-    mutationFn: ({ id, transactionId }: { id: string; transactionId: number }) =>
+    mutationFn: ({ id, transactionId }: { id: string; transactionId: string | number }) =>
       stationService.remoteStopTransaction(id, transactionId),
     onSuccess: () => {
       toast.success('Remote stop command sent');

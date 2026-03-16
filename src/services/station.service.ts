@@ -83,7 +83,7 @@ class StationService {
     });
   }
 
-  async remoteStopTransaction(id: string, transactionId: number) {
+  async remoteStopTransaction(id: string, transactionId: string | number) {
     return httpService.post(API_CONFIG.endpoints.stations.remoteStop(id), {
       transactionId,
     });

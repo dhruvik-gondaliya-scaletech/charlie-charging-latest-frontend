@@ -269,7 +269,7 @@ export interface Session {
   connectorTypes?: string | null;
   connectorMaxPower?: number | null;
   idTag: string;
-  transactionId: number;
+  transactionId: string | number;
   status: string;
   pluggedAt?: string;
   startTime: string;

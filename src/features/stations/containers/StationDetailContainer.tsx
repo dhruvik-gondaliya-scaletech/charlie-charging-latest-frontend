@@ -191,7 +191,7 @@ export function StationDetailContainer() {
 
         remoteStop.mutate({
             id: station?.id || '',
-            transactionId: parseInt(stopTransactionId),
+            transactionId: stopTransactionId,
         }, {
             onSuccess: () => {
                 setIsStopModalOpen(false);
