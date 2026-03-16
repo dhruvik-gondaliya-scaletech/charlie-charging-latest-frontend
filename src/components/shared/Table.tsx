@@ -71,7 +71,15 @@ interface TableProps<T> {
   renderRowDetails?: (row: T) => ReactNode;
   onRowClick?: (row: T) => void;
   emptyState?: ReactNode;
+  totalCount?: number;
+  pageIndex?: number;
+  onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
+  manualPagination?: boolean;
+  manualSorting?: boolean;
+  manualSearching?: boolean;
 }
+
 
 // Helper to get nested value by dot notation
 function getNestedValue(obj: unknown, path: string): unknown {
@@ -120,7 +128,7 @@ function getCommonPinningStyles<T>(
   }
 
   return {
-    boxShadow: shadows.join(", "),
+    // boxShadow: shadows.join(", "),
     left: isPinned === "left" ? `${column.getStart("left") ?? 0}px` : undefined,
     right:
       isPinned === "right" ? `${column.getAfter("right") ?? 0}px` : undefined,
@@ -156,7 +164,15 @@ export function Table<T>({
   renderRowDetails,
   onRowClick,
   emptyState,
+  manualPagination = false,
+  manualSorting = false,
+  manualSearching = false,
+  totalCount,
+  pageIndex: externalPageIndex,
+  onPageChange,
+  onPageSizeChange,
 }: TableProps<T>) {
+
   const [sorting, setSorting] = useState<SortingState>(() =>
     sortByKey && sortOrder
       ? [{ id: sortByKey, desc: sortOrder === "desc" }]
@@ -257,16 +273,21 @@ export function Table<T>({
       sorting,
       globalFilter: search,
       pagination: {
-        pageIndex: currentPage,
+        pageIndex: manualPagination ? (externalPageIndex ?? 0) : currentPage,
         pageSize: currentPageSize,
       },
       columnPinning,
     },
     onColumnPinningChange: setColumnPinning,
     onSortingChange: setSorting,
-    pageCount: Math.ceil(filteredData.length / currentPageSize),
-    manualPagination: false,
+    pageCount: manualPagination
+      ? Math.ceil((totalCount || 0) / currentPageSize)
+      : Math.ceil(filteredData.length / currentPageSize),
+    manualPagination,
+    manualSorting,
+    manualFiltering: manualSearching,
   });
+
 
   const handleSearch = (value: string) => {
     setSearch(value);
@@ -403,12 +424,27 @@ export function Table<T>({
     });
   }
 
-  const totalPages = Math.ceil(filteredData.length / currentPageSize);
-
   const handlePageSizeChange = (newSize: number) => {
     setCurrentPageSize(newSize);
     setCurrentPage(0); // Reset to first page when changing page size
+    onPageSizeChange?.(newSize);
+    onPageChange?.(0);
   };
+
+  const handlePageChange = (newPage: number) => {
+    if (manualPagination) {
+      onPageChange?.(newPage);
+    } else {
+      setCurrentPage(newPage);
+    }
+  };
+
+  const displayPageIndex = manualPagination ? (externalPageIndex ?? 0) : currentPage;
+  const displayTotalCount = manualPagination ? (totalCount ?? 0) : filteredData.length;
+  const displayTotalPages = manualPagination
+    ? Math.ceil((totalCount ?? 0) / currentPageSize)
+    : Math.ceil(filteredData.length / currentPageSize);
+
 
   return (
     <div className={`space-y-6 ${className}`}>
@@ -438,7 +474,7 @@ export function Table<T>({
             style={{ maxHeight }}
           >
             <div style={{ width: "100%" }}>
-              <table className="w-full text-sm text-left text-foreground table-fixed border-collapse">
+              <table className="w-full text-sm text-left text-foreground table-fixed border-collapse relative">
                 <thead className="text-xs text-foreground uppercase bg-muted sticky top-0 z-10 border-b border-border">
                   {table.getHeaderGroups().map((headerGroup) => (
                     <tr key={headerGroup.id} className="bg-muted group">
@@ -603,9 +639,9 @@ export function Table<T>({
                   </Select>
                 </div>
                 <span className="whitespace-nowrap">
-                  Showing {currentPage * currentPageSize + 1} to{" "}
-                  {Math.min((currentPage + 1) * currentPageSize, filteredData.length)} of{" "}
-                  {filteredData.length} results
+                  Showing {displayPageIndex * currentPageSize + 1} to{" "}
+                  {Math.min((displayPageIndex + 1) * currentPageSize, displayTotalCount)} of{" "}
+                  {displayTotalCount} results
                 </span>
               </div>
               <div className="w-full sm:w-auto flex justify-center sm:justify-end">
@@ -613,21 +649,21 @@ export function Table<T>({
                   <PaginationContent>
                     <PaginationItem>
                       <PaginationPrevious
-                        onClick={() => currentPage > 0 && setCurrentPage(currentPage - 1)}
-                        className={currentPage === 0 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        onClick={() => displayPageIndex > 0 && handlePageChange(displayPageIndex - 1)}
+                        className={displayPageIndex === 0 ? "pointer-events-none opacity-50" : "cursor-pointer"}
                       />
                     </PaginationItem>
-                    {Array.from({ length: totalPages }, (_, i) => i).map((pageNum) => {
+                    {Array.from({ length: displayTotalPages }, (_, i) => i).map((pageNum) => {
                       if (
                         pageNum === 0 ||
-                        pageNum === totalPages - 1 ||
-                        (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                        pageNum === displayTotalPages - 1 ||
+                        (pageNum >= displayPageIndex - 1 && pageNum <= displayPageIndex + 1)
                       ) {
                         return (
                           <PaginationItem key={pageNum}>
                             <PaginationLink
-                              onClick={() => setCurrentPage(pageNum)}
-                              isActive={currentPage === pageNum}
+                              onClick={() => handlePageChange(pageNum)}
+                              isActive={displayPageIndex === pageNum}
                               className="cursor-pointer"
                             >
                               {pageNum + 1}
@@ -635,8 +671,8 @@ export function Table<T>({
                           </PaginationItem>
                         );
                       } else if (
-                        pageNum === currentPage - 2 ||
-                        pageNum === currentPage + 2
+                        pageNum === displayPageIndex - 2 ||
+                        pageNum === displayPageIndex + 2
                       ) {
                         return (
                           <PaginationItem key={pageNum}>
@@ -648,13 +684,14 @@ export function Table<T>({
                     })}
                     <PaginationItem>
                       <PaginationNext
-                        onClick={() => currentPage < totalPages - 1 && setCurrentPage(currentPage + 1)}
-                        className={currentPage === totalPages - 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        onClick={() => displayPageIndex < displayTotalPages - 1 && handlePageChange(displayPageIndex + 1)}
+                        className={displayPageIndex === displayTotalPages - 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
                       />
                     </PaginationItem>
                   </PaginationContent>
                 </Pagination>
               </div>
+
             </div>
           </div>
         )}

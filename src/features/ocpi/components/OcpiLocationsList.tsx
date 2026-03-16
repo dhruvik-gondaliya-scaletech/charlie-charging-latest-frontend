@@ -64,8 +64,20 @@ const columns: ColumnDef<OcpiLocation>[] = [
     },
 ];
 
+import { useState } from 'react';
+
+// ... (columns remains the same)
+
 export function OcpiLocationsList() {
-    const { data: locations, isLoading, isError, refetch } = useOcpiLocations();
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+    const [search, setSearch] = useState('');
+
+    const { data, isLoading, isError, refetch } = useOcpiLocations({
+        page,
+        pageSize,
+        search
+    });
 
     if (isError) {
         return (
@@ -84,17 +96,23 @@ export function OcpiLocationsList() {
 
     return (
         <Table<OcpiLocation>
-            data={locations ?? []}
+            data={data?.items ?? []}
             columns={columns}
             isLoading={isLoading}
             loadingRowCount={5}
             showSearch
             searchPosition="end"
+            onSearch={setSearch}
+            manualPagination
+            manualSearching
+            totalCount={data?.total ?? 0}
+            pageIndex={page}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
             showPagination
-            pageSize={DEFAULT_PAGE_SIZE}
+            pageSize={pageSize}
             sortByKey="name"
             sortOrder="asc"
-            maxHeight="600px"
             emptyState={
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                     <Globe className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
@@ -107,3 +125,4 @@ export function OcpiLocationsList() {
         />
     );
 }
+

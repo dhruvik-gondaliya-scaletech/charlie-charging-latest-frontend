@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ocpiService, OcpiStartSessionRequest, OcpiStopSessionRequest } from '@/services/ocpi.service';
+import { ocpiService, OcpiStartSessionRequest, OcpiStopSessionRequest, OcpiUnlockConnectorRequest } from '@/services/ocpi.service';
 import { toast } from 'sonner';
 
 export const useGenerateOcpiToken = () => {
@@ -34,6 +34,22 @@ export const useSyncAllOcpi = () => {
         },
         onError: (error: any) => {
             toast.error(`Failed to trigger sync: ${error.message}`);
+        },
+    });
+};
+
+export const useSyncTokensOcpi = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: () => ocpiService.syncTokens(),
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: ['ocpi-tokens'] });
+            queryClient.invalidateQueries({ queryKey: ['ocpi-stats'] });
+            toast.success(`Successfully pulled ${data.pulled || 0} roaming tokens`);
+        },
+        onError: (error: any) => {
+            toast.error(`Failed to pull tokens: ${error.message}`);
         },
     });
 };
@@ -79,5 +95,17 @@ export const useOcpiCommands = () => {
         },
     });
 
-    return { startSession, stopSession };
+
+    const unlockConnector = useMutation({
+        mutationFn: (data: OcpiUnlockConnectorRequest) => ocpiService.unlockConnector(data),
+        onSuccess: () => {
+            toast.success('Unlock connector command sent successfully');
+            queryClient.invalidateQueries({ queryKey: ['ocpi-locations'] });
+        },
+        onError: (error: any) => {
+            toast.error(`Failed to send unlock command: ${error.message}`);
+        },
+    });
+
+    return { startSession, stopSession, unlockConnector };
 };

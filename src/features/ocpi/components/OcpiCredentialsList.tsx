@@ -2,34 +2,56 @@
 
 import { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
-import { Shield, Trash2, MoreHorizontal } from 'lucide-react';
+import { Shield, Trash2, Info } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { OcpiCredential } from '@/services/ocpi.service';
 import { Table } from '@/components/shared/Table';
 import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
 import { cn } from '@/lib/utils';
+import { useOcpiCredentials } from '@/hooks/get/useOcpi';
+import { useDeleteOcpiCredential } from '@/hooks/post/useOcpiMutations';
+
 import {
     Tooltip,
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import { Button } from '@/components/ui/button';
+import { OcpiPartyDetailsModal } from './OcpiPartyDetailsModal';
+import { useState } from 'react';
 
-interface OcpiCredentialsListProps {
-    credentials?: OcpiCredential[];
-    isLoading: boolean;
-    onDelete?: (id: string) => void;
-}
+export function OcpiCredentialsList() {
+    const [selectedParty, setSelectedParty] = useState<OcpiCredential | null>(null);
+    const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+    const [search, setSearch] = useState('');
 
-export function OcpiCredentialsList({ credentials, isLoading, onDelete }: OcpiCredentialsListProps) {
+    const { data: credentialsData, isLoading } = useOcpiCredentials({
+        page,
+        pageSize,
+        search
+    });
+
+    const { mutate: deleteCredential } = useDeleteOcpiCredential();
+
+    const credentials = credentialsData?.items ?? [];
+    const totalCount = credentialsData?.total ?? 0;
+
+    const onDelete = (id: string) => {
+        if (confirm('Are you sure you want to delete this OCPI connection?')) {
+            deleteCredential(id);
+        }
+    };
+
+
+    const handleViewDetails = (party: OcpiCredential) => {
+        setSelectedParty(party);
+        setIsDetailsOpen(true);
+    };
     const columns: ColumnDef<OcpiCredential>[] = [
         {
             accessorKey: 'partyId',
@@ -123,24 +145,48 @@ export function OcpiCredentialsList({ credentials, isLoading, onDelete }: OcpiCr
         },
         {
             id: 'actions',
+            header: 'Actions',
+            size: 80,
             cell: ({ row }) => (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[160px]">
-                        <DropdownMenuItem
-                            className="text-destructive focus:text-destructive"
-                            onClick={() => onDelete?.(row.original.id)}
-                        >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete Connection
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="flex items-center gap-1">
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                                    onClick={() => handleViewDetails(row.original)}
+                                >
+                                    <Info className="h-4 w-4" />
+                                    <span className="sr-only">View Details</span>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p className="text-xs">View Details</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                    onClick={() => onDelete?.(row.original.id)}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                    <span className="sr-only">Delete Connection</span>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p className="text-xs">Delete Connection</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                </div>
             ),
         },
     ];
@@ -155,26 +201,41 @@ export function OcpiCredentialsList({ credentials, isLoading, onDelete }: OcpiCr
     }
 
     return (
-        <Table<OcpiCredential>
-            data={credentials ?? []}
-            columns={columns}
-            isLoading={isLoading}
-            showSearch
-            searchPosition="end"
-            showPagination
-            pageSize={DEFAULT_PAGE_SIZE}
-            sortByKey="updatedAt"
-            sortOrder="desc"
-            maxHeight="600px"
-            emptyState={
-                <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-xl bg-muted/30">
-                    <Shield className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
-                    <p className="text-lg font-medium">No connected parties yet</p>
-                    <p className="text-sm text-muted-foreground">
-                        Generate an OCPI Token A to start a connection with another party.
-                    </p>
-                </div>
-            }
-        />
+        <>
+            <Table<OcpiCredential>
+                data={credentials ?? []}
+                columns={columns}
+                isLoading={isLoading}
+                loadingRowCount={5}
+                showSearch
+                searchPosition="end"
+                onSearch={setSearch}
+                manualPagination
+                manualSearching
+                totalCount={totalCount}
+                pageIndex={page}
+                onPageChange={setPage}
+                onPageSizeChange={setPageSize}
+                showPagination
+                pageSize={pageSize}
+                sortByKey="updatedAt"
+                sortOrder="desc"
+
+                emptyState={
+                    <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-xl bg-muted/30">
+                        <Shield className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
+                        <p className="text-lg font-medium">No connected parties yet</p>
+                        <p className="text-sm text-muted-foreground">
+                            Generate an OCPI Token A to start a connection with another party.
+                        </p>
+                    </div>
+                }
+            />
+            <OcpiPartyDetailsModal
+                credential={selectedParty}
+                isOpen={isDetailsOpen}
+                onClose={() => setIsDetailsOpen(false)}
+            />
+        </>
     );
 }

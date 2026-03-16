@@ -152,6 +152,14 @@ export interface OcpiStopSessionRequest {
     location_id?: string;
 }
 
+export interface OcpiUnlockConnectorRequest {
+    response_url?: string;
+    location_id?: string;
+    evse_uid?: string;
+    evse_id?: string;
+    connector_id?: string;
+}
+
 export interface OcpiCommandResponse {
     result: 'ACCEPTED' | 'REJECTED' | 'UNKNOWN' | 'NOT_SUPPORTED';
     timeout: number;
@@ -172,12 +180,30 @@ export interface OcpiSessionsParams {
 }
 
 export const ocpiService = {
-    getCredentials: () => httpService.get<OcpiCredential[]>(API_CONFIG.endpoints.ocpi.credentials),
+    getCredentials: (params?: OcpiSessionsParams) => {
+        const qp = new URLSearchParams();
+        if (params?.page !== undefined) qp.set('page', String(params.page));
+        if (params?.pageSize !== undefined) qp.set('pageSize', String(params.pageSize));
+        if (params?.search) qp.set('search', params.search);
+        const qs = qp.toString();
+        const url = `${API_CONFIG.endpoints.ocpi.credentials}${qs ? `?${qs}` : ''}`;
+        return httpService.get<PaginatedResponse<OcpiCredential>>(url);
+    },
+
 
     generateRegistrationToken: (url: string, email?: string) =>
         httpService.post<OcpiCredential>(API_CONFIG.endpoints.ocpi.generateToken, { url, email }),
 
-    getTokens: () => httpService.get<OcpiToken[]>(API_CONFIG.endpoints.ocpi.tokens),
+    getTokens: (params?: OcpiSessionsParams) => {
+        const qp = new URLSearchParams();
+        if (params?.page !== undefined) qp.set('page', String(params.page));
+        if (params?.pageSize !== undefined) qp.set('pageSize', String(params.pageSize));
+        if (params?.search) qp.set('search', params.search);
+        const qs = qp.toString();
+        const url = `${API_CONFIG.endpoints.ocpi.tokens}${qs ? `?${qs}` : ''}`;
+        return httpService.get<PaginatedResponse<OcpiToken>>(url);
+    },
+
 
     getSessions: (params?: OcpiSessionsParams) => {
         const qp = new URLSearchParams();
@@ -199,11 +225,31 @@ export const ocpiService = {
         return httpService.get<PaginatedResponse<OcpiCdr>>(url);
     },
 
-    getTariffs: () => httpService.get<OcpiTariff[]>(API_CONFIG.endpoints.ocpi.tariffs),
+    getTariffs: (params?: OcpiSessionsParams) => {
+        const qp = new URLSearchParams();
+        if (params?.page !== undefined) qp.set('page', String(params.page));
+        if (params?.pageSize !== undefined) qp.set('pageSize', String(params.pageSize));
+        if (params?.search) qp.set('search', params.search);
+        const qs = qp.toString();
+        const url = `${API_CONFIG.endpoints.ocpi.tariffs}${qs ? `?${qs}` : ''}`;
+        return httpService.get<PaginatedResponse<OcpiTariff>>(url);
+    },
 
-    getLocations: () => httpService.get<OcpiLocation[]>(API_CONFIG.endpoints.ocpi.locations),
+
+    getLocations: (params?: OcpiSessionsParams) => {
+        const qp = new URLSearchParams();
+        if (params?.page !== undefined) qp.set('page', String(params.page));
+        if (params?.pageSize !== undefined) qp.set('pageSize', String(params.pageSize));
+        if (params?.search) qp.set('search', params.search);
+        const qs = qp.toString();
+        const url = `${API_CONFIG.endpoints.ocpi.locations}${qs ? `?${qs}` : ''}`;
+        return httpService.get<PaginatedResponse<OcpiLocation>>(url);
+    },
+
 
     syncAll: () => httpService.post<{ success: boolean }>(API_CONFIG.endpoints.ocpi.syncAll, {}),
+
+    syncTokens: () => httpService.post<{ success: boolean; pulled: number }>(API_CONFIG.endpoints.ocpi.syncTokens, {}),
 
     deleteCredential: (id: string) => httpService.post<{ success: boolean }>(API_CONFIG.endpoints.ocpi.deleteCredential(id), {}),
 
@@ -212,6 +258,9 @@ export const ocpiService = {
 
     stopRemoteSession: (data: OcpiStopSessionRequest) =>
         httpService.post<OcpiCommandResponse>(API_CONFIG.endpoints.ocpi.commands.stop, data),
+
+    unlockConnector: (data: OcpiUnlockConnectorRequest) =>
+        httpService.post<OcpiCommandResponse>(API_CONFIG.endpoints.ocpi.commands.unlock, data),
 
     getStats: () => httpService.get<{ tokenCount: number; connectedParties: number }>(API_CONFIG.endpoints.ocpi.stats),
 };

@@ -164,9 +164,20 @@ const columns: ColumnDef<OcpiSession>[] = [
     },
 ];
 
+import { useState } from 'react';
+
+// ... (columns remains the same)
+
 export function OcpiSessionsList() {
-    // Fetch with a high pageSize so the shared Table can handle client-side search + pagination
-    const { data, isLoading, isError, refetch } = useOcpiSessions({ page: 0, pageSize: 500 });
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+    const [search, setSearch] = useState('');
+
+    const { data, isLoading, isError, refetch } = useOcpiSessions({
+        page,
+        pageSize,
+        search
+    });
 
     if (isError) {
         return (
@@ -191,11 +202,17 @@ export function OcpiSessionsList() {
             loadingRowCount={5}
             showSearch
             searchPosition="end"
+            onSearch={setSearch}
+            manualPagination
+            manualSearching
+            totalCount={data?.total ?? 0}
+            pageIndex={page}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
             showPagination
-            pageSize={DEFAULT_PAGE_SIZE}
+            pageSize={pageSize}
             sortByKey="start_date_time"
             sortOrder="desc"
-            maxHeight="600px"
             emptyState={
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                     <Activity className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
@@ -208,3 +225,4 @@ export function OcpiSessionsList() {
         />
     );
 }
+

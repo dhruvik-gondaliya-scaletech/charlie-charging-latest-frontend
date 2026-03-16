@@ -9,15 +9,24 @@ import { Table } from '@/components/shared/Table';
 import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useOcpiTokens } from '@/hooks/get/useOcpi';
+import { useState } from 'react';
 
-interface OcpiTokensListProps {
-    tokens?: OcpiToken[];
-    isLoading: boolean;
-    isError?: boolean;
-    onRetry?: () => void;
-}
 
-export function OcpiTokensList({ tokens, isLoading, isError, onRetry }: OcpiTokensListProps) {
+export function OcpiTokensList() {
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+    const [search, setSearch] = useState('');
+
+    const { data, isLoading, isError, refetch } = useOcpiTokens({
+        page,
+        pageSize,
+        search
+    });
+
+    const tokens = data?.items ?? [];
+    const totalCount = data?.total ?? 0;
+
     const columns: ColumnDef<OcpiToken>[] = [
         {
             accessorKey: 'uid',
@@ -81,26 +90,33 @@ export function OcpiTokensList({ tokens, isLoading, isError, onRetry }: OcpiToke
                 <p className="text-sm text-muted-foreground mb-6">
                     There was an error fetching data from the backend.
                 </p>
-                <Button onClick={onRetry} variant="outline" size="sm">
+                <Button onClick={() => refetch()} variant="outline" size="sm">
                     Try Again
                 </Button>
+
             </div>
         );
     }
 
     return (
         <Table<OcpiToken>
-            data={tokens ?? []}
+            data={tokens}
             columns={columns}
             isLoading={isLoading}
             loadingRowCount={5}
             showSearch
             searchPosition="end"
+            onSearch={setSearch}
+            manualPagination
+            manualSearching
+            totalCount={totalCount}
+            pageIndex={page}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
             showPagination
-            pageSize={DEFAULT_PAGE_SIZE}
+            pageSize={pageSize}
             sortByKey="lastUpdated"
             sortOrder="desc"
-            maxHeight="600px"
             emptyState={
                 <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-xl bg-muted/30">
                     <Tag className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
@@ -111,5 +127,6 @@ export function OcpiTokensList({ tokens, isLoading, isError, onRetry }: OcpiToke
                 </div>
             }
         />
+
     );
 }

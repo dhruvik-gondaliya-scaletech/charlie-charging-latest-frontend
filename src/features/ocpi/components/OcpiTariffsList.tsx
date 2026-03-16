@@ -68,8 +68,20 @@ const columns: ColumnDef<OcpiTariff>[] = [
     },
 ];
 
+import { useState } from 'react';
+
+// ... (columns remains the same)
+
 export function OcpiTariffsList() {
-    const { data: tariffs, isLoading, isError, refetch } = useOcpiTariffs();
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+    const [search, setSearch] = useState('');
+
+    const { data, isLoading, isError, refetch } = useOcpiTariffs({
+        page,
+        pageSize,
+        search
+    });
 
     if (isError) {
         return (
@@ -88,17 +100,23 @@ export function OcpiTariffsList() {
 
     return (
         <Table<OcpiTariff>
-            data={tariffs ?? []}
+            data={data?.items ?? []}
             columns={columns}
             isLoading={isLoading}
             loadingRowCount={5}
             showSearch
             searchPosition="end"
+            onSearch={setSearch}
+            manualPagination
+            manualSearching
+            totalCount={data?.total ?? 0}
+            pageIndex={page}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
             showPagination
-            pageSize={DEFAULT_PAGE_SIZE}
+            pageSize={pageSize}
             sortByKey="id"
             sortOrder="asc"
-            maxHeight="600px"
             emptyState={
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                     <Coins className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
@@ -111,3 +129,4 @@ export function OcpiTariffsList() {
         />
     );
 }
+

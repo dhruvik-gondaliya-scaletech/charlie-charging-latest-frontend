@@ -1,18 +1,18 @@
 import { useQuery } from '@tanstack/react-query';
 import { ocpiService, OcpiSessionsParams } from '@/services/ocpi.service';
 
-export const useOcpiCredentials = () => {
+export const useOcpiCredentials = (params?: OcpiSessionsParams) => {
     return useQuery({
-        queryKey: ['ocpi-credentials'],
-        queryFn: () => ocpiService.getCredentials(),
+        queryKey: ['ocpi-credentials', params],
+        queryFn: () => ocpiService.getCredentials(params),
         staleTime: 30000,
     });
 };
 
-export const useOcpiTokens = () => {
+export const useOcpiTokens = (params?: OcpiSessionsParams) => {
     return useQuery({
-        queryKey: ['ocpi-tokens'],
-        queryFn: () => ocpiService.getTokens(),
+        queryKey: ['ocpi-tokens', params],
+        queryFn: () => ocpiService.getTokens(params),
         staleTime: 30000,
     });
 };
@@ -41,18 +41,19 @@ export const useOcpiCdrs = (params?: OcpiSessionsParams) => {
     });
 };
 
-export const useOcpiTariffs = () => {
+export const useOcpiTariffs = (params?: OcpiSessionsParams) => {
     return useQuery({
-        queryKey: ['ocpi-tariffs'],
-        queryFn: () => ocpiService.getTariffs(),
+        queryKey: ['ocpi-tariffs', params],
+        queryFn: () => ocpiService.getTariffs(params),
         staleTime: 60000,
     });
 };
 
-export const useOcpiLocations = () => {
+export const useOcpiLocations = (params?: OcpiSessionsParams) => {
     return useQuery({
-        queryKey: ['ocpi-locations'],
-        queryFn: () => ocpiService.getLocations(),
+        queryKey: ['ocpi-locations', params],
+        queryFn: () => ocpiService.getLocations(params),
         staleTime: 60000,
     });
 };
+
