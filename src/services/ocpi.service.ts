@@ -58,10 +58,13 @@ export interface OcpiTariff {
     party_id: string;
     country_code: string;
     currency: string;
+    type?: string;
+    tariff_alt_text?: Array<{ language: string; text: string }>;
     elements: Array<{
         price_components: Array<{
             type: string;
             price: number;
+            vat?: number;
             step_size: number;
         }>;
     }>;
@@ -130,7 +133,15 @@ export const ocpiService = {
         return httpService.get<PaginatedResponse<OcpiCdr>>(url);
     },
 
-    getTariffs: () => httpService.get<OcpiTariff[]>(API_CONFIG.endpoints.ocpi.tariffs),
+    getTariffs: (params?: OcpiSessionsParams) => {
+        const qp = new URLSearchParams();
+        if (params?.page !== undefined) qp.set('page', String(params.page));
+        if (params?.pageSize !== undefined) qp.set('pageSize', String(params.pageSize));
+        if (params?.search) qp.set('search', params.search);
+        const qs = qp.toString();
+        const url = `${API_CONFIG.endpoints.ocpi.tariffs}${qs ? `?${qs}` : ''}`;
+        return httpService.get<PaginatedResponse<OcpiTariff>>(url);
+    },
 
     getLocations: () => httpService.get<OcpiLocation[]>(API_CONFIG.endpoints.ocpi.locations),
 

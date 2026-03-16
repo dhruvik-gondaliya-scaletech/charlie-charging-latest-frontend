@@ -41,10 +41,10 @@ export const useOcpiCdrs = (params?: OcpiSessionsParams) => {
     });
 };
 
-export const useOcpiTariffs = () => {
+export const useOcpiTariffs = (params?: OcpiSessionsParams) => {
     return useQuery({
-        queryKey: ['ocpi-tariffs'],
-        queryFn: () => ocpiService.getTariffs(),
+        queryKey: ['ocpi-tariffs', params],
+        queryFn: () => ocpiService.getTariffs(params),
         staleTime: 60000,
     });
 };
