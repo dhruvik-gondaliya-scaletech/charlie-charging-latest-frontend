@@ -28,6 +28,12 @@ import { formatDate } from '@/lib/date';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import { cn } from '@/lib/utils';
 import { DEFAULT_PAGE_SIZE, FRONTEND_ROUTES } from '@/constants/constants';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 export function StationsContainer() {
   const router = useRouter();
@@ -159,30 +165,53 @@ export function StationsContainer() {
         header: 'Actions',
         cell: ({ row }) => (
           <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 hover:bg-muted"
-              onClick={() => router.push(FRONTEND_ROUTES.STATIONS_DETAILS(row.original.id))}
-            >
-              <Eye className="h-4 w-4 text-muted-foreground" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 hover:bg-primary/10 hover:text-primary"
-              onClick={() => handleEdit(row.original)}
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
-              onClick={() => handleDelete(row.original)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 hover:bg-primary/10 hover:text-primary cursor-pointer"
+                  onClick={() => router.push(FRONTEND_ROUTES.STATIONS_DETAILS(row.original.id))}
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-xs">View Details</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 hover:bg-primary/10 hover:text-primary cursor-pointer"
+                  onClick={() => handleEdit(row.original)}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-xs">Edit Station</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive cursor-pointer"
+                  onClick={() => handleDelete(row.original)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-xs">Delete Station</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         ),
       },
@@ -239,97 +268,99 @@ export function StationsContainer() {
   }
 
   return (
-    <motion.div
-      variants={staggerContainer}
-      initial="initial"
-      animate="animate"
-      className="space-y-8 p-4 md:p-8 max-w-[1600px] mx-auto"
-    >
-      <motion.div variants={staggerItem}>
-        <h1 className="text-3xl font-extrabold tracking-tight bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
-          Charging Stations
-        </h1>
-        <p className="text-sm font-medium text-muted-foreground mt-1 tracking-tight">Manage and monitor your decentralized charging network</p>
-      </motion.div>
+    <TooltipProvider>
+      <motion.div
+        variants={staggerContainer}
+        initial="initial"
+        animate="animate"
+        className="space-y-8 p-4 md:p-8 max-w-[1600px] mx-auto"
+      >
+        <motion.div variants={staggerItem}>
+          <h1 className="text-3xl font-extrabold tracking-tight bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+            Charging Stations
+          </h1>
+          <p className="text-sm font-medium text-muted-foreground mt-1 tracking-tight">Manage and monitor your decentralized charging network</p>
+        </motion.div>
 
-      <motion.div variants={staggerItem} className="relative">
-        <Table<Station>
-          data={stations || []}
-          columns={columns}
-          isLoading={isLoading}
-          showSearch
-          searchPosition="end"
-          appendWithSearch={
-            <Button
-              onClick={() => router.push(FRONTEND_ROUTES.STATIONS_REGISTER)}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Register Station
-            </Button>
-          }
-          pageSize={DEFAULT_PAGE_SIZE || 25}
-          maxHeight="650px"
-          className="border-none shadow-none"
-          emptyState={
-            <div className="py-20 flex flex-col items-center justify-center text-center gap-6 bg-card/10 rounded-[2.5rem] border-2 border-dashed border-border/40">
-              <div className="p-6 rounded-full bg-primary/5 text-primary/40 ring-1 ring-primary/10">
-                <Zap className="h-16 w-16" />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-2xl font-black tracking-tight text-foreground">No stations found</h3>
-                <p className="max-w-xs text-muted-foreground font-medium text-sm leading-relaxed mx-auto">
-                  Your decentralized charging network is empty. Start by registering your first charging station.
-                </p>
-              </div>
+        <motion.div variants={staggerItem} className="relative">
+          <Table<Station>
+            data={stations || []}
+            columns={columns}
+            isLoading={isLoading}
+            showSearch
+            searchPosition="end"
+            appendWithSearch={
               <Button
                 onClick={() => router.push(FRONTEND_ROUTES.STATIONS_REGISTER)}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xl shadow-primary/30 font-black px-8"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Register New Station
+                Register Station
+              </Button>
+            }
+            pageSize={DEFAULT_PAGE_SIZE || 25}
+            maxHeight="650px"
+            className="border-none shadow-none"
+            emptyState={
+              <div className="py-20 flex flex-col items-center justify-center text-center gap-6 bg-card/10 rounded-[2.5rem] border-2 border-dashed border-border/40">
+                <div className="p-6 rounded-full bg-primary/5 text-primary/40 ring-1 ring-primary/10">
+                  <Zap className="h-16 w-16" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-black tracking-tight text-foreground">No stations found</h3>
+                  <p className="max-w-xs text-muted-foreground font-medium text-sm leading-relaxed mx-auto">
+                    Your decentralized charging network is empty. Start by registering your first charging station.
+                  </p>
+                </div>
+                <Button
+                  onClick={() => router.push(FRONTEND_ROUTES.STATIONS_REGISTER)}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xl shadow-primary/30 font-black px-8"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Register New Station
+                </Button>
+              </div>
+            }
+          />
+        </motion.div>
+
+
+
+        {/* Delete Confirmation Modal */}
+        <AnimatedModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          title="Delete Charging Station"
+          description="Are you absolutely sure? This action cannot be undone. This will permanently remove the station and all associated session logs from our servers."
+          size="md"
+          footer={
+            <div className="flex gap-3 justify-end w-full">
+              <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
+                Cancel Request
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  if (selectedStation) {
+                    deleteStation.mutate(selectedStation.id, {
+                      onSuccess: () => setIsDeleteModalOpen(false),
+                    });
+                  }
+                }}
+                disabled={deleteStation.isPending}
+                className="font-bold"
+              >
+                {deleteStation.isPending ? 'Removing...' : 'Confirm Deletion'}
               </Button>
             </div>
           }
-        />
-      </motion.div>
-
-
-
-      {/* Delete Confirmation Modal */}
-      <AnimatedModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        title="Delete Charging Station"
-        description="Are you absolutely sure? This action cannot be undone. This will permanently remove the station and all associated session logs from our servers."
-        size="md"
-        footer={
-          <div className="flex gap-3 justify-end w-full">
-            <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
-              Cancel Request
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => {
-                if (selectedStation) {
-                  deleteStation.mutate(selectedStation.id, {
-                    onSuccess: () => setIsDeleteModalOpen(false),
-                  });
-                }
-              }}
-              disabled={deleteStation.isPending}
-              className="font-bold"
-            >
-              {deleteStation.isPending ? 'Removing...' : 'Confirm Deletion'}
-            </Button>
+        >
+          <div className="flex items-center gap-4 p-4 rounded-2xl bg-destructive/5 border border-destructive/20 text-destructive">
+            <AlertTriangle className="h-6 w-6 shrink-0" />
+            <p className="text-sm font-medium">You are about to delete <strong>{selectedStation?.name}</strong> ({selectedStation?.chargePointId}).</p>
           </div>
-        }
-      >
-        <div className="flex items-center gap-4 p-4 rounded-2xl bg-destructive/5 border border-destructive/20 text-destructive">
-          <AlertTriangle className="h-6 w-6 shrink-0" />
-          <p className="text-sm font-medium">You are about to delete <strong>{selectedStation?.name}</strong> ({selectedStation?.chargePointId}).</p>
-        </div>
-      </AnimatedModal>
-    </motion.div>
+        </AnimatedModal>
+      </motion.div>
+    </TooltipProvider>
   );
 }

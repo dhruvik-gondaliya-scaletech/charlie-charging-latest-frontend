@@ -120,7 +120,7 @@ function getCommonPinningStyles<T>(
   }
 
   return {
-    boxShadow: shadows.join(", "),
+    // boxShadow: shadows.join(", "),
     left: isPinned === "left" ? `${column.getStart("left") ?? 0}px` : undefined,
     right:
       isPinned === "right" ? `${column.getAfter("right") ?? 0}px` : undefined,
