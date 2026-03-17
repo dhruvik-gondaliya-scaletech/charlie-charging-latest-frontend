@@ -102,6 +102,16 @@ export function StationDetailContainer() {
                     return { ...oldData, connectors: updatedConnectors };
                 });
 
+                // Clear busy state for this connector
+                setBusyConnectors(prev => {
+                    if (prev.has(data.connectorId)) {
+                        const next = new Set(prev);
+                        next.delete(data.connectorId);
+                        return next;
+                    }
+                    return prev;
+                });
+
                 // 2. Debounce the background refresh for the station and sessions
                 invalidateQueriesDebounced(queryClient, ['station', id]);
                 invalidateQueriesDebounced(queryClient, ['station-sessions', id]);
@@ -156,16 +166,36 @@ export function StationDetailContainer() {
     const [isStopModalOpen, setIsStopModalOpen] = useState(false);
     const [selectedConnectorId, setSelectedConnectorId] = useState<number | null>(null);
     const [stopTransactionId, setStopTransactionId] = useState<string>('');
+    const [busyConnectors, setBusyConnectors] = useState<Set<number>>(new Set());
 
     const remoteStart = useRemoteStart();
     const remoteStop = useRemoteStop();
 
     const handleStartConnector = (connectorId: number) => {
+        setBusyConnectors(prev => new Set(prev).add(connectorId));
         remoteStart.mutate({
             id: station?.id || '',
             connectorId,
             idTag: 'ADMIN_TAG',
             userId: user?.id || 'admin-user',
+        }, {
+            onSuccess: (response: any) => {
+                // If station rejected the command, we should clear the busy state immediately
+                if (response?.status !== 'Accepted') {
+                    setBusyConnectors(prev => {
+                        const next = new Set(prev);
+                        next.delete(connectorId);
+                        return next;
+                    });
+                }
+            },
+            onError: () => {
+                setBusyConnectors(prev => {
+                    const next = new Set(prev);
+                    next.delete(connectorId);
+                    return next;
+                });
+            }
         });
     };
 
@@ -187,14 +217,32 @@ export function StationDetailContainer() {
     };
 
     const confirmStop = () => {
-        if (!stopTransactionId) return;
+        if (!stopTransactionId || selectedConnectorId === null) return;
+
+        const connectorId = selectedConnectorId;
+        setBusyConnectors(prev => new Set(prev).add(connectorId));
 
         remoteStop.mutate({
             id: station?.id || '',
             transactionId: parseInt(stopTransactionId),
         }, {
-            onSuccess: () => {
+            onSuccess: (response: any) => {
                 setIsStopModalOpen(false);
+                // If station rejected the command, we should clear the busy state immediately
+                if (response?.status !== 'Accepted') {
+                    setBusyConnectors(prev => {
+                        const next = new Set(prev);
+                        next.delete(connectorId);
+                        return next;
+                    });
+                }
+            },
+            onError: () => {
+                setBusyConnectors(prev => {
+                    const next = new Set(prev);
+                    next.delete(connectorId);
+                    return next;
+                });
             }
         });
     };
@@ -429,8 +477,8 @@ export function StationDetailContainer() {
                                         connector={connector}
                                         onStart={handleStartConnector}
                                         onStop={handleStopConnector}
-                                        isStarting={remoteStart.isPending}
-                                        isStopping={remoteStop.isPending}
+                                        isStarting={remoteStart.isPending || busyConnectors.has(connector.connectorId)}
+                                        isStopping={remoteStop.isPending || busyConnectors.has(connector.connectorId)}
                                         disabled={station.status === ChargingStatus.OFFLINE}
                                     />
                                 ))}
