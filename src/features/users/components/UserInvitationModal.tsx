@@ -28,7 +28,7 @@ export function UserInvitationModal({ isOpen, onClose }: UserInvitationModalProp
     } = useForm<UserInvitationData>({
         resolver: zodResolver(userInvitationSchema),
         defaultValues: {
-            role: 'user',
+            role: 'admin',
         }
     });
 
@@ -98,30 +98,7 @@ export function UserInvitationModal({ isOpen, onClose }: UserInvitationModalProp
                     {errors.email && <p className="text-[10px] font-bold text-destructive uppercase tracking-widest ml-1">{errors.email.message}</p>}
                 </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="role" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Access Tier</Label>
-                    <Controller
-                        name="role"
-                        control={control}
-                        render={({ field }) => (
-                            <Select onValueChange={field.onChange} value={field.value || 'user'} defaultValue="user">
-                                <SelectTrigger className="h-11 bg-muted/20 border-border/40 focus:ring-primary/20 rounded-xl font-bold">
-                                    <div className="flex items-center gap-2">
-                                        <Shield className="h-4 w-4 text-muted-foreground/50" />
-                                        <SelectValue placeholder="Select a role" />
-                                    </div>
-                                </SelectTrigger>
-                                <SelectContent className="rounded-xl border-border/40 backdrop-blur-xl">
-                                    <SelectItem value="super_admin" className="rounded-lg font-bold">System Administrator</SelectItem>
-                                    <SelectItem value="admin" className="rounded-lg font-bold">Fleet Administrator</SelectItem>
-                                    <SelectItem value="operator" className="rounded-lg font-bold">Station Operator</SelectItem>
-                                    <SelectItem value="user" className="rounded-lg font-bold">Standard User</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        )}
-                    />
-                    {errors.role && <p className="text-[10px] font-bold text-destructive uppercase tracking-widest ml-1">{errors.role.message}</p>}
-                </div>
+
 
                 <div className="flex gap-3 pt-2">
                     <Button
