@@ -39,11 +39,11 @@ export function StatCard({
 
   return (
     <motion.div
-      whileHover={{ y: -4, scale: 1.01 }}
+      // whileHover={{ y: -4, scale: 1.01 }}
       transition={{ duration: 0.2 }}
       className={cn("h-full", className)}
     >
-      <Card className="relative h-full overflow-hidden border-border/40 transition-all hover:bg-card/80 dark:hover:bg-white/10 group bg-card/40 backdrop-blur-xl">
+      <Card className="relative h-full overflow-hidden border-border/40 transition-all group bg-card/40 backdrop-blur-xl">
         <div className={cn(
           "absolute top-0 left-0 h-[2px] w-full bg-linear-to-r from-transparent via-current to-transparent opacity-20 group-hover:opacity-40 transition-opacity",
           color
@@ -127,7 +127,7 @@ export function StatCard({
         </CardContent>
 
         <div className={cn(
-          "absolute -right-6 -bottom-6 h-28 w-28 rounded-full blur-3xl pointer-events-none opacity-5 transition-opacity group-hover:opacity-10",
+          "absolute -right-6 -bottom-6 h-28 w-28 rounded-full blur-3xl pointer-events-none opacity-5 transition-opacity opacity-10",
           bottomRightGlobe
         )} />
       </Card>
