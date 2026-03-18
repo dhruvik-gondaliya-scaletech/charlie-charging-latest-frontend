@@ -9,6 +9,7 @@ import { formatDate } from '@/lib/date';
 import { cn } from '@/lib/utils';
 import {
     Terminal,
+    Activity,
     ChevronDown,
     ChevronUp,
     RefreshCw,
@@ -23,9 +24,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 interface StationLogsProps {
     stationId: string;
+    sessionId?: string;
+    onClearSessionId?: () => void;
 }
 
-export function StationLogs({ stationId }: StationLogsProps) {
+export function StationLogs({ stationId, sessionId, onClearSessionId }: StationLogsProps) {
     const [searchTerm, setSearchTerm] = useState('');
     const {
         data,
@@ -35,7 +38,7 @@ export function StationLogs({ stationId }: StationLogsProps) {
         hasNextPage,
         isFetchingNextPage,
         refetch
-    } = useInfiniteOcppLogs(stationId, { limit: 15 });
+    } = useInfiniteOcppLogs(stationId, { limit: 15, sessionId });
 
     const { ref, inView } = useInView();
 
@@ -94,6 +97,32 @@ export function StationLogs({ stationId }: StationLogsProps) {
                     Refresh Logs
                 </Button>
             </div>
+
+            {sessionId && (
+                <div className="flex items-center justify-between gap-3 bg-primary/5 border border-primary/20 p-3 rounded-2xl">
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                            <Activity className="h-4 w-4" />
+                        </div>
+                        <div>
+                            <p className="text-xs font-black tracking-tight flex items-center gap-2">
+                                Filtering by Session
+                                <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-mono font-black border-primary/40 bg-primary/10 text-primary">
+                                    UUID: {sessionId.substring(0, 8)}...
+                                </Badge>
+                            </p>
+                        </div>
+                    </div>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={onClearSessionId}
+                        className="h-8 text-[10px] font-black uppercase tracking-widest hover:bg-primary/20 hover:text-primary"
+                    >
+                        Clear Filter
+                    </Button>
+                </div>
+            )}
 
             <div className="space-y-3">
                 {filteredLogs.length > 0 ? (
