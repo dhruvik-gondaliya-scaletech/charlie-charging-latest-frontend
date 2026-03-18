@@ -61,6 +61,12 @@ export function StationDetailContainer() {
     const { data: station, isLoading, error } = useStation(id as string);
     const { data: sessions } = useStationSessions(id as string);
     const [activeTab, setActiveTab] = useState('overview');
+    const [filterSessionId, setFilterSessionId] = useState<string | undefined>(undefined);
+
+    const handleViewSessionLogs = (sessionId: string) => {
+        setFilterSessionId(sessionId);
+        setActiveTab('logs');
+    };
 
     // Establish WebSocket connection
     useWebSocketConnection();
@@ -498,7 +504,10 @@ export function StationDetailContainer() {
                     <TabsContent value="sessions">
                         <Card className="border-border/40 bg-card/20 backdrop-blur-sm rounded-3xl overflow-hidden border">
                             <CardContent className="p-6">
-                                <StationSessions stationId={station.id} />
+                                <StationSessions
+                                    stationId={station.id}
+                                    onViewLogs={handleViewSessionLogs}
+                                />
                             </CardContent>
                         </Card>
                     </TabsContent>
@@ -531,7 +540,11 @@ export function StationDetailContainer() {
                                 <CardDescription>Real-time machine communication logs</CardDescription>
                             </CardHeader>
                             <CardContent className="p-6">
-                                <StationLogs stationId={station.id} />
+                                <StationLogs
+                                    stationId={station.id}
+                                    sessionId={filterSessionId}
+                                    onClearSessionId={() => setFilterSessionId(undefined)}
+                                />
                             </CardContent>
                         </Card>
                     </TabsContent>

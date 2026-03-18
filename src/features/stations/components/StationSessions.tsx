@@ -20,7 +20,8 @@ import {
     Download,
     Filter,
     Calendar,
-    RefreshCw
+    RefreshCw,
+    Terminal
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -36,9 +37,10 @@ import { startOfDay, endOfDay } from 'date-fns';
 
 interface StationSessionsProps {
     stationId: string;
+    onViewLogs?: (sessionId: string) => void;
 }
 
-export function StationSessions({ stationId }: StationSessionsProps) {
+export function StationSessions({ stationId, onViewLogs }: StationSessionsProps) {
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
         from: undefined,
@@ -208,8 +210,28 @@ export function StationSessions({ stationId }: StationSessionsProps) {
                     );
                 },
             },
+            {
+                id: 'actions',
+                header: 'Actions',
+                cell: ({ row }) => {
+                    const transactionId = row.original.transactionId;
+                    if (!transactionId) return null;
+
+                    return (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => onViewLogs?.(row.original.id)}
+                            className="h-8 px-2 text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary/10"
+                        >
+                            <Terminal className="h-3.5 w-3.5 mr-1.5" />
+                            View Logs
+                        </Button>
+                    );
+                },
+            },
         ],
-        []
+        [onViewLogs]
     );
 
     if (isLoading && !sessions) {

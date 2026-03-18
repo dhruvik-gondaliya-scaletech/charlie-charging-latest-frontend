@@ -44,6 +44,7 @@ export interface GetOcppLogsParams {
   direction?: 'INCOMING' | 'OUTGOING';
   messageType?: string;
   messageId?: string;
+  sessionId?: string;
   limit?: number;
   offset?: number;
 }
@@ -79,7 +80,6 @@ class StationService {
     return httpService.post(API_CONFIG.endpoints.stations.remoteStart(id), {
       connectorId,
       idTag,
-      userId,
     });
   }
 
