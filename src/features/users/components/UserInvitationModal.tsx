@@ -52,36 +52,7 @@ export function UserInvitationModal({ isOpen, onClose }: UserInvitationModalProp
             description="Send a collaboration invitation to join the fleet management ecosystem."
             size="md"
         >
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pt-4">
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="firstName" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">First Name</Label>
-                        <div className="relative">
-                            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
-                            <Input
-                                id="firstName"
-                                placeholder="John"
-                                className="pl-10 h-11 bg-muted/20 border-border/40 focus:ring-primary/20 rounded-xl font-bold"
-                                {...register('firstName')}
-                            />
-                        </div>
-                        {errors.firstName && <p className="text-[10px] font-bold text-destructive uppercase tracking-widest ml-1">{errors.firstName.message}</p>}
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="lastName" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Last Name</Label>
-                        <div className="relative">
-                            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
-                            <Input
-                                id="lastName"
-                                placeholder="Doe"
-                                className="pl-10 h-11 bg-muted/20 border-border/40 focus:ring-primary/20 rounded-xl font-bold"
-                                {...register('lastName')}
-                            />
-                        </div>
-                        {errors.lastName && <p className="text-[10px] font-bold text-destructive uppercase tracking-widest ml-1">{errors.lastName.message}</p>}
-                    </div>
-                </div>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
                 <div className="space-y-2">
                     <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Email Address</Label>
@@ -97,9 +68,6 @@ export function UserInvitationModal({ isOpen, onClose }: UserInvitationModalProp
                     </div>
                     {errors.email && <p className="text-[10px] font-bold text-destructive uppercase tracking-widest ml-1">{errors.email.message}</p>}
                 </div>
-
-
-
                 <div className="flex gap-3 pt-2">
                     <Button
                         type="button"
