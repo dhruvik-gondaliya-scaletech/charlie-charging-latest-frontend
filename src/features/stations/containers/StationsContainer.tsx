@@ -92,7 +92,19 @@ export function StationsContainer() {
         accessorKey: 'name',
         header: 'Name',
         cell: ({ row }) => (
-          <div className="font-semibold text-foreground">{row.getValue('name')}</div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div
+                className="font-semibold text-foreground cursor-pointer hover:text-primary transition-colors inline-block"
+                onClick={() => router.push(FRONTEND_ROUTES.STATIONS_DETAILS(row.original.id))}
+              >
+                {row.getValue('name')}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-xs">View Details</p>
+            </TooltipContent>
+          </Tooltip>
         ),
       },
       {
@@ -165,22 +177,6 @@ export function StationsContainer() {
         header: 'Actions',
         cell: ({ row }) => (
           <div className="flex items-center gap-1">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 hover:bg-primary/10 hover:text-primary cursor-pointer"
-                  onClick={() => router.push(FRONTEND_ROUTES.STATIONS_DETAILS(row.original.id))}
-                >
-                  <Eye className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="text-xs">View Details</p>
-              </TooltipContent>
-            </Tooltip>
-
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button

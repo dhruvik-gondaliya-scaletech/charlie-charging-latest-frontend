@@ -55,7 +55,7 @@ export function Sidebar() {
 
   return (
     <div className="flex flex-col h-full bg-card border-r">
-      <div className="p-6">
+      <div className="p-6 h-[100px] flex flex-col justify-center shrink-0">
         <h1 className="text-2xl font-bold">CSMS</h1>
         <p className="text-sm text-muted-foreground">Charging Station Management</p>
       </div>
