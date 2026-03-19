@@ -134,6 +134,7 @@ export interface DashboardData {
 export interface Tenant {
   id: string;
   name: string;
+  slug: string;
   schemaName: string;
   isActive: boolean;
   description?: string;
@@ -146,6 +147,7 @@ export interface Tenant {
 export interface TenantListResponse {
   id: string;
   name: string;
+  slug: string;
   schemaName: string;
   isActive: boolean;
   description: string | null;

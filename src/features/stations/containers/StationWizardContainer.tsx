@@ -107,7 +107,7 @@ export function StationWizardContainer({ stationId, mode }: StationWizardContain
             isLoading={isPending}
             onCancel={() => router.back()}
             isEdit={isEdit}
-            tenantId={tenant?.id || ''}
+            tenantSlug={tenant?.slug || tenant?.id || ''}
         />
     );
 }
