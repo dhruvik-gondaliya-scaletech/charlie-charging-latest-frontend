@@ -61,6 +61,12 @@ export function StationDetailContainer() {
     const { data: station, isLoading, error } = useStation(id as string);
     const { data: sessions } = useStationSessions(id as string);
     const [activeTab, setActiveTab] = useState('overview');
+    const [filterSessionId, setFilterSessionId] = useState<string | undefined>(undefined);
+
+    const handleViewSessionLogs = (sessionId: string) => {
+        setFilterSessionId(sessionId);
+        setActiveTab('logs');
+    };
 
     // Establish WebSocket connection
     useWebSocketConnection();
@@ -100,6 +106,16 @@ export function StationDetailContainer() {
                     );
 
                     return { ...oldData, connectors: updatedConnectors };
+                });
+
+                // Clear busy state for this connector
+                setBusyConnectors(prev => {
+                    if (prev.has(data.connectorId)) {
+                        const next = new Set(prev);
+                        next.delete(data.connectorId);
+                        return next;
+                    }
+                    return prev;
                 });
 
                 // 2. Debounce the background refresh for the station and sessions
@@ -156,16 +172,36 @@ export function StationDetailContainer() {
     const [isStopModalOpen, setIsStopModalOpen] = useState(false);
     const [selectedConnectorId, setSelectedConnectorId] = useState<number | null>(null);
     const [stopTransactionId, setStopTransactionId] = useState<string>('');
+    const [busyConnectors, setBusyConnectors] = useState<Set<number>>(new Set());
 
     const remoteStart = useRemoteStart();
     const remoteStop = useRemoteStop();
 
     const handleStartConnector = (connectorId: number) => {
+        setBusyConnectors(prev => new Set(prev).add(connectorId));
         remoteStart.mutate({
             id: station?.id || '',
             connectorId,
             idTag: 'ADMIN_TAG',
             userId: user?.id || 'admin-user',
+        }, {
+            onSuccess: (response: any) => {
+                // If station rejected the command, we should clear the busy state immediately
+                if (response?.status !== 'Accepted') {
+                    setBusyConnectors(prev => {
+                        const next = new Set(prev);
+                        next.delete(connectorId);
+                        return next;
+                    });
+                }
+            },
+            onError: () => {
+                setBusyConnectors(prev => {
+                    const next = new Set(prev);
+                    next.delete(connectorId);
+                    return next;
+                });
+            }
         });
     };
 
@@ -187,14 +223,32 @@ export function StationDetailContainer() {
     };
 
     const confirmStop = () => {
-        if (!stopTransactionId) return;
+        if (!stopTransactionId || selectedConnectorId === null) return;
+
+        const connectorId = selectedConnectorId;
+        setBusyConnectors(prev => new Set(prev).add(connectorId));
 
         remoteStop.mutate({
             id: station?.id || '',
             transactionId: parseInt(stopTransactionId),
         }, {
-            onSuccess: () => {
+            onSuccess: (response: any) => {
                 setIsStopModalOpen(false);
+                // If station rejected the command, we should clear the busy state immediately
+                if (response?.status !== 'Accepted') {
+                    setBusyConnectors(prev => {
+                        const next = new Set(prev);
+                        next.delete(connectorId);
+                        return next;
+                    });
+                }
+            },
+            onError: () => {
+                setBusyConnectors(prev => {
+                    const next = new Set(prev);
+                    next.delete(connectorId);
+                    return next;
+                });
             }
         });
     };
@@ -219,8 +273,8 @@ export function StationDetailContainer() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {Array(4).fill(0).map((_, i) => (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {Array(3).fill(0).map((_, i) => (
                         <Skeleton key={i} className="h-32 rounded-3xl" />
                     ))}
                 </div>
@@ -310,9 +364,8 @@ export function StationDetailContainer() {
             </motion.div>
 
             {/* Stats Grid */}
-            <motion.div variants={fadeInUp} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <motion.div variants={fadeInUp} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[
-                    { label: 'Voltage Output', value: '400 V', icon: Zap, color: 'text-amber-500', bottomRightGlobe: "bg-amber-500", description: 'Real-time voltage reporting' },
                     { label: 'Active Power', value: `${station.maxPower} kW`, icon: Activity, color: 'text-primary', bottomRightGlobe: "bg-primary", description: 'Current power throughput' },
                     { label: 'Fleet Status', value: station.isActive ? 'Active' : 'Inactive', icon: ShieldCheck, color: 'text-emerald-500', bottomRightGlobe: "bg-emerald-500", description: 'System availability' },
                     { label: 'Connectors', value: String(station.connectors?.length || station.connectorCount || 0), icon: Cpu, color: 'text-blue-500', bottomRightGlobe: "bg-blue-500", description: 'Available charging ports' },
@@ -429,8 +482,8 @@ export function StationDetailContainer() {
                                         connector={connector}
                                         onStart={handleStartConnector}
                                         onStop={handleStopConnector}
-                                        isStarting={remoteStart.isPending}
-                                        isStopping={remoteStop.isPending}
+                                        isStarting={remoteStart.isPending || busyConnectors.has(connector.connectorId)}
+                                        isStopping={remoteStop.isPending || busyConnectors.has(connector.connectorId)}
                                         disabled={station.status === ChargingStatus.OFFLINE}
                                     />
                                 ))}
@@ -451,7 +504,10 @@ export function StationDetailContainer() {
                     <TabsContent value="sessions">
                         <Card className="border-border/40 bg-card/20 backdrop-blur-sm rounded-3xl overflow-hidden border">
                             <CardContent className="p-6">
-                                <StationSessions stationId={station.id} />
+                                <StationSessions
+                                    stationId={station.id}
+                                    onViewLogs={handleViewSessionLogs}
+                                />
                             </CardContent>
                         </Card>
                     </TabsContent>
@@ -484,7 +540,11 @@ export function StationDetailContainer() {
                                 <CardDescription>Real-time machine communication logs</CardDescription>
                             </CardHeader>
                             <CardContent className="p-6">
-                                <StationLogs stationId={station.id} />
+                                <StationLogs
+                                    stationId={station.id}
+                                    sessionId={filterSessionId}
+                                    onClearSessionId={() => setFilterSessionId(undefined)}
+                                />
                             </CardContent>
                         </Card>
                     </TabsContent>

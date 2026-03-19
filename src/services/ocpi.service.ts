@@ -82,10 +82,13 @@ export interface OcpiTariff {
     party_id: string;
     country_code: string;
     currency: string;
+    type?: string;
+    tariff_alt_text?: Array<{ language: string; text: string }>;
     elements: Array<{
         price_components: Array<{
             type: string;
             price: number;
+            vat?: number;
             step_size: number;
         }>;
     }>;

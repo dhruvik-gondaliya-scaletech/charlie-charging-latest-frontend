@@ -1,6 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 import { toast } from 'sonner';
-import { WEBSOCKET_CONFIG, AUTH_CONFIG } from '@/constants/constants';
+import { WEBSOCKET_CONFIG, AUTH_CONFIG, API_CONFIG } from '@/constants/constants';
 
 // Event types
 export interface StationStatusChangeEvent {
@@ -99,7 +99,7 @@ class RealTimeService {
         // Create new connection promise
         this.connecting = new Promise((resolve, reject) => {
             try {
-                const wsUrl = WEBSOCKET_CONFIG.url;
+                const wsUrl = API_CONFIG.baseUrl;
 
                 // Clean up any existing socket
                 if (this.socket) {
