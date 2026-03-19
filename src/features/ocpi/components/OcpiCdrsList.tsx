@@ -1,20 +1,19 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import { Badge } from '@/components/ui/badge';
 import {
     Tooltip,
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Receipt, Zap, Clock } from 'lucide-react';
+import { Receipt, Zap, Clock, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { Table } from '@/components/shared/Table';
 import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
 import { OcpiCdr } from '@/services/ocpi.service';
 import { useOcpiCdrs } from '@/hooks/get/useOcpi';
-import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 const columns: ColumnDef<OcpiCdr>[] = [
     {
@@ -23,18 +22,20 @@ const columns: ColumnDef<OcpiCdr>[] = [
         cell: ({ row }) => {
             const fullId = row.getValue<string>('id');
             return (
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <span className="font-mono text-xs text-muted-foreground cursor-default">
-                                {fullId.slice(0, 8)}…
-                            </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p className="font-mono text-xs">{fullId}</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
+                <div className='relative'>
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span className="font-mono text-xs text-muted-foreground cursor-default">
+                                    {fullId.slice(0, 8)}…
+                                </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p className="font-mono text-xs">{fullId}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                </div>
             );
         },
     },
@@ -109,21 +110,55 @@ const columns: ColumnDef<OcpiCdr>[] = [
     },
 ];
 
+import { useState } from 'react';
+
+// ... (columns remains the same)
+
 export function OcpiCdrsList() {
-    const { data, isLoading } = useOcpiCdrs({ page: 0, pageSize: 500 });
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+    const [search, setSearch] = useState('');
+
+    const { data, isLoading, isError, refetch } = useOcpiCdrs({
+        page,
+        pageSize,
+        search
+    });
+
+    if (isError) {
+        return (
+            <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-xl bg-destructive/5 text-center">
+                <AlertCircle className="h-12 w-12 text-destructive mb-4 opacity-50" />
+                <p className="text-lg font-medium text-destructive">Failed to load billing records</p>
+                <p className="text-sm text-muted-foreground mb-6">
+                    There was an error fetching CDR data.
+                </p>
+                <Button onClick={() => refetch()} variant="outline" size="sm">
+                    Try Again
+                </Button>
+            </div>
+        );
+    }
 
     return (
         <Table<OcpiCdr>
             data={data?.items ?? []}
             columns={columns}
             isLoading={isLoading}
+            loadingRowCount={5}
             showSearch
             searchPosition="end"
+            onSearch={setSearch}
+            manualPagination
+            manualSearching
+            totalCount={data?.total ?? 0}
+            pageIndex={page}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
             showPagination
-            pageSize={DEFAULT_PAGE_SIZE}
+            pageSize={pageSize}
             sortByKey="last_updated"
             sortOrder="desc"
-            maxHeight="600px"
             emptyState={
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                     <Receipt className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
@@ -136,3 +171,4 @@ export function OcpiCdrsList() {
         />
     );
 }
+

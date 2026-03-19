@@ -5,9 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Play, Square, Terminal, Command } from 'lucide-react';
+import { Play, Square, Terminal, Command, Shield } from 'lucide-react';
 import { format } from 'date-fns';
-import { useOcpiCommands, useOcpiLocations, useOcpiTokens } from '@/hooks/get/useOcpi';
+import { useOcpiLocations, useOcpiTokens } from '@/hooks/get/useOcpi';
+import { useOcpiCommands } from '@/hooks/post/useOcpiMutations';
 import {
     Select,
     SelectContent,
@@ -15,15 +16,21 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
+import { AlertCircle } from 'lucide-react';
 
 export function OcpiCommandConsole() {
     const [locationId, setLocationId] = useState('');
     const [evseUid, setEvseUid] = useState('');
     const [tokenUid, setTokenUid] = useState('');
 
-    const { data: locations, isLoading: isLocationsLoading } = useOcpiLocations();
-    const { data: tokens, isLoading: isTokensLoading } = useOcpiTokens();
-    const { startSession, stopSession } = useOcpiCommands();
+    const { data: locationsData, isLoading: isLocationsLoading } = useOcpiLocations({ pageSize: 1000 });
+    const { data: tokensData, isLoading: isTokensLoading } = useOcpiTokens({ pageSize: 1000 });
+
+    const locations = locationsData?.items || [];
+    const tokens = tokensData?.items || [];
+
+    const { startSession, stopSession, unlockConnector } = useOcpiCommands();
 
     const selectedLocation = locations?.find(loc => loc.id === locationId);
     const evses = selectedLocation?.evses || [];
@@ -45,6 +52,15 @@ export function OcpiCommandConsole() {
         await stopSession.mutateAsync({
             location_id: locationId,
             evse_uid: evseUid,
+        });
+    };
+
+    const handleUnlock = async () => {
+        if (!locationId || !evseUid) return;
+        await unlockConnector.mutateAsync({
+            location_id: locationId,
+            evse_uid: evseUid,
+            connector_id: '1',
         });
     };
 
@@ -81,12 +97,13 @@ export function OcpiCommandConsole() {
                                     <SelectValue placeholder={isLocationsLoading ? "Loading..." : "Select Location"} />
                                 </SelectTrigger>
                                 <SelectContent className="max-w-[300px]">
-                                    {locations?.map((loc) => (
+                                    {locations.map((loc: any) => (
                                         <SelectItem key={loc.id} value={loc.id} className="text-xs">
                                             {loc.name}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
+
                             </Select>
                         </div>
 
@@ -124,12 +141,13 @@ export function OcpiCommandConsole() {
                                     <SelectValue placeholder={isTokensLoading ? "Loading..." : "Select RFID/App Token"} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {tokens?.map((token) => (
+                                    {tokens.map((token: any) => (
                                         <SelectItem key={token.uid} value={token.uid} className="text-xs">
                                             {token.visualNumber || token.uid}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
+
                             </Select>
                         </div>
                     </div>
@@ -151,6 +169,15 @@ export function OcpiCommandConsole() {
                         >
                             <Square className="mr-2 h-4 w-4 fill-current group-hover:scale-110 transition-transform" />
                             {stopSession.isPending ? 'Executing...' : 'STOP_SESSION'}
+                        </Button>
+                        <Button
+                            variant="outline"
+                            onClick={handleUnlock}
+                            disabled={unlockConnector.isPending || !locationId || !evseUid}
+                            className="h-12 font-bold rounded-xl border-amber-500/50 text-amber-500 hover:bg-amber-500/10 shadow-lg shadow-amber-900/10 group col-span-1 sm:col-span-2"
+                        >
+                            <Shield className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
+                            {unlockConnector.isPending ? 'Executing...' : 'UNLOCK_CONNECTOR'}
                         </Button>
                     </div>
                 </CardContent>
@@ -178,7 +205,7 @@ export function OcpiCommandConsole() {
                             <span className="text-zinc-500">Console initialized. Waiting for protocol dispatch...</span>
                         </div>
 
-                        {(startSession.isPending || stopSession.isPending) && (
+                        {(startSession.isPending || stopSession.isPending || unlockConnector.isPending) && (
                             <div className="flex gap-3 animate-pulse">
                                 <span className="text-zinc-700 opacity-50 select-none">[{format(new Date(), 'HH:mm:ss')}]</span>
                                 <span className="text-amber-500 font-bold">[ACTION]</span>
@@ -220,7 +247,24 @@ export function OcpiCommandConsole() {
                             </div>
                         )}
 
-                        {(startSession.isError || stopSession.isError) && (
+                        {unlockConnector.isSuccess && (
+                            <div className="space-y-1 animate-in slide-in-from-top-1 duration-300">
+                                <div className="flex gap-3">
+                                    <span className="text-zinc-700 select-none">[{format(new Date(), 'HH:mm:ss')}]</span>
+                                    <span className={unlockConnector.data?.result === 'ACCEPTED' ? "text-emerald-500 font-bold" : "text-amber-500 font-bold"}>
+                                        [{unlockConnector.data?.result || 'UNKNOWN'}]
+                                    </span>
+                                    <span className={unlockConnector.data?.result === 'ACCEPTED' ? "text-emerald-400" : "text-amber-400"}>
+                                        UNLOCK_CONNECTOR {unlockConnector.data?.result === 'ACCEPTED' ? 'command accepted' : 'rejected'}
+                                    </span>
+                                </div>
+                                <div className="pl-11 text-[10px] text-zinc-600 opacity-80">
+                                    {">"} {unlockConnector.data?.message || (unlockConnector.data?.result === 'ACCEPTED' ? 'Unlock signal dispatched' : 'Protocol rejection')} for {evseUid}
+                                </div>
+                            </div>
+                        )}
+
+                        {(startSession.isError || stopSession.isError || unlockConnector.isError) && (
                             <div className="space-y-1 animate-in shake-in duration-300">
                                 <div className="flex gap-3">
                                     <span className="text-zinc-700 select-none">[{format(new Date(), 'HH:mm:ss')}]</span>
@@ -228,7 +272,7 @@ export function OcpiCommandConsole() {
                                     <span className="text-red-400 font-semibold tracking-tight uppercase">Network/Server Error</span>
                                 </div>
                                 <div className="pl-11 text-[10px] text-red-500/70 border-l border-red-500/20 ml-2 py-1 italic">
-                                    {startSession.error?.message || stopSession.error?.message}
+                                    {startSession.error?.message || stopSession.error?.message || unlockConnector.error?.message}
                                 </div>
                             </div>
                         )}

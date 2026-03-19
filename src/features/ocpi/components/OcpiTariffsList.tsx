@@ -3,12 +3,13 @@
 import { useState } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@/components/ui/badge';
-import { Coins } from 'lucide-react';
+import { Coins, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { Table } from '@/components/shared/Table';
 import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
 import { OcpiTariff } from '@/services/ocpi.service';
 import { useOcpiTariffs } from '@/hooks/get/useOcpi';
+import { Button } from '@/components/ui/button';
 
 const TARIFF_TYPE_COLOR: Record<string, string> = {
     AD_HOC_PAYMENT: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
@@ -107,25 +108,49 @@ const columns: ColumnDef<OcpiTariff>[] = [
 
 export function OcpiTariffsList() {
     const [page, setPage] = useState(0);
-    const [pageSize] = useState(DEFAULT_PAGE_SIZE);
+    const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+    const [search, setSearch] = useState('');
 
-    const { data, isLoading } = useOcpiTariffs({ page, pageSize });
+    const { data, isLoading, isError, refetch } = useOcpiTariffs({
+        page,
+        pageSize,
+        search
+    });
 
-    const tariffs = data?.items ?? [];
-    const total = data?.total ?? 0;
+    if (isError) {
+        return (
+            <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-xl bg-destructive/5 text-center">
+                <AlertCircle className="h-12 w-12 text-destructive mb-4 opacity-50" />
+                <p className="text-lg font-medium text-destructive">Failed to load tariffs</p>
+                <p className="text-sm text-muted-foreground mb-6">
+                    There was an error fetching OCPI tariff data.
+                </p>
+                <Button onClick={() => refetch()} variant="outline" size="sm">
+                    Try Again
+                </Button>
+            </div>
+        );
+    }
 
     return (
         <Table<OcpiTariff>
-            data={tariffs}
+            data={data?.items ?? []}
             columns={columns}
             isLoading={isLoading}
+            loadingRowCount={5}
             showSearch
             searchPosition="end"
+            onSearch={setSearch}
+            manualPagination
+            manualSearching
+            totalCount={data?.total ?? 0}
+            pageIndex={page}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
             showPagination
             pageSize={pageSize}
             sortByKey="id"
             sortOrder="asc"
-            maxHeight="600px"
             emptyState={
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                     <Coins className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
@@ -138,3 +163,4 @@ export function OcpiTariffsList() {
         />
     );
 }
+

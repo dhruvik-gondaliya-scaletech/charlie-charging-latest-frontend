@@ -56,7 +56,10 @@ export const API_CONFIG = {
         },
         ocpi: {
             credentials: "/ocpi/mgmt/credentials",
+            deleteCredential: (id: string) => `/ocpi/mgmt/credentials/${id}/delete`,
             generateToken: "/ocpi/mgmt/credentials/generate-token",
+            syncAll: "/ocpi/mgmt/sync-all",
+            syncTokens: "/ocpi/mgmt/sync-tokens",
             tokens: "/ocpi/mgmt/tokens",
             sessions: "/ocpi/mgmt/sessions",
             cdrs: "/ocpi/mgmt/cdrs",
@@ -65,6 +68,7 @@ export const API_CONFIG = {
             commands: {
                 start: "/ocpi/mgmt/commands/start",
                 stop: "/ocpi/mgmt/commands/stop",
+                unlock: "/ocpi/mgmt/commands/unlock",
             },
             stats: "/ocpi/mgmt/stats",
         },
