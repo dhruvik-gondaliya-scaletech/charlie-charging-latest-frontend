@@ -6,14 +6,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface WebSocketUrlDisplayProps {
     chargePointId: string;
-    tenantId: string;
+    tenantSlug: string;
 }
 
-export default function WebSocketUrlDisplay({ chargePointId, tenantId }: WebSocketUrlDisplayProps) {
+export default function WebSocketUrlDisplay({ chargePointId, tenantSlug }: WebSocketUrlDisplayProps) {
     const [copied, setCopied] = useState(false);
 
-    // Construct the WebSocket URL: ws://host:port/ocpp/{tenantId}/{chargePointId}
-    const wsUrl = `${WEBSOCKET_CONFIG.ocppUrl}/${tenantId}/${chargePointId}`;
+    // Construct the WebSocket URL: ws://host:port/ocpp/{tenantSlug}/{chargePointId}
+    const wsUrl = `${WEBSOCKET_CONFIG.ocppUrl}/${tenantSlug}/${chargePointId}`;
 
     const handleCopy = async () => {
         try {

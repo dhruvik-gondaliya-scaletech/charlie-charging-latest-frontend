@@ -455,7 +455,7 @@ export function StationDetailContainer() {
                                     <CardContent>
                                         <WebSocketUrlDisplay
                                             chargePointId={station.chargePointId}
-                                            tenantId={tenant?.id || ''}
+                                            tenantSlug={tenant?.slug || tenant?.id || ''}
                                         />
                                     </CardContent>
                                 </Card>

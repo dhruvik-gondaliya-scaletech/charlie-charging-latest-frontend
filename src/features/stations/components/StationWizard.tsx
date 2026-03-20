@@ -57,7 +57,7 @@ interface StationWizardProps {
     isLoading: boolean;
     onCancel: () => void;
     isEdit?: boolean;
-    tenantId: string;
+    tenantSlug: string;
 }
 
 const STEPS = [
@@ -77,7 +77,7 @@ export function StationWizard({
     isLoading,
     onCancel,
     isEdit = true,
-    tenantId
+    tenantSlug
 }: StationWizardProps) {
     const [step, setStep] = useState(1);
 
@@ -656,7 +656,7 @@ export function StationWizard({
 
                                         <WebSocketUrlDisplay
                                             chargePointId={form.watch('chargePointId')}
-                                            tenantId={tenantId}
+                                            tenantSlug={tenantSlug}
                                         />
 
                                         <div className="p-4 bg-muted/20 border border-border/40 rounded-2xl">
