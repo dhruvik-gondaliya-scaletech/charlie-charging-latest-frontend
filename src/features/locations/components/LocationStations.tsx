@@ -1,15 +1,17 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { ColumnDef } from '@tanstack/react-table';
 import { Table } from '@/components/shared/Table';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Eye, Zap } from 'lucide-react';
+import { Zap } from 'lucide-react';
 import { Station, ChargingStatus } from '@/types';
 import { cn } from '@/lib/utils';
 import { FRONTEND_ROUTES } from '@/constants/constants';
+import {
+    TooltipProvider,
+} from '@/components/ui/tooltip';
 
 interface LocationStationsProps {
     stations: Station[];
@@ -25,9 +27,14 @@ export function LocationStations({ stations, isLoading }: LocationStationsProps)
                 accessorKey: 'name',
                 header: 'Station ID',
                 cell: ({ row }) => (
-                    <div className="flex flex-col">
+                    <div
+                        className="flex flex-col cursor-pointer hover:text-primary transition-colors group"
+                        onClick={() => router.push(FRONTEND_ROUTES.STATIONS_DETAILS(row.original.id))}
+                    >
                         <span className="font-bold tracking-tight">{row.getValue('name')}</span>
-                        <span className="text-[10px] font-mono text-muted-foreground">{row.original.chargePointId}</span>
+                        <span className="text-[10px] font-mono text-muted-foreground group-hover:text-primary/70 transition-colors uppercase">
+                            {row.original.chargePointId}
+                        </span>
                     </div>
                 ),
             },
@@ -77,20 +84,6 @@ export function LocationStations({ stations, isLoading }: LocationStationsProps)
                     </div>
                 ),
             },
-            {
-                id: 'actions',
-                header: 'Actions',
-                cell: ({ row }) => (
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 hover:bg-primary/10 hover:text-primary transition-colors"
-                        onClick={() => router.push(FRONTEND_ROUTES.STATIONS_DETAILS(row.original.id))}
-                    >
-                        <Eye className="h-4 w-4" />
-                    </Button>
-                ),
-            },
         ],
         [router]
     );
@@ -107,26 +100,28 @@ export function LocationStations({ stations, isLoading }: LocationStationsProps)
                 </Badge>
             </div>
 
-            <Table<Station>
-                data={stations}
-                columns={columns}
-                isLoading={isLoading}
-                pageSize={10}
-                className="border-none shadow-none"
-                emptyState={
-                    <div className="py-20 flex flex-col items-center justify-center text-center gap-6 bg-card/10 rounded-[2.5rem] border-2 border-dashed border-border/40">
-                        <div className="p-6 rounded-full bg-primary/5 text-primary/40 ring-1 ring-primary/10">
-                            <Zap className="h-12 w-12" />
+            <TooltipProvider>
+                <Table<Station>
+                    data={stations}
+                    columns={columns}
+                    isLoading={isLoading}
+                    pageSize={10}
+                    className="border-none shadow-none"
+                    emptyState={
+                        <div className="py-20 flex flex-col items-center justify-center text-center gap-6 bg-card/10 rounded-[2.5rem] border-2 border-dashed border-border/40">
+                            <div className="p-6 rounded-full bg-primary/5 text-primary/40 ring-1 ring-primary/10">
+                                <Zap className="h-12 w-12" />
+                            </div>
+                            <div className="space-y-1">
+                                <h3 className="text-xl font-black tracking-tight text-foreground">No stations found</h3>
+                                <p className="max-w-xs text-muted-foreground font-medium text-xs leading-relaxed mx-auto uppercase tracking-wider opacity-60">
+                                    This location has no charging equipment assigned yet.
+                                </p>
+                            </div>
                         </div>
-                        <div className="space-y-1">
-                            <h3 className="text-xl font-black tracking-tight text-foreground">No stations found</h3>
-                            <p className="max-w-xs text-muted-foreground font-medium text-xs leading-relaxed mx-auto uppercase tracking-wider opacity-60">
-                                This location has no charging equipment assigned yet.
-                            </p>
-                        </div>
-                    </div>
-                }
-            />
+                    }
+                />
+            </TooltipProvider>
         </div>
     );
 }

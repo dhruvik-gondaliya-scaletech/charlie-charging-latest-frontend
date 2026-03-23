@@ -55,10 +55,22 @@ export function LocationsContainer() {
         accessorKey: 'name',
         header: 'Name',
         cell: ({ row }) => (
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-muted-foreground" />
-            <span className="font-semibold text-foreground">{row.getValue('name')}</span>
-          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div
+                className="flex items-center gap-2 cursor-pointer hover:text-primary transition-colors inline-flex group"
+                onClick={() => handleViewDetails(row.original)}
+              >
+                <MapPin className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                <span className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                  {row.getValue('name')}
+                </span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-xs">View Details</p>
+            </TooltipContent>
+          </Tooltip>
         ),
       },
       {
@@ -119,21 +131,6 @@ export function LocationsContainer() {
         header: 'Actions',
         cell: ({ row }) => (
           <div className="flex justify-start gap-1">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 hover:bg-primary/10 hover:text-primary cursor-pointer"
-                  onClick={() => handleViewDetails(row.original)}
-                >
-                  <Eye className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="text-xs">View Details</p>
-              </TooltipContent>
-            </Tooltip>
 
             <Tooltip>
               <TooltipTrigger asChild>

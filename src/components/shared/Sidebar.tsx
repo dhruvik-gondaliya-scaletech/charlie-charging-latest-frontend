@@ -43,7 +43,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
 
-  const getInitials = (firstName?: string, lastName?: string) => {
+  const getInitials = (firstName?: string | null, lastName?: string | null) => {
     if (!firstName || !lastName) return 'U';
     return `${firstName[0]}${lastName[0]}`.toUpperCase();
   };
@@ -55,7 +55,7 @@ export function Sidebar() {
 
   return (
     <div className="flex flex-col h-full bg-card border-r">
-      <div className="p-6">
+      <div className="p-6 h-[100px] flex flex-col justify-center shrink-0">
         <h1 className="text-2xl font-bold">CSMS</h1>
         <p className="text-sm text-muted-foreground">Charging Station Management</p>
       </div>
@@ -102,7 +102,7 @@ export function Sidebar() {
               </Avatar>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold truncate leading-tight">
-                  {user?.firstName} {user?.lastName}
+                  {user?.firstName || user?.lastName ? `${user?.firstName || ''} ${user?.lastName || ''}`.trim() : 'User'}
                 </p>
                 <p className="text-xs text-muted-foreground truncate">
                   {user?.role?.replace('_', ' ')}

@@ -93,7 +93,10 @@ export function UserProfileContainer() {
                         Return to Previous Matrix
                     </button>
                     <div className="flex flex-wrap items-center gap-3">
-                        <h1 className="text-4xl font-black tracking-tight text-foreground uppercase">{user.firstName} {user.lastName}</h1>
+                        <h1 className="text-4xl font-black tracking-tight text-foreground uppercase">
+                            {user.firstName || ''} {user.lastName || ''}
+                            {(!user.firstName && !user.lastName) && 'Identity Unspecified'}
+                        </h1>
                         <Badge
                             variant="outline"
                             className={cn(

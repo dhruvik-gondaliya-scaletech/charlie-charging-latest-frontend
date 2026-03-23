@@ -159,8 +159,8 @@ export interface TenantListResponse {
 export interface User {
   id: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  firstName?: string | null;
+  lastName?: string | null;
   role: string;
   phoneNumber?: string | null;
   isEmailVerified: boolean;

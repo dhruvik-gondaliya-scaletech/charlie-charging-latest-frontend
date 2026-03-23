@@ -8,7 +8,10 @@ interface ProfileHeaderProps {
 
 export function ProfileHeader({ user }: ProfileHeaderProps) {
   const getInitials = () => {
-    return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+    const firstInitial = user.firstName?.[0] || '';
+    const lastInitial = user.lastName?.[0] || '';
+    const initials = `${firstInitial}${lastInitial}`;
+    return initials ? initials.toUpperCase() : user.email[0].toUpperCase();
   };
 
   return (
@@ -20,7 +23,8 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
           </Avatar>
           <div>
             <CardTitle>
-              {user.firstName} {user.lastName}
+              {user.firstName || ''} {user.lastName || ''}
+              {(!user.firstName && !user.lastName) && 'User'}
             </CardTitle>
             <CardDescription>{user.email}</CardDescription>
           </div>

@@ -1,8 +1,6 @@
 import { z } from 'zod';
 
 export const userInvitationSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
   email: z.string().email('Invalid email address'),
   role: z.string().min(1, 'Role is required'),
 });
@@ -10,8 +8,8 @@ export const userInvitationSchema = z.object({
 export type UserInvitationData = z.infer<typeof userInvitationSchema>;
 
 export const userProfileSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
+  firstName: z.string().min(1, 'First name is required').optional().nullable(),
+  lastName: z.string().min(1, 'Last name is required').optional().nullable(),
   email: z.string().email('Invalid email address'),
   phoneNumber: z.string().optional().nullable(),
 });
