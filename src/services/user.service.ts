@@ -8,8 +8,8 @@ export interface ChangePasswordData {
 }
 
 export interface UpdateProfileData {
-  firstName?: string;
-  lastName?: string;
+  firstName?: string | null;
+  lastName?: string | null;
   email?: string;
   phoneNumber?: string | null;
 }
