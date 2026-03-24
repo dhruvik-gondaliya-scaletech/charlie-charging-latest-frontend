@@ -71,12 +71,11 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
             serialNumber: initialData?.serialNumber || '',
             model: initialData?.model || '',
             vendor: initialData?.vendor || '',
-            firmware: initialData?.firmware || '',
             maxPower: initialData?.maxPower || 22, // Defaulting to 22kW
             locationId: initialData?.locationId || '',
-            ocppVersion: initialData?.ocppVersion || '1.6',
+            ocppVersion: initialData?.ocppVersion || undefined,
             type: initialData?.type || 'AC',
-            connectorTypes: (initialData?.connectorTypes as ConnectorType[]) || [ConnectorType.TYPE_2],
+            connectorTypes: (initialData?.connectorTypes as ConnectorType[]) || [ConnectorType.MENNEKES],
         },
     });
 
@@ -92,10 +91,9 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
                 serialNumber: initialData.serialNumber || '',
                 model: initialData.model || '',
                 vendor: initialData.vendor || '',
-                firmware: initialData.firmware || '',
                 maxPower: initialData.maxPower ?? 22,
                 locationId: initialData.locationId || '',
-                ocppVersion: initialData.ocppVersion || '1.6',
+                ocppVersion: initialData.ocppVersion || undefined,
                 type: initialData.type || 'AC',
                 connectorTypes: (initialData.connectorTypes as ConnectorType[]) || [],
             }, {
@@ -280,22 +278,6 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
                                     </FormItem>
                                 )}
                             />
-                            <FormField
-                                control={form.control as any}
-                                name="firmware"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-70">Firmware Version</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="e.g. 1.0.4" className="bg-muted/10 border-border/40 font-medium h-12 w-full" {...field} />
-                                        </FormControl>
-                                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">Current firmware version</p>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <FormField
                                 control={form.control as any}
                                 name="maxPower"

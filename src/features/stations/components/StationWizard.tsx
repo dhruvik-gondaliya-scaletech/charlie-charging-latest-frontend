@@ -89,10 +89,9 @@ export function StationWizard({
             serialNumber: initialData.serialNumber || '',
             model: initialData.model || '',
             vendor: initialData.vendor || '',
-            firmware: initialData.firmware || '',
             maxPower: initialData.maxPower || 22,
             locationId: (initialData.location && typeof initialData.location === 'object' ? (initialData.location as any).id : initialData.locationId) || '',
-            ocppVersion: (initialData.ocppVersion as any) || '1.6',
+            ocppVersion: (initialData.ocppVersion as any) || undefined,
             type: initialData.type || 'AC',
             connectorTypes: initialData.connectorTypes || [],
         },
@@ -136,10 +135,9 @@ export function StationWizard({
                 serialNumber: initialData.serialNumber || '',
                 model: initialData.model || '',
                 vendor: initialData.vendor || '',
-                firmware: initialData.firmware || '',
                 maxPower: initialData.maxPower ?? 22,
                 locationId: (initialData.location && typeof initialData.location === 'object' ? (initialData.location as any).id : initialData.locationId) || '',
-                ocppVersion: (initialData.ocppVersion as any) || '1.6',
+                ocppVersion: (initialData.ocppVersion as any) || undefined,
                 type: initialData.type || 'AC',
                 connectorTypes: initialData.connectorTypes || [],
             }, {
@@ -152,7 +150,7 @@ export function StationWizard({
     const nextStep = async () => {
         let fieldsToValidate: (keyof WizardValues)[] = [];
         if (step === 1) fieldsToValidate = ['name', 'vendor', 'model', 'maxPower'];
-        if (step === 2) fieldsToValidate = ['serialNumber', 'chargePointId', 'firmware', 'type'];
+        if (step === 2) fieldsToValidate = ['serialNumber', 'chargePointId', 'type'];
         if (step === 3) fieldsToValidate = ['locationId', 'ocppVersion'];
 
         const isValid = await form.trigger(fieldsToValidate);
@@ -453,23 +451,6 @@ export function StationWizard({
                                                         </SelectContent>
                                                     </Select>
                                                     <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1.5 opacity-70">Power delivery classification</p>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <FormField
-                                            control={form.control as any}
-                                            name="firmware"
-                                            render={({ field }) => (
-                                                <FormItem className="md:col-span-1">
-                                                    <FormLabel className="font-bold flex items-center gap-1.5">
-                                                        <Cpu className="h-3.5 w-3.5 text-primary" />
-                                                        Firmware Version*
-                                                    </FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="e.g. 1.0.4" className="bg-muted/30 py-6 font-medium border-border/60" {...field} />
-                                                    </FormControl>
-                                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1.5 opacity-70">Current software version</p>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
