@@ -2,7 +2,8 @@ import { z } from 'zod';
 
 export const userInvitationSchema = z.object({
   email: z.string().email('Invalid email address'),
-  role: z.string().min(1, 'Role is required'),
+  roleId: z.string().min(1, 'Role is required'),
+  locationId: z.string().optional().nullable(),
 });
 
 export type UserInvitationData = z.infer<typeof userInvitationSchema>;

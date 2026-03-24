@@ -16,3 +16,10 @@ export const useUserProfile = () => {
     staleTime: 60000,
   });
 };
+export const useRoles = () => {
+  return useQuery({
+    queryKey: ['roles'],
+    queryFn: () => userService.getRoles(),
+    staleTime: 300000,
+  });
+};

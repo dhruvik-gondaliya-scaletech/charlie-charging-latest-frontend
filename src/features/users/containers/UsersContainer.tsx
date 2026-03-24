@@ -64,12 +64,23 @@ export function UsersContainer() {
       {
         accessorKey: 'role',
         header: 'Security Tier',
-        cell: ({ row }) => (
-          <Badge variant="outline" className="capitalize font-black px-2.5 py-0.5 rounded-full border bg-muted/30 text-[10px] tracking-tight flex items-center gap-1 w-fit">
-            <Shield className="h-3 w-3 opacity-60" />
-            {row.getValue('role')}
-          </Badge>
-        ),
+        cell: ({ row }) => {
+          const roleName = row.original.roleObject?.name || row.original.role || 'operator';
+          return (
+            <div className="flex flex-col gap-1.5">
+              <Badge variant="outline" className="capitalize font-black px-2.5 py-0.5 rounded-full border bg-muted/30 text-[10px] tracking-tight flex items-center gap-1 w-fit">
+                <Shield className="h-3 w-3 opacity-60" />
+                {roleName.replace(/_/g, ' ')}
+              </Badge>
+              {row.original.locationId && (
+                <div className="flex items-center gap-1 text-[9px] text-muted-foreground font-bold uppercase tracking-widest pl-1">
+                  <Activity className="h-2.5 w-2.5 opacity-50" />
+                  Loc ID: {row.original.locationId.substring(0, 8)}...
+                </div>
+              )}
+            </div>
+          );
+        },
       },
       {
         accessorKey: 'isActive',
@@ -126,7 +137,8 @@ export function UsersContainer() {
               onClick={() => {
                 inviteUser.mutate({
                   email: user.email,
-                  role: 'admin',
+                  roleId: user.roleId || '',
+                  locationId: user.locationId,
                 });
               }}
               className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-wider bg-primary/5 hover:bg-primary/10 border-primary/10 text-primary transition-all flex items-center gap-1.5"

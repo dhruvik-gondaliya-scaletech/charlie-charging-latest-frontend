@@ -14,6 +14,8 @@ export const API_CONFIG = {
             base: "/users",
             profile: "/users/profile",
             changePassword: "/users/change-password",
+            roles: "/users/roles",
+            byId: (id: string) => `/users/${id}`,
         },
         stations: {
             base: "/stations",

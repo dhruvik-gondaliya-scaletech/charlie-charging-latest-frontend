@@ -10,7 +10,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useInviteUser } from '@/hooks/post/useAuthMutations';
-import { Mail, User, Shield, Loader2 } from 'lucide-react';
+import { useRoles } from '@/hooks/get/useUsers';
+import { useLocations } from '@/hooks/get/useLocations';
+import { Mail, Shield, Loader2, MapPin } from 'lucide-react';
+import { Role } from '@/types';
 
 interface UserInvitationModalProps {
     isOpen: boolean;
@@ -19,18 +22,28 @@ interface UserInvitationModalProps {
 
 export function UserInvitationModal({ isOpen, onClose }: UserInvitationModalProps) {
     const inviteUser = useInviteUser();
+    const { data: roles } = useRoles();
+    const { data: locations } = useLocations();
+
     const {
         register,
         handleSubmit,
         control,
         reset,
+        watch,
         formState: { errors },
     } = useForm<UserInvitationData>({
         resolver: zodResolver(userInvitationSchema),
         defaultValues: {
-            role: 'admin',
+            email: '',
+            roleId: '',
+            locationId: '',
         }
     });
+
+    const selectedRoleId = watch('roleId');
+    const selectedRole = roles?.find((r: Role) => r.id === selectedRoleId);
+    const isOperator = selectedRole?.name === 'operator';
 
     const onSubmit = (data: UserInvitationData) => {
         inviteUser.mutate(data, {
@@ -53,7 +66,6 @@ export function UserInvitationModal({ isOpen, onClose }: UserInvitationModalProp
             size="md"
         >
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-
                 <div className="space-y-2">
                     <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Email Address</Label>
                     <div className="relative">
@@ -68,6 +80,63 @@ export function UserInvitationModal({ isOpen, onClose }: UserInvitationModalProp
                     </div>
                     {errors.email && <p className="text-[10px] font-bold text-destructive uppercase tracking-widest ml-1">{errors.email.message}</p>}
                 </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Access Role</Label>
+                        <Controller
+                            name="roleId"
+                            control={control}
+                            render={({ field }) => (
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                    <SelectTrigger className="h-11 bg-muted/20 border-border/40 focus:ring-primary/20 rounded-xl font-bold">
+                                        <div className="flex items-center gap-2">
+                                            <Shield className="h-4 w-4 text-muted-foreground/50" />
+                                            <SelectValue placeholder="Select Role" />
+                                        </div>
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-xl border-border/40">
+                                        {roles?.map((role: Role) => (
+                                            <SelectItem key={role.id} value={role.id} className="font-bold">
+                                                {role.name.replace(/_/g, ' ').toUpperCase()}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            )}
+                        />
+                        {errors.roleId && <p className="text-[10px] font-bold text-destructive uppercase tracking-widest ml-1">{errors.roleId.message}</p>}
+                    </div>
+
+                    {isOperator && (
+                        <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-300">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Assigned Location</Label>
+                            <Controller
+                                name="locationId"
+                                control={control}
+                                render={({ field }) => (
+                                    <Select onValueChange={field.onChange} value={field.value || ''}>
+                                        <SelectTrigger className="h-11 bg-muted/20 border-border/40 focus:ring-primary/20 rounded-xl font-bold">
+                                            <div className="flex items-center gap-2">
+                                                <MapPin className="h-4 w-4 text-muted-foreground/50" />
+                                                <SelectValue placeholder="Select Location" />
+                                            </div>
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-xl border-border/40">
+                                            {locations?.map((loc) => (
+                                                <SelectItem key={loc.id} value={loc.id} className="font-bold">
+                                                    {loc.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                            />
+                            {errors.locationId && <p className="text-[10px] font-bold text-destructive uppercase tracking-widest ml-1">{errors.locationId.message}</p>}
+                        </div>
+                    )}
+                </div>
+
                 <div className="flex gap-3 pt-2">
                     <Button
                         type="button"

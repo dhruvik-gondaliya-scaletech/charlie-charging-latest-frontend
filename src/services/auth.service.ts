@@ -18,9 +18,8 @@ export interface RegisterData {
 
 export interface InviteUserData {
   email: string;
-  firstName?: string;
-  lastName?: string;
-  role: string;
+  roleId: string;
+  locationId?: string | null;
 }
 
 export interface AcceptInvitationData {

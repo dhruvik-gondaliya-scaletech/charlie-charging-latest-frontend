@@ -153,12 +153,21 @@ export interface TenantListResponse {
   userCount: number;
 }
 
+export interface Role {
+  id: string;
+  name: string;
+  description?: string;
+}
+
 export interface User {
   id: string;
   email: string;
   firstName?: string | null;
   lastName?: string | null;
   role: string;
+  roleId?: string;
+  locationId?: string;
+  roleObject?: Role;
   phoneNumber?: string | null;
   isEmailVerified: boolean;
   isActive: boolean;

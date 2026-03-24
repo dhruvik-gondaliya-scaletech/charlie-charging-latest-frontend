@@ -1,6 +1,6 @@
 import httpService from '@/lib/http-service';
 import { API_CONFIG } from '@/constants/constants';
-import { User } from '@/types';
+import { User, Role } from '@/types';
 
 export interface ChangePasswordData {
   currentPassword: string;
@@ -14,6 +14,12 @@ export interface UpdateProfileData {
   phoneNumber?: string | null;
 }
 
+export interface UpdateUserData extends UpdateProfileData {
+  roleId?: string;
+  locationId?: string;
+  isActive?: boolean;
+}
+
 class UserService {
   async getAllUsers(params?: { search?: string }) {
     return httpService.get<User[]>(API_CONFIG.endpoints.users.base, { params });
@@ -23,12 +29,24 @@ class UserService {
     return httpService.get<User>(API_CONFIG.endpoints.users.profile);
   }
 
+  async getRoles() {
+    return httpService.get<Role[]>(API_CONFIG.endpoints.users.roles);
+  }
+
   async updateProfile(data: UpdateProfileData) {
-    return httpService.put<User>(API_CONFIG.endpoints.users.profile, data);
+    return httpService.patch<User>(API_CONFIG.endpoints.users.profile, data);
+  }
+
+  async updateUser(id: string, data: UpdateUserData) {
+    return httpService.patch<User>(API_CONFIG.endpoints.users.byId(id), data);
+  }
+
+  async deleteUser(id: string) {
+    return httpService.delete(API_CONFIG.endpoints.users.byId(id));
   }
 
   async changePassword(data: ChangePasswordData) {
-    return httpService.put(API_CONFIG.endpoints.users.changePassword, data);
+    return httpService.post(API_CONFIG.endpoints.users.changePassword, data);
   }
 }
 
