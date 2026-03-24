@@ -8,10 +8,9 @@ export const stationSchema = z.object({
   serialNumber: z.string().min(1, 'Serial Number is required'),
   model: z.string().min(1, 'Model is required'),
   vendor: z.string().min(1, 'Vendor is required'),
-  firmware: z.string().min(1, 'Firmware version is required'),
   maxPower: z.coerce.number().min(1, 'Max power must be at least 1kW').max(1000, 'Max power cannot exceed 1000kW').default(22),
   locationId: z.string().min(1, 'Location is required'),
-  ocppVersion: z.enum(['1.6', '2.0.1']).default('1.6'),
+  ocppVersion: z.enum(['1.6', '2.0.1']).optional(),
   type: z.enum(['AC', 'DC'], { message: 'Station type is required' }),
   connectorTypes: z.array(z.string()).min(1, 'At least one connector type is required'),
 });
