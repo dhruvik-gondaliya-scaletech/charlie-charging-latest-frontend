@@ -9,6 +9,8 @@ export const API_CONFIG = {
             resendVerification: "/auth/resend-verification",
             inviteUser: "/auth/invite",
             acceptInvitation: "/auth/accept-invitation",
+            forgotPassword: "/auth/forgot-password",
+            resetPassword: "/auth/reset-password",
         },
         users: {
             base: "/users",
@@ -99,6 +101,8 @@ export const FRONTEND_ROUTES = {
     USERS: "/users",
     VERIFY_EMAIL: "/verify-email",
     ACCEPT_INVITE: "/accept-invitation",
+    FORGOT_PASSWORD: "/forgot-password",
+    RESET_PASSWORD: "/reset-password",
 }
 
 export const AUTH_CONFIG = {
