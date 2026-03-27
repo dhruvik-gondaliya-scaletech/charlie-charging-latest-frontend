@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import { LocationForm } from '../components/LocationForm';
 import { useCreateLocation } from '@/hooks/post/useLocationMutations';
 import { LocationFormData } from '@/lib/validations/location.schema';
-import { MapPin, ArrowLeft } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { FRONTEND_ROUTES } from '@/constants/constants';
-import { Button } from '@/components/ui/button';
+import { BackButton } from '@/components/shared/BackButton';
 
 export function LocationCreateContainer() {
     const router = useRouter();
@@ -23,13 +23,10 @@ export function LocationCreateContainer() {
 
     return (
         <div className="space-y-6">
-            <button
-                onClick={() => router.push(FRONTEND_ROUTES.LOCATIONS)}
-                className="flex items-center text-sm font-medium text-muted-foreground hover:text-primary mb-4 transition-colors group"
-            >
-                <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-                Return to Sites List
-            </button>
+            <BackButton
+                href={FRONTEND_ROUTES.LOCATIONS}
+                label="Return to Sites List"
+            />
             <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-3">
                     <div className="p-3 rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20">

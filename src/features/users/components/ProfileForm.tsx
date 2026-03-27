@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, Mail, Phone, Loader2, Save, ArrowLeft } from 'lucide-react';
+import { User, Mail, Phone, Loader2, Save } from 'lucide-react';
 import { User as UserType } from '@/types';
 
 interface ProfileFormProps {
