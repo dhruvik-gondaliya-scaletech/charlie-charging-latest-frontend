@@ -48,6 +48,14 @@ export function LoginForm({ onSubmit, isLoading }: LoginFormProps) {
         {errors.password && (
           <p className="text-sm text-destructive">{errors.password.message}</p>
         )}
+        <div className="flex justify-end">
+          <Link
+            href="/forgot-password"
+            className="text-sm text-primary hover:underline"
+          >
+            Forgot password?
+          </Link>
+        </div>
       </div>
 
       <Button type="submit" className="w-full" disabled={isLoading}>
