@@ -10,6 +10,15 @@ export const useStations = (params?: GetStationsParams) => {
   });
 };
 
+export const useStationStats = () => {
+  return useQuery({
+    queryKey: ['station-stats'],
+    queryFn: () => stationService.getStationStats(),
+    staleTime: 30000,
+    refetchInterval: 60000, // Refresh stats every minute
+  });
+};
+
 export const useStation = (id: string, options: { enabled?: boolean } = {}) => {
   return useQuery({
     queryKey: ['station', id],

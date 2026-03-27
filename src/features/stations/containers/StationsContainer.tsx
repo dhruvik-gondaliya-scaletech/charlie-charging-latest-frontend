@@ -1,10 +1,10 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { useMemo, useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ColumnDef } from '@tanstack/react-table';
-import { useStations } from '@/hooks/get/useStations';
+import { useStations, useStationStats } from '@/hooks/get/useStations';
 import {
   useCreateStation,
   useUpdateStation,
@@ -13,13 +13,24 @@ import {
 import { useWebSocketConnection, useRealTimeEvent } from '@/hooks/useRealTime';
 import { StationStatusChangeEvent, ConnectorStatusChangeEvent } from '@/lib/realtime.service';
 import { useQueryClient } from '@tanstack/react-query';
+import { StatCard } from '@/features/dashboard/components/StatCard';
+import { Activity, WifiOff, AlertCircle } from 'lucide-react';
 import {
   invalidateQueriesDebounced,
   updateStationInListCache
 } from '@/lib/query-utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Eye, Pencil, Trash2, AlertTriangle, Zap } from 'lucide-react';
+import { Plus, Eye, Pencil, Trash2, AlertTriangle, Zap, Search, X, Filter, SlidersHorizontal } from 'lucide-react';
+import { useDebounce } from '@/hooks/use-debounce';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table } from '@/components/shared/Table';
@@ -37,8 +48,36 @@ import {
 
 export function StationsContainer() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
-  const { data: stations, isLoading, error } = useStations();
+
+  // Filter States
+  const [search, setSearch] = useState(searchParams.get('name') || '');
+  const [status, setStatus] = useState<string>(searchParams.get('status') || 'ALL');
+  const [type, setType] = useState<string>(searchParams.get('type') || 'ALL');
+
+  const debouncedSearch = useDebounce(search, 500);
+
+  // Sync filters to URL
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (debouncedSearch) params.set('name', debouncedSearch);
+    if (status !== 'ALL') params.set('status', status);
+    if (type !== 'ALL') params.set('type', type);
+
+    const queryString = params.toString();
+    const newPath = `${window.location.pathname}${queryString ? `?${queryString}` : ''}`;
+
+    // Use window.history.replaceState to avoid adding to history stack on every keystroke
+    window.history.replaceState(null, '', newPath);
+  }, [debouncedSearch, status, type]);
+
+  const { data: stations, isLoading, error } = useStations({
+    name: debouncedSearch || undefined,
+    status: status === 'ALL' ? undefined : status,
+    type: type === 'ALL' ? undefined : type,
+  });
+  const { data: stats, isLoading: isStatsLoading } = useStationStats();
 
   // Establish WebSocket connection
   useWebSocketConnection();
@@ -53,7 +92,7 @@ export function StationsContainer() {
       updateStationInListCache(queryClient, data.stationId, { status: data.status });
 
       // 2. Debounced refresh
-      invalidateQueriesDebounced(queryClient, ['stations']);
+      invalidateQueriesDebounced(queryClient, [['stations'], ['station-stats']]);
     }
   );
 
@@ -65,7 +104,7 @@ export function StationsContainer() {
 
       // Since connectors aren't directly shown in the main table list (it's usually a summary),
       // we'll just debounce the refresh for the list.
-      invalidateQueriesDebounced(queryClient, ['stations']);
+      invalidateQueriesDebounced(queryClient, [['stations'], ['station-stats']]);
     }
   );
 
@@ -77,6 +116,15 @@ export function StationsContainer() {
   // Modal States
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedStation, setSelectedStation] = useState<Station | null>(null);
+
+  const handleClearFilters = () => {
+    setSearch('');
+    setStatus('ALL');
+    setType('ALL');
+  };
+
+  const isFiltered = search !== '' || status !== 'ALL' || type !== 'ALL';
+
   const handleEdit = (station: Station) => {
     router.push(`${FRONTEND_ROUTES.STATIONS_EDIT(station.id)}?name=${encodeURIComponent(station.name)}`);
   };
@@ -278,22 +326,134 @@ export function StationsContainer() {
           <p className="text-sm font-medium text-muted-foreground mt-1 tracking-tight">Manage and monitor your stations</p>
         </motion.div>
 
+        {/* Stats Grid */}
+        <motion.div
+          variants={staggerContainer}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+        >
+          <motion.div variants={staggerItem}>
+            <StatCard
+              title="Total Stations"
+              value={stats?.total ?? 0}
+              icon={Zap}
+              color="text-primary"
+              description="Connected to network"
+              loading={isStatsLoading}
+            />
+          </motion.div>
+          <motion.div variants={staggerItem}>
+            <StatCard
+              title="Active"
+              value={stats?.active ?? 0}
+              icon={Activity}
+              color="text-emerald-500"
+              description="Currently online"
+              bottomRightGlobe="bg-emerald-500"
+              loading={isStatsLoading}
+            />
+          </motion.div>
+          <motion.div variants={staggerItem}>
+            <StatCard
+              title="Offline"
+              value={stats?.offline ?? 0}
+              icon={WifiOff}
+              color="text-orange-500"
+              description="Connection lost"
+              bottomRightGlobe="bg-orange-500"
+              loading={isStatsLoading}
+            />
+          </motion.div>
+          <motion.div variants={staggerItem}>
+            <StatCard
+              title="Faulted"
+              value={stats?.faulted ?? 0}
+              icon={AlertCircle}
+              color="text-destructive"
+              description="Requires attention"
+              bottomRightGlobe="bg-destructive"
+              loading={isStatsLoading}
+            />
+          </motion.div>
+        </motion.div>
+
+        {/* Filter Bar */}
+        <motion.div variants={staggerItem} className="flex flex-col md:flex-row gap-4 items-end bg-card/30 p-4 rounded-2xl border border-border/40 backdrop-blur-md">
+          <div className="flex-1 w-full space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Search Stations</label>
+            <div className="relative group">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+              <Input
+                placeholder="Search by name or ID..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10 bg-background/50 border-border/40 focus:border-primary/50 transition-all rounded-xl"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-muted transition-colors"
+                >
+                  <X className="h-3 w-3 text-muted-foreground" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="w-full md:w-48 space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Status</label>
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger className="bg-background/50 border-border/40 rounded-xl">
+                <SelectValue placeholder="All Statuses" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Statuses</SelectItem>
+                {Object.values(ChargingStatus).map((s) => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="w-full md:w-40 space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Type</label>
+            <Select value={type} onValueChange={setType}>
+              <SelectTrigger className="bg-background/50 border-border/40 rounded-xl">
+                <SelectValue placeholder="All Types" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Types</SelectItem>
+                <SelectItem value="AC">AC (Alternating Current)</SelectItem>
+                <SelectItem value="DC">DC (Direct Current)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex gap-2 w-full md:w-auto">
+            {isFiltered && (
+              <Button
+                variant="ghost"
+                onClick={handleClearFilters}
+                className="h-10 px-4 hover:bg-destructive/10 hover:text-destructive text-muted-foreground font-bold transition-all rounded-xl"
+              >
+                Reset
+              </Button>
+            )}
+            <Button
+              onClick={() => router.push(FRONTEND_ROUTES.STATIONS_REGISTER)}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold h-10 px-6 rounded-xl shrink-0"
+            >
+              <Plus className="h-4 w-4" />
+              Create Station
+            </Button>
+          </div>
+        </motion.div>
+
         <motion.div variants={staggerItem} className="relative">
           <Table<Station>
             data={stations || []}
             columns={columns}
             isLoading={isLoading}
-            showSearch
-            searchPosition="end"
-            appendWithSearch={
-              <Button
-                onClick={() => router.push(FRONTEND_ROUTES.STATIONS_REGISTER)}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
-              >
-                <Plus className="h-4 w-4" />
-                Create Station
-              </Button>
-            }
+            showSearch={false}
             pageSize={DEFAULT_PAGE_SIZE || 25}
             maxHeight="650px"
             className="border-none shadow-none"
