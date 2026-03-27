@@ -61,7 +61,7 @@ export function LocationsContainer() {
                 className="flex items-center gap-2 cursor-pointer hover:text-primary transition-colors inline-flex group"
                 onClick={() => handleViewDetails(row.original)}
               >
-                <MapPin className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                {/* <MapPin className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" /> */}
                 <span className="font-semibold text-foreground group-hover:text-primary transition-colors">
                   {row.getValue('name')}
                 </span>
@@ -193,9 +193,9 @@ export function LocationsContainer() {
       >
         <motion.div variants={staggerItem}>
           <h1 className="text-3xl font-extrabold tracking-tight bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
-            Location Hub
+            Locations
           </h1>
-          <p className="text-sm font-medium text-muted-foreground mt-1 tracking-tight">Strategic Fleet Positioning & Asset Management</p>
+          <p className="text-sm font-medium text-muted-foreground mt-1 tracking-tight">Manange your charging locations</p>
         </motion.div>
 
         <motion.div variants={staggerItem} className="relative">
@@ -210,8 +210,8 @@ export function LocationsContainer() {
                 onClick={handleCreate}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
               >
-                <Plus className="h-4 w-4 mr-2" />
-                Define New Location
+                <Plus className="h-4 w-4" />
+                Create Location
               </Button>
             }
             pageSize={DEFAULT_PAGE_SIZE || 25}
@@ -232,8 +232,8 @@ export function LocationsContainer() {
                   onClick={handleCreate}
                   className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xl shadow-primary/30 font-black px-8"
                 >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Define New Location
+                  <Plus className="h-4 w-4" />
+                  Create Location
                 </Button>
               </div>
             }

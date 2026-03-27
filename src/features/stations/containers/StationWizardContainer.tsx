@@ -86,7 +86,6 @@ export function StationWizardContainer({ stationId, mode }: StationWizardContain
             } else {
                 const result = await createStation.mutateAsync({
                     ...stationData,
-                    ocppVersion: values.ocppVersion || "1.6",
                     ocppConfiguration: {}
                 } as any);
                 router.push(FRONTEND_ROUTES.STATIONS_DETAILS(result.id));

@@ -273,9 +273,9 @@ export function StationsContainer() {
       >
         <motion.div variants={staggerItem}>
           <h1 className="text-3xl font-extrabold tracking-tight bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
-            Charging Stations
+            Stations
           </h1>
-          <p className="text-sm font-medium text-muted-foreground mt-1 tracking-tight">Manage and monitor your decentralized charging network</p>
+          <p className="text-sm font-medium text-muted-foreground mt-1 tracking-tight">Manage and monitor your stations</p>
         </motion.div>
 
         <motion.div variants={staggerItem} className="relative">
@@ -290,8 +290,8 @@ export function StationsContainer() {
                 onClick={() => router.push(FRONTEND_ROUTES.STATIONS_REGISTER)}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
               >
-                <Plus className="h-4 w-4 mr-2" />
-                Register Station
+                <Plus className="h-4 w-4" />
+                Create Station
               </Button>
             }
             pageSize={DEFAULT_PAGE_SIZE || 25}
@@ -313,7 +313,7 @@ export function StationsContainer() {
                   className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xl shadow-primary/30 font-black px-8"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Register New Station
+                  Create Station
                 </Button>
               </div>
             }
