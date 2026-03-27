@@ -19,6 +19,7 @@ export const API_CONFIG = {
         },
         stations: {
             base: "/stations",
+            stats: "/stations/stats",
             byId: (id: string) => `/stations/${id}`,
             remoteStart: (id: string) => `/stations/${id}/remote-start`,
             remoteStop: (id: string) => `/stations/${id}/remote-stop`,

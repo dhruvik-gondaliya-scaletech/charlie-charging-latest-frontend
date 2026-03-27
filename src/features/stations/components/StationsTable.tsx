@@ -83,14 +83,14 @@ export function StationsTable({ stations, globalFilter, onGlobalFilterChange, on
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => router.push(FRONTEND_ROUTES.STATIONS_DETAILS(row.original.id))}
+            onClick={() => router.push(`${FRONTEND_ROUTES.STATIONS_DETAILS(row.original.id)}?name=${encodeURIComponent(row.original.name)}`)}
           >
             <Eye className="h-4 w-4" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => router.push(FRONTEND_ROUTES.STATIONS_EDIT(row.original.id))}
+            onClick={() => router.push(`${FRONTEND_ROUTES.STATIONS_EDIT(row.original.id)}?name=${encodeURIComponent(row.original.name)}`)}
           >
             <Pencil className="h-4 w-4" />
           </Button>

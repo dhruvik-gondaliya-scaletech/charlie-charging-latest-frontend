@@ -219,7 +219,7 @@ export function UsersContainer() {
                 onClick={() => setIsInviteModalOpen(true)}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
               >
-                <UserPlus className="mr-2 h-4 w-4" />
+                <UserPlus className="h-4 w-4" />
                 Invite Operator
               </Button>
             }

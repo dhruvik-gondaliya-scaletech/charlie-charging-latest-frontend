@@ -29,7 +29,7 @@ export function LocationStations({ stations, isLoading }: LocationStationsProps)
                 cell: ({ row }) => (
                     <div
                         className="flex flex-col cursor-pointer hover:text-primary transition-colors group"
-                        onClick={() => router.push(FRONTEND_ROUTES.STATIONS_DETAILS(row.original.id))}
+                        onClick={() => router.push(`${FRONTEND_ROUTES.STATIONS_DETAILS(row.original.id)}?name=${encodeURIComponent(row.original.name)}`)}
                     >
                         <span className="font-bold tracking-tight">{row.getValue('name')}</span>
                         <span className="text-[10px] font-mono text-muted-foreground group-hover:text-primary/70 transition-colors uppercase">

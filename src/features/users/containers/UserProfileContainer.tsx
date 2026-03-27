@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { useUserProfile } from '@/hooks/get/useUsers';
 import { useUpdateProfile, useChangePassword } from '@/hooks/put/useUserMutations';
 import { ProfileForm } from '../components/ProfileForm';
@@ -8,21 +7,14 @@ import { PasswordForm } from '../components/PasswordForm';
 import { motion } from 'framer-motion';
 import { fadeInUp, staggerContainer } from '@/lib/motion';
 import {
-    User,
-    ShieldCheck,
-    Calendar,
-    BadgeCheck,
     AlertTriangle,
-    ArrowLeft,
-    Shield
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
-import { FRONTEND_ROUTES } from '@/constants/constants';
-import { formatDate } from '@/lib/date';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { UserProfileFormData, ChangePasswordFormData } from '@/lib/validations/user.schema';
+import { BackButton } from '@/components/shared/BackButton';
 
 export function UserProfileContainer() {
     const router = useRouter();
@@ -85,13 +77,9 @@ export function UserProfileContainer() {
             {/* Header section with identity snapshot */}
             <motion.div variants={fadeInUp} className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                 <div className="space-y-1">
-                    <button
-                        onClick={() => router.back()}
-                        className="flex items-center text-sm font-medium text-muted-foreground hover:text-primary mb-4 transition-colors group"
-                    >
-                        <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-                        Return to Previous Matrix
-                    </button>
+                    <BackButton
+                        label="Return to Previous Matrix"
+                    />
                     <div className="flex flex-wrap items-center gap-3">
                         <h1 className="text-4xl font-black tracking-tight text-foreground uppercase">
                             {user.firstName || ''} {user.lastName || ''}

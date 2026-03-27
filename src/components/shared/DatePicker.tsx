@@ -154,13 +154,19 @@ export function DatePicker({ dateRange, onDateRangeChange, className }: DatePick
                             )}
                         </span>
                         {(dateRange.from || dateRange.to) && (
-                            <X
-                                className="ml-2 h-3 w-3 opacity-40 hover:opacity-100 transition-opacity"
+                            <div
+                                role="button"
+                                aria-label="Clear date range"
+                                className="ml-2 p-1 rounded-md hover:bg-primary/20 transition-all opacity-40 hover:opacity-100 cursor-pointer"
                                 onClick={(e) => {
                                     e.stopPropagation();
+                                    e.preventDefault();
                                     onDateRangeChange({ from: undefined, to: undefined });
+                                    setTempRange({ from: undefined, to: undefined });
                                 }}
-                            />
+                            >
+                                <X className="h-3 w-3" />
+                            </div>
                         )}
                     </Button>
                 </PopoverTrigger>

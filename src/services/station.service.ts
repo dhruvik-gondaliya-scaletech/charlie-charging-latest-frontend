@@ -36,6 +36,7 @@ export interface GetStationsParams {
   name?: string;
   status?: string;
   locationId?: string;
+  type?: string;
 }
 
 export interface GetOcppLogsParams {
@@ -49,15 +50,27 @@ export interface GetOcppLogsParams {
   offset?: number;
 }
 
+export interface StationStats {
+  total: number;
+  active: number;
+  offline: number;
+  faulted: number;
+}
+
 class StationService {
   async getAllStations(params?: GetStationsParams) {
     const queryParams = new URLSearchParams();
     if (params?.name) queryParams.append('name', params.name);
     if (params?.status) queryParams.append('status', params.status);
     if (params?.locationId) queryParams.append('locationId', params.locationId);
+    if (params?.type) queryParams.append('type', params.type);
 
     const url = queryParams.toString() ? `${API_CONFIG.endpoints.stations.base}?${queryParams.toString()}` : API_CONFIG.endpoints.stations.base;
     return httpService.get<Station[]>(url);
+  }
+
+  async getStationStats() {
+    return httpService.get<StationStats>(API_CONFIG.endpoints.stations.stats);
   }
 
   async getStationById(id: string) {

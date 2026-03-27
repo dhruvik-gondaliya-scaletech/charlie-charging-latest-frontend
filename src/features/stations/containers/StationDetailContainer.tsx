@@ -7,7 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-    ArrowLeft,
     Zap,
     Activity,
     ShieldCheck,
@@ -40,6 +39,7 @@ import WebSocketUrlDisplay from '@/components/shared/WebSocketUrlDisplay';
 import { toast } from 'sonner';
 import { FRONTEND_ROUTES } from '@/constants/constants';
 import { SessionStatus } from '@/types';
+import { BackButton } from '@/components/shared/BackButton';
 import { useWebSocketConnection, useRealTimeEvent } from '@/hooks/useRealTime';
 import {
     StationStatusChangeEvent,
@@ -296,9 +296,11 @@ export function StationDetailContainer() {
                     </div>
                     <h2 className="text-2xl font-bold">Station Not Found</h2>
                     <p className="text-muted-foreground">The requested charging station could not be found or you don&apos;t have permission to access it.</p>
-                    <Button onClick={() => router.push(FRONTEND_ROUTES.STATIONS)} variant="outline" className="mt-4">
-                        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Stations
-                    </Button>
+                    <BackButton 
+                        href={FRONTEND_ROUTES.STATIONS} 
+                        label="Back to Stations" 
+                        className="mt-4"
+                    />
                 </div>
             </div>
         );
@@ -314,13 +316,10 @@ export function StationDetailContainer() {
             {/* Header Section */}
             <motion.div variants={fadeInUp} className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                 <div className="space-y-1">
-                    <button
-                        onClick={() => router.push(FRONTEND_ROUTES.STATIONS)}
-                        className="flex items-center text-sm font-medium text-muted-foreground hover:text-primary mb-4 transition-colors group"
-                    >
-                        <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-                        Return to Stations
-                    </button>
+                    <BackButton 
+                        href={FRONTEND_ROUTES.STATIONS} 
+                        label="Return to Stations" 
+                    />
                     <div className="flex flex-wrap items-center gap-3">
                         <h1 className="text-4xl font-black tracking-tight text-foreground">{station.name}</h1>
                         <Badge
@@ -351,7 +350,7 @@ export function StationDetailContainer() {
                 <div className="flex items-center gap-3">
                     <Button
                         variant="outline"
-                        onClick={() => router.push(FRONTEND_ROUTES.STATIONS_EDIT(id as string))}
+                        onClick={() => router.push(`${FRONTEND_ROUTES.STATIONS_EDIT(id as string)}?name=${encodeURIComponent(station.name)}`)}
                         className={cn(
                             "border-border/60 hover:bg-muted font-bold",
                             activeTab === 'sessions' && "bg-muted border-primary/40 shadow-sm"
