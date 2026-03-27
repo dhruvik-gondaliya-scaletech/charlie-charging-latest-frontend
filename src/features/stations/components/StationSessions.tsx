@@ -33,7 +33,7 @@ import {
     SelectValue
 } from '@/components/ui/select';
 import { DatePicker } from '@/components/shared/DatePicker';
-import { startOfDay, endOfDay } from 'date-fns';
+import { startOfDay, endOfDay, format } from 'date-fns';
 
 interface StationSessionsProps {
     stationId: string;
@@ -49,8 +49,8 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
 
     const filters = useMemo(() => ({
         status: statusFilter === 'all' ? undefined : statusFilter,
-        startFrom: dateRange.from?.toISOString(),
-        startTo: dateRange.to?.toISOString(),
+        startFrom: dateRange.from ? format(startOfDay(dateRange.from), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") : undefined,
+        startTo: dateRange.to ? format(endOfDay(dateRange.to), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") : undefined,
     }), [statusFilter, dateRange]);
 
     const { data: sessions, isLoading, error, refetch } = useStationSessions(stationId, filters);
