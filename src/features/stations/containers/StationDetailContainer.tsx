@@ -350,7 +350,7 @@ export function StationDetailContainer() {
                 <div className="flex items-center gap-3">
                     <Button
                         variant="outline"
-                        onClick={() => router.push(FRONTEND_ROUTES.STATIONS_EDIT(id as string))}
+                        onClick={() => router.push(`${FRONTEND_ROUTES.STATIONS_EDIT(id as string)}?name=${encodeURIComponent(station.name)}`)}
                         className={cn(
                             "border-border/60 hover:bg-muted font-bold",
                             activeTab === 'sessions' && "bg-muted border-primary/40 shadow-sm"

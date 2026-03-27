@@ -83,13 +83,13 @@ export function StationWizardContainer({ stationId, mode }: StationWizardContain
 
             if (isEdit && stationId) {
                 await updateStation.mutateAsync({ id: stationId, data: stationData });
-                router.push(FRONTEND_ROUTES.STATIONS_DETAILS(stationId));
+                router.push(`${FRONTEND_ROUTES.STATIONS_DETAILS(stationId)}?name=${encodeURIComponent(stationData.name)}`);
             } else {
                 const result = await createStation.mutateAsync({
                     ...stationData,
                     ocppConfiguration: {}
                 } as any);
-                router.push(FRONTEND_ROUTES.STATIONS_DETAILS(result.id));
+                router.push(`${FRONTEND_ROUTES.STATIONS_DETAILS(result.id)}?name=${encodeURIComponent(stationData.name)}`);
             }
         } catch (err) {
             console.log("Error in StationWizardContainer", err)

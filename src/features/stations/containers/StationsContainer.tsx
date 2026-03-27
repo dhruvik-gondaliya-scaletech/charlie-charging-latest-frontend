@@ -78,7 +78,7 @@ export function StationsContainer() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedStation, setSelectedStation] = useState<Station | null>(null);
   const handleEdit = (station: Station) => {
-    router.push(FRONTEND_ROUTES.STATIONS_EDIT(station.id));
+    router.push(`${FRONTEND_ROUTES.STATIONS_EDIT(station.id)}?name=${encodeURIComponent(station.name)}`);
   };
 
   const handleDelete = (station: Station) => {
@@ -96,7 +96,7 @@ export function StationsContainer() {
             <TooltipTrigger asChild>
               <div
                 className="font-semibold text-foreground cursor-pointer hover:text-primary transition-colors inline-block"
-                onClick={() => router.push(FRONTEND_ROUTES.STATIONS_DETAILS(row.original.id))}
+                onClick={() => router.push(`${FRONTEND_ROUTES.STATIONS_DETAILS(row.original.id)}?name=${encodeURIComponent(row.original.name)}`)}
               >
                 {row.getValue('name')}
               </div>
@@ -312,7 +312,7 @@ export function StationsContainer() {
                   onClick={() => router.push(FRONTEND_ROUTES.STATIONS_REGISTER)}
                   className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xl shadow-primary/30 font-black px-8"
                 >
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="h-4 w-4" />
                   Create Station
                 </Button>
               </div>

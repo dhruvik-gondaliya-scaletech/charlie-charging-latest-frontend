@@ -35,11 +35,11 @@ export function LocationsContainer() {
   };
 
   const handleEdit = (location: Location) => {
-    router.push(FRONTEND_ROUTES.LOCATIONS_EDIT(location.id));
+    router.push(`${FRONTEND_ROUTES.LOCATIONS_EDIT(location.id)}?name=${encodeURIComponent(location.name)}`);
   };
 
   const handleViewDetails = (location: Location) => {
-    router.push(FRONTEND_ROUTES.LOCATIONS_DETAILS(location.id));
+    router.push(`${FRONTEND_ROUTES.LOCATIONS_DETAILS(location.id)}?name=${encodeURIComponent(location.name)}`);
   };
 
   const handleDelete = (location: Location) => {

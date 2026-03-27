@@ -99,7 +99,7 @@ export function LocationDetailContainer() {
                                 location.isActive ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/30" : "bg-destructive/10 text-destructive border-destructive/30"
                             )}
                         >
-                            {location.isActive ? 'Network Active' : 'Offline'}
+                            {location.isActive ? 'Active' : 'Offline'}
                         </Badge>
                     </div>
                     <div className="flex items-center gap-3 text-muted-foreground mt-2">
@@ -113,7 +113,7 @@ export function LocationDetailContainer() {
                 <div className="flex items-center gap-3">
                     <Button
                         variant="outline"
-                        onClick={() => router.push(FRONTEND_ROUTES.LOCATIONS_EDIT(location.id))}
+                        onClick={() => router.push(`${FRONTEND_ROUTES.LOCATIONS_EDIT(location.id)}?name=${encodeURIComponent(location.name)}`)}
                         className="border-border/60 hover:bg-muted font-bold h-11 px-6 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
                     >
                         Configure Site
