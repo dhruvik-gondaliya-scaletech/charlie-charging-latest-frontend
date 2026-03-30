@@ -15,6 +15,15 @@ export const API_CONFIG = {
             profile: "/users/profile",
             changePassword: "/users/change-password",
         },
+        drivers: {
+            base: "/drivers",
+            byId: (id: string) => `/drivers/${id}`,
+            sessions: (id: string) => `/drivers/${id}/sessions`,
+        },
+        idTags: {
+            base: "/id-tags",
+            byId: (idTag: string) => `/id-tags/${idTag}`,
+        },
         stations: {
             base: "/stations",
             byId: (id: string) => `/stations/${id}`,
@@ -97,6 +106,8 @@ export const FRONTEND_ROUTES = {
     LOGIN: "/login",
     PROFILE: "/profile",
     USERS: "/users",
+    DRIVERS: "/drivers",
+    ID_TAGS: "/id-tags",
     VERIFY_EMAIL: "/verify-email",
     ACCEPT_INVITE: "/accept-invitation",
 }
