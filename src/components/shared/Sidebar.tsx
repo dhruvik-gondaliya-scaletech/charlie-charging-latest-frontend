@@ -113,7 +113,7 @@ export function Sidebar() {
           <PopoverContent className="w-64 p-2 rounded-2xl" side="right" align="end" sideOffset={12}>
             <div className="space-y-1">
               <Link href={FRONTEND_ROUTES.PROFILE}>
-                <button className="flex items-center gap-3 w-full px-3 py-2 rounded-lg hover:bg-accent transition-colors text-sm font-medium text-left">
+                <button className="flex items-center gap-3 w-full px-3 py-2 rounded-lg hover:bg-accent transition-colors text-sm font-medium text-left cursor-pointer">
                   <User className="h-4 w-4" />
                   View Profile
                 </button>
@@ -121,7 +121,7 @@ export function Sidebar() {
               <Separator className="my-1" />
               <button
                 onClick={() => setIsLogoutModalOpen(true)}
-                className="flex items-center gap-3 w-full px-3 py-2 rounded-lg hover:bg-destructive/10 hover:text-destructive transition-colors text-sm font-medium text-left"
+                className="flex items-center gap-3 w-full px-3 py-2 rounded-lg hover:bg-destructive/10 hover:text-destructive transition-colors text-sm font-medium text-left cursor-pointer"
               >
                 <LogOut className="h-4 w-4" />
                 Logout
