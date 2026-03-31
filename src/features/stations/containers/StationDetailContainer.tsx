@@ -378,12 +378,15 @@ export function StationDetailContainer() {
 
                     <TabsContent value="connectors">
                         <div className="space-y-6">
-                            <div className="flex items-center justify-between px-2">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2">
                                 <div>
-                                    <h3 className="text-2xl font-black tracking-tight">System Connectors</h3>
-                                    <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Individual port status and capabilities</p>
+                                    <h3 className="text-2xl font-black tracking-tighter flex items-center gap-3">
+                                        <Zap className="h-6 w-6 text-primary" />
+                                        System Connectors
+                                    </h3>
+                                    <p className="text-xs text-muted-foreground font-medium mt-1">Individual port status and capabilities</p>
                                 </div>
-                                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-bold px-4 py-1 rounded-full">
+                                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-black uppercase tracking-widest text-[10px] px-4 py-1.5 rounded-full shadow-sm">
                                     {station.connectors?.length || 0} Ports Active
                                 </Badge>
                             </div>
@@ -420,13 +423,13 @@ export function StationDetailContainer() {
                                 {/* Technical Specifications */}
                                 <Card className="border-border/40 bg-card/20 backdrop-blur-sm rounded-3xl overflow-hidden border shadow-sm h-full">
                                     <CardHeader className="pb-4">
-                                        <div className="flex items-center gap-2">
-                                            <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                                                <Cpu className="h-4 w-4" />
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 rounded-xl bg-primary/10 text-primary shadow-sm">
+                                                <Cpu className="h-5 w-5" />
                                             </div>
                                             <div>
-                                                <CardTitle className="text-xl font-black">Technical Specifications</CardTitle>
-                                                <CardDescription>Detailed hardware and software reporting</CardDescription>
+                                                <CardTitle className="text-xl font-black tracking-tight">Technical Specifications</CardTitle>
+                                                <CardDescription className="text-xs font-medium">Detailed hardware and software reporting</CardDescription>
                                             </div>
                                         </div>
                                     </CardHeader>
@@ -463,13 +466,13 @@ export function StationDetailContainer() {
                                 {/* Connection URL */}
                                 <Card className="border-border/40 bg-card/20 backdrop-blur-sm rounded-3xl overflow-hidden border shadow-sm">
                                     <CardHeader className="pb-4">
-                                        <div className="flex items-center gap-2">
-                                            <div className="p-2 rounded-lg bg-violet-500/10 text-violet-500">
-                                                <Terminal className="h-4 w-4" />
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 rounded-xl bg-violet-500/10 text-violet-500 shadow-sm">
+                                                <Terminal className="h-5 w-5" />
                                             </div>
                                             <div>
-                                                <CardTitle className="text-xl font-black">CSMS Connection</CardTitle>
-                                                <CardDescription>Remote OCPP configuration endpoint</CardDescription>
+                                                <CardTitle className="text-xl font-black tracking-tight">CSMS Connection</CardTitle>
+                                                <CardDescription className="text-xs font-medium">Remote OCPP configuration endpoint</CardDescription>
                                             </div>
                                         </div>
                                     </CardHeader>
@@ -497,17 +500,7 @@ export function StationDetailContainer() {
 
                     <TabsContent value="config" className="no-scrollbar">
                         <Card className="border-border/40 bg-card/20 backdrop-blur-sm rounded-3xl overflow-hidden border">
-                            <CardHeader className="flex flex-row items-center justify-between">
-                                <div>
-                                    <CardTitle className="text-xl font-black text-foreground tracking-tight underline-offset-4">OCPP Configuration</CardTitle>
-                                    <CardDescription>Manage Read/Write keys via OCPP 1.6 Protocol</CardDescription>
-                                </div>
-                                <Badge variant="outline" className="font-mono text-xs border-border/60 bg-muted/30">
-                                    <ShieldCheck className="h-3 w-3 mr-1.5 text-emerald-500" />
-                                    TLS 1.2 Encrypted
-                                </Badge>
-                            </CardHeader>
-                            <CardContent>
+                            <CardContent className="p-6">
                                 <ConfigurationManager stationId={station.id} />
                             </CardContent>
                         </Card>
@@ -515,13 +508,6 @@ export function StationDetailContainer() {
 
                     <TabsContent value="logs">
                         <Card className="border-border/40 bg-card/20 backdrop-blur-sm rounded-3xl overflow-hidden border">
-                            <CardHeader>
-                                <CardTitle className="text-xl font-black flex items-center gap-2">
-                                    <Terminal className="h-5 w-5 text-primary" />
-                                    OCPP Diagnostic Stream
-                                </CardTitle>
-                                <CardDescription>Real-time machine communication logs</CardDescription>
-                            </CardHeader>
                             <CardContent className="p-6">
                                 <StationLogs
                                     stationId={station.id}
