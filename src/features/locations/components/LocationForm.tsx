@@ -71,7 +71,23 @@ export function LocationForm({
         if (address.longitude) form.setValue('longitude', address.longitude);
 
         setIsAddressFilled(true);
-        toast.success('Address auto-filled successfully');
+
+        // Check if any required fields are missing or too short
+        const missingFields: string[] = [];
+        if (!address.address || address.address.length < 5) missingFields.push('Address');
+        if (!address.city || address.city.length < 2) missingFields.push('City');
+        if (!address.state || address.state.length < 2) missingFields.push('State');
+        if (!address.zipCode || address.zipCode.length < 3) missingFields.push('Zip Code');
+        if (!address.country || address.country.length < 2) missingFields.push('Country');
+
+        if (missingFields.length > 0) {
+            setUseManualEntry(true);
+            toast.info(`Address partially filled. Please manually add: ${missingFields.join(', ')}`, {
+                duration: 5000,
+            });
+        } else {
+            toast.success('Address auto-filled successfully');
+        }
     };
 
     return (

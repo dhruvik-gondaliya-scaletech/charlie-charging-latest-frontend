@@ -1,13 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useStation } from '@/hooks/get/useStations';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-    ArrowLeft,
     Zap,
     Activity,
     ShieldCheck,
@@ -15,7 +14,6 @@ import {
     Terminal,
     Cpu,
     History,
-    Edit,
     AlertCircle,
     LogOut,
     Loader2,
@@ -40,6 +38,7 @@ import WebSocketUrlDisplay from '@/components/shared/WebSocketUrlDisplay';
 import { toast } from 'sonner';
 import { FRONTEND_ROUTES } from '@/constants/constants';
 import { SessionStatus } from '@/types';
+import { BackButton } from '@/components/shared/BackButton';
 import { useWebSocketConnection, useRealTimeEvent } from '@/hooks/useRealTime';
 import {
     StationStatusChangeEvent,
@@ -55,12 +54,17 @@ import { useQueryClient } from '@tanstack/react-query';
 
 export function StationDetailContainer() {
     const { id } = useParams();
-    const router = useRouter();
     const queryClient = useQueryClient();
     const { user, tenant } = useAuth();
     const { data: station, isLoading, error } = useStation(id as string);
     const { data: sessions } = useStationSessions(id as string);
-    const [activeTab, setActiveTab] = useState('overview');
+    const [activeTab, setActiveTab] = useState('connectors');
+    const [filterSessionId, setFilterSessionId] = useState<string | undefined>(undefined);
+
+    const handleViewSessionLogs = (sessionId: string) => {
+        setFilterSessionId(sessionId);
+        setActiveTab('logs');
+    };
 
     // Establish WebSocket connection
     useWebSocketConnection();
@@ -290,9 +294,11 @@ export function StationDetailContainer() {
                     </div>
                     <h2 className="text-2xl font-bold">Station Not Found</h2>
                     <p className="text-muted-foreground">The requested charging station could not be found or you don&apos;t have permission to access it.</p>
-                    <Button onClick={() => router.push(FRONTEND_ROUTES.STATIONS)} variant="outline" className="mt-4">
-                        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Stations
-                    </Button>
+                    <BackButton
+                        href={FRONTEND_ROUTES.STATIONS}
+                        label="Back to Stations"
+                        className="mt-4 mx-auto w-fit"
+                    />
                 </div>
             </div>
         );
@@ -308,13 +314,10 @@ export function StationDetailContainer() {
             {/* Header Section */}
             <motion.div variants={fadeInUp} className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                 <div className="space-y-1">
-                    <button
-                        onClick={() => router.push(FRONTEND_ROUTES.STATIONS)}
-                        className="flex items-center text-sm font-medium text-muted-foreground hover:text-primary mb-4 transition-colors group"
-                    >
-                        <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-                        Return to Stations
-                    </button>
+                    <BackButton
+                        href={FRONTEND_ROUTES.STATIONS}
+                        label="Return to Stations"
+                    />
                     <div className="flex flex-wrap items-center gap-3">
                         <h1 className="text-4xl font-black tracking-tight text-foreground">{station.name}</h1>
                         <Badge
@@ -341,20 +344,6 @@ export function StationDetailContainer() {
                         </div>
                     </div>
                 </div>
-
-                <div className="flex items-center gap-3">
-                    <Button
-                        variant="outline"
-                        onClick={() => router.push(FRONTEND_ROUTES.STATIONS_EDIT(id as string))}
-                        className={cn(
-                            "border-border/60 hover:bg-muted font-bold",
-                            activeTab === 'sessions' && "bg-muted border-primary/40 shadow-sm"
-                        )}
-                    >
-                        <Edit className="h-4 w-4 mr-2" />
-                        Configure Station
-                    </Button>
-                </div>
             </motion.div>
 
             {/* Stats Grid */}
@@ -380,12 +369,53 @@ export function StationDetailContainer() {
             <motion.div variants={fadeInUp}>
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
                     <TabsList className="bg-muted/40 p-1 border border-border/40 rounded-2xl backdrop-blur-md overflow-x-auto h-auto flex-wrap sm:flex-nowrap">
-                        <TabsTrigger value="overview" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Overview</TabsTrigger>
                         <TabsTrigger value="connectors" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Connectors</TabsTrigger>
+                        <TabsTrigger value="overview" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Overview</TabsTrigger>
                         <TabsTrigger value="sessions" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Sessions</TabsTrigger>
                         <TabsTrigger value="config" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Config</TabsTrigger>
                         <TabsTrigger value="logs" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Live Logs</TabsTrigger>
                     </TabsList>
+
+                    <TabsContent value="connectors">
+                        <div className="space-y-6">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2">
+                                <div>
+                                    <h3 className="text-2xl font-black tracking-tighter flex items-center gap-3">
+                                        <Zap className="h-6 w-6 text-primary" />
+                                        System Connectors
+                                    </h3>
+                                    <p className="text-xs text-muted-foreground font-medium mt-1">Individual port status and capabilities</p>
+                                </div>
+                                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-black uppercase tracking-widest text-[10px] px-4 py-1.5 rounded-full shadow-sm">
+                                    {station.connectors?.length || 0} Ports Active
+                                </Badge>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {station.connectors?.map((connector) => (
+                                    <ConnectorCard
+                                        key={connector.id}
+                                        connector={connector}
+                                        onStart={handleStartConnector}
+                                        onStop={handleStopConnector}
+                                        isStarting={remoteStart.isPending || busyConnectors.has(connector.connectorId)}
+                                        isStopping={remoteStop.isPending || busyConnectors.has(connector.connectorId)}
+                                        disabled={station.status === ChargingStatus.OFFLINE}
+                                    />
+                                ))}
+
+                                {(!station.connectors || station.connectors.length === 0) && (
+                                    <div className="md:col-span-2 lg:col-span-3 p-12 border-2 border-dashed border-border/40 rounded-[2rem] flex flex-col items-center justify-center text-center gap-4 bg-muted/20">
+                                        <Zap className="h-12 w-12 text-muted-foreground/40" />
+                                        <div>
+                                            <p className="text-xl font-bold text-muted-foreground">No connectors found</p>
+                                            <p className="text-sm text-muted-foreground opacity-60">This station hasn&apos;t reported any connectors yet.</p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </TabsContent>
 
                     <TabsContent value="overview">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -393,13 +423,13 @@ export function StationDetailContainer() {
                                 {/* Technical Specifications */}
                                 <Card className="border-border/40 bg-card/20 backdrop-blur-sm rounded-3xl overflow-hidden border shadow-sm h-full">
                                     <CardHeader className="pb-4">
-                                        <div className="flex items-center gap-2">
-                                            <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                                                <Cpu className="h-4 w-4" />
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 rounded-xl bg-primary/10 text-primary shadow-sm">
+                                                <Cpu className="h-5 w-5" />
                                             </div>
                                             <div>
-                                                <CardTitle className="text-xl font-black">Technical Specifications</CardTitle>
-                                                <CardDescription>Detailed hardware and software reporting</CardDescription>
+                                                <CardTitle className="text-xl font-black tracking-tight">Technical Specifications</CardTitle>
+                                                <CardDescription className="text-xs font-medium">Detailed hardware and software reporting</CardDescription>
                                             </div>
                                         </div>
                                     </CardHeader>
@@ -436,20 +466,20 @@ export function StationDetailContainer() {
                                 {/* Connection URL */}
                                 <Card className="border-border/40 bg-card/20 backdrop-blur-sm rounded-3xl overflow-hidden border shadow-sm">
                                     <CardHeader className="pb-4">
-                                        <div className="flex items-center gap-2">
-                                            <div className="p-2 rounded-lg bg-violet-500/10 text-violet-500">
-                                                <Terminal className="h-4 w-4" />
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 rounded-xl bg-violet-500/10 text-violet-500 shadow-sm">
+                                                <Terminal className="h-5 w-5" />
                                             </div>
                                             <div>
-                                                <CardTitle className="text-xl font-black">CSMS Connection</CardTitle>
-                                                <CardDescription>Remote OCPP configuration endpoint</CardDescription>
+                                                <CardTitle className="text-xl font-black tracking-tight">CSMS Connection</CardTitle>
+                                                <CardDescription className="text-xs font-medium">Remote OCPP configuration endpoint</CardDescription>
                                             </div>
                                         </div>
                                     </CardHeader>
                                     <CardContent>
                                         <WebSocketUrlDisplay
                                             chargePointId={station.chargePointId}
-                                            tenantId={tenant?.id || ''}
+                                            tenantSlug={tenant?.slug || tenant?.id || ''}
                                         />
                                     </CardContent>
                                 </Card>
@@ -457,65 +487,20 @@ export function StationDetailContainer() {
                         </div>
                     </TabsContent>
 
-                    <TabsContent value="connectors">
-                        <div className="space-y-6">
-                            <div className="flex items-center justify-between px-2">
-                                <div>
-                                    <h3 className="text-2xl font-black tracking-tight">System Connectors</h3>
-                                    <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Individual port status and capabilities</p>
-                                </div>
-                                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-bold px-4 py-1 rounded-full">
-                                    {station.connectors?.length || 0} Ports Active
-                                </Badge>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {station.connectors?.map((connector) => (
-                                    <ConnectorCard
-                                        key={connector.id}
-                                        connector={connector}
-                                        onStart={handleStartConnector}
-                                        onStop={handleStopConnector}
-                                        isStarting={remoteStart.isPending || busyConnectors.has(connector.connectorId)}
-                                        isStopping={remoteStop.isPending || busyConnectors.has(connector.connectorId)}
-                                        disabled={station.status === ChargingStatus.OFFLINE}
-                                    />
-                                ))}
-
-                                {(!station.connectors || station.connectors.length === 0) && (
-                                    <div className="md:col-span-2 lg:col-span-3 p-12 border-2 border-dashed border-border/40 rounded-[2rem] flex flex-col items-center justify-center text-center gap-4 bg-muted/20">
-                                        <Zap className="h-12 w-12 text-muted-foreground/40" />
-                                        <div>
-                                            <p className="text-xl font-bold text-muted-foreground">No connectors found</p>
-                                            <p className="text-sm text-muted-foreground opacity-60">This station hasn&apos;t reported any connectors yet.</p>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </TabsContent>
-
                     <TabsContent value="sessions">
                         <Card className="border-border/40 bg-card/20 backdrop-blur-sm rounded-3xl overflow-hidden border">
                             <CardContent className="p-6">
-                                <StationSessions stationId={station.id} />
+                                <StationSessions
+                                    stationId={station.id}
+                                    onViewLogs={handleViewSessionLogs}
+                                />
                             </CardContent>
                         </Card>
                     </TabsContent>
 
                     <TabsContent value="config" className="no-scrollbar">
                         <Card className="border-border/40 bg-card/20 backdrop-blur-sm rounded-3xl overflow-hidden border">
-                            <CardHeader className="flex flex-row items-center justify-between">
-                                <div>
-                                    <CardTitle className="text-xl font-black text-foreground tracking-tight underline-offset-4">OCPP Configuration</CardTitle>
-                                    <CardDescription>Manage Read/Write keys via OCPP 1.6 Protocol</CardDescription>
-                                </div>
-                                <Badge variant="outline" className="font-mono text-xs border-border/60 bg-muted/30">
-                                    <ShieldCheck className="h-3 w-3 mr-1.5 text-emerald-500" />
-                                    TLS 1.2 Encrypted
-                                </Badge>
-                            </CardHeader>
-                            <CardContent>
+                            <CardContent className="p-6">
                                 <ConfigurationManager stationId={station.id} />
                             </CardContent>
                         </Card>
@@ -523,15 +508,12 @@ export function StationDetailContainer() {
 
                     <TabsContent value="logs">
                         <Card className="border-border/40 bg-card/20 backdrop-blur-sm rounded-3xl overflow-hidden border">
-                            <CardHeader>
-                                <CardTitle className="text-xl font-black flex items-center gap-2">
-                                    <Terminal className="h-5 w-5 text-primary" />
-                                    OCPP Diagnostic Stream
-                                </CardTitle>
-                                <CardDescription>Real-time machine communication logs</CardDescription>
-                            </CardHeader>
                             <CardContent className="p-6">
-                                <StationLogs stationId={station.id} />
+                                <StationLogs
+                                    stationId={station.id}
+                                    sessionId={filterSessionId}
+                                    onClearSessionId={() => setFilterSessionId(undefined)}
+                                />
                             </CardContent>
                         </Card>
                     </TabsContent>

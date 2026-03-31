@@ -13,18 +13,15 @@ export enum ChargingStatus {
 }
 
 export enum ConnectorType {
-  TYPE_1 = 'TYPE1',
-  TYPE_2 = 'TYPE2',
+  J1772 = 'J1772',
+  MENNEKES = 'Mennekes',
   CCS1 = 'CCS1',
   CCS2 = 'CCS2',
   CCS = 'CCS',
-  CHADEMO = 'CHADEMO',
-  TESLA = 'TESLA',
-  GB_T = 'GB_T',
-  COMMANDO = 'COMMANDO',
-  THREE_PIN = '3PIN',
-  SCHUKO = 'SCHUKO',
-  TYPE_3 = 'TYPE3',
+  CHADEMO = 'CHAdeMO',
+  GB_T = 'GB/T',
+  THREE_PIN = '3Pin',
+  SCHUKO = 'Schuko',
   NACS = 'NACS',
   MCS = 'MCS',
 }
@@ -134,6 +131,7 @@ export interface DashboardData {
 export interface Tenant {
   id: string;
   name: string;
+  slug: string;
   schemaName: string;
   isActive: boolean;
   description?: string;
@@ -146,6 +144,7 @@ export interface Tenant {
 export interface TenantListResponse {
   id: string;
   name: string;
+  slug: string;
   schemaName: string;
   isActive: boolean;
   description: string | null;
@@ -157,8 +156,8 @@ export interface TenantListResponse {
 export interface User {
   id: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  firstName?: string | null;
+  lastName?: string | null;
   role: string;
   phoneNumber?: string | null;
   isEmailVerified: boolean;

@@ -20,12 +20,9 @@ import {
     RotateCcw,
     AlertCircle,
     Zap,
-    ArrowLeft,
     Activity,
     CheckCircle,
     XCircle as XCircleIcon,
-    X,
-    ChevronDown
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -37,6 +34,7 @@ import {
 } from '@/components/ui/select';
 import { StatCard } from '@/features/dashboard/components/StatCard';
 import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
+import { BackButton } from '@/components/shared/BackButton';
 
 export function WebhookLogsContainer() {
     const params = useParams();
@@ -302,15 +300,11 @@ export function WebhookLogsContainer() {
                 {/* Header Section */}
                 <motion.div variants={staggerItem} className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                     <div className="flex flex-col gap-4">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => router.push('/webhooks')}
-                            className="w-fit h-8 px-2 -ml-2 text-muted-foreground hover:text-foreground hover:bg-transparent flex items-center gap-2 font-bold uppercase text-[10px] tracking-widest group"
-                        >
-                            <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-1 transition-transform" />
-                            Back to Webhooks
-                        </Button>
+                        <BackButton
+                            href="/webhooks"
+                            label="Back to Webhooks"
+                            className="-ml-2 mb-0"
+                        />
                         <div className="space-y-1">
                             <h1 className="text-3xl font-extrabold tracking-tight bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
                                 Delivery Logs

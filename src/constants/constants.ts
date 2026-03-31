@@ -9,6 +9,8 @@ export const API_CONFIG = {
             resendVerification: "/auth/resend-verification",
             inviteUser: "/auth/invite",
             acceptInvitation: "/auth/accept-invitation",
+            forgotPassword: "/auth/forgot-password",
+            resetPassword: "/auth/reset-password",
         },
         users: {
             base: "/users",
@@ -17,6 +19,7 @@ export const API_CONFIG = {
         },
         stations: {
             base: "/stations",
+            stats: "/stations/stats",
             byId: (id: string) => `/stations/${id}`,
             remoteStart: (id: string) => `/stations/${id}/remote-start`,
             remoteStop: (id: string) => `/stations/${id}/remote-stop`,
@@ -56,7 +59,10 @@ export const API_CONFIG = {
         },
         ocpi: {
             credentials: "/ocpi/mgmt/credentials",
+            deleteCredential: (id: string) => `/ocpi/mgmt/credentials/${id}/delete`,
             generateToken: "/ocpi/mgmt/credentials/generate-token",
+            syncAll: "/ocpi/mgmt/sync-all",
+            syncTokens: "/ocpi/mgmt/sync-tokens",
             tokens: "/ocpi/mgmt/tokens",
             sessions: "/ocpi/mgmt/sessions",
             cdrs: "/ocpi/mgmt/cdrs",
@@ -65,6 +71,7 @@ export const API_CONFIG = {
             commands: {
                 start: "/ocpi/mgmt/commands/start",
                 stop: "/ocpi/mgmt/commands/stop",
+                unlock: "/ocpi/mgmt/commands/unlock",
             },
             stats: "/ocpi/mgmt/stats",
         },
@@ -95,6 +102,8 @@ export const FRONTEND_ROUTES = {
     USERS: "/users",
     VERIFY_EMAIL: "/verify-email",
     ACCEPT_INVITE: "/accept-invitation",
+    FORGOT_PASSWORD: "/forgot-password",
+    RESET_PASSWORD: "/reset-password",
 }
 
 export const AUTH_CONFIG = {
@@ -108,61 +117,57 @@ export const WEBSOCKET_CONFIG = {
     ocppUrl: process.env.NEXT_PUBLIC_CSMS_WEBSOCKET_BASE_URL || "ws://localhost:9220/ocpp",
 }
 
-export const CONNECTOR_OPTIONS = [{
-    type: "CHAdeMO",
-    label: "CHAdeMO",
-    description: "Japanese standard"
-},
-{
-    type: "Type2",
-    label: "Type 2",
-    description: "European AC"
-},
-{
-    type: "CCS",
-    label: "CCS",
-    description: "Combined Charging System"
-},
-{
-    type: "Type1",
-    label: "type1",
-    description: "North American standard"
-},
-{
-    type: "COMMANDO",
-    label: "Commando",
-    description: "Industrial connector"
-},
-{
-    type: "3PIN",
-    label: "3-Pin",
-    description: "Three-pin connector"
-},
-{
-    type: "SCHUKO",
-    label: "Schuko",
-    description: "European standard"
-},
-{
-    type: "TYPE3",
-    label: "Type 3",
-    description: "European standard"
-},
-{
-    type: "NACS",
-    label: "NACS",
-    description: "North American standard"
-},
-{
-    type: "CCS1",
-    label: "CCS1",
-    description: "Combined Charging System"
-},
-{
-    type: "MCS",
-    label: "MCS",
-    description: "Megawatt Charging System"
-}
+export const CONNECTOR_OPTIONS = [
+    {
+        type: "CHAdeMO",
+        label: "CHAdeMO",
+        description: "Japanese standard"
+    },
+    {
+        type: "Mennekes",
+        label: "Mennekes",
+        description: "European AC"
+    },
+    {
+        type: "CCS",
+        label: "CCS",
+        description: "Combined Charging System"
+    },
+    {
+        type: "J1772",
+        label: "J1772",
+        description: "North American standard"
+    },
+    {
+        type: "3Pin",
+        label: "3-Pin",
+        description: "Three-pin connector"
+    },
+    {
+        type: "Schuko",
+        label: "Schuko",
+        description: "European standard"
+    },
+    {
+        type: "NACS",
+        label: "Tesla",
+        description: "North American standard"
+    },
+    {
+        type: "CCS1",
+        label: "CCS1",
+        description: "Combined Charging System"
+    },
+    {
+        type: "MCS",
+        label: "MCS",
+        description: "Megawatt Charging System"
+    },
+    {
+        type: "CCS2",
+        label: "CCS2",
+        description: "Combined Charging System"
+    }
 ]
 
 export const DEFAULT_PAGE_SIZE = 10;

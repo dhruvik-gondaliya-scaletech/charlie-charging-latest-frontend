@@ -47,6 +47,12 @@ export interface MeterValuesEvent {
     timestamp: string;
 }
 
+export interface OcpiUpdateEvent {
+    module: 'tokens' | 'sessions' | 'cdrs' | 'locations' | 'credentials' | 'tariffs';
+    data?: any;
+    timestamp: string;
+}
+
 export type EventListener<T> = (data: T) => void;
 
 // Singleton class for WebSocket real-time events
@@ -268,6 +274,12 @@ class RealTimeService {
                 `Received 'meter-values' event: Station ${data.stationId}, Connector ${data.connectorId}`,
             );
             this.notifyListeners('meter-values', data);
+        });
+
+        // OCPI update events
+        this.socket.on('ocpi-update', (data: OcpiUpdateEvent) => {
+            console.log(`Received 'ocpi-update' event for module: ${data.module}`);
+            this.notifyListeners('ocpi-update', data);
         });
 
         // Error handling for all events

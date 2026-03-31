@@ -7,14 +7,11 @@ import { useStations } from '@/hooks/get/useStations';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-    ArrowLeft,
     Building2,
     Activity,
     ShieldCheck,
     MapPin,
-    History,
     Zap,
-    LayoutDashboard
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeInUp, staggerContainer } from '@/lib/motion';
@@ -25,6 +22,7 @@ import { StatCard } from '../../dashboard/components/StatCard';
 import { LocationOverview } from '../components/LocationOverview';
 import { LocationStations } from '../components/LocationStations';
 import { FRONTEND_ROUTES } from '@/constants/constants';
+import { BackButton } from '@/components/shared/BackButton';
 
 export function LocationDetailContainer() {
     const { id } = useParams();
@@ -68,9 +66,11 @@ export function LocationDetailContainer() {
                     </div>
                     <h2 className="text-2xl font-bold">Location Not Found</h2>
                     <p className="text-muted-foreground">The requested site could not be found or you don't have permission to access it.</p>
-                    <Button onClick={() => router.push(FRONTEND_ROUTES.LOCATIONS)} variant="outline" className="mt-4">
-                        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Sites
-                    </Button>
+                    <BackButton
+                        href={FRONTEND_ROUTES.LOCATIONS}
+                        label="Back to Sites"
+                        className="mt-4 mx-auto w-fit"
+                    />
                 </div>
             </div>
         );
@@ -86,13 +86,10 @@ export function LocationDetailContainer() {
             {/* Header Section */}
             <motion.div variants={fadeInUp} className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                 <div className="space-y-1">
-                    <button
-                        onClick={() => router.push(FRONTEND_ROUTES.LOCATIONS)}
-                        className="flex items-center text-sm font-medium text-muted-foreground hover:text-primary mb-4 transition-colors group"
-                    >
-                        <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-                        Return to Sites List
-                    </button>
+                    <BackButton
+                        href={FRONTEND_ROUTES.LOCATIONS}
+                        label="Return to Locations"
+                    />
                     <div className="flex flex-wrap items-center gap-3">
                         <h1 className="text-4xl font-black tracking-tight text-foreground uppercase">{location.name}</h1>
                         <Badge
@@ -102,7 +99,7 @@ export function LocationDetailContainer() {
                                 location.isActive ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/30" : "bg-destructive/10 text-destructive border-destructive/30"
                             )}
                         >
-                            {location.isActive ? 'Network Active' : 'Offline'}
+                            {location.isActive ? 'Active' : 'Offline'}
                         </Badge>
                     </div>
                     <div className="flex items-center gap-3 text-muted-foreground mt-2">
@@ -111,16 +108,6 @@ export function LocationDetailContainer() {
                             {location.city}, {location.country}
                         </div>
                     </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <Button
-                        variant="outline"
-                        onClick={() => router.push(FRONTEND_ROUTES.LOCATIONS_EDIT(location.id))}
-                        className="border-border/60 hover:bg-muted font-bold h-11 px-6 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
-                    >
-                        Configure Site
-                    </Button>
                 </div>
             </motion.div>
 

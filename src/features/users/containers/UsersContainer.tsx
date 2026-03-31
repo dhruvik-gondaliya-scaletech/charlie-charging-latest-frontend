@@ -16,7 +16,9 @@ import {
   Calendar,
   Activity,
   ShieldAlert,
+  Loader2,
 } from 'lucide-react';
+import { useInviteUser } from '@/hooks/post/useAuthMutations';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Table } from '@/components/shared/Table';
 import { User } from '@/types';
@@ -28,6 +30,7 @@ import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
 
 export function UsersContainer() {
   const { data: users, isLoading, error } = useUsers();
+  const inviteUser = useInviteUser();
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
   const stats = useMemo(() => {
@@ -48,7 +51,7 @@ export function UsersContainer() {
           <div className="flex items-center gap-3">
             <div className="flex flex-col">
               <span className="font-bold tracking-tight text-foreground">
-                {row.original.firstName} {row.original.lastName}
+                {row.original.firstName || row.original.lastName ? `${row.original.firstName || ''} ${row.original.lastName || ''}`.trim() : 'New Operator'}
               </span>
               <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium">
                 <Mail className="h-2.5 w-2.5 opacity-60" />
@@ -70,7 +73,7 @@ export function UsersContainer() {
       },
       {
         accessorKey: 'isActive',
-        header: 'Network Status',
+        header: 'Status',
         cell: ({ row }) => {
           const isActive = row.original.isActive;
           const isVerified = row.original.isEmailVerified;
@@ -78,7 +81,7 @@ export function UsersContainer() {
           if (!isActive) return (
             <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20 font-bold px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-widest flex items-center gap-1 w-fit">
               <XCircle className="h-3 w-3" />
-              Disabled
+              Inactive
             </Badge>
           );
 
@@ -92,7 +95,7 @@ export function UsersContainer() {
           return (
             <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 font-bold px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-widest flex items-center gap-1 w-fit">
               <CheckCircle2 className="h-3 w-3" />
-              Verified
+              Active
             </Badge>
           );
         },
@@ -107,8 +110,39 @@ export function UsersContainer() {
           </div>
         ),
       },
+      {
+        id: 'actions',
+        header: 'Actions',
+        cell: ({ row }) => {
+          const user = row.original;
+          // Only enabled if isActive is false OR isEmailVerified is false
+          const isPending = !user.isActive || !user.isEmailVerified;
+
+          return (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={!isPending || inviteUser.isPending}
+              onClick={() => {
+                inviteUser.mutate({
+                  email: user.email,
+                  role: 'admin',
+                });
+              }}
+              className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-wider bg-primary/5 hover:bg-primary/10 border-primary/10 text-primary transition-all flex items-center gap-1.5"
+            >
+              {inviteUser.isPending ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <Mail className="h-3 w-3" />
+              )}
+              Resend Mail
+            </Button>
+          );
+        },
+      },
     ],
-    []
+    [inviteUser]
   );
 
   if (error) {
@@ -185,7 +219,7 @@ export function UsersContainer() {
                 onClick={() => setIsInviteModalOpen(true)}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
               >
-                <UserPlus className="mr-2 h-4 w-4" />
+                <UserPlus className="h-4 w-4" />
                 Invite Operator
               </Button>
             }

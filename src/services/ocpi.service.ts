@@ -1,6 +1,30 @@
 import { API_CONFIG } from "@/constants/constants";
 import httpService from "@/lib/http-service";
 
+export interface OcpiRole {
+    role: 'CPO' | 'EMSP' | 'HUB' | 'NAP' | 'NSP' | 'OTH' | 'SC' | 'TO';
+    business_details: {
+        name: string;
+        website?: string;
+        logo?: {
+            url: string;
+            thumbnail?: string;
+            category?: string;
+            type?: string;
+            width?: number;
+            height?: number;
+        };
+    };
+    party_id: string;
+    country_code: string;
+}
+
+export interface OcpiEndpoint {
+    identifier: string;
+    role: string;
+    url: string;
+}
+
 export interface OcpiCredential {
     id: string;
     token_a?: string;
@@ -9,8 +33,8 @@ export interface OcpiCredential {
     url: string;
     countryCode: string;
     partyId: string;
-    roles: any[];
-    endpoints: any[];
+    roles: OcpiRole[];
+    endpoints: OcpiEndpoint[];
     createdAt: string;
     updatedAt: string;
 }
@@ -71,6 +95,26 @@ export interface OcpiTariff {
     last_updated: string;
 }
 
+export interface OcpiConnector {
+    id: string;
+    standard: string;
+    format: string;
+    power_type: string;
+    max_voltage: number;
+    max_amperage: number;
+    max_electric_power: number;
+    tariff_ids?: string[];
+    last_updated: string;
+}
+
+export interface OcpiEvse {
+    uid: string;
+    evse_id?: string;
+    status: string;
+    connectors: OcpiConnector[];
+    last_updated: string;
+}
+
 export interface OcpiLocation {
     id: string;
     name: string;
@@ -82,8 +126,41 @@ export interface OcpiLocation {
         latitude: string;
         longitude: string;
     };
-    evses: any[];
+    evses: OcpiEvse[];
     last_updated: string;
+}
+
+export interface OcpiStartSessionRequest {
+    response_url?: string;
+    token: {
+        uid: string;
+        type: string;
+        auth_id?: string;
+        visual_number?: string;
+        issuer?: string;
+        allowed?: string;
+    };
+    location_id?: string;
+    evse_uid?: string;
+    evse_id?: string;
+    connector_id?: string;
+    authorization_reference?: string;
+}
+
+export interface OcpiStopSessionRequest {
+    response_url?: string;
+    session_id?: string;
+    evse_uid?: string;
+    evse_id?: string;
+    location_id?: string;
+}
+
+export interface OcpiUnlockConnectorRequest {
+    response_url?: string;
+    location_id?: string;
+    evse_uid?: string;
+    evse_id?: string;
+    connector_id?: string;
 }
 
 export interface OcpiCommandResponse {
@@ -106,12 +183,30 @@ export interface OcpiSessionsParams {
 }
 
 export const ocpiService = {
-    getCredentials: () => httpService.get<OcpiCredential[]>(API_CONFIG.endpoints.ocpi.credentials),
+    getCredentials: (params?: OcpiSessionsParams) => {
+        const qp = new URLSearchParams();
+        if (params?.page !== undefined) qp.set('page', String(params.page));
+        if (params?.pageSize !== undefined) qp.set('pageSize', String(params.pageSize));
+        if (params?.search) qp.set('search', params.search);
+        const qs = qp.toString();
+        const url = `${API_CONFIG.endpoints.ocpi.credentials}${qs ? `?${qs}` : ''}`;
+        return httpService.get<PaginatedResponse<OcpiCredential>>(url);
+    },
+
 
     generateRegistrationToken: (url: string, email?: string) =>
         httpService.post<OcpiCredential>(API_CONFIG.endpoints.ocpi.generateToken, { url, email }),
 
-    getTokens: () => httpService.get<OcpiToken[]>(API_CONFIG.endpoints.ocpi.tokens),
+    getTokens: (params?: OcpiSessionsParams) => {
+        const qp = new URLSearchParams();
+        if (params?.page !== undefined) qp.set('page', String(params.page));
+        if (params?.pageSize !== undefined) qp.set('pageSize', String(params.pageSize));
+        if (params?.search) qp.set('search', params.search);
+        const qs = qp.toString();
+        const url = `${API_CONFIG.endpoints.ocpi.tokens}${qs ? `?${qs}` : ''}`;
+        return httpService.get<PaginatedResponse<OcpiToken>>(url);
+    },
+
 
     getSessions: (params?: OcpiSessionsParams) => {
         const qp = new URLSearchParams();
@@ -143,11 +238,32 @@ export const ocpiService = {
         return httpService.get<PaginatedResponse<OcpiTariff>>(url);
     },
 
-    getLocations: () => httpService.get<OcpiLocation[]>(API_CONFIG.endpoints.ocpi.locations),
 
-    startRemoteSession: (data: any) => httpService.post<OcpiCommandResponse>(API_CONFIG.endpoints.ocpi.commands.start, data),
+    getLocations: (params?: OcpiSessionsParams) => {
+        const qp = new URLSearchParams();
+        if (params?.page !== undefined) qp.set('page', String(params.page));
+        if (params?.pageSize !== undefined) qp.set('pageSize', String(params.pageSize));
+        if (params?.search) qp.set('search', params.search);
+        const qs = qp.toString();
+        const url = `${API_CONFIG.endpoints.ocpi.locations}${qs ? `?${qs}` : ''}`;
+        return httpService.get<PaginatedResponse<OcpiLocation>>(url);
+    },
 
-    stopRemoteSession: (data: any) => httpService.post<OcpiCommandResponse>(API_CONFIG.endpoints.ocpi.commands.stop, data),
+
+    syncAll: () => httpService.post<{ success: boolean }>(API_CONFIG.endpoints.ocpi.syncAll, {}),
+
+    syncTokens: () => httpService.post<{ success: boolean; pulled: number }>(API_CONFIG.endpoints.ocpi.syncTokens, {}),
+
+    deleteCredential: (id: string) => httpService.post<{ success: boolean }>(API_CONFIG.endpoints.ocpi.deleteCredential(id), {}),
+
+    startRemoteSession: (data: OcpiStartSessionRequest) =>
+        httpService.post<OcpiCommandResponse>(API_CONFIG.endpoints.ocpi.commands.start, data),
+
+    stopRemoteSession: (data: OcpiStopSessionRequest) =>
+        httpService.post<OcpiCommandResponse>(API_CONFIG.endpoints.ocpi.commands.stop, data),
+
+    unlockConnector: (data: OcpiUnlockConnectorRequest) =>
+        httpService.post<OcpiCommandResponse>(API_CONFIG.endpoints.ocpi.commands.unlock, data),
 
     getStats: () => httpService.get<{ tokenCount: number; connectedParties: number }>(API_CONFIG.endpoints.ocpi.stats),
 };
