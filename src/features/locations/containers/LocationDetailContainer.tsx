@@ -88,7 +88,7 @@ export function LocationDetailContainer() {
                 <div className="space-y-1">
                     <BackButton
                         href={FRONTEND_ROUTES.LOCATIONS}
-                        label="Return to Sites List"
+                        label="Return to Locations"
                     />
                     <div className="flex flex-wrap items-center gap-3">
                         <h1 className="text-4xl font-black tracking-tight text-foreground uppercase">{location.name}</h1>

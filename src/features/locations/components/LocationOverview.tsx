@@ -91,9 +91,9 @@ export function LocationOverview({ location }: LocationOverviewProps) {
                 <CardContent className="space-y-6">
                     <div className="aspect-square rounded-2xl bg-muted/10 overflow-hidden border border-primary/10 relative">
                         {location.latitude && location.longitude ? (
-                            <LeafletMap 
-                                latitude={location.latitude} 
-                                longitude={location.longitude} 
+                            <LeafletMap
+                                latitude={location.latitude}
+                                longitude={location.longitude}
                                 zoom={15}
                                 className="z-0"
                             />
@@ -106,13 +106,6 @@ export function LocationOverview({ location }: LocationOverviewProps) {
                                 </div>
                             </div>
                         )}
-                    </div>
-
-                    <div className="space-y-4">
-                        <div className="p-4 rounded-xl bg-background/50 border border-primary/10">
-                            <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Status Report</p>
-                            <p className="text-sm font-bold">This location is currently {location.isActive ? 'broadcasting' : 'offline'} on the global network.</p>
-                        </div>
                     </div>
                 </CardContent>
             </Card>
