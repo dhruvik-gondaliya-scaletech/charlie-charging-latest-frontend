@@ -25,7 +25,7 @@ export function LocationCreateContainer() {
         <div className="space-y-6">
             <BackButton
                 href={FRONTEND_ROUTES.LOCATIONS}
-                label="Return to Sites List"
+                label="Return to Locations"
             />
             <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-3">

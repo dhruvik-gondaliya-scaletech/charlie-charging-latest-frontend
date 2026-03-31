@@ -69,7 +69,7 @@ export function LocationDetailContainer() {
                     <BackButton
                         href={FRONTEND_ROUTES.LOCATIONS}
                         label="Back to Sites"
-                        className="mt-4"
+                        className="mt-4 mx-auto w-fit"
                     />
                 </div>
             </div>
@@ -88,7 +88,7 @@ export function LocationDetailContainer() {
                 <div className="space-y-1">
                     <BackButton
                         href={FRONTEND_ROUTES.LOCATIONS}
-                        label="Return to Sites List"
+                        label="Return to Locations"
                     />
                     <div className="flex flex-wrap items-center gap-3">
                         <h1 className="text-4xl font-black tracking-tight text-foreground uppercase">{location.name}</h1>
@@ -108,16 +108,6 @@ export function LocationDetailContainer() {
                             {location.city}, {location.country}
                         </div>
                     </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <Button
-                        variant="outline"
-                        onClick={() => router.push(`${FRONTEND_ROUTES.LOCATIONS_EDIT(location.id)}?name=${encodeURIComponent(location.name)}`)}
-                        className="border-border/60 hover:bg-muted font-bold h-11 px-6 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
-                    >
-                        Configure Site
-                    </Button>
                 </div>
             </motion.div>
 

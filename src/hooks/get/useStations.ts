@@ -1,4 +1,4 @@
-import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery, keepPreviousData } from '@tanstack/react-query';
 import { stationService, GetStationsParams, GetOcppLogsParams } from '@/services/station.service';
 import { SessionFilterParams } from '@/types';
 
@@ -7,6 +7,7 @@ export const useStations = (params?: GetStationsParams) => {
     queryKey: ['stations', params],
     queryFn: () => stationService.getAllStations(params),
     staleTime: 30000,
+    placeholderData: keepPreviousData,
   });
 };
 
