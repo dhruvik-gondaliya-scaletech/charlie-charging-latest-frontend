@@ -109,16 +109,6 @@ export function LocationDetailContainer() {
                         </div>
                     </div>
                 </div>
-
-                <div className="flex items-center gap-3">
-                    <Button
-                        variant="outline"
-                        onClick={() => router.push(`${FRONTEND_ROUTES.LOCATIONS_EDIT(location.id)}?name=${encodeURIComponent(location.name)}`)}
-                        className="border-border/60 hover:bg-muted font-bold h-11 px-6 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
-                    >
-                        Configure Site
-                    </Button>
-                </div>
             </motion.div>
 
             {/* Stats Grid */}

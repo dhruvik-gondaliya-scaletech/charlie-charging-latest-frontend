@@ -15,6 +15,20 @@ import {
 import { Location } from '@/types';
 import { formatDate } from '@/lib/date';
 
+import dynamic from 'next/dynamic';
+
+const LeafletMap = dynamic(() => import('@/components/shared/LeafletMap'), {
+    ssr: false,
+    loading: () => (
+        <div className="aspect-square rounded-2xl bg-muted/30 flex items-center justify-center border border-dashed border-primary/20 p-8 text-center animate-pulse">
+            <div className="space-y-2">
+                <MapPin className="h-12 w-12 text-primary/40 mx-auto animate-bounce" />
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Initializing Map...</p>
+            </div>
+        </div>
+    )
+});
+
 interface LocationOverviewProps {
     location: Location;
 }
@@ -75,12 +89,23 @@ export function LocationOverview({ location }: LocationOverviewProps) {
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    <div className="aspect-square rounded-2xl bg-muted/30 flex items-center justify-center border border-dashed border-primary/20 p-8 text-center">
-                        <div className="space-y-2">
-                            <MapPin className="h-12 w-12 text-primary/40 mx-auto" />
-                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Map Preview Not Available</p>
-                            <p className="text-[10px] text-muted-foreground/60 leading-tight">Coordinates: {location.latitude}, {location.longitude}</p>
-                        </div>
+                    <div className="aspect-square rounded-2xl bg-muted/10 overflow-hidden border border-primary/10 relative">
+                        {location.latitude && location.longitude ? (
+                            <LeafletMap 
+                                latitude={location.latitude} 
+                                longitude={location.longitude} 
+                                zoom={15}
+                                className="z-0"
+                            />
+                        ) : (
+                            <div className="h-full w-full flex items-center justify-center p-8 text-center bg-muted/30">
+                                <div className="space-y-2">
+                                    <MapPin className="h-12 w-12 text-primary/40 mx-auto" />
+                                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Map Preview Not Available</p>
+                                    <p className="text-[10px] text-muted-foreground/60 leading-tight">Missing valid coordinates for this site</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div className="space-y-4">

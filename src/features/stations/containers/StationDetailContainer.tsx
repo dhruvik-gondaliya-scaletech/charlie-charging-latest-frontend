@@ -60,7 +60,7 @@ export function StationDetailContainer() {
     const { user, tenant } = useAuth();
     const { data: station, isLoading, error } = useStation(id as string);
     const { data: sessions } = useStationSessions(id as string);
-    const [activeTab, setActiveTab] = useState('overview');
+    const [activeTab, setActiveTab] = useState('connectors');
     const [filterSessionId, setFilterSessionId] = useState<string | undefined>(undefined);
 
     const handleViewSessionLogs = (sessionId: string) => {
@@ -296,9 +296,9 @@ export function StationDetailContainer() {
                     </div>
                     <h2 className="text-2xl font-bold">Station Not Found</h2>
                     <p className="text-muted-foreground">The requested charging station could not be found or you don&apos;t have permission to access it.</p>
-                    <BackButton 
-                        href={FRONTEND_ROUTES.STATIONS} 
-                        label="Back to Stations" 
+                    <BackButton
+                        href={FRONTEND_ROUTES.STATIONS}
+                        label="Back to Stations"
                         className="mt-4"
                     />
                 </div>
@@ -316,9 +316,9 @@ export function StationDetailContainer() {
             {/* Header Section */}
             <motion.div variants={fadeInUp} className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                 <div className="space-y-1">
-                    <BackButton 
-                        href={FRONTEND_ROUTES.STATIONS} 
-                        label="Return to Stations" 
+                    <BackButton
+                        href={FRONTEND_ROUTES.STATIONS}
+                        label="Return to Stations"
                     />
                     <div className="flex flex-wrap items-center gap-3">
                         <h1 className="text-4xl font-black tracking-tight text-foreground">{station.name}</h1>
@@ -346,20 +346,6 @@ export function StationDetailContainer() {
                         </div>
                     </div>
                 </div>
-
-                <div className="flex items-center gap-3">
-                    <Button
-                        variant="outline"
-                        onClick={() => router.push(`${FRONTEND_ROUTES.STATIONS_EDIT(id as string)}?name=${encodeURIComponent(station.name)}`)}
-                        className={cn(
-                            "border-border/60 hover:bg-muted font-bold",
-                            activeTab === 'sessions' && "bg-muted border-primary/40 shadow-sm"
-                        )}
-                    >
-                        <Edit className="h-4 w-4 mr-2" />
-                        Configure Station
-                    </Button>
-                </div>
             </motion.div>
 
             {/* Stats Grid */}
@@ -385,12 +371,50 @@ export function StationDetailContainer() {
             <motion.div variants={fadeInUp}>
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
                     <TabsList className="bg-muted/40 p-1 border border-border/40 rounded-2xl backdrop-blur-md overflow-x-auto h-auto flex-wrap sm:flex-nowrap">
-                        <TabsTrigger value="overview" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Overview</TabsTrigger>
                         <TabsTrigger value="connectors" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Connectors</TabsTrigger>
+                        <TabsTrigger value="overview" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Overview</TabsTrigger>
                         <TabsTrigger value="sessions" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Sessions</TabsTrigger>
                         <TabsTrigger value="config" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Config</TabsTrigger>
                         <TabsTrigger value="logs" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Live Logs</TabsTrigger>
                     </TabsList>
+
+                    <TabsContent value="connectors">
+                        <div className="space-y-6">
+                            <div className="flex items-center justify-between px-2">
+                                <div>
+                                    <h3 className="text-2xl font-black tracking-tight">System Connectors</h3>
+                                    <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Individual port status and capabilities</p>
+                                </div>
+                                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-bold px-4 py-1 rounded-full">
+                                    {station.connectors?.length || 0} Ports Active
+                                </Badge>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {station.connectors?.map((connector) => (
+                                    <ConnectorCard
+                                        key={connector.id}
+                                        connector={connector}
+                                        onStart={handleStartConnector}
+                                        onStop={handleStopConnector}
+                                        isStarting={remoteStart.isPending || busyConnectors.has(connector.connectorId)}
+                                        isStopping={remoteStop.isPending || busyConnectors.has(connector.connectorId)}
+                                        disabled={station.status === ChargingStatus.OFFLINE}
+                                    />
+                                ))}
+
+                                {(!station.connectors || station.connectors.length === 0) && (
+                                    <div className="md:col-span-2 lg:col-span-3 p-12 border-2 border-dashed border-border/40 rounded-[2rem] flex flex-col items-center justify-center text-center gap-4 bg-muted/20">
+                                        <Zap className="h-12 w-12 text-muted-foreground/40" />
+                                        <div>
+                                            <p className="text-xl font-bold text-muted-foreground">No connectors found</p>
+                                            <p className="text-sm text-muted-foreground opacity-60">This station hasn&apos;t reported any connectors yet.</p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </TabsContent>
 
                     <TabsContent value="overview">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -458,44 +482,6 @@ export function StationDetailContainer() {
                                         />
                                     </CardContent>
                                 </Card>
-                            </div>
-                        </div>
-                    </TabsContent>
-
-                    <TabsContent value="connectors">
-                        <div className="space-y-6">
-                            <div className="flex items-center justify-between px-2">
-                                <div>
-                                    <h3 className="text-2xl font-black tracking-tight">System Connectors</h3>
-                                    <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Individual port status and capabilities</p>
-                                </div>
-                                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-bold px-4 py-1 rounded-full">
-                                    {station.connectors?.length || 0} Ports Active
-                                </Badge>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {station.connectors?.map((connector) => (
-                                    <ConnectorCard
-                                        key={connector.id}
-                                        connector={connector}
-                                        onStart={handleStartConnector}
-                                        onStop={handleStopConnector}
-                                        isStarting={remoteStart.isPending || busyConnectors.has(connector.connectorId)}
-                                        isStopping={remoteStop.isPending || busyConnectors.has(connector.connectorId)}
-                                        disabled={station.status === ChargingStatus.OFFLINE}
-                                    />
-                                ))}
-
-                                {(!station.connectors || station.connectors.length === 0) && (
-                                    <div className="md:col-span-2 lg:col-span-3 p-12 border-2 border-dashed border-border/40 rounded-[2rem] flex flex-col items-center justify-center text-center gap-4 bg-muted/20">
-                                        <Zap className="h-12 w-12 text-muted-foreground/40" />
-                                        <div>
-                                            <p className="text-xl font-bold text-muted-foreground">No connectors found</p>
-                                            <p className="text-sm text-muted-foreground opacity-60">This station hasn&apos;t reported any connectors yet.</p>
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         </div>
                     </TabsContent>
