@@ -2,12 +2,10 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ColumnDef } from '@tanstack/react-table';
 import { useStations, useStationStats } from '@/hooks/get/useStations';
 import {
-  useCreateStation,
-  useUpdateStation,
   useDeleteStation
 } from '@/hooks/delete/useStationMutations';
 import { useWebSocketConnection, useRealTimeEvent } from '@/hooks/useRealTime';
@@ -21,7 +19,7 @@ import {
 } from '@/lib/query-utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Eye, Pencil, Trash2, AlertTriangle, Zap, Search, X, Filter, SlidersHorizontal } from 'lucide-react';
+import { Plus, Pencil, Trash2, AlertTriangle, Zap, Search, X } from 'lucide-react';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Input } from '@/components/ui/input';
 import {
@@ -72,7 +70,7 @@ export function StationsContainer() {
     window.history.replaceState(null, '', newPath);
   }, [debouncedSearch, status, type]);
 
-  const { data: stations, isLoading, error } = useStations({
+  const { data: stations, isLoading, isFetching, error } = useStations({
     name: debouncedSearch || undefined,
     status: status === 'ALL' ? undefined : status,
     type: type === 'ALL' ? undefined : type,
@@ -109,8 +107,6 @@ export function StationsContainer() {
   );
 
   // Mutations
-  const createStation = useCreateStation();
-  const updateStation = useUpdateStation();
   const deleteStation = useDeleteStation();
 
   // Modal States
@@ -263,40 +259,6 @@ export function StationsContainer() {
     [router]
   );
 
-  if (isLoading) {
-    return (
-      <div className="space-y-8 p-4 md:p-8 max-w-[1600px] mx-auto">
-        <div className="space-y-2">
-          <Skeleton className="h-10 w-48" />
-          <Skeleton className="h-4 w-64" />
-        </div>
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <Skeleton className="h-10 w-64" />
-            <Skeleton className="h-10 w-40" />
-          </div>
-          <div className="rounded-2xl border border-border/40 overflow-hidden">
-            <div className="bg-muted/30 p-4 border-b border-border/40 space-y-2">
-              <div className="flex gap-4">
-                {Array(6).fill(0).map((_, i) => (
-                  <Skeleton key={i} className="h-4 flex-1" />
-                ))}
-              </div>
-            </div>
-            <div className="p-4 space-y-4">
-              {Array(5).fill(0).map((_, i) => (
-                <div key={i} className="flex gap-4">
-                  {Array(6).fill(0).map((_, j) => (
-                    <Skeleton key={j} className="h-12 flex-1 rounded-xl" />
-                  ))}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (error) {
     return (
@@ -448,7 +410,13 @@ export function StationsContainer() {
           </div>
         </motion.div>
 
-        <motion.div variants={staggerItem} className="relative">
+        <motion.div
+          variants={staggerItem}
+          className={cn(
+            "relative transition-opacity duration-300",
+            isFetching && !isLoading && "opacity-60 pointer-events-none"
+          )}
+        >
           <Table<Station>
             data={stations || []}
             columns={columns}

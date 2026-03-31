@@ -76,62 +76,66 @@ export function StationLogs({ stationId, sessionId, onClearSessionId }: StationL
     }
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-muted/30 p-4 rounded-2xl border border-border/40">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Filter message type or ID..."
-                        className="pl-10 bg-background"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-                <Button
-                    variant="outline"
-                    onClick={() => refetch()}
-                    className="flex items-center gap-2 font-semibold"
-                    disabled={isLoading}
-                >
-                    <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
-                    Refresh Logs
-                </Button>
-            </div>
-
-            {sessionId && (
-                <div className="flex items-center justify-between gap-3 bg-primary/5 border border-primary/20 p-3 rounded-2xl">
-                    <div className="flex items-center gap-2">
-                        <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
-                            <Activity className="h-4 w-4" />
-                        </div>
-                        <div>
-                            <p className="text-xs font-black tracking-tight flex items-center gap-2">
-                                Filtering by Session
-                                <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-mono font-black border-primary/40 bg-primary/10 text-primary">
-                                    UUID: {sessionId.substring(0, 8)}...
-                                </Badge>
-                            </p>
-                        </div>
+        <div className="flex flex-col gap-0 h-[700px]">
+            {/* Sticky Header: Search and Refresh */}
+            <div className="sticky top-0 z-30 bg-card/95 backdrop-blur-sm pb-6 pt-1">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-muted/40 p-4 rounded-2xl border border-border/40 shadow-sm">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Filter message type or ID..."
+                            className="pl-10 bg-background border-border/40 focus-visible:ring-primary/20"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
                     </div>
                     <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={onClearSessionId}
-                        className="h-8 text-[10px] font-black uppercase tracking-widest hover:bg-primary/20 hover:text-primary"
+                        variant="outline"
+                        onClick={() => refetch()}
+                        className="flex items-center gap-2 font-bold bg-background hover:bg-muted border-border/40 transition-all active:scale-95"
+                        disabled={isLoading}
                     >
-                        Clear Filter
+                        <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+                        Refresh Logs
                     </Button>
                 </div>
-            )}
 
-            <div className="space-y-3">
+                {sessionId && (
+                    <div className="mt-4 flex items-center justify-between gap-3 bg-primary/5 border border-primary/20 p-3 rounded-2xl animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="flex items-center gap-2">
+                            <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                                <Activity className="h-4 w-4" />
+                            </div>
+                            <div>
+                                <p className="text-xs font-black tracking-tight flex items-center gap-2">
+                                    Filtering by Session
+                                    <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-mono font-black border-primary/40 bg-primary/10 text-primary">
+                                        UUID: {sessionId?.substring(0, 8)}...
+                                    </Badge>
+                                </p>
+                            </div>
+                        </div>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={onClearSessionId}
+                            className="h-8 text-[10px] font-black uppercase tracking-widest hover:bg-primary/20 hover:text-primary"
+                        >
+                            Clear Filter
+                        </Button>
+                    </div>
+                )}
+            </div>
+
+            {/* Scrollable Logs Container */}
+            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-3 min-h-0">
                 {filteredLogs.length > 0 ? (
                     filteredLogs.map((log, idx) => (
                         <div
                             key={`${log.id}-${idx}`}
                             className={cn(
-                                "group border border-border/60 rounded-2xl overflow-hidden transition-all",
-                                expandedLogId === log.id ? "bg-card shadow-md border-primary/20" : "bg-card/40 hover:bg-card/60"
+                                "group border border-border/50 rounded-2xl overflow-hidden transition-all duration-200",
+                                expandedLogId === log.id ? "bg-card shadow-lg border-primary/30 ring-1 ring-primary/10" : "bg-card/40 hover:bg-card/60 hover:border-border/80"
                             )}
                         >
                             <div
@@ -140,7 +144,7 @@ export function StationLogs({ stationId, sessionId, onClearSessionId }: StationL
                             >
                                 <div className="flex items-center gap-4 min-w-0">
                                     <div className={cn(
-                                        "p-2 rounded-xl flex items-center justify-center shrink-0",
+                                        "p-2 rounded-xl flex items-center justify-center shrink-0 shadow-sm",
                                         log.direction === 'INCOMING' ? "bg-emerald-500/10 text-emerald-500" : "bg-blue-500/10 text-blue-500"
                                     )}>
                                         {log.direction === 'INCOMING' ? <ArrowDownLeft className="h-4 w-4" /> : <ArrowUpRight className="h-4 w-4" />}
@@ -158,17 +162,19 @@ export function StationLogs({ stationId, sessionId, onClearSessionId }: StationL
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4">
-                                    <span className="text-xs font-mono text-muted-foreground hidden md:block opacity-40">
+                                    <span className="text-xs font-mono text-muted-foreground hidden md:block opacity-40 group-hover:opacity-100 transition-opacity">
                                         Click to inspect
                                     </span>
-                                    {expandedLogId === log.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                    <div className="p-1 rounded-full group-hover:bg-muted transition-colors">
+                                        {expandedLogId === log.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                    </div>
                                 </div>
                             </div>
 
                             {expandedLogId === log.id && (
-                                <div className="p-4 pt-0 border-t border-border/20 bg-muted/10">
-                                    <div className="mt-4 rounded-xl bg-black/90 p-4 overflow-x-auto">
-                                        <pre className="text-xs font-mono text-emerald-400">
+                                <div className="p-4 pt-0 border-t border-border/10 bg-muted/5 animate-in slide-in-from-top-1 duration-200">
+                                    <div className="mt-4 rounded-xl bg-black/90 p-5 shadow-inner border border-white/5 overflow-x-auto ring-1 ring-white/5">
+                                        <pre className="text-xs font-mono text-emerald-400 leading-relaxed">
                                             {JSON.stringify(log.message, null, 2)}
                                         </pre>
                                     </div>
@@ -177,27 +183,33 @@ export function StationLogs({ stationId, sessionId, onClearSessionId }: StationL
                         </div>
                     ))
                 ) : (
-                    <div className="py-20 text-center border-2 border-dashed border-border rounded-3xl bg-muted/10">
-                        <Terminal className="h-10 w-10 text-muted-foreground mx-auto mb-4 opacity-20" />
-                        <p className="text-muted-foreground font-medium">No communication logs found for this filter.</p>
+                    <div className="py-20 text-center border-2 border-dashed border-border/40 rounded-[2rem] bg-muted/10 animate-in fade-in zoom-in-95 duration-500">
+                        <Terminal className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-20" />
+                        <p className="text-muted-foreground font-bold tracking-tight">No communication logs found</p>
+                        <p className="text-xs text-muted-foreground/60 mt-1 uppercase tracking-widest font-black">Adjust filters or check connection</p>
                     </div>
                 )}
 
                 {/* Observer element for infinite scroll */}
-                <div ref={ref} className="h-10 flex items-center justify-center">
-                    {isFetchingNextPage && (
-                        <div className="flex items-center gap-2 text-primary font-bold animate-pulse">
+                <div ref={ref} className="h-20 flex items-center justify-center border-t border-border/5 mt-4">
+                    {isFetchingNextPage ? (
+                        <div className="flex items-center gap-3 text-primary p-3 rounded-full bg-primary/5 px-6 border border-primary/10 shadow-sm animate-pulse">
                             <Loader2 className="h-4 w-4 animate-spin" />
-                            <span className="text-[10px] uppercase tracking-widest">Loading more machine events...</span>
+                            <span className="text-[10px] uppercase tracking-black font-black tracking-widest">Streaming events...</span>
                         </div>
-                    )}
-                    {!hasNextPage && logs.length > 0 && (
-                        <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest opacity-40">
-                            End of diagnostic stream
-                        </span>
+                    ) : (
+                        !hasNextPage && logs.length > 0 && (
+                            <div className="flex flex-col items-center gap-2 opacity-40 py-4">
+                                <div className="h-px w-20 bg-border/40" />
+                                <span className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">
+                                    End of diagnostic stream
+                                </span>
+                            </div>
+                        )
                     )}
                 </div>
             </div>
         </div>
+
     );
 }

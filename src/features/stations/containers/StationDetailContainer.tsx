@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useStation } from '@/hooks/get/useStations';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,6 @@ import {
     Terminal,
     Cpu,
     History,
-    Edit,
     AlertCircle,
     LogOut,
     Loader2,
@@ -55,7 +54,6 @@ import { useQueryClient } from '@tanstack/react-query';
 
 export function StationDetailContainer() {
     const { id } = useParams();
-    const router = useRouter();
     const queryClient = useQueryClient();
     const { user, tenant } = useAuth();
     const { data: station, isLoading, error } = useStation(id as string);
@@ -299,7 +297,7 @@ export function StationDetailContainer() {
                     <BackButton
                         href={FRONTEND_ROUTES.STATIONS}
                         label="Back to Stations"
-                        className="mt-4"
+                        className="mt-4 mx-auto w-fit"
                     />
                 </div>
             </div>

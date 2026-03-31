@@ -69,7 +69,7 @@ export function LocationDetailContainer() {
                     <BackButton
                         href={FRONTEND_ROUTES.LOCATIONS}
                         label="Back to Sites"
-                        className="mt-4"
+                        className="mt-4 mx-auto w-fit"
                     />
                 </div>
             </div>
