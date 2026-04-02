@@ -9,6 +9,8 @@ export const API_CONFIG = {
             resendVerification: "/auth/resend-verification",
             inviteUser: "/auth/invite",
             acceptInvitation: "/auth/accept-invitation",
+            forgotPassword: "/auth/forgot-password",
+            resetPassword: "/auth/reset-password",
         },
         users: {
             base: "/users",
@@ -26,6 +28,7 @@ export const API_CONFIG = {
         },
         stations: {
             base: "/stations",
+            stats: "/stations/stats",
             byId: (id: string) => `/stations/${id}`,
             remoteStart: (id: string) => `/stations/${id}/remote-start`,
             remoteStop: (id: string) => `/stations/${id}/remote-stop`,
@@ -110,6 +113,8 @@ export const FRONTEND_ROUTES = {
     ID_TAGS: "/id-tags",
     VERIFY_EMAIL: "/verify-email",
     ACCEPT_INVITE: "/accept-invitation",
+    FORGOT_PASSWORD: "/forgot-password",
+    RESET_PASSWORD: "/reset-password",
 }
 
 export const AUTH_CONFIG = {

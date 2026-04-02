@@ -30,6 +30,11 @@ export interface AcceptInvitationData {
   password: string;
 }
 
+export interface ResetPasswordData {
+  token: string;
+  newPassword: string;
+}
+
 class AuthService {
   async login(email: string, password: string) {
     return httpService.post<LoginResponse>(API_CONFIG.endpoints.auth.login, { email, password });
@@ -53,6 +58,14 @@ class AuthService {
 
   async acceptInvitation(token: string, data: AcceptInvitationData) {
     return httpService.post(`${API_CONFIG.endpoints.auth.acceptInvitation}?token=${token}`, data);
+  }
+
+  async forgotPassword(email: string) {
+    return httpService.post(API_CONFIG.endpoints.auth.forgotPassword, { email });
+  }
+
+  async resetPassword(data: ResetPasswordData) {
+    return httpService.post(API_CONFIG.endpoints.auth.resetPassword, data);
   }
 
   async logout() {

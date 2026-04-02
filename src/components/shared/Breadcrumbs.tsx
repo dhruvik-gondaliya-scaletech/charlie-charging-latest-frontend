@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -22,10 +22,15 @@ const routeLabels: Record<string, string> = {
     tenants: 'Tenants',
     webhooks: 'Webhooks',
     profile: 'Profile',
+    logs: 'Logs',
 };
+
+const isUuid = (val: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
 
 export function Breadcrumbs() {
     const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const name = searchParams.get('name');
     const segments = pathname.split('/').filter(Boolean);
 
     // Don't show breadcrumbs on auth pages if they use the same layout
@@ -45,8 +50,16 @@ export function Breadcrumbs() {
                     if (index === 0 && segment === 'dashboard') return null;
 
                     const path = `/${segments.slice(0, index + 1).join('/')}`;
-                    const label = routeLabels[segment] || segment.charAt(0).toUpperCase() + segment.slice(1);
+                    const isUuidSegment = isUuid(segment);
+                    let label = routeLabels[segment] || segment.charAt(0).toUpperCase() + segment.slice(1);
+
+                    if (isUuidSegment && name) {
+                        label = name;
+                    }
+
                     const isLast = index === segments.length - 1;
+                    // If it's a UUID segment and we have a name, preserve it in the link for breadcrumb consistency
+                    const segmentPath = (isUuidSegment && name) ? `${path}?name=${encodeURIComponent(name)}` : path;
 
                     return (
                         <React.Fragment key={path}>
@@ -58,7 +71,7 @@ export function Breadcrumbs() {
                                     </BreadcrumbPage>
                                 ) : (
                                     <BreadcrumbLink asChild>
-                                        <Link href={path}>{label}</Link>
+                                        <Link href={segmentPath}>{label}</Link>
                                     </BreadcrumbLink>
                                 )}
                             </BreadcrumbItem>

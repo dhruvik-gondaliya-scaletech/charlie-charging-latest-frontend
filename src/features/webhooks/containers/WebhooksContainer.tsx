@@ -259,7 +259,7 @@ export function WebhooksContainer() {
                   className="h-8 w-8 hover:bg-blue-500/10 hover:text-blue-500 rounded-lg transition-colors"
                   asChild
                 >
-                  <Link href={FRONTEND_ROUTES.WEBHOOKS_LOGS(row.original.id)}>
+                  <Link href={`${FRONTEND_ROUTES.WEBHOOKS_LOGS(row.original.id)}?name=${encodeURIComponent(row.original.name)}`}>
                     <FileText className="h-4 w-4" />
                   </Link>
                 </Button>
@@ -409,7 +409,7 @@ export function WebhooksContainer() {
                 }}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
               >
-                <Plus className="mr-2 h-4 w-4" />
+                <Plus className="h-4 w-4" />
                 New Integration
               </Button>
             }

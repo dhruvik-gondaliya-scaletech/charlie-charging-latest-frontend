@@ -21,7 +21,8 @@ import {
     Filter,
     Calendar,
     RefreshCw,
-    Terminal
+    Terminal,
+    RotateCcw
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -33,7 +34,7 @@ import {
     SelectValue
 } from '@/components/ui/select';
 import { DatePicker } from '@/components/shared/DatePicker';
-import { startOfDay, endOfDay } from 'date-fns';
+import { startOfDay, endOfDay, format } from 'date-fns';
 
 interface StationSessionsProps {
     stationId: string;
@@ -47,10 +48,17 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
         to: undefined,
     });
 
+    const handleResetFilters = () => {
+        setStatusFilter('all');
+        setDateRange({ from: undefined, to: undefined });
+    };
+
+    const isAnyFilterActive = statusFilter !== 'all' || dateRange.from || dateRange.to;
+
     const filters = useMemo(() => ({
         status: statusFilter === 'all' ? undefined : statusFilter,
-        startFrom: dateRange.from?.toISOString(),
-        startTo: dateRange.to?.toISOString(),
+        startFrom: dateRange.from ? format(startOfDay(dateRange.from), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") : undefined,
+        startTo: dateRange.to ? format(endOfDay(dateRange.to), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") : undefined,
     }), [statusFilter, dateRange]);
 
     const { data: sessions, isLoading, error, refetch } = useStationSessions(stationId, filters);
@@ -260,7 +268,7 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
         return (
             <div className="p-12 text-center border-2 border-dashed border-destructive/20 rounded-[2rem] bg-destructive/5">
                 <AlertCircle className="h-10 w-10 text-destructive mx-auto mb-4" />
-                <h3 className="text-lg font-bold text-destructive underline decoration-2">Failed to Load Diagnostic Data</h3>
+                <h3 className="text-lg font-bold text-destructive underline decoration-2">Failed to Load Session Data</h3>
                 <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mt-2 opacity-60">Critical error during transaction matrix synchronization</p>
                 <Button onClick={() => refetch()} variant="outline" className="mt-6 rounded-full border-destructive/20 text-destructive hover:bg-destructive/10">
                     Attempt Reconnaissance
@@ -273,37 +281,68 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2">
                 <div>
-                    <h3 className="text-2xl font-black tracking-tighter flex items-center gap-3 uppercase">
+                    <h3 className="text-2xl font-black tracking-tighter flex items-center gap-3">
                         <History className="h-6 w-6 text-primary" />
                         Charging Sessions
                     </h3>
-                    <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em] opacity-50">Real-time ledger of energy flow and user interactions</p>
+                    <p className="text-xs text-muted-foreground font-medium mt-1">Real-time ledger of energy flow and user interactions</p>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => refetch()} className="rounded-xl border-border/40 font-bold gap-2">
-                    <RefreshCw className={cn("h-3.5 w-3.5", isLoading && "animate-spin")} />
-                    Refresh
-                </Button>
             </div>
 
-            <div className="flex flex-wrap items-center gap-4 p-4 md:p-6 bg-muted/20 backdrop-blur-sm border border-border/40 rounded-[2rem] shadow-sm">
-                <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Filter by:</span>
+            <div className="flex flex-wrap items-center gap-3 p-4 bg-muted/20 backdrop-blur-sm border border-border/40 rounded-2xl shadow-sm">
+                <div className="flex items-center gap-2">
+                    <Filter className="h-3.5 w-3.5 text-muted-foreground/60" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Filters:</span>
+                </div>
+
+                {/* Status Filter */}
+                <div className="flex items-center gap-2">
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
-                        <SelectTrigger className="w-[180px] rounded-xl border-border/40 bg-card/20 font-bold uppercase tracking-widest text-[10px]">
+                        <SelectTrigger className="w-[160px] h-10 rounded-xl border-border/40 bg-card/20 font-bold text-xs">
                             <SelectValue placeholder="All Statuses" />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl border-border/40 bg-card/95 backdrop-blur-xl">
-                            <SelectItem value="all" className="text-[10px] font-black uppercase tracking-widest">All Statuses</SelectItem>
-                            <SelectItem value="completed" className="text-[10px] font-black uppercase tracking-widest">Completed</SelectItem>
-                            <SelectItem value="in-progress" className="text-[10px] font-black uppercase tracking-widest">In Progress</SelectItem>
-                            <SelectItem value="failed" className="text-[10px] font-black uppercase tracking-widest">Failed</SelectItem>
+                            <SelectItem value="all" className="text-xs font-semibold">All Statuses</SelectItem>
+                            <SelectItem value="completed" className="text-xs font-semibold">Completed</SelectItem>
+                            <SelectItem value="in-progress" className="text-xs font-semibold">In Progress</SelectItem>
+                            <SelectItem value="failed" className="text-xs font-semibold">Failed</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
 
-                <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Date range:</span>
-                    <DatePicker dateRange={dateRange} onDateRangeChange={setDateRange} />
+                {/* Date Range Picker */}
+                <div className="flex items-center gap-2 border-l border-border/20 pl-3">
+                    <DatePicker 
+                        dateRange={dateRange} 
+                        onDateRangeChange={setDateRange}
+                        className="h-10"
+                    />
+                </div>
+
+                <div className="flex items-center gap-2 ml-auto">
+                    {/* Reset Filters Button */}
+                    {isAnyFilterActive && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleResetFilters}
+                            className="h-10 px-4 text-xs font-bold text-destructive hover:bg-destructive/10 hover:text-destructive transition-all flex items-center gap-2 rounded-xl"
+                        >
+                            <RotateCcw className="h-3.5 w-3.5" />
+                            Reset Filters
+                        </Button>
+                    )}
+
+                    {/* Refresh Button */}
+                    <Button
+                        variant="outline"
+                        onClick={() => refetch()}
+                        className="h-10 flex items-center gap-2 font-bold bg-background hover:bg-muted border-border/40 transition-all active:scale-95 rounded-xl shadow-sm px-4"
+                        disabled={isLoading}
+                    >
+                        <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin text-primary")} />
+                        <span className="text-xs">Refresh</span>
+                    </Button>
                 </div>
             </div>
 
