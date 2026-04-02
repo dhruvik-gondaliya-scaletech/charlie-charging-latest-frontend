@@ -186,6 +186,34 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
                 },
             },
             {
+                accessorKey: 'currentSpeed',
+                header: 'Speed',
+                cell: ({ row }) => {
+                    const speed = row.original.currentSpeed || 0;
+                    return (
+                        <div className="flex items-center gap-1.5 font-black text-foreground">
+                            <Zap className="h-3.5 w-3.5 text-blue-500" />
+                            <span>{speed.toFixed(2)}</span>
+                            <span className="text-[9px] text-muted-foreground uppercase tracking-widest">kW</span>
+                        </div>
+                    );
+                },
+            },
+            {
+                accessorKey: 'peakKwh',
+                header: 'Peak',
+                cell: ({ row }) => {
+                    const peak = row.original.peakKwh || 0;
+                    return (
+                        <div className="flex items-center gap-1.5 font-black text-foreground">
+                            <Zap className="h-3.5 w-3.5 text-amber-500" />
+                            <span>{peak.toFixed(2)}</span>
+                            <span className="text-[9px] text-muted-foreground uppercase tracking-widest">kW</span>
+                        </div>
+                    );
+                },
+            },
+            {
                 accessorKey: 'status',
                 header: 'Status',
                 cell: ({ row }) => {
