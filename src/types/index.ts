@@ -279,6 +279,8 @@ export interface Session {
   energyDelivered?: number;
   energyDeliveredKwh?: number;
   durationMinutes?: number;
+  currentSpeed?: number;
+  peakKwh?: number;
   createdAt: string;
   updatedAt: string;
 }
