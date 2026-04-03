@@ -66,10 +66,7 @@ export function proxy(request: NextRequest) {
   const isAuthenticated = !!token && !!user && !isTokenExpired(token);
 
   if (pathname === '/') {
-    if (isAuthenticated) {
-      return NextResponse.redirect(new URL(FRONTEND_ROUTES.DASHBOARD, request.url));
-    }
-    return NextResponse.redirect(new URL(FRONTEND_ROUTES.LOGIN, request.url));
+    return NextResponse.next();
   }
 
   if (isAuthRoute && isAuthenticated) {
