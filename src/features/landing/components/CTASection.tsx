@@ -17,11 +17,11 @@ export function CTASection() {
             <rect width="100%" height="100%" fill="url(#grid)" />
           </svg>
         </div>
-        
+
         <motion.div
-           initial={{ opacity: 0, y: 20 }}
-           whileInView={{ opacity: 1, y: 0 }}
-           viewport={{ once: true }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
         >
           <h2 className="text-5xl lg:text-7xl font-bold tracking-tighter mb-8 text-black">
             Ready to power <br />the future?
@@ -30,10 +30,10 @@ export function CTASection() {
             Join the world&apos;s most advanced charging networks. Set up your first station in under 10 minutes.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-black text-white px-10 py-7 h-auto rounded-2xl text-lg font-bold hover:scale-[1.02] transition-all shadow-2xl shadow-black/20">
+            <Button size="lg" className="bg-black text-white px-10 py-7 h-auto rounded-2xl text-lg font-bold hover:bg-neutral-900 hover:scale-[1.02] transition-all shadow-2xl shadow-black/20 hover:shadow-black/30">
               Get Started Now
             </Button>
-            <Button variant="outline" size="lg" className="bg-white text-black px-10 py-7 h-auto rounded-2xl text-lg font-bold border border-[#c6c6c6] hover:bg-[#eeeeee] transition-all">
+            <Button size="lg" className="bg-white text-black px-10 py-7 h-auto rounded-2xl text-lg font-bold border border-[#c6c6c6] hover:border-black hover:bg-neutral-50 hover:scale-[1.02] transition-all">
               Contact Sales
             </Button>
           </div>

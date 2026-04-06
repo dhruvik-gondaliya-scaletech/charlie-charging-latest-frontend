@@ -33,12 +33,12 @@ export function PublicHeader() {
 
         <div className="flex items-center gap-4">
           <Link href={FRONTEND_ROUTES.LOGIN}>
-            <Button variant="ghost" size="sm" className="text-neutral-500 hover:text-black font-medium">
+            <Button variant="ghost" size="sm" className="text-neutral-500 hover:text-black hover:bg-neutral-50 font-medium transition-all">
               Sign In
             </Button>
           </Link>
           <Link href={FRONTEND_ROUTES.REGISTER}>
-            <Button size="sm" className="bg-black text-white px-5 py-2 rounded-full text-sm font-semibold hover:opacity-90 transition-all">
+            <Button size="sm" className="bg-black text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-neutral-900 hover:scale-105 transition-all shadow-sm hover:shadow-md">
               Get Started
             </Button>
           </Link>
