@@ -65,6 +65,7 @@ export const API_CONFIG = {
             activate: (id: string) => `/tenants/${id}/activate`,
             deactivate: (id: string) => `/tenants/${id}/deactivate`,
             regenerateSecret: (id: string) => `/tenants/${id}/regenerate-api-secret`,
+            connectStripe: (id: string) => `/tenants/${id}/stripe/connect`,
         },
         ocpi: {
             credentials: "/ocpi/mgmt/credentials",

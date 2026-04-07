@@ -61,3 +61,20 @@ export const useRegenerateApiSecret = () => {
     },
   });
 };
+
+export const useConnectStripe = () => {
+  return useMutation({
+    mutationFn: (id: string) => tenantService.connectStripe(id),
+    onSuccess: (response) => {
+      if (response?.url) {
+        toast.info('Redirecting to Stripe Express onboarding...');
+        window.location.href = response.url;
+      } else {
+         toast.error('Could not get Stripe URL');
+      }
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to connect Stripe');
+    },
+  });
+};

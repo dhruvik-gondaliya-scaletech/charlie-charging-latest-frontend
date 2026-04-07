@@ -9,6 +9,7 @@ import {
   useActivateTenant,
   useDeactivateTenant,
   useRegenerateApiSecret,
+  useConnectStripe,
 } from '@/hooks/post/useTenantMutations';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +30,7 @@ import {
   Calendar,
   CheckCircle,
   AlertTriangle,
+  CreditCard,
 } from 'lucide-react';
 import {
   Tooltip,
@@ -50,6 +52,7 @@ export function TenantsContainer() {
   const activateTenant = useActivateTenant();
   const deactivateTenant = useDeactivateTenant();
   const regenerateSecret = useRegenerateApiSecret();
+  const connectStripe = useConnectStripe();
 
   // State for modals
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -218,24 +221,47 @@ export function TenantsContainer() {
             </Tooltip>
 
             {row.original.isActive ? (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive"
-                    onClick={() => {
-                      setSelectedTenantId(row.original.id);
-                      setSelectedTenantName(row.original.name);
-                      setIsConfirmDeactivateOpen(true);
-                    }}
-                    disabled={row.original.isDefault || deactivateTenant.isPending}
-                  >
-                    <PowerOff className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Deactivate Tenant</TooltipContent>
-              </Tooltip>
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={`h-8 w-8 rounded-lg ${
+                        row.original.stripeOnboarded
+                          ? 'text-indigo-500 hover:bg-indigo-500/10'
+                          : 'text-slate-400 hover:text-indigo-500 hover:bg-indigo-500/10'
+                      }`}
+                      onClick={() => connectStripe.mutate(row.original.id)}
+                      disabled={connectStripe.isPending}
+                    >
+                      <CreditCard className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {row.original.stripeOnboarded ? 'Manage Stripe Connect' : 'Setup Stripe Connect'}
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive"
+                      onClick={() => {
+                        setSelectedTenantId(row.original.id);
+                        setSelectedTenantName(row.original.name);
+                        setIsConfirmDeactivateOpen(true);
+                      }}
+                      disabled={row.original.isDefault || deactivateTenant.isPending}
+                    >
+                      <PowerOff className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Deactivate Tenant</TooltipContent>
+                </Tooltip>
+              </>
             ) : (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -257,7 +283,7 @@ export function TenantsContainer() {
         meta: { headerAlign: 'center' }
       },
     ],
-    [handleRegenerateSecret, handleActivate, deactivateTenant, activateTenant.isPending]
+    [handleRegenerateSecret, handleActivate, deactivateTenant, activateTenant.isPending, connectStripe.isPending, connectStripe.mutate]
   );
 
   return (

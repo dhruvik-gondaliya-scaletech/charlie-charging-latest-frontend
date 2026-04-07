@@ -151,6 +151,10 @@ export interface TenantListResponse {
   isDefault: boolean;
   createdAt: string;
   userCount: number;
+  stripeAccountId?: string | null;
+  stripeOnboarded?: boolean;
+  stripeChargesEnabled?: boolean;
+  stripePayoutsEnabled?: boolean;
 }
 
 export interface User {
