@@ -8,9 +8,9 @@ export function ProtocolSpecs() {
     <section id="protocols" className="py-24 px-8 bg-zinc-100 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 overflow-hidden transition-colors">
       <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
         <motion.div
-           initial={{ opacity: 0, x: -20 }}
-           whileInView={{ opacity: 1, x: 0 }}
-           viewport={{ once: true }}
+          initial={{ opacity: 0, x: -20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
         >
           <h2 className="text-4xl lg:text-6xl font-bold tracking-tighter mb-8 leading-tight text-zinc-900 dark:text-zinc-100">
             Engineering-first <br />architecture.
@@ -20,9 +20,9 @@ export function ProtocolSpecs() {
           </p>
           <ul className="space-y-6">
             {[
-              { title: 'OCPP 2.0.1 & 1.6J Full Stack', desc: 'Industry-leading message queue handling for high-density networks.' },
+              { title: 'OCPP 2.0.1 & 1.6', desc: 'Industry-leading message queue handling for high-density networks.' },
               { title: 'OCPI 2.2.1 Native', desc: 'Automated settlement and clearing between roaming partners.' },
-              { title: 'Developer SDK & API', desc: 'RESTful architecture with GraphQL support for complex data queries.' }
+              { title: 'Developer API', desc: 'RESTful architecture with GraphQL support for complex data queries.' }
             ].map((item, idx) => (
               <li key={idx} className="flex items-start gap-4">
                 <CheckCircle2 className="h-6 w-6 text-emerald-500 shrink-0" />
@@ -34,12 +34,12 @@ export function ProtocolSpecs() {
             ))}
           </ul>
         </motion.div>
-        
+
         <motion.div
-           initial={{ opacity: 0, scale: 0.95 }}
-           whileInView={{ opacity: 1, scale: 1 }}
-           viewport={{ once: true }}
-           className="relative"
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          className="relative"
         >
           <div className="absolute -inset-10 bg-primary/5 blur-3xl rounded-full"></div>
           <div className="relative bg-zinc-900 dark:bg-black rounded-2xl border border-zinc-800 p-8 font-mono text-sm shadow-2xl overflow-hidden text-zinc-100">
@@ -63,8 +63,8 @@ export function ProtocolSpecs() {
               <p className="text-zinc-300">{'}'});</p>
             </div>
           </div>
-          
-          <motion.div 
+
+          <motion.div
             initial={{ y: 20, opacity: 0 }}
             whileInView={{ y: 0, opacity: 1 }}
             viewport={{ once: true }}

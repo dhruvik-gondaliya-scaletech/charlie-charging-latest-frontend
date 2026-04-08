@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
-import { Activity, Globe, BarChart3, Settings, ArrowRight } from 'lucide-react';
+import { Activity, Globe, BarChart3, Settings, Smartphone, CreditCard } from 'lucide-react';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 
 export function Features() {
@@ -11,6 +11,16 @@ export function Features() {
       icon: Activity,
       title: 'Real-time Monitoring',
       description: 'Live station status and session tracking with sub-second latency.',
+    },
+    {
+      icon: Smartphone,
+      title: 'Driver Experience',
+      description: 'Premium PWA for drivers to effortlessly find, charge, and manage sessions.',
+    },
+    {
+      icon: CreditCard,
+      title: 'Global Payments',
+      description: 'Direct Stripe integration for secure transactions and automated billing.',
     },
     {
       icon: Globe,
@@ -59,7 +69,7 @@ export function Features() {
           initial="initial"
           whileInView="animate"
           viewport={{ once: true }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
         >
           {features.map((feature, idx) => (
             <motion.div key={idx} variants={staggerItem}>
