@@ -11,7 +11,7 @@ import { PublicFooter } from './components/PublicFooter';
 
 export default function LandingContainer() {
   return (
-    <div className="min-h-screen bg-[#f9f9f9] selection:bg-black selection:text-white antialiased">
+    <div className="min-h-screen bg-background selection:bg-primary/20 selection:text-primary antialiased">
       <PublicHeader />
       <main>
         <Hero />

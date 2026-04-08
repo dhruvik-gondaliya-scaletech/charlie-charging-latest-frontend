@@ -27,9 +27,9 @@ export function Testimonials() {
   ];
 
   return (
-    <section className="py-24 px-8 bg-[#f9f9f9]">
+    <section className="py-24 px-8 bg-muted/30">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-center text-4xl font-bold tracking-tighter mb-20 text-black">
+        <h2 className="text-center text-4xl font-bold tracking-tighter mb-20 text-foreground">
           Voices from the front line.
         </h2>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -40,14 +40,18 @@ export function Testimonials() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.1 }}
-              className={`${t.featured ? 'bg-black text-white shadow-2xl lg:-mt-6' : 'bg-white text-black border border-neutral-100'} p-10 rounded-2xl relative group`}
+              className={`${
+                t.featured 
+                  ? 'bg-primary text-primary-foreground shadow-2xl lg:-mt-6 ring-4 ring-primary/10' 
+                  : 'bg-card text-card-foreground border border-border shadow-sm'
+              } p-10 rounded-2xl relative group transition-all duration-300 hover:scale-[1.02]`}
             >
               <span className="text-6xl absolute top-6 right-8 opacity-10 font-serif pointer-events-none">&quot;</span>
               <p className="text-lg mb-8 relative z-10 leading-relaxed italic font-medium">
                 &quot;{t.quote}&quot;
               </p>
               <div className="flex items-center gap-4">
-                <div className="relative w-12 h-12 rounded-full overflow-hidden grayscale">
+                <div className="relative w-12 h-12 rounded-full overflow-hidden grayscale group-hover:grayscale-0 transition-all duration-500 border-2 border-border/50">
                   <Image 
                     src={t.avatar} 
                     alt={t.author || "Testimonial Author"} 
@@ -57,8 +61,8 @@ export function Testimonials() {
                   />
                 </div>
                 <div>
-                  <p className="font-bold text-sm">{t.author}</p>
-                  <p className={`text-xs ${t.featured ? 'opacity-60' : 'text-[#474747]'}`}>{t.role}</p>
+                  <p className="font-bold text-sm tracking-tight">{t.author}</p>
+                  <p className={`text-xs font-medium ${t.featured ? 'opacity-80' : 'text-muted-foreground'}`}>{t.role}</p>
                 </div>
               </div>
             </motion.div>
