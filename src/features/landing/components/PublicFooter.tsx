@@ -27,15 +27,15 @@ export function PublicFooter() {
             The global standard for electric vehicle charging infrastructure management.
           </p>
         </div>
-        
+
         {sections.map((section) => (
           <div key={section.title} className="space-y-4">
             <h4 className="font-bold text-sm text-foreground uppercase tracking-widest">{section.title}</h4>
             <ul className="space-y-2 text-sm text-muted-foreground font-medium">
               {section.links.map((link) => (
                 <li key={link}>
-                  <Link 
-                    href="#" 
+                  <Link
+                    href="#"
                     className="hover:text-foreground underline-offset-4 hover:underline transition-opacity"
                   >
                     {link}
@@ -46,7 +46,7 @@ export function PublicFooter() {
           </div>
         ))}
       </div>
-      
+
       <div className="max-w-7xl mx-auto px-8 pb-12 flex flex-col md:flex-row justify-between items-center gap-6">
         <div className="text-sm text-muted-foreground font-medium">
           © {new Date().getFullYear()} Scale EV. All rights reserved.

@@ -15,7 +15,7 @@ export function TrustBar() {
         <p className="text-center text-[10px] font-black tracking-[0.3em] uppercase text-muted-foreground mb-10 opacity-70">
           Trusted by 500+ global networks
         </p>
-        <div className="flex flex-wrap justify-center items-center gap-12 lg:gap-24 opacity-40 grayscale invert dark:invert-0 dark:contrast-125 transition-all">
+        <div className="flex flex-wrap justify-center items-center gap-12 lg:gap-24 opacity-50 grayscale hover:opacity-100 transition-all duration-500">
           {logos.map((logo, idx) => (
             <span 
               key={idx} 
