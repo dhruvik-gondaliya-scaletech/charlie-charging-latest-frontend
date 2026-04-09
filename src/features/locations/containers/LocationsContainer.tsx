@@ -35,11 +35,11 @@ export function LocationsContainer() {
   };
 
   const handleEdit = (location: Location) => {
-    router.push(FRONTEND_ROUTES.LOCATIONS_EDIT(location.id));
+    router.push(`${FRONTEND_ROUTES.LOCATIONS_EDIT(location.id)}?name=${encodeURIComponent(location.name)}`);
   };
 
   const handleViewDetails = (location: Location) => {
-    router.push(FRONTEND_ROUTES.LOCATIONS_DETAILS(location.id));
+    router.push(`${FRONTEND_ROUTES.LOCATIONS_DETAILS(location.id)}?name=${encodeURIComponent(location.name)}`);
   };
 
   const handleDelete = (location: Location) => {
@@ -55,10 +55,22 @@ export function LocationsContainer() {
         accessorKey: 'name',
         header: 'Name',
         cell: ({ row }) => (
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-muted-foreground" />
-            <span className="font-semibold text-foreground">{row.getValue('name')}</span>
-          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div
+                className="flex items-center gap-2 cursor-pointer hover:text-primary transition-colors inline-flex group"
+                onClick={() => handleViewDetails(row.original)}
+              >
+                {/* <MapPin className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" /> */}
+                <span className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                  {row.getValue('name')}
+                </span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-xs">View Details</p>
+            </TooltipContent>
+          </Tooltip>
         ),
       },
       {
@@ -73,7 +85,7 @@ export function LocationsContainer() {
                   {address}
                 </div>
               </TooltipTrigger>
-              <TooltipContent className="max-w-sm">
+              <TooltipContent className="max-w-xs">
                 <p className="text-xs">{address}</p>
               </TooltipContent>
             </Tooltip>
@@ -119,30 +131,38 @@ export function LocationsContainer() {
         header: 'Actions',
         cell: ({ row }) => (
           <div className="flex justify-start gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 hover:bg-muted"
-              onClick={() => handleViewDetails(row.original)}
-            >
-              <Eye className="h-4 w-4 text-muted-foreground" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 hover:bg-primary/10 hover:text-primary"
-              onClick={() => handleEdit(row.original)}
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
-              onClick={() => handleDelete(row.original)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 hover:bg-primary/10 hover:text-primary cursor-pointer"
+                  onClick={() => handleEdit(row.original)}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-xs">Edit Location</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive cursor-pointer"
+                  onClick={() => handleDelete(row.original)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-xs">Delete Location</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         ),
       },
@@ -173,9 +193,9 @@ export function LocationsContainer() {
       >
         <motion.div variants={staggerItem}>
           <h1 className="text-3xl font-extrabold tracking-tight bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
-            Location Hub
+            Locations
           </h1>
-          <p className="text-sm font-medium text-muted-foreground mt-1 tracking-tight">Strategic Fleet Positioning & Asset Management</p>
+          <p className="text-sm font-medium text-muted-foreground mt-1 tracking-tight">Manange your charging locations</p>
         </motion.div>
 
         <motion.div variants={staggerItem} className="relative">
@@ -190,8 +210,8 @@ export function LocationsContainer() {
                 onClick={handleCreate}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
               >
-                <Plus className="h-4 w-4 mr-2" />
-                Define New Location
+                <Plus className="h-4 w-4" />
+                Create Location
               </Button>
             }
             pageSize={DEFAULT_PAGE_SIZE || 25}
@@ -212,8 +232,8 @@ export function LocationsContainer() {
                   onClick={handleCreate}
                   className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xl shadow-primary/30 font-black px-8"
                 >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Define New Location
+                  <Plus className="h-4 w-4" />
+                  Create Location
                 </Button>
               </div>
             }

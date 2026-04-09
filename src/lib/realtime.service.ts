@@ -1,6 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 import { toast } from 'sonner';
-import { WEBSOCKET_CONFIG, AUTH_CONFIG } from '@/constants/constants';
+import { WEBSOCKET_CONFIG, AUTH_CONFIG, API_CONFIG } from '@/constants/constants';
 
 // Event types
 export interface StationStatusChangeEvent {
@@ -44,6 +44,12 @@ export interface MeterValuesEvent {
     connectorId: number;
     transactionId?: string;
     meterValues: MeterValue[];
+    timestamp: string;
+}
+
+export interface OcpiUpdateEvent {
+    module: 'tokens' | 'sessions' | 'cdrs' | 'locations' | 'credentials' | 'tariffs';
+    data?: any;
     timestamp: string;
 }
 
@@ -93,7 +99,7 @@ class RealTimeService {
         // Create new connection promise
         this.connecting = new Promise((resolve, reject) => {
             try {
-                const wsUrl = WEBSOCKET_CONFIG.url;
+                const wsUrl = API_CONFIG.baseUrl;
 
                 // Clean up any existing socket
                 if (this.socket) {
@@ -268,6 +274,12 @@ class RealTimeService {
                 `Received 'meter-values' event: Station ${data.stationId}, Connector ${data.connectorId}`,
             );
             this.notifyListeners('meter-values', data);
+        });
+
+        // OCPI update events
+        this.socket.on('ocpi-update', (data: OcpiUpdateEvent) => {
+            console.log(`Received 'ocpi-update' event for module: ${data.module}`);
+            this.notifyListeners('ocpi-update', data);
         });
 
         // Error handling for all events

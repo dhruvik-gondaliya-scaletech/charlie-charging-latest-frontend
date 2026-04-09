@@ -14,7 +14,9 @@ import {
     Lock,
     Unlock,
     AlertCircle,
-    Loader2
+    Loader2,
+    Cpu,
+    ShieldCheck
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -99,12 +101,27 @@ export function ConfigurationManager({ stationId }: ConfigurationManagerProps) {
 
     return (
         <div className="space-y-6 no-scrollbar">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-muted/30 p-4 rounded-2xl border border-border/40">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2 mb-2">
+                <div>
+                    <h3 className="text-2xl font-black tracking-tighter flex items-center gap-3">
+                        <Cpu className="h-6 w-6 text-primary" />
+                        OCPP Configuration
+                    </h3>
+                    <p className="text-xs text-muted-foreground font-medium mt-1">Manage Read/Write keys via OCPP 1.6 Protocol</p>
+                </div>
+                <Badge variant="outline" className="font-mono text-[10px] uppercase font-black tracking-widest border-border/60 bg-muted/30 h-7 px-3 rounded-full">
+                    <ShieldCheck className="h-3 w-3 mr-1.5 text-emerald-500" />
+                    TLS 1.2 Encrypted
+                </Badge>
+            </div>
+
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-muted/20 backdrop-blur-sm p-4 rounded-2xl border border-border/40 shadow-sm">
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                         placeholder="Search configuration keys..."
-                        className="pl-10 bg-background"
+                        className="pl-10 bg-background border-border/40 focus-visible:ring-primary/20 rounded-xl h-10"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -112,11 +129,11 @@ export function ConfigurationManager({ stationId }: ConfigurationManagerProps) {
                 <Button
                     variant="outline"
                     onClick={() => refetch()}
-                    className="flex items-center gap-2 font-semibold"
+                    className="h-10 flex items-center gap-2 font-bold bg-background hover:bg-muted border-border/40 transition-all active:scale-95 rounded-xl shadow-sm px-6"
                     disabled={isLoading}
                 >
-                    <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
-                    Sync with Station
+                    <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin text-primary")} />
+                    <span className="text-xs">Sync with Station</span>
                 </Button>
             </div>
 

@@ -10,8 +10,8 @@ export function Header() {
 
 
   return (
-    <header className="border-b bg-card">
-      <div className="flex items-center justify-between px-6 py-4">
+    <header className="border-b bg-card h-[101px] flex items-center shrink-0">
+      <div className="flex items-center justify-between px-6 w-full">
         <div className="flex items-center gap-4">
           <Breadcrumbs />
         </div>

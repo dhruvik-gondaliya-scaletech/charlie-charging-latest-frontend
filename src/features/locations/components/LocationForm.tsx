@@ -45,7 +45,8 @@ export function LocationForm({
     const [isAddressFilled, setIsAddressFilled] = useState(mode === 'edit');
 
     const form = useForm<LocationFormData>({
-        resolver: zodResolver(locationSchema),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        resolver: zodResolver(locationSchema) as any,
         defaultValues: {
             name: initialData?.name || '',
             address: initialData?.address || '',
@@ -70,7 +71,23 @@ export function LocationForm({
         if (address.longitude) form.setValue('longitude', address.longitude);
 
         setIsAddressFilled(true);
-        toast.success('Address auto-filled successfully');
+
+        // Check if any required fields are missing or too short
+        const missingFields: string[] = [];
+        if (!address.address || address.address.length < 5) missingFields.push('Address');
+        if (!address.city || address.city.length < 2) missingFields.push('City');
+        if (!address.state || address.state.length < 2) missingFields.push('State');
+        if (!address.zipCode || address.zipCode.length < 3) missingFields.push('Zip Code');
+        if (!address.country || address.country.length < 2) missingFields.push('Country');
+
+        if (missingFields.length > 0) {
+            setUseManualEntry(true);
+            toast.info(`Address partially filled. Please manually add: ${missingFields.join(', ')}`, {
+                duration: 5000,
+            });
+        } else {
+            toast.success('Address auto-filled successfully');
+        }
     };
 
     return (
@@ -89,7 +106,8 @@ export function LocationForm({
                     </div>
 
                     <FormField
-                        control={form.control}
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        control={form.control as any}
                         name="name"
                         render={({ field }) => (
                             <FormItem className="space-y-2">
@@ -166,7 +184,8 @@ export function LocationForm({
                             className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6"
                         >
                             <FormField
-                                control={form.control}
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                control={form.control as any}
                                 name="address"
                                 render={({ field }) => (
                                     <FormItem className="md:col-span-2 space-y-2">
@@ -185,7 +204,8 @@ export function LocationForm({
                             />
 
                             <FormField
-                                control={form.control}
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                control={form.control as any}
                                 name="city"
                                 render={({ field }) => (
                                     <FormItem className="space-y-2">
@@ -204,7 +224,8 @@ export function LocationForm({
                             />
 
                             <FormField
-                                control={form.control}
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                control={form.control as any}
                                 name="state"
                                 render={({ field }) => (
                                     <FormItem className="space-y-2">
@@ -223,7 +244,8 @@ export function LocationForm({
                             />
 
                             <FormField
-                                control={form.control}
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                control={form.control as any}
                                 name="zipCode"
                                 render={({ field }) => (
                                     <FormItem className="space-y-2">
@@ -242,7 +264,8 @@ export function LocationForm({
                             />
 
                             <FormField
-                                control={form.control}
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                control={form.control as any}
                                 name="country"
                                 render={({ field }) => (
                                     <FormItem className="space-y-2">
@@ -253,6 +276,52 @@ export function LocationForm({
                                                 className="bg-muted/30 border-border/60 focus:bg-background transition-all h-12 font-medium"
                                                 {...field}
                                                 value={typeof field.value === 'string' ? field.value : ''}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                control={form.control as any}
+                                name="latitude"
+                                render={({ field }) => (
+                                    <FormItem className="space-y-2">
+                                        <FormLabel className="font-bold ml-1">Latitude</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="number"
+                                                step="any"
+                                                placeholder="37.7749"
+                                                className="bg-muted/30 border-border/60 focus:bg-background transition-all h-12 font-medium"
+                                                {...field}
+                                                value={field.value ?? ''}
+                                                onChange={(e) => field.onChange(e.target.value === '' ? undefined : e.target.value)}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                control={form.control as any}
+                                name="longitude"
+                                render={({ field }) => (
+                                    <FormItem className="space-y-2">
+                                        <FormLabel className="font-bold ml-1">Longitude</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="number"
+                                                step="any"
+                                                placeholder="-122.4194"
+                                                className="bg-muted/30 border-border/60 focus:bg-background transition-all h-12 font-medium"
+                                                {...field}
+                                                value={field.value ?? ''}
+                                                onChange={(e) => field.onChange(e.target.value === '' ? undefined : e.target.value)}
                                             />
                                         </FormControl>
                                         <FormMessage />

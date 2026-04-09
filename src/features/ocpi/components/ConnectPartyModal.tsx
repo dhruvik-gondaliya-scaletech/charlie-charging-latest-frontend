@@ -51,15 +51,15 @@ export function ConnectPartyModal({ isOpen, onClose }: ConnectPartyModalProps) {
         >
             <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                    <Label htmlFor="party-url">The other party's Credentials URL</Label>
+                    <Label htmlFor="party-url">The other party's Versions URL</Label>
                     <Input
                         id="party-url"
-                        placeholder="https://example.com/ocpi/cpo/credentials"
+                        placeholder="https://example.com/ocpi/versions"
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
                     />
                     <p className="text-xs text-muted-foreground">
-                        This is the URL our system will call during the OCPI handshake.
+                        This is the entry point (Versions URL) our system will call to discover endpoints.
                     </p>
                 </div>
 

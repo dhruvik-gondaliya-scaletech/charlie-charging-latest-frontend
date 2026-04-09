@@ -57,15 +57,14 @@ interface StationWizardProps {
     isLoading: boolean;
     onCancel: () => void;
     isEdit?: boolean;
-    tenantId: string;
+    tenantSlug: string;
 }
 
 const STEPS = [
     { id: 1, title: 'Identity', icon: Zap, description: 'Brand and basic info' },
     { id: 2, title: 'Technical', icon: Cpu, description: 'Hardware specifications' },
-    { id: 3, title: 'Network', icon: MapPin, description: 'Location and connectivity' },
-    { id: 4, title: 'Connectors', icon: Activity, description: 'Charging port configuration' },
-    { id: 5, title: 'Connection', icon: ShieldCheck, description: 'OCPP WebSocket Setup' },
+    { id: 3, title: 'Connectors', icon: Activity, description: 'Charging port configuration' },
+    { id: 4, title: 'Connection', icon: ShieldCheck, description: 'OCPP WebSocket Setup' },
 ];
 
 
@@ -77,7 +76,7 @@ export function StationWizard({
     isLoading,
     onCancel,
     isEdit = true,
-    tenantId
+    tenantSlug
 }: StationWizardProps) {
     const [step, setStep] = useState(1);
 
@@ -89,10 +88,8 @@ export function StationWizard({
             serialNumber: initialData.serialNumber || '',
             model: initialData.model || '',
             vendor: initialData.vendor || '',
-            firmware: initialData.firmware || '',
             maxPower: initialData.maxPower || 22,
             locationId: (initialData.location && typeof initialData.location === 'object' ? (initialData.location as any).id : initialData.locationId) || '',
-            ocppVersion: (initialData.ocppVersion as any) || '1.6',
             type: initialData.type || 'AC',
             connectorTypes: initialData.connectorTypes || [],
         },
@@ -136,10 +133,8 @@ export function StationWizard({
                 serialNumber: initialData.serialNumber || '',
                 model: initialData.model || '',
                 vendor: initialData.vendor || '',
-                firmware: initialData.firmware || '',
                 maxPower: initialData.maxPower ?? 22,
                 locationId: (initialData.location && typeof initialData.location === 'object' ? (initialData.location as any).id : initialData.locationId) || '',
-                ocppVersion: (initialData.ocppVersion as any) || '1.6',
                 type: initialData.type || 'AC',
                 connectorTypes: initialData.connectorTypes || [],
             }, {
@@ -152,19 +147,18 @@ export function StationWizard({
     const nextStep = async () => {
         let fieldsToValidate: (keyof WizardValues)[] = [];
         if (step === 1) fieldsToValidate = ['name', 'vendor', 'model', 'maxPower'];
-        if (step === 2) fieldsToValidate = ['serialNumber', 'chargePointId', 'firmware', 'type'];
-        if (step === 3) fieldsToValidate = ['locationId', 'ocppVersion'];
+        if (step === 2) fieldsToValidate = ['serialNumber', 'chargePointId', 'type', 'locationId'];
 
         const isValid = await form.trigger(fieldsToValidate);
-        if (isValid) setStep(prev => Math.min(prev + 1, 5));
+        if (isValid) setStep(prev => Math.min(prev + 1, 4));
     };
 
     const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
 
     const onFormSubmit = (data: WizardValues) => {
         // CRITICAL: Double guard to prevent early submission
-        // Only allow if we are on step 5 AND not already loading
-        if (step === 5 && !isLoading) {
+        // Only allow if we are on step 4 AND not already loading
+        if (step === 4 && !isLoading) {
             console.log('Wizard submitting data:', data);
             onSubmit(data);
         }
@@ -177,7 +171,7 @@ export function StationWizard({
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-black tracking-tight">{isEdit ? (initialData.name || 'Edit Station') : 'Register New Station'}</h1>
-                        <p className="text-muted-foreground font-medium">Step {step} of 5: {STEPS[step - 1].description}</p>
+                        <p className="text-muted-foreground font-medium">Step {step} of 4: {STEPS[step - 1].description}</p>
                     </div>
                     <Button variant="ghost" onClick={onCancel} className="font-bold text-muted-foreground">
                         Cancel
@@ -196,7 +190,7 @@ export function StationWizard({
                     ))}
                 </div>
 
-                <div className="grid grid-cols-5 gap-4">
+                <div className="grid grid-cols-4 gap-4">
                     {STEPS.map((s) => (
                         <div
                             key={s.id}
@@ -220,7 +214,7 @@ export function StationWizard({
             <Form {...form}>
                 <form
                     onKeyDown={(e) => {
-                        if (e.key === 'Enter' && step < 5) {
+                        if (e.key === 'Enter' && step < 4) {
                             e.preventDefault();
                             e.stopPropagation();
                             nextStep();
@@ -459,55 +453,24 @@ export function StationWizard({
                                         />
                                         <FormField
                                             control={form.control as any}
-                                            name="firmware"
-                                            render={({ field }) => (
-                                                <FormItem className="md:col-span-1">
-                                                    <FormLabel className="font-bold flex items-center gap-1.5">
-                                                        <Cpu className="h-3.5 w-3.5 text-primary" />
-                                                        Firmware Version*
-                                                    </FormLabel>
-                                                    <FormControl>
-                                                        <Input placeholder="e.g. 1.0.4" className="bg-muted/30 py-6 font-medium border-border/60" {...field} />
-                                                    </FormControl>
-                                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1.5 opacity-70">Current software version</p>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
-                            {step === 3 && (
-                                <div className="space-y-6">
-                                    <div className="flex items-center gap-3 mb-6">
-                                        <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-500">
-                                            <MapPin className="h-6 w-6" />
-                                        </div>
-                                        <div>
-                                            <h2 className="text-xl font-black">Network & Location</h2>
-                                            <p className="text-sm text-muted-foreground font-medium">Site assignment and OCPP protocol settings</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-6">
-                                        <FormField
-                                            control={form.control as any}
                                             name="locationId"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="font-bold">Physical Location*</FormLabel>
+                                                    <FormLabel className="font-bold flex items-center gap-1.5 focus:text-primary transition-colors">
+                                                        <MapPin className="h-3.5 w-3.5 text-primary" />
+                                                        Location*
+                                                    </FormLabel>
                                                     <Select
                                                         onValueChange={field.onChange}
                                                         defaultValue={field.value}
                                                         disabled={locationsLoading}
                                                     >
                                                         <FormControl>
-                                                            <SelectTrigger className="bg-muted/30 py-6 font-bold">
+                                                            <SelectTrigger className="bg-muted/30 py-6 h-auto font-bold hover:bg-muted/40 transition-all border-border/60 w-full">
                                                                 <SelectValue placeholder="Select a location site" />
                                                             </SelectTrigger>
                                                         </FormControl>
-                                                        <SelectContent>
+                                                        <SelectContent className="rounded-xl border-border/60 shadow-2xl">
                                                             {locations?.map((loc: any) => (
                                                                 <SelectItem key={loc.id} value={loc.id} className="font-bold">
                                                                     {loc.name}
@@ -515,50 +478,18 @@ export function StationWizard({
                                                             ))}
                                                         </SelectContent>
                                                     </Select>
+                                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1.5 opacity-70">Physical deployment site</p>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
                                         />
-
-                                        <FormField
-                                            control={form.control as any}
-                                            name="ocppVersion"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="font-bold">OCPP Protocol Version</FormLabel>
-                                                    <Select
-                                                        onValueChange={field.onChange}
-                                                        defaultValue={field.value}
-                                                    >
-                                                        <FormControl>
-                                                            <SelectTrigger className="bg-muted/30 py-6 font-bold">
-                                                                <SelectValue placeholder="OCPP Version" />
-                                                            </SelectTrigger>
-                                                        </FormControl>
-                                                        <SelectContent>
-                                                            <SelectItem value="1.6" className="font-bold">OCPP 1.6 (JSON)</SelectItem>
-                                                            <SelectItem value="2.0.1" className="font-bold">OCPP 2.0.1</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-
-                                        <div className="p-6 bg-primary/5 border border-primary/20 rounded-2xl flex gap-4 items-center">
-                                            <Info className="h-5 w-5 text-primary shrink-0" />
-                                            <div className="space-y-1">
-                                                <p className="text-xs font-black uppercase tracking-widest text-primary">Connection URL Managed</p>
-                                                <p className="text-xs text-muted-foreground font-medium">
-                                                    Changing the location or identifiers will automatically update the station's assigned WebSocket endpoint.
-                                                </p>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                             )}
 
-                            {step === 4 && (
+
+
+                            {step === 3 && (
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-3 mb-6">
                                         <div className="p-3 rounded-2xl bg-violet-500/10 text-violet-500">
@@ -637,7 +568,7 @@ export function StationWizard({
                                 </div>
                             )}
 
-                            {step === 5 && (
+                            {step === 4 && (
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-3 mb-6">
                                         <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-500">
@@ -656,7 +587,7 @@ export function StationWizard({
 
                                         <WebSocketUrlDisplay
                                             chargePointId={form.watch('chargePointId')}
-                                            tenantId={tenantId}
+                                            tenantSlug={tenantSlug}
                                         />
 
                                         <div className="p-4 bg-muted/20 border border-border/40 rounded-2xl">
@@ -698,7 +629,7 @@ export function StationWizard({
                         </Button>
 
                         <div className="flex gap-4">
-                            {step < 5 ? (
+                            {step < 4 ? (
                                 <Button
                                     type="button"
                                     onClick={nextStep}

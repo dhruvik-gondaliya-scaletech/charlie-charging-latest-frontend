@@ -1,18 +1,18 @@
 import { useQuery } from '@tanstack/react-query';
 import { ocpiService, OcpiSessionsParams } from '@/services/ocpi.service';
 
-export const useOcpiCredentials = () => {
+export const useOcpiCredentials = (params?: OcpiSessionsParams) => {
     return useQuery({
-        queryKey: ['ocpi-credentials'],
-        queryFn: () => ocpiService.getCredentials(),
+        queryKey: ['ocpi-credentials', params],
+        queryFn: () => ocpiService.getCredentials(params),
         staleTime: 30000,
     });
 };
 
-export const useOcpiTokens = () => {
+export const useOcpiTokens = (params?: OcpiSessionsParams) => {
     return useQuery({
-        queryKey: ['ocpi-tokens'],
-        queryFn: () => ocpiService.getTokens(),
+        queryKey: ['ocpi-tokens', params],
+        queryFn: () => ocpiService.getTokens(params),
         staleTime: 30000,
     });
 };
@@ -41,49 +41,19 @@ export const useOcpiCdrs = (params?: OcpiSessionsParams) => {
     });
 };
 
-export const useOcpiTariffs = () => {
+export const useOcpiTariffs = (params?: OcpiSessionsParams) => {
     return useQuery({
-        queryKey: ['ocpi-tariffs'],
-        queryFn: () => ocpiService.getTariffs(),
+        queryKey: ['ocpi-tariffs', params],
+        queryFn: () => ocpiService.getTariffs(params),
         staleTime: 60000,
     });
 };
 
-export const useOcpiLocations = () => {
+export const useOcpiLocations = (params?: OcpiSessionsParams) => {
     return useQuery({
-        queryKey: ['ocpi-locations'],
-        queryFn: () => ocpiService.getLocations(),
+        queryKey: ['ocpi-locations', params],
+        queryFn: () => ocpiService.getLocations(params),
         staleTime: 60000,
     });
 };
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
-
-export const useOcpiCommands = () => {
-    const queryClient = useQueryClient();
-
-    const startSession = useMutation({
-        mutationFn: (data: any) => ocpiService.startRemoteSession(data),
-        onSuccess: () => {
-            toast.success('Remote start command sent successfully');
-            queryClient.invalidateQueries({ queryKey: ['ocpi-sessions'] });
-        },
-        onError: (error: any) => {
-            toast.error(`Failed to send start command: ${error.message}`);
-        },
-    });
-
-    const stopSession = useMutation({
-        mutationFn: (data: any) => ocpiService.stopRemoteSession(data),
-        onSuccess: () => {
-            toast.success('Remote stop command sent successfully');
-            queryClient.invalidateQueries({ queryKey: ['ocpi-sessions'] });
-        },
-        onError: (error: any) => {
-            toast.error(`Failed to send stop command: ${error.message}`);
-        },
-    });
-
-    return { startSession, stopSession };
-};

@@ -2,12 +2,13 @@
 
 import { ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Zap, Globe, Share2 } from 'lucide-react';
+import { MapPin, Zap, Globe, Share2, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { Table } from '@/components/shared/Table';
 import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
 import { OcpiLocation } from '@/services/ocpi.service';
 import { useOcpiLocations } from '@/hooks/get/useOcpi';
+import { Button } from '@/components/ui/button';
 
 const columns: ColumnDef<OcpiLocation>[] = [
     {
@@ -63,21 +64,55 @@ const columns: ColumnDef<OcpiLocation>[] = [
     },
 ];
 
+import { useState } from 'react';
+
+// ... (columns remains the same)
+
 export function OcpiLocationsList() {
-    const { data: locations, isLoading } = useOcpiLocations();
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+    const [search, setSearch] = useState('');
+
+    const { data, isLoading, isError, refetch } = useOcpiLocations({
+        page,
+        pageSize,
+        search
+    });
+
+    if (isError) {
+        return (
+            <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-xl bg-destructive/5 text-center">
+                <AlertCircle className="h-12 w-12 text-destructive mb-4 opacity-50" />
+                <p className="text-lg font-medium text-destructive">Failed to load locations</p>
+                <p className="text-sm text-muted-foreground mb-6">
+                    There was an error fetching OCPI location data.
+                </p>
+                <Button onClick={() => refetch()} variant="outline" size="sm">
+                    Try Again
+                </Button>
+            </div>
+        );
+    }
 
     return (
         <Table<OcpiLocation>
-            data={locations ?? []}
+            data={data?.items ?? []}
             columns={columns}
             isLoading={isLoading}
+            loadingRowCount={5}
             showSearch
             searchPosition="end"
+            onSearch={setSearch}
+            manualPagination
+            manualSearching
+            totalCount={data?.total ?? 0}
+            pageIndex={page}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
             showPagination
-            pageSize={DEFAULT_PAGE_SIZE}
+            pageSize={pageSize}
             sortByKey="name"
             sortOrder="asc"
-            maxHeight="600px"
             emptyState={
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                     <Globe className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
@@ -90,3 +125,4 @@ export function OcpiLocationsList() {
         />
     );
 }
+
