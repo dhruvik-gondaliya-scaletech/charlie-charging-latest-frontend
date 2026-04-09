@@ -97,9 +97,22 @@ class StationService {
     });
   }
 
-  async remoteStopTransaction(id: string, transactionId: number) {
+  async remoteStopTransaction(id: string, transactionId: string | number) {
     return httpService.post(API_CONFIG.endpoints.stations.remoteStop(id), {
       transactionId,
+    });
+  }
+
+  async resetStation(id: string, type: 'Hard' | 'Soft') {
+    return httpService.post(API_CONFIG.endpoints.stations.reset(id), {
+      type,
+    });
+  }
+
+  async changeAvailability(id: string, type: 'Operative' | 'Inoperative', connectorId?: number) {
+    return httpService.post(API_CONFIG.endpoints.stations.availability(id), {
+      type,
+      connectorId,
     });
   }
 

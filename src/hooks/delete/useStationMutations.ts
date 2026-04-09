@@ -64,13 +64,39 @@ export const useRemoteStart = () => {
 
 export const useRemoteStop = () => {
   return useMutation({
-    mutationFn: ({ id, transactionId }: { id: string; transactionId: number }) =>
+    mutationFn: ({ id, transactionId }: { id: string; transactionId: string | number }) =>
       stationService.remoteStopTransaction(id, transactionId),
     onSuccess: () => {
       toast.success('Remote stop command sent');
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || 'Failed to stop transaction remotely');
+    },
+  });
+};
+
+export const useResetStation = () => {
+  return useMutation({
+    mutationFn: ({ id, type }: { id: string; type: 'Hard' | 'Soft' }) =>
+      stationService.resetStation(id, type),
+    onSuccess: () => {
+      toast.success('Reset command sent successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to reset station');
+    },
+  });
+};
+
+export const useChangeAvailability = () => {
+  return useMutation({
+    mutationFn: ({ id, type, connectorId }: { id: string; type: 'Operative' | 'Inoperative'; connectorId?: number }) =>
+      stationService.changeAvailability(id, type, connectorId),
+    onSuccess: () => {
+      toast.success('Availability command sent successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to change availability');
     },
   });
 };
