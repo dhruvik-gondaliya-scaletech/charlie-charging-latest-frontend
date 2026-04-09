@@ -1,30 +1,23 @@
 'use client';
 
-export function TrustBar() {
-  const logos = [
-    { name: 'VOLT', italic: true, tracking: 'tighter' },
-    { name: 'NEXUS', tracking: 'widest' },
-    { name: 'GRID', icon: true },
-    { name: 'SPARK', underline: true },
-    { name: 'AMPLIFY', uppercase: true, tracking: 'tighter' }
-  ];
+import Image from 'next/image';
 
+export function TrustBar() {
   return (
-    <section className="py-12 bg-muted/50 border-y border-border">
-      <div className="max-w-7xl mx-auto px-8">
-        <p className="text-center text-[10px] font-black tracking-[0.3em] uppercase text-muted-foreground mb-10 opacity-70">
-          Trusted by 500+ global networks
+    <section className="py-16 bg-background border-y border-border">
+      <div className="max-w-7xl mx-auto px-8 flex flex-col items-center gap-12">
+        <p className="text-center text-[10px] font-black tracking-[0.3em] uppercase text-muted-foreground mb-4 opacity-70">
+          Powering the next generation of charging
         </p>
-        <div className="flex flex-wrap justify-center items-center gap-12 lg:gap-24 opacity-50 grayscale hover:opacity-100 transition-all duration-500">
-          {logos.map((logo, idx) => (
-            <span 
-              key={idx} 
-              className={`text-2xl font-black text-foreground ${logo.italic ? 'italic' : ''} ${logo.tracking === 'tighter' ? 'tracking-tighter' : logo.tracking === 'widest' ? 'tracking-widest' : ''} ${logo.uppercase ? 'uppercase' : ''} ${logo.underline ? 'underline decoration-4' : ''} flex items-center gap-1`}
-            >
-              {logo.icon && <div className="h-5 w-5 bg-foreground rounded-full" />}
-              {logo.name}
-            </span>
-          ))}
+        <div className="flex justify-center items-center">
+          <Image 
+            src="/assets/charli_charging.svg" 
+            alt="Charli Charging" 
+            width={400} 
+            height={120} 
+            className="h-32 w-auto object-contain transition-all duration-300 hover:scale-105"
+            priority
+          />
         </div>
       </div>
     </section>

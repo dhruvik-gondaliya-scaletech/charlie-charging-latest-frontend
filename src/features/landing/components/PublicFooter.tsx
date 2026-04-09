@@ -20,7 +20,7 @@ export function PublicFooter() {
 
   return (
     <footer className="w-full border-t border-border bg-background">
-      <div className="grid grid-cols-2 md:flex md:justify-between items-start px-8 py-16 max-w-7xl mx-auto">
+      {/* <div className="grid grid-cols-2 md:flex md:justify-between items-start px-8 py-16 max-w-7xl mx-auto">
         <div className="col-span-2 md:col-span-1 mb-12 md:mb-0">
           <div className="text-lg font-bold tracking-tighter text-foreground mb-4">Scale EV</div>
           <p className="text-sm text-muted-foreground max-w-xs leading-relaxed font-medium">
@@ -45,9 +45,9 @@ export function PublicFooter() {
             </ul>
           </div>
         ))}
-      </div>
+      </div> */}
 
-      <div className="max-w-7xl mx-auto px-8 pb-12 flex flex-col md:flex-row justify-between items-center gap-6">
+      <div className="max-w-7xl mx-auto px-8 py-12 flex flex-col md:flex-row justify-between items-center gap-6">
         <div className="text-sm text-muted-foreground font-medium">
           © {new Date().getFullYear()} Scale EV. All rights reserved.
         </div>
