@@ -52,6 +52,7 @@ export interface Station {
   connectorTypes: string[];
   location?: Location;
   locationId: string;
+  tariffId?: string;
   chargePointId: string;
   ocppVersion: string;
   type: 'AC' | 'DC';

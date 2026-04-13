@@ -87,7 +87,13 @@ export const API_CONFIG = {
         },
         brands: {
             base: "/brands",
-        }
+        },
+        billing: {
+            tariffs: "/billing/tariffs",
+            tariffById: (id: string) => `/billing/tariffs/${id}`,
+            estimate: "/billing/estimate",
+            calculateSessionCost: (id: string) => `/billing/sessions/${id}/calculate`,
+        },
     }
 }
 
@@ -102,6 +108,7 @@ export const FRONTEND_ROUTES = {
     STATIONS_DETAILS: (id: string) => `/stations/${id}`,
     STATIONS_EDIT: (id: string) => `/stations/${id}/edit`,
     SESSIONS: "/sessions",
+    TARIFF: "/tariff",
     TENANTS: "/tenants",
     WEBHOOKS: "/webhooks",
     WEBHOOKS_LOGS: (id: string) => `/webhooks/${id}/logs`,

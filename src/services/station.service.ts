@@ -13,6 +13,7 @@ export interface CreateStationData {
   maxPower: number;
   connectorTypes: ConnectorType[];
   locationId: string;
+  tariffId: string;
   chargePointId: string;
   ocppVersion: string;
   ocppConfiguration?: Record<string, unknown>;
@@ -28,6 +29,7 @@ export interface UpdateStationData {
   maxPower?: number;
   connectorTypes?: ConnectorType[];
   locationId?: string;
+  tariffId?: string;
   ocppConfiguration?: Record<string, unknown>;
   status?: ChargingStatus;
 }

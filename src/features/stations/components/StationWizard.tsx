@@ -45,6 +45,7 @@ import { InfiniteScrollDropdown } from '@/components/shared/InfiniteScrollDropdo
 import { useBrands } from '@/hooks/get/useBrands';
 import { useModels } from '@/hooks/get/useModels';
 import { useConnectorTypes } from '@/hooks/get/useConnectorTypes';
+import { useTariffs } from '@/hooks/get/useBilling';
 import { Brand, ConnectorType } from '@/types';
 
 type WizardValues = z.infer<typeof stationSchema>;
@@ -90,6 +91,7 @@ export function StationWizard({
             vendor: initialData.vendor || '',
             maxPower: initialData.maxPower || 22,
             locationId: (initialData.location && typeof initialData.location === 'object' ? (initialData.location as any).id : initialData.locationId) || '',
+            tariffId: (initialData as any).tariffId || '',
             type: initialData.type || 'AC',
             connectorTypes: initialData.connectorTypes || [],
         },
@@ -114,6 +116,8 @@ export function StationWizard({
     const { data: connectorTypesResponse, isLoading: isConnectorTypesLoading } = useConnectorTypes();
     const connectorTypesFromApi = (connectorTypesResponse as any) || [];
 
+    const { data: tariffs, isLoading: tariffsLoading } = useTariffs();
+
     // Handle auto-filling brand ID if initialData has a vendor name
     useEffect(() => {
         if (initialData?.vendor && brands.length > 0 && !selectedBrandId) {
@@ -135,6 +139,7 @@ export function StationWizard({
                 vendor: initialData.vendor || '',
                 maxPower: initialData.maxPower ?? 22,
                 locationId: (initialData.location && typeof initialData.location === 'object' ? (initialData.location as any).id : initialData.locationId) || '',
+                tariffId: (initialData as any).tariffId || '',
                 type: initialData.type || 'AC',
                 connectorTypes: initialData.connectorTypes || [],
             }, {
@@ -147,7 +152,7 @@ export function StationWizard({
     const nextStep = async () => {
         let fieldsToValidate: (keyof WizardValues)[] = [];
         if (step === 1) fieldsToValidate = ['name', 'vendor', 'model', 'maxPower'];
-        if (step === 2) fieldsToValidate = ['serialNumber', 'chargePointId', 'type', 'locationId'];
+        if (step === 2) fieldsToValidate = ['serialNumber', 'chargePointId', 'type', 'locationId', 'tariffId'];
 
         const isValid = await form.trigger(fieldsToValidate);
         if (isValid) setStep(prev => Math.min(prev + 1, 4));
@@ -479,6 +484,39 @@ export function StationWizard({
                                                         </SelectContent>
                                                     </Select>
                                                     <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1.5 opacity-70">Physical deployment site</p>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+
+                                        <FormField
+                                            control={form.control as any}
+                                            name="tariffId"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="font-bold flex items-center gap-1.5 focus:text-primary transition-colors">
+                                                        <Save className="h-3.5 w-3.5 text-primary" />
+                                                        Tariff*
+                                                    </FormLabel>
+                                                    <Select
+                                                        onValueChange={field.onChange}
+                                                        defaultValue={field.value}
+                                                        disabled={tariffsLoading}
+                                                    >
+                                                        <FormControl>
+                                                            <SelectTrigger className="bg-muted/30 py-6 h-auto font-bold hover:bg-muted/40 transition-all border-border/60 w-full">
+                                                                <SelectValue placeholder="Select a tariff" />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent className="rounded-xl border-border/60 shadow-2xl">
+                                                            {(tariffs || []).map((tariff: any) => (
+                                                                <SelectItem key={tariff.id} value={tariff.id} className="font-bold">
+                                                                    {tariff.name}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1.5 opacity-70">Pricing rules applied to sessions</p>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
