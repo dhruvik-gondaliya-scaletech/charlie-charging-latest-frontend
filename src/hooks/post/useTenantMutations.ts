@@ -67,8 +67,7 @@ export const useConnectStripe = () => {
     mutationFn: (id: string) => tenantService.connectStripe(id),
     onSuccess: (response) => {
       if (response?.url) {
-        toast.info('Redirecting to Stripe Express onboarding...');
-        window.location.href = response.url;
+        toast.success('Onboarding email has been sent to the tenant admin.');
       } else {
          toast.error('Could not get Stripe URL');
       }

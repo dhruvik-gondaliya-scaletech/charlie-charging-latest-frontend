@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ColumnDef } from '@tanstack/react-table';
 import { useTenants } from '@/hooks/get/useTenants';
@@ -53,6 +54,22 @@ export function TenantsContainer() {
   const deactivateTenant = useDeactivateTenant();
   const regenerateSecret = useRegenerateApiSecret();
   const connectStripe = useConnectStripe();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  // Handle onboarding status from URL
+  useEffect(() => {
+    const onboarding = searchParams.get('onboarding');
+    if (onboarding === 'complete') {
+      toast.success('Stripe onboarding completed successfully!');
+      // Clean up URL
+      router.replace('/tenants');
+    } else if (onboarding === 'failed') {
+      toast.error('Stripe onboarding failed or was cancelled.');
+      // Clean up URL
+      router.replace('/tenants');
+    }
+  }, [searchParams, router]);
 
   // State for modals
   const [isFormOpen, setIsFormOpen] = useState(false);
