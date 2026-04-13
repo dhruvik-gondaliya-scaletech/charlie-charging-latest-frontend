@@ -31,19 +31,20 @@ import {
   Loader2,
 } from 'lucide-react';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
+import { ActionIconButton } from '@/components/shared/ActionIconButton';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
 import { WebhookFormModal } from '../components/WebhookFormModal';
 import { WebhookSecretModal } from '../components/WebhookSecretModal';
 import { WebhookFormData } from '@/lib/validations/webhook.schema';
 import { StatCard } from '@/features/dashboard/components/StatCard';
 import { toast } from 'sonner';
 import { DEFAULT_PAGE_SIZE, FRONTEND_ROUTES } from '@/constants/constants';
+import { cn } from '@/lib/utils';
 
 export function WebhooksContainer() {
   const { data: webhooks, isLoading } = useWebhooks();
@@ -251,94 +252,46 @@ export function WebhooksContainer() {
         header: 'Actions',
         cell: ({ row }) => (
           <div className="flex items-center justify-end gap-1 px-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 hover:bg-blue-500/10 hover:text-blue-500 rounded-lg transition-colors"
-                  asChild
-                >
-                  <Link href={`${FRONTEND_ROUTES.WEBHOOKS_LOGS(row.original.id)}?name=${encodeURIComponent(row.original.name)}`}>
-                    <FileText className="h-4 w-4" />
-                  </Link>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>View Delivery Logs</TooltipContent>
-            </Tooltip>
+            <ActionIconButton
+              tone="info"
+              tooltip="View Delivery Logs"
+              href={`${FRONTEND_ROUTES.WEBHOOKS_LOGS(row.original.id)}?name=${encodeURIComponent(row.original.name)}`}
+              icon={<FileText className="h-4 w-4" />}
+            />
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 hover:bg-amber-500/10 hover:text-amber-500 rounded-lg transition-colors"
-                  onClick={() => {
-                    setSelectedWebhook(row.original);
-                    setIsSecretOpen(true);
-                  }}
-                >
-                  <Key className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>View Secret Key</TooltipContent>
-            </Tooltip>
+            <ActionIconButton
+              tone="warning"
+              tooltip="View Secret Key"
+              icon={<Key className="h-4 w-4" />}
+              onClick={() => {
+                setSelectedWebhook(row.original);
+                setIsSecretOpen(true);
+              }}
+            />
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 hover:bg-primary/10 hover:text-primary rounded-lg transition-colors"
-                  onClick={() => {
-                    setSelectedWebhook(row.original);
-                    setIsFormOpen(true);
-                  }}
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Modify Settings</TooltipContent>
-            </Tooltip>
+            <ActionIconButton
+              tone="primary"
+              tooltip="Modify Settings"
+              icon={<Edit className="h-4 w-4" />}
+              onClick={() => {
+                setSelectedWebhook(row.original);
+                setIsFormOpen(true);
+              }}
+            />
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={cn(
-                    "h-8 w-8 rounded-lg transition-colors",
-                    row.original.isActive
-                      ? "hover:bg-orange-500/10 hover:text-orange-500"
-                      : "hover:bg-emerald-500/10 hover:text-emerald-500"
-                  )}
-                  onClick={() => handleToggleStatus(row.original)}
-                >
-                  {row.original.isActive ? (
-                    <PowerOff className="h-4 w-4" />
-                  ) : (
-                    <Power className="h-4 w-4" />
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                {row.original.isActive ? "Pause Integration" : "Resume Integration"}
-              </TooltipContent>
-            </Tooltip>
+            <ActionIconButton
+              tone={row.original.isActive ? 'warning' : 'success'}
+              tooltip={row.original.isActive ? 'Pause Integration' : 'Resume Integration'}
+              icon={row.original.isActive ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
+              onClick={() => handleToggleStatus(row.original)}
+            />
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive rounded-lg transition-colors"
-                  onClick={() => handleDelete(row.original)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Delete Webhook</TooltipContent>
-            </Tooltip>
+            <ActionIconButton
+              tone="destructive"
+              tooltip="Delete Webhook"
+              icon={<Trash2 className="h-4 w-4" />}
+              onClick={() => handleDelete(row.original)}
+            />
           </div>
         ),
         meta: { headerAlign: 'center' }

@@ -28,6 +28,7 @@ import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
 import { IdTagFormModal } from '../components/IdTagFormModal';
 import { useDeleteIdTag } from '@/hooks/delete/useDeleteIdTag';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
+import { ActionIconButton } from '@/components/shared/ActionIconButton';
 
 export function IdTagsContainer() {
   const { data: idTags, isLoading, error } = useIdTags();
@@ -118,25 +119,21 @@ export function IdTagsContainer() {
         header: 'Actions',
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8 rounded-lg border-border/50 hover:bg-primary/5 hover:text-primary transition-colors"
+            <ActionIconButton
+              tone="primary"
+              tooltip="Edit"
+              icon={<Edit2 className="h-3.5 w-3.5" />}
               onClick={() => {
                 setSelectedIdTag(row.original);
                 setIsFormModalOpen(true);
               }}
-            >
-              <Edit2 className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8 rounded-lg border-border/50 hover:bg-destructive/5 hover:text-destructive transition-colors"
+            />
+            <ActionIconButton
+              tone="destructive"
+              tooltip="Delete"
+              icon={<Trash2 className="h-3.5 w-3.5" />}
               onClick={() => setIdTagToDelete(row.original.idTag)}
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
+            />
           </div>
         ),
       },

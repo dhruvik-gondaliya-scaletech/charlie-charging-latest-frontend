@@ -39,6 +39,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { ActionIconButton } from '@/components/shared/ActionIconButton';
 import { StatCard } from '@/features/dashboard/components/StatCard';
 import { TenantFormModal } from '../components/TenantFormModal';
 import { TenantSecretModal } from '../components/TenantSecretModal';
@@ -219,81 +220,48 @@ export function TenantsContainer() {
               </Tooltip>
             )}
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 rounded-lg hover:bg-amber-500/10 hover:text-amber-500"
-                  onClick={() => {
-                    setSelectedTenantId(row.original.id);
-                    setSelectedTenantName(row.original.name);
-                    setIsConfirmRegenerateOpen(true);
-                  }}
-                >
-                  <Key className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Regenerate API Secret</TooltipContent>
-            </Tooltip>
+            <ActionIconButton
+              tone="warning"
+              tooltip="Regenerate API Secret"
+              icon={<Key className="h-4 w-4" />}
+              onClick={() => {
+                setSelectedTenantId(row.original.id);
+                setSelectedTenantName(row.original.name);
+                setIsConfirmRegenerateOpen(true);
+              }}
+            />
 
             {row.original.isActive ? (
               <>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className={`h-8 w-8 rounded-lg ${
-                        row.original.stripeOnboarded
-                          ? 'text-indigo-500 hover:bg-indigo-500/10'
-                          : 'text-slate-400 hover:text-indigo-500 hover:bg-indigo-500/10'
-                      }`}
-                      onClick={() => connectStripe.mutate(row.original.id)}
-                      disabled={connectStripe.isPending}
-                    >
-                      <CreditCard className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {row.original.stripeOnboarded ? 'Manage Stripe Connect' : 'Setup Stripe Connect'}
-                  </TooltipContent>
-                </Tooltip>
+                <ActionIconButton
+                  tone="info"
+                  tooltip={row.original.stripeOnboarded ? 'Manage Stripe Connect' : 'Setup Stripe Connect'}
+                  icon={<CreditCard className="h-4 w-4" />}
+                  onClick={() => connectStripe.mutate(row.original.id)}
+                  disabled={connectStripe.isPending}
+                  className={row.original.stripeOnboarded ? 'text-indigo-500' : 'text-slate-400'}
+                />
 
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive"
-                      onClick={() => {
-                        setSelectedTenantId(row.original.id);
-                        setSelectedTenantName(row.original.name);
-                        setIsConfirmDeactivateOpen(true);
-                      }}
-                      disabled={row.original.isDefault || deactivateTenant.isPending}
-                    >
-                      <PowerOff className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Deactivate Tenant</TooltipContent>
-                </Tooltip>
+                <ActionIconButton
+                  tone="destructive"
+                  tooltip="Deactivate Tenant"
+                  icon={<PowerOff className="h-4 w-4" />}
+                  onClick={() => {
+                    setSelectedTenantId(row.original.id);
+                    setSelectedTenantName(row.original.name);
+                    setIsConfirmDeactivateOpen(true);
+                  }}
+                  disabled={row.original.isDefault || deactivateTenant.isPending}
+                />
               </>
             ) : (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 rounded-lg hover:bg-emerald-500/10 hover:text-emerald-500"
-                    onClick={() => handleActivate(row.original)}
-                    disabled={activateTenant.isPending}
-                  >
-                    <Power className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Activate Tenant</TooltipContent>
-              </Tooltip>
+              <ActionIconButton
+                tone="success"
+                tooltip="Activate Tenant"
+                icon={<Power className="h-4 w-4" />}
+                onClick={() => handleActivate(row.original)}
+                disabled={activateTenant.isPending}
+              />
             )}
           </div>
         ),

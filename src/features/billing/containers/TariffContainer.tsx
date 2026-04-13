@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TariffFormModal } from '@/features/billing/components/TariffFormModal';
 import { DeleteTariffModal } from '@/features/billing/components/DeleteTariffModal';
+import { ActionIconButton } from '@/components/shared/ActionIconButton';
 
 export function TariffContainer() {
   const { data, isLoading, isError, refetch, isFetching } = useTariffs();
@@ -94,29 +95,25 @@ export function TariffContainer() {
         header: 'Actions',
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8 rounded-lg border-border/50 hover:bg-primary/5 hover:text-primary transition-colors"
+            <ActionIconButton
+              tone="primary"
+              tooltip="Edit"
+              icon={<Pencil className="h-3.5 w-3.5" />}
               onClick={() => {
                 const tariff = row.original;
                 setSelectedTariff(tariff);
                 setIsEditOpen(true);
               }}
-            >
-              <Pencil className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8 rounded-lg border-border/50 hover:bg-destructive/5 hover:text-destructive transition-colors"
+            />
+            <ActionIconButton
+              tone="destructive"
+              tooltip="Delete"
+              icon={<Trash2 className="h-3.5 w-3.5" />}
               onClick={() => {
                 setSelectedTariff(row.original);
                 setIsDeleteOpen(true);
               }}
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
+            />
           </div>
         ),
       },

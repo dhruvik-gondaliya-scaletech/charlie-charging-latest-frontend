@@ -19,6 +19,7 @@ import {
 } from '@/lib/query-utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { ActionIconButton } from '@/components/shared/ActionIconButton';
 import { Plus, Pencil, Trash2, AlertTriangle, Zap, Search, X } from 'lucide-react';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Input } from '@/components/ui/input';
@@ -221,37 +222,19 @@ export function StationsContainer() {
         header: 'Actions',
         cell: ({ row }) => (
           <div className="flex items-center gap-1">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 hover:bg-primary/10 hover:text-primary cursor-pointer"
-                  onClick={() => handleEdit(row.original)}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="text-xs">Edit Station</p>
-              </TooltipContent>
-            </Tooltip>
+            <ActionIconButton
+              tone="primary"
+              tooltip="Edit Station"
+              icon={<Pencil className="h-4 w-4" />}
+              onClick={() => handleEdit(row.original)}
+            />
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive cursor-pointer"
-                  onClick={() => handleDelete(row.original)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="text-xs">Delete Station</p>
-              </TooltipContent>
-            </Tooltip>
+            <ActionIconButton
+              tone="destructive"
+              tooltip="Delete Station"
+              icon={<Trash2 className="h-4 w-4" />}
+              onClick={() => handleDelete(row.original)}
+            />
           </div>
         ),
       },
