@@ -22,6 +22,8 @@ export interface CreateTariffData {
   currency: string;
 }
 
+export type UpdateTariffData = Partial<CreateTariffData>;
+
 export interface EstimateCostData {
   stationId: string;
   flowType: 'kwh' | 'price' | 'time' | 'KWH' | 'PRICE' | 'TIME';
@@ -47,6 +49,14 @@ class BillingService {
 
   async createTariff(data: CreateTariffData) {
     return httpService.post<Tariff>(API_CONFIG.endpoints.billing.tariffs, data);
+  }
+
+  async updateTariff(id: string, data: UpdateTariffData) {
+    return httpService.patch<Tariff>(API_CONFIG.endpoints.billing.tariffById(id), data);
+  }
+
+  async deleteTariff(id: string) {
+    return httpService.delete<void>(API_CONFIG.endpoints.billing.tariffById(id));
   }
 
   async estimateCost(data: EstimateCostData) {

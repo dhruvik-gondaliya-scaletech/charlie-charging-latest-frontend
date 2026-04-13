@@ -3,47 +3,30 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ColumnDef } from '@tanstack/react-table';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Control, Resolver, useForm } from 'react-hook-form';
-import { Coins, Plus, AlertTriangle } from 'lucide-react';
+import { Coins, Plus, AlertTriangle, Pencil, Trash2 } from 'lucide-react';
 import { useTariffs } from '@/hooks/get/useBilling';
-import { useCreateTariff } from '@/hooks/post/useBillingMutations';
+import { useCreateTariff, useDeleteTariff, useUpdateTariff } from '@/hooks/post/useBillingMutations';
 import { Tariff } from '@/services/billing.service';
-import { tariffSchema, TariffFormData } from '@/lib/validations/billing.schema';
+import { TariffFormData } from '@/lib/validations/billing.schema';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { formatDate } from '@/lib/date';
 import { cn } from '@/lib/utils';
 import { Table } from '@/components/shared/Table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { AnimatedModal } from '@/components/shared/AnimatedModal';
+import { TariffFormModal } from '@/features/billing/components/TariffFormModal';
+import { DeleteTariffModal } from '@/features/billing/components/DeleteTariffModal';
 
 export function TariffContainer() {
   const { data, isLoading, isError, refetch, isFetching } = useTariffs();
   const createTariff = useCreateTariff();
+  const updateTariff = useUpdateTariff();
+  const deleteTariff = useDeleteTariff();
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-
-  const form = useForm<TariffFormData>({
-    resolver: zodResolver(tariffSchema) as unknown as Resolver<TariffFormData>,
-    defaultValues: {
-      name: '',
-      pricePerKwh: 0,
-      serviceFeePercentage: 0,
-      connectionFee: 0,
-      idleFee: 0,
-      currency: 'USD',
-    },
-  });
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [selectedTariff, setSelectedTariff] = useState<Tariff | null>(null);
 
   const columns: ColumnDef<Tariff>[] = useMemo(
     () => [
@@ -106,17 +89,61 @@ export function TariffContainer() {
         header: 'Created',
         cell: ({ row }) => <span className="text-xs text-muted-foreground">{formatDate(row.getValue('createdAt'))}</span>,
       },
+      {
+        id: 'actions',
+        header: 'Actions',
+        cell: ({ row }) => (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 rounded-lg border-border/50 hover:bg-primary/5 hover:text-primary transition-colors"
+              onClick={() => {
+                const tariff = row.original;
+                setSelectedTariff(tariff);
+                setIsEditOpen(true);
+              }}
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 rounded-lg border-border/50 hover:bg-destructive/5 hover:text-destructive transition-colors"
+              onClick={() => {
+                setSelectedTariff(row.original);
+                setIsDeleteOpen(true);
+              }}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        ),
+      },
     ],
     []
   );
 
-  const onSubmit = (values: TariffFormData) => {
+  const onCreateSubmit = (values: TariffFormData) => {
     createTariff.mutate(values, {
       onSuccess: () => {
         setIsCreateOpen(false);
-        form.reset();
       },
     });
+  };
+
+  const onEditSubmit = (values: TariffFormData) => {
+    if (!selectedTariff) return;
+
+    updateTariff.mutate(
+      { id: selectedTariff.id, data: values },
+      {
+        onSuccess: () => {
+          setIsEditOpen(false);
+          setSelectedTariff(null);
+        },
+      }
+    );
   };
 
   if (isError) {
@@ -204,129 +231,42 @@ export function TariffContainer() {
         />
       </motion.div>
 
-      <AnimatedModal
+      <TariffFormModal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
-        title="Create Tariff"
-        description="Define the pricing components used to calculate session costs."
-        size="lg"
-        footer={
-          <div className="flex gap-3 justify-end w-full">
-            <Button
-              variant="outline"
-              onClick={() => setIsCreateOpen(false)}
-              disabled={createTariff.isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={form.handleSubmit(onSubmit)}
-              disabled={createTariff.isPending}
-              className="font-bold"
-            >
-              {createTariff.isPending ? 'Creating...' : 'Create Tariff'}
-            </Button>
-          </div>
-        }
-      >
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control as unknown as Control<TariffFormData>}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="font-bold">Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="e.g. Standard Tariff"
-                      className="bg-muted/10 border-border/40 font-medium"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        onSubmit={onCreateSubmit}
+        isLoading={createTariff.isPending}
+      />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control as unknown as Control<TariffFormData>}
-                name="currency"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="font-bold">Currency</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="USD"
-                        className="bg-muted/10 border-border/40 font-medium"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+      <TariffFormModal
+        isOpen={isEditOpen}
+        onClose={() => {
+          setIsEditOpen(false);
+          setSelectedTariff(null);
+        }}
+        onSubmit={onEditSubmit}
+        initialData={selectedTariff}
+        isLoading={updateTariff.isPending}
+      />
 
-              <FormField
-                control={form.control as unknown as Control<TariffFormData>}
-                name="pricePerKwh"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="font-bold">Price per kWh</FormLabel>
-                    <FormControl>
-                      <Input type="number" className="bg-muted/10 border-border/40 font-medium" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control as unknown as Control<TariffFormData>}
-                name="serviceFeePercentage"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="font-bold">Service fee (%)</FormLabel>
-                    <FormControl>
-                      <Input type="number" className="bg-muted/10 border-border/40 font-medium" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control as unknown as Control<TariffFormData>}
-                name="connectionFee"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="font-bold">Connection fee</FormLabel>
-                    <FormControl>
-                      <Input type="number" className="bg-muted/10 border-border/40 font-medium" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control as unknown as Control<TariffFormData>}
-                name="idleFee"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="font-bold">Idle fee</FormLabel>
-                    <FormControl>
-                      <Input type="number" className="bg-muted/10 border-border/40 font-medium" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </form>
-        </Form>
-      </AnimatedModal>
+      <DeleteTariffModal
+        isOpen={isDeleteOpen}
+        onClose={() => {
+          setIsDeleteOpen(false);
+          setSelectedTariff(null);
+        }}
+        tariff={selectedTariff}
+        isLoading={deleteTariff.isPending}
+        onConfirm={() => {
+          if (!selectedTariff) return;
+          deleteTariff.mutate(selectedTariff.id, {
+            onSuccess: () => {
+              setIsDeleteOpen(false);
+              setSelectedTariff(null);
+            },
+          });
+        }}
+      />
     </motion.div>
   );
 }
