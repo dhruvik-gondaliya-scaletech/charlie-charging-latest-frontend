@@ -1,6 +1,8 @@
 import httpService from '@/lib/http-service';
 import { API_CONFIG } from '@/constants/constants';
 
+export type Currency = 'USD' | 'INR';
+
 export interface Tariff {
   id: string;
   name: string;
@@ -8,7 +10,7 @@ export interface Tariff {
   serviceFeePercentage: number;
   connectionFee: number;
   idleFee: number;
-  currency: string;
+  currency: Currency;
   createdAt: string;
   updatedAt: string;
 }
@@ -19,7 +21,7 @@ export interface CreateTariffData {
   serviceFeePercentage: number;
   connectionFee: number;
   idleFee: number;
-  currency: string;
+  currency: Currency;
 }
 
 export type UpdateTariffData = Partial<CreateTariffData>;

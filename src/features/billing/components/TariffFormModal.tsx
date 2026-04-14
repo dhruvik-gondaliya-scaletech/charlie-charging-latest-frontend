@@ -9,6 +9,13 @@ import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Form,
   FormControl,
   FormField,
@@ -40,7 +47,7 @@ export function TariffFormModal({
       serviceFeePercentage: 0,
       connectionFee: 0,
       idleFee: 0,
-      currency: 'USD',
+      currency: 'INR',
     },
   });
 
@@ -53,7 +60,7 @@ export function TariffFormModal({
       serviceFeePercentage: initialData?.serviceFeePercentage ?? 0,
       connectionFee: initialData?.connectionFee ?? 0,
       idleFee: initialData?.idleFee ?? 0,
-      currency: initialData?.currency ?? 'USD',
+      currency: initialData?.currency ?? 'INR',
     });
   }, [form, initialData, isOpen]);
 
@@ -112,13 +119,17 @@ export function TariffFormModal({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="font-bold">Currency</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="USD"
-                      className="bg-muted/10 border-border/40 font-medium"
-                      {...field}
-                    />
-                  </FormControl>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="bg-muted/10 border-border/40 font-medium">
+                        <SelectValue placeholder="Select currency" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="INR">INR (₹)</SelectItem>
+                      <SelectItem value="USD">USD ($)</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -185,3 +196,4 @@ export function TariffFormModal({
     </AnimatedModal>
   );
 }
+

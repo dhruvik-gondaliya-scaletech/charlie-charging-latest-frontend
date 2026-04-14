@@ -186,7 +186,7 @@ export interface DriverSession {
   energyDeliveredKwh: number;
   status: string;
   totalCost: number;
-  currency: string;
+  currency: 'USD' | 'INR';
   createdAt: string;
 }
 
