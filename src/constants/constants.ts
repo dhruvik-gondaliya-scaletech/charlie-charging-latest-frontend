@@ -61,11 +61,15 @@ export const API_CONFIG = {
         },
         tenants: {
             base: "/tenants",
+            config: "/tenants/config",
             byId: (id: string) => `/tenants/${id}`,
             activate: (id: string) => `/tenants/${id}/activate`,
             deactivate: (id: string) => `/tenants/${id}/deactivate`,
             regenerateSecret: (id: string) => `/tenants/${id}/regenerate-api-secret`,
             connectStripe: (id: string) => `/tenants/${id}/stripe/connect`,
+        },
+        aws: {
+            upload: "/aws/upload",
         },
         ocpi: {
             credentials: "/ocpi/mgmt/credentials",

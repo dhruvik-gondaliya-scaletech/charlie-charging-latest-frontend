@@ -38,6 +38,10 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { History } from 'lucide-react';
 
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { DriverAppConfig } from '../components/DriverAppConfig';
+import { Settings, Users as UsersListIcon } from 'lucide-react';
+
 export function DriversContainer() {
   const { data: drivers, isLoading, error } = useDrivers();
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -55,6 +59,7 @@ export function DriversContainer() {
   }, [drivers]);
 
   const columns: ColumnDef<Driver>[] = useMemo(
+    // ... columns logic ...
     () => [
       {
         accessorKey: 'firstName',
@@ -165,75 +170,92 @@ export function DriversContainer() {
           </div>
         </motion.div>
 
-        {/* Performance Stats Overlay */}
-        <motion.div variants={staggerItem} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <StatCard
-            title="Total Drivers"
-            value={stats.total}
-            icon={UsersIcon}
-            color="text-primary"
-            bottomRightGlobe="bg-primary"
-            description="Enrolled drivers in network"
-          />
-          <StatCard
-            title="Active Drivers"
-            value={stats.active}
-            icon={CheckCircle2}
-            color="text-emerald-500"
-            bottomRightGlobe="bg-emerald-500"
-            description="Drivers with active accounts"
-          />
-          <StatCard
-            title="Inactive Drivers"
-            value={stats.inactive}
-            icon={XCircle}
-            color="text-destructive"
-            bottomRightGlobe="bg-destructive"
-            description="Drivers with disabled access"
-          />
-        </motion.div>
+        <Tabs defaultValue="config" className="w-full space-y-8">
+          <TabsList className="bg-card/10 backdrop-blur-sm p-1 rounded-xl border border-border/40 h-10 w-fit">
+            <TabsTrigger value="config" className="px-6 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-black uppercase tracking-widest text-[10px] transition-all flex items-center gap-2">
+              <Settings className="h-3 w-3" />
+              App Configuration
+            </TabsTrigger>
+            <TabsTrigger value="drivers" className="px-6 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-black uppercase tracking-widest text-[10px] transition-all flex items-center gap-2">
+              <UsersListIcon className="h-3 w-3" />
+              Drivers
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Tabular Matrix */}
-        <motion.div variants={staggerItem} className="relative">
-          <Table<Driver>
-            data={drivers || []}
-            columns={columns}
-            isLoading={isLoading}
-            showSearch
-            searchPosition="end"
-            appendWithSearch={
-              <Button
-                onClick={() => setIsFormModalOpen(true)}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
-              >
-                <UserPlus className="mr-2 h-4 w-4" />
-                Add Driver
-              </Button>
-            }
-            pageSize={DEFAULT_PAGE_SIZE}
-            maxHeight="700px"
-            className="border-none shadow-none"
-            emptyState={
-              <div className="py-24 flex flex-col items-center justify-center text-center gap-6 bg-card/10 rounded-[2.5rem] border-2 border-dashed border-border/40">
-                <div className="p-6 rounded-full bg-primary/5 text-primary/40 ring-1 ring-primary/10">
-                  <UsersIcon className="h-16 w-16" />
-                </div>
-                <div className="space-y-1">
-                  <h3 className="text-2xl font-black tracking-tight text-foreground">Registry Empty</h3>
-                  <p className="max-w-xs text-muted-foreground font-medium text-xs leading-relaxed mx-auto uppercase tracking-wider opacity-60">
-                    No drivers detected in the system. Start by adding your first driver.
-                  </p>
-                </div>
-                <Button
-                  onClick={() => setIsFormModalOpen(true)}
-                  className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 font-black px-8 mt-4 uppercase tracking-widest text-[10px]"
-                >
-                  Add First Driver
-                </Button>
-              </div>
-            }
-          />
-        </motion.div>
+          <TabsContent value="config">
+            <DriverAppConfig />
+          </TabsContent>
+
+          <TabsContent value="drivers" className="space-y-8">
+            <motion.div variants={staggerItem} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <StatCard
+                title="Total Drivers"
+                value={stats.total}
+                icon={UsersIcon}
+                color="text-primary"
+                bottomRightGlobe="bg-primary"
+                description="Enrolled drivers in network"
+              />
+              <StatCard
+                title="Active Drivers"
+                value={stats.active}
+                icon={CheckCircle2}
+                color="text-emerald-500"
+                bottomRightGlobe="bg-emerald-500"
+                description="Drivers with active accounts"
+              />
+              <StatCard
+                title="Inactive Drivers"
+                value={stats.inactive}
+                icon={XCircle}
+                color="text-destructive"
+                bottomRightGlobe="bg-destructive"
+                description="Drivers with disabled access"
+              />
+            </motion.div>
+
+            <motion.div variants={staggerItem} className="relative">
+              <Table<Driver>
+                data={drivers || []}
+                columns={columns}
+                isLoading={isLoading}
+                showSearch
+                searchPosition="end"
+                appendWithSearch={
+                  <Button
+                    onClick={() => setIsFormModalOpen(true)}
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
+                  >
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Add Driver
+                  </Button>
+                }
+                pageSize={DEFAULT_PAGE_SIZE}
+                maxHeight="700px"
+                className="border-none shadow-none"
+                emptyState={
+                  <div className="py-24 flex flex-col items-center justify-center text-center gap-6 bg-card/10 rounded-[2.5rem] border-2 border-dashed border-border/40">
+                    <div className="p-6 rounded-full bg-primary/5 text-primary/40 ring-1 ring-primary/10">
+                      <UsersIcon className="h-16 w-16" />
+                    </div>
+                    <div className="space-y-1">
+                      <h3 className="text-2xl font-black tracking-tight text-foreground">Registry Empty</h3>
+                      <p className="max-w-xs text-muted-foreground font-medium text-xs leading-relaxed mx-auto uppercase tracking-wider opacity-60">
+                        No drivers detected in the system. Start by adding your first driver.
+                      </p>
+                    </div>
+                    <Button
+                      onClick={() => setIsFormModalOpen(true)}
+                      className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 font-black px-8 mt-4 uppercase tracking-widest text-[10px]"
+                    >
+                      Add First Driver
+                    </Button>
+                  </div>
+                }
+              />
+            </motion.div>
+          </TabsContent>
+        </Tabs>
 
         <DriverFormModal
           isOpen={isFormModalOpen}
