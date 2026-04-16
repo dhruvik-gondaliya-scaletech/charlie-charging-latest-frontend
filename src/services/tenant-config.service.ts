@@ -25,15 +25,15 @@ export interface UpdateDriverAppConfigData {
 
 class TenantConfigService {
   async getConfig() {
-    return httpService.get<DriverAppConfig>(API_CONFIG.endpoints.tenants.config);
+    return httpService.get<DriverAppConfig>(API_CONFIG.endpoints.drivers.appConfig);
   }
 
   async createConfig(data: UpdateDriverAppConfigData) {
-    return httpService.post<DriverAppConfig>(API_CONFIG.endpoints.tenants.config, data);
+    return httpService.post<DriverAppConfig>(API_CONFIG.endpoints.drivers.appConfig, data);
   }
 
   async updateConfig(data: UpdateDriverAppConfigData) {
-    return httpService.patch<DriverAppConfig>(API_CONFIG.endpoints.tenants.config, data);
+    return httpService.patch<DriverAppConfig>(API_CONFIG.endpoints.drivers.appConfig, data);
   }
 }
 

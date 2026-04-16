@@ -65,10 +65,7 @@ export function DriverAppConfig() {
   }, [config, form]);
 
   const onSubmit = (values: DriverAppConfigValues) => {
-    updateConfig.mutate({
-      exists: !!config,
-      values,
-    });
+    updateConfig.mutate(values);
   };
 
   if (isLoading) {

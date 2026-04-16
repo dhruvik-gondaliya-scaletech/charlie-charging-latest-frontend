@@ -19,6 +19,7 @@ export const API_CONFIG = {
         },
         drivers: {
             base: "/drivers",
+            appConfig: "/drivers/app-config",
             byId: (id: string) => `/drivers/${id}`,
             sessions: (id: string) => `/drivers/${id}/sessions`,
         },

@@ -6,11 +6,8 @@ export const useUpdateTenantConfig = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { exists: boolean; values: UpdateDriverAppConfigData }) => {
-      if (data.exists) {
-        return tenantConfigService.updateConfig(data.values);
-      }
-      return tenantConfigService.createConfig(data.values);
+    mutationFn: (data: UpdateDriverAppConfigData) => {
+      return tenantConfigService.updateConfig(data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tenant-config'] });
