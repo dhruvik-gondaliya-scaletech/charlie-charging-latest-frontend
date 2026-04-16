@@ -70,7 +70,7 @@ export const API_CONFIG = {
             connectStripe: (id: string) => `/tenants/${id}/stripe/connect`,
         },
         aws: {
-            upload: "/aws/upload",
+            uploadUrl: "/aws/upload-url",
         },
         ocpi: {
             credentials: "/ocpi/mgmt/credentials",

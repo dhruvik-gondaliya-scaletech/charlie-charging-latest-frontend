@@ -9,6 +9,7 @@ export const SupportContactSchema = z.object({
 export const DriverAppConfigSchema = z.object({
   appName: z.string().min(1, 'App name is required').max(50, 'App name is too long'),
   logoUrl: z.string().url('Invalid logo URL').optional().or(z.literal('')),
+  domain: z.string().min(3, 'Domain is required').regex(/^[a-z0-9][a-z0-9-.]*[a-z0-9]$/, 'Invalid domain format'),
   supportContact: SupportContactSchema.optional(),
 });
 

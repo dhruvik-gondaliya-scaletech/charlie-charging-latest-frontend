@@ -13,6 +13,7 @@ export interface DriverAppConfig {
   appName?: string;
   logoUrl?: string;
   supportContact?: SupportContact;
+  domain: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -21,6 +22,7 @@ export interface UpdateDriverAppConfigData {
   appName?: string;
   logoUrl?: string;
   supportContact?: SupportContact;
+  domain: string;
 }
 
 class TenantConfigService {

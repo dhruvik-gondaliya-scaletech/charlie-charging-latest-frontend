@@ -45,7 +45,7 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
   };
 
   return (
-    <div 
+    <div
       className={cn("relative group", className)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

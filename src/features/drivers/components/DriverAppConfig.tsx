@@ -47,6 +47,7 @@ export function DriverAppConfig() {
         phone: '',
         website: '',
       },
+      domain: '',
     },
   });
 
@@ -60,6 +61,7 @@ export function DriverAppConfig() {
           phone: config.supportContact?.phone || '',
           website: config.supportContact?.website || '',
         },
+        domain: config.domain || '',
       });
     }
   }, [config, form]);
@@ -133,6 +135,24 @@ export function DriverAppConfig() {
                         />
                       </FormControl>
                       <FormDescription className="text-[10px] ml-1">Upload a high-resolution logo for the driver application interface.</FormDescription>
+                      <FormMessage className="text-[10px] font-bold" />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="domain"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-black text-[10px] uppercase tracking-widest text-muted-foreground ml-1">App Domain</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="e.g. charging.my-domain.com" 
+                          {...field} 
+                          className="h-12 bg-background border-border/40 focus-visible:ring-primary/20 rounded-xl font-bold"
+                        />
+                      </FormControl>
+                      <FormDescription className="text-[10px] ml-1">The domain used to identify your tenant's driver configuration.</FormDescription>
                       <FormMessage className="text-[10px] font-bold" />
                     </FormItem>
                   )}
