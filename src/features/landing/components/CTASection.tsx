@@ -29,12 +29,12 @@ export function CTASection() {
           <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto font-medium">
             Join the world&apos;s most advanced charging networks. Set up your first station in under 10 minutes.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
             <Button size="lg" className="bg-primary text-primary-foreground px-10 py-7 h-auto rounded-2xl text-lg font-bold hover:bg-primary/90 hover:scale-[1.02] transition-all shadow-2xl shadow-primary/20 hover:shadow-primary/30">
               Get Started Now
             </Button>
-            <Button size="lg" variant="outline" className="bg-background text-foreground px-10 py-7 h-auto rounded-2xl text-lg font-bold border-border hover:border-foreground hover:bg-accent hover:scale-[1.02] transition-all">
-              Contact Sales
+            <Button size="lg" variant="outline" asChild className="bg-background text-foreground px-10 py-7 h-auto rounded-2xl text-lg font-bold border-border hover:border-foreground hover:bg-accent hover:scale-[1.02] transition-all cursor-pointer">
+              <a href="#contact">Contact Sales</a>
             </Button>
           </div>
         </motion.div>

@@ -50,7 +50,7 @@ export function Hero() {
                 <ArrowRight className="h-5 w-5" />
               </Button>
             </Link>
-            <Link href="#demo">
+            <Link href="#contact">
               <Button variant="outline" size="lg" className="px-8 py-4 h-auto rounded-xl border-border font-bold hover:border-foreground hover:bg-accent hover:scale-[1.02] transition-all">
                 Book a Demo
               </Button>
