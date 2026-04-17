@@ -1,4 +1,5 @@
 import httpService from "@/lib/http-service";
+import { API_CONFIG } from "@/constants/constants";
 
 export interface ContactFormData {
   firstName: string;
@@ -11,6 +12,6 @@ export interface ContactFormData {
 
 export class ContactService {
   static async submitForm(data: ContactFormData) {
-    return httpService.post<{ success: boolean; message: string }>("/contact", data);
+    return httpService.post<{ success: boolean; message: string }>(API_CONFIG.endpoints.contact, data);
   }
 }

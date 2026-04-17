@@ -5,7 +5,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { motion } from 'framer-motion';
-import { toast } from 'sonner';
 import { Mail, Phone, MapPin, Send, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -26,7 +25,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ContactService, ContactFormData } from '@/services/contact.service';
+import { useSubmitContact } from '@/hooks/post/useContactMutation';
+import { ContactFormData } from '@/services/contact.service';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 
 const formSchema = z.object({
@@ -39,7 +39,7 @@ const formSchema = z.object({
 });
 
 export function ContactSection() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { mutate: submitContact, isPending: isSubmitting } = useSubmitContact();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -54,21 +54,11 @@ export function ContactSection() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsSubmitting(true);
-    try {
-      const response = await ContactService.submitForm(values as ContactFormData);
-      if (response.success) {
-        toast.success(response.message);
+    submitContact(values as ContactFormData, {
+      onSuccess: () => {
         form.reset();
-      } else {
-        toast.error('Something went wrong. Please try again.');
-      }
-    } catch (error) {
-      toast.error('Failed to send message. Please check your connection.');
-      console.error('Contact form error:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
+      },
+    });
   }
 
   return (

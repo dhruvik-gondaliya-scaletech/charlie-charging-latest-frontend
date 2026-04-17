@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
 export function CTASection() {
@@ -34,7 +35,7 @@ export function CTASection() {
               Get Started Now
             </Button>
             <Button size="lg" variant="outline" asChild className="bg-background text-foreground px-10 py-7 h-auto rounded-2xl text-lg font-bold border-border hover:border-foreground hover:bg-accent hover:scale-[1.02] transition-all cursor-pointer">
-              <a href="#contact">Contact Sales</a>
+              <Link href="#contact">Contact Sales</Link>
             </Button>
           </div>
         </motion.div>
