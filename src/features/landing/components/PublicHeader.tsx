@@ -43,7 +43,7 @@ export function PublicHeader() {
         </Link>
         
         <nav className="hidden md:flex items-center gap-8">
-          {['Features', 'Protocols', 'Analytics', 'Pricing'].map((item) => (
+          {['Features', 'Protocols', 'Analytics', 'Contact'].map((item) => (
             <Link
               key={item}
               href={`#${item.toLowerCase()}`}

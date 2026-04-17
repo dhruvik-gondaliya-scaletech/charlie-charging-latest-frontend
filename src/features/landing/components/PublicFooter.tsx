@@ -6,7 +6,7 @@ export function PublicFooter() {
   const sections = [
     {
       title: 'Product',
-      links: ['Platform', 'Features', 'Pricing']
+      links: ['Platform', 'Features']
     },
     {
       title: 'Resources',
@@ -52,6 +52,7 @@ export function PublicFooter() {
           © {new Date().getFullYear()} Scale EV. All rights reserved.
         </div>
         <div className="flex gap-8 text-sm text-muted-foreground/60 font-medium">
+          <Link href="#contact" className="hover:text-foreground transition-colors">Contact</Link>
           <Link href="#" className="hover:text-foreground transition-colors">Privacy</Link>
           <Link href="#" className="hover:text-foreground transition-colors">Terms</Link>
         </div>

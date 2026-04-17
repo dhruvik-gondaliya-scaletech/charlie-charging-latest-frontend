@@ -7,6 +7,7 @@ import { Features } from './components/Features';
 import { ProtocolSpecs } from './components/ProtocolSpecs';
 import { Testimonials } from './components/Testimonials';
 import { CTASection } from './components/CTASection';
+import { ContactSection } from './components/ContactSection';
 import { PublicFooter } from './components/PublicFooter';
 
 export default function LandingContainer() {
@@ -20,6 +21,7 @@ export default function LandingContainer() {
         <ProtocolSpecs />
         <Testimonials />
         <CTASection />
+        <ContactSection />
       </main>
       <PublicFooter />
     </div>

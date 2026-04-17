@@ -101,6 +101,7 @@ export const API_CONFIG = {
             estimate: "/billing/estimate",
             calculateSessionCost: (id: string) => `/billing/sessions/${id}/calculate`,
         },
+        contact: "/contact",
     }
 }
 
