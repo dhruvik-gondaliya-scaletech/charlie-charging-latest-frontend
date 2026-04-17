@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { formatDate } from '@/lib/date';
 import { FRONTEND_ROUTES } from '@/constants/constants';
+import { ActionIconButton } from '@/components/shared/ActionIconButton';
 
 interface StationsTableProps {
   stations: Station[];
@@ -80,31 +81,28 @@ export function StationsTable({ stations, globalFilter, onGlobalFilterChange, on
       header: 'Actions',
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
+          <ActionIconButton
+            tone="info"
+            tooltip="View"
+            icon={<Eye className="h-4 w-4" />}
             onClick={() => router.push(`${FRONTEND_ROUTES.STATIONS_DETAILS(row.original.id)}?name=${encodeURIComponent(row.original.name)}`)}
-          >
-            <Eye className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
+          />
+          <ActionIconButton
+            tone="primary"
+            tooltip="Edit"
+            icon={<Pencil className="h-4 w-4" />}
             onClick={() => router.push(`${FRONTEND_ROUTES.STATIONS_EDIT(row.original.id)}?name=${encodeURIComponent(row.original.name)}`)}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
+          />
+          <ActionIconButton
+            tone="destructive"
+            tooltip="Delete"
+            icon={<Trash2 className="h-4 w-4" />}
             onClick={() => {
               if (confirm('Are you sure you want to delete this station?')) {
                 onDelete(row.original.id);
               }
             }}
-          >
-            <Trash2 className="h-4 w-4 text-destructive" />
-          </Button>
+          />
         </div>
       ),
     },

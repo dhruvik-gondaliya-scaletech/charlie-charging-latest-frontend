@@ -52,6 +52,7 @@ export interface Station {
   connectorTypes: string[];
   location?: Location;
   locationId: string;
+  tariffId?: string;
   chargePointId: string;
   ocppVersion: string;
   type: 'AC' | 'DC';
@@ -151,6 +152,10 @@ export interface TenantListResponse {
   isDefault: boolean;
   createdAt: string;
   userCount: number;
+  stripeAccountId?: string | null;
+  stripeOnboarded?: boolean;
+  stripeChargesEnabled?: boolean;
+  stripePayoutsEnabled?: boolean;
 }
 
 export interface User {
@@ -165,6 +170,73 @@ export interface User {
   createdAt: string;
   tenantId: string;
   tenant?: Tenant;
+}
+
+export interface DriverSession {
+  id: string;
+  stationId: string;
+  stationName: string;
+  connectorId: number;
+  connectorType: string | null;
+  pluggedAt: string | null;
+  startTime: string;
+  endTime: string | null;
+  unpluggedAt: string | null;
+  durationMinutes: number;
+  energyDeliveredKwh: number;
+  status: string;
+  totalCost: number;
+  currency: 'USD' | 'INR';
+  createdAt: string;
+}
+
+export enum IdTagStatus {
+  ACCEPTED = 'Accepted',
+  BLOCKED = 'Blocked',
+  EXPIRED = 'Expired',
+  INVALID = 'Invalid',
+}
+
+export interface Driver {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface IdTag {
+  idTag: string;
+  status: IdTagStatus;
+  driverId: string;
+  driver?: Driver;
+  expiryDate?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateDriverData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password?: string;
+  phoneNumber?: string;
+}
+
+export interface CreateIdTagData {
+  idTag: string;
+  status: IdTagStatus;
+  driverId: string;
+  expiryDate?: string;
+}
+
+export interface UpdateIdTagData {
+  status?: IdTagStatus;
+  driverId?: string;
+  expiryDate?: string;
 }
 
 export enum WebhookEvent {

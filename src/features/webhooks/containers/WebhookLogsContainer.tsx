@@ -35,6 +35,7 @@ import {
 import { StatCard } from '@/features/dashboard/components/StatCard';
 import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
 import { BackButton } from '@/components/shared/BackButton';
+import { ActionIconButton } from '@/components/shared/ActionIconButton';
 
 export function WebhookLogsContainer() {
     const params = useParams();
@@ -219,16 +220,14 @@ export function WebhookLogsContainer() {
                     return (
                         <div className="flex justify-start pr-2">
                             {canRetry && (
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
+                                <ActionIconButton
+                                    tone="primary"
+                                    tooltip="Retry"
                                     onClick={() => retryMutation.mutate(row.original.id)}
                                     disabled={retryMutation.isPending}
-                                    className="h-9 w-9 hover:bg-primary/10 hover:text-primary rounded-xl transition-all"
-                                >
-                                    <RotateCcw className={`h-4 w-4 ${retryMutation.isPending ? 'animate-spin' : ''}`} />
-                                    Retry
-                                </Button>
+                                    icon={<RotateCcw className={`h-4 w-4 ${retryMutation.isPending ? 'animate-spin' : ''}`} />}
+                                    className="rounded-xl h-9 w-9"
+                                />
                             )}
                         </div>
                     );

@@ -17,6 +17,16 @@ export const API_CONFIG = {
             profile: "/users/profile",
             changePassword: "/users/change-password",
         },
+        drivers: {
+            base: "/drivers",
+            appConfig: "/drivers/app-config",
+            byId: (id: string) => `/drivers/${id}`,
+            sessions: (id: string) => `/drivers/${id}/sessions`,
+        },
+        idTags: {
+            base: "/id-tags",
+            byId: (idTag: string) => `/id-tags/${idTag}`,
+        },
         stations: {
             base: "/stations",
             stats: "/stations/stats",
@@ -54,10 +64,15 @@ export const API_CONFIG = {
         },
         tenants: {
             base: "/tenants",
+            config: "/tenants/config",
             byId: (id: string) => `/tenants/${id}`,
             activate: (id: string) => `/tenants/${id}/activate`,
             deactivate: (id: string) => `/tenants/${id}/deactivate`,
             regenerateSecret: (id: string) => `/tenants/${id}/regenerate-api-secret`,
+            connectStripe: (id: string) => `/tenants/${id}/stripe/connect`,
+        },
+        aws: {
+            uploadUrl: "/aws/upload-url",
         },
         ocpi: {
             credentials: "/ocpi/mgmt/credentials",
@@ -79,7 +94,13 @@ export const API_CONFIG = {
         },
         brands: {
             base: "/brands",
-        }
+        },
+        billing: {
+            tariffs: "/billing/tariffs",
+            tariffById: (id: string) => `/billing/tariffs/${id}`,
+            estimate: "/billing/estimate",
+            calculateSessionCost: (id: string) => `/billing/sessions/${id}/calculate`,
+        },
     }
 }
 
@@ -94,6 +115,7 @@ export const FRONTEND_ROUTES = {
     STATIONS_DETAILS: (id: string) => `/stations/${id}`,
     STATIONS_EDIT: (id: string) => `/stations/${id}/edit`,
     SESSIONS: "/sessions",
+    TARIFF: "/tariff",
     TENANTS: "/tenants",
     WEBHOOKS: "/webhooks",
     WEBHOOKS_LOGS: (id: string) => `/webhooks/${id}/logs`,
@@ -102,6 +124,8 @@ export const FRONTEND_ROUTES = {
     LOGIN: "/login",
     PROFILE: "/profile",
     USERS: "/users",
+    DRIVERS: "/drivers",
+    ID_TAGS: "/id-tags",
     VERIFY_EMAIL: "/verify-email",
     ACCEPT_INVITE: "/accept-invitation",
     FORGOT_PASSWORD: "/forgot-password",

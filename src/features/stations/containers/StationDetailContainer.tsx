@@ -22,7 +22,6 @@ import {
 import { motion } from 'framer-motion';
 import { fadeInUp, staggerContainer } from '@/lib/motion';
 import { ChargingStatus } from '@/types';
-import { formatDate } from '@/lib/date';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -40,6 +39,7 @@ import { FRONTEND_ROUTES } from '@/constants/constants';
 import { SessionStatus } from '@/types';
 import { BackButton } from '@/components/shared/BackButton';
 import { useWebSocketConnection, useRealTimeEvent } from '@/hooks/useRealTime';
+import { useTariffs } from '@/hooks/get/useBilling';
 import {
     StationStatusChangeEvent,
     ConnectorStatusChangeEvent,
@@ -58,9 +58,12 @@ export function StationDetailContainer() {
     const queryClient = useQueryClient();
     const { user, tenant } = useAuth();
     const { data: station, isLoading, error } = useStation(id as string);
+    const { data: tariffs } = useTariffs();
     const { data: sessions } = useStationSessions(id as string);
     const [activeTab, setActiveTab] = useState('connectors');
     const [filterSessionId, setFilterSessionId] = useState<string | undefined>(undefined);
+
+    const stationTariff = tariffs?.find((t) => t.id === station?.tariffId);
 
     const handleViewSessionLogs = (sessionId: string) => {
         setFilterSessionId(sessionId);
@@ -499,7 +502,11 @@ export function StationDetailContainer() {
                                                 { label: 'OCPP Version', value: station.ocppVersion, icon: Zap },
                                                 { label: 'Connector Count', value: station.connectors?.length || station.connectorCount || 0, icon: Zap },
                                                 { label: 'Max Capacity', value: `${station.maxPower} kW`, icon: Activity },
-                                                { label: 'Registration Date', value: formatDate(station.createdAt || new Date().toISOString()), icon: History },
+                                                { label: 'Tariff', value: stationTariff?.name || (station?.tariffId ? 'Tariff not found' : 'Not assigned'), icon: History },
+                                                { label: 'Price per kWh', value: stationTariff ? `${stationTariff.pricePerKwh} ${stationTariff.currency}` : '-', icon: Zap },
+                                                { label: 'Service Fee', value: stationTariff ? `${stationTariff.serviceFeePercentage}%` : '-', icon: Activity },
+                                                { label: 'Connection Fee', value: stationTariff ? `${stationTariff.connectionFee} ${stationTariff.currency}` : '-', icon: Terminal },
+                                                { label: 'Idle Fee', value: stationTariff ? `${stationTariff.idleFee} ${stationTariff.currency}` : '-', icon: Terminal },
                                                 { label: 'Station Type', value: station.type || 'AC', icon: Zap },
                                             ].map((item, i) => (
                                                 <div key={i} className="flex items-start gap-3 group">
