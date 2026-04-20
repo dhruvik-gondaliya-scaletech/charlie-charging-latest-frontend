@@ -1,9 +1,11 @@
 'use client';
 
 import { ApiEndpoint, GuideSection, ResponseField } from '../data/api-data';
-import { ChevronRight, ChevronDown, ArrowLeft, ArrowRight } from 'lucide-react';
+import { ChevronRight, ChevronDown, ArrowLeft, ArrowRight, BookOpen, Cpu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
+import { CredentialsCard } from './CredentialsCard';
+import { ApiPlayground } from './ApiPlayground';
 
 interface ApiDetailProps {
   item: ApiEndpoint | GuideSection;
@@ -83,9 +85,23 @@ export function ApiDetail({
     const guide = item as GuideSection;
     return (
       <div className="max-w-4xl mx-auto py-24 px-4">
-        <div className="prose prose-neutral prose-headings:tracking-tighter prose-h1:text-6xl prose-h1:font-black prose-h1:mb-16 prose-h3:uppercase prose-h3:tracking-widest prose-h3:text-[11px] prose-h3:font-bold prose-h3:text-muted-foreground prose-p:text-muted-foreground prose-p:leading-relaxed prose-p:text-[18px] prose-pre:bg-secondary/50 prose-pre:rounded-3xl prose-pre:p-10 prose-pre:border-none prose-code:text-primary max-w-none">
+        <div className="flex items-center gap-3 mb-12">
+            <div className="p-3 rounded-2xl bg-primary/10">
+                <BookOpen className="w-6 h-6 text-primary" />
+            </div>
+            <span className="text-[11px] font-black uppercase tracking-[0.3em] text-muted-foreground/50">Documentation Guide</span>
+        </div>
+        
+        <div className="prose prose-neutral prose-headings:tracking-tighter prose-h1:text-7xl prose-h1:font-black prose-h1:mb-16 prose-h2:text-4xl prose-h2:font-black prose-h2:mt-24 prose-h2:mb-8 prose-h3:uppercase prose-h3:tracking-widest prose-h3:text-[11px] prose-h3:font-bold prose-h3:text-muted-foreground prose-p:text-muted-foreground prose-p:leading-relaxed prose-p:text-[20px] prose-pre:bg-secondary/50 prose-pre:rounded-[2.5rem] prose-pre:p-12 prose-pre:border-none prose-code:text-primary max-w-none">
           <ReactMarkdown>{guide.content}</ReactMarkdown>
         </div>
+
+        {guide.id === 'authentication' && (
+          <div className="mt-20">
+            <CredentialsCard />
+          </div>
+        )}
+
         {renderNavigationFooter()}
       </div>
     );
@@ -95,19 +111,26 @@ export function ApiDetail({
 
   return (
     <div className="max-w-4xl mx-auto py-24 px-4">
-      <div className="flex items-center gap-4 mb-8">
-        <span className={cn(
-          "text-[10px] font-black px-4 py-1.5 rounded-full tracking-widest uppercase",
-          getMethodColor(endpoint.method)
-        )}>
-          {endpoint.method}
-        </span>
-        <code className="text-[11px] font-mono font-bold text-muted-foreground bg-secondary/50 px-4 py-1.5 rounded-full">
-          {endpoint.path}
-        </code>
+      <div className="flex items-center gap-4 mb-10">
+        <div className="p-3 rounded-2xl bg-secondary/50">
+            <Cpu className="w-6 h-6 text-primary" />
+        </div>
+        <div className="flex flex-col">
+            <div className="flex items-center gap-4">
+                <span className={cn(
+                "text-[10px] font-black px-4 py-1.5 rounded-full tracking-widest uppercase",
+                getMethodColor(endpoint.method)
+                )}>
+                {endpoint.method}
+                </span>
+                <code className="text-[12px] font-mono font-bold text-primary/60 bg-primary/5 px-4 py-1.5 rounded-xl">
+                {endpoint.path}
+                </code>
+            </div>
+        </div>
       </div>
 
-      <h1 className="text-5xl font-black tracking-tighter mb-16 text-primary leading-[1.1]">
+      <h1 className="text-6xl font-black tracking-tighter mb-20 text-primary leading-[1.05]">
         {endpoint.description}
       </h1>
 
@@ -187,6 +210,11 @@ export function ApiDetail({
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Interactive Playground */}
+      <div className="mb-20">
+        <ApiPlayground endpoint={endpoint} formValues={formValues} />
       </div>
 
       {renderNavigationFooter()}

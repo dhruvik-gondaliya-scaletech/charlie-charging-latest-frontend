@@ -11,6 +11,8 @@ export const API_CONFIG = {
             acceptInvitation: "/auth/accept-invitation",
             forgotPassword: "/auth/forgot-password",
             resetPassword: "/auth/reset-password",
+            getCredentials: "/auth/get-credentials",
+            documentationToken: "/auth/documentation-token",
         },
         users: {
             base: "/users",
@@ -100,6 +102,40 @@ export const API_CONFIG = {
             tariffById: (id: string) => `/billing/tariffs/${id}`,
             estimate: "/billing/estimate",
             calculateSessionCost: (id: string) => `/billing/sessions/${id}/calculate`,
+        },
+        partner: {
+            auth: {
+                token: "/partner/auth/token",
+                refresh: "/partner/auth/refresh",
+            },
+            stations: {
+                base: "/partner/stations",
+                stats: "/partner/stations/stats",
+                byId: (id: string) => `/partner/stations/${id}`,
+                remoteStart: (id: string) => `/partner/stations/${id}/remote-start`,
+                remoteStop: (id: string) => `/partner/stations/${id}/remote-stop`,
+                sessions: (id: string) => `/partner/stations/${id}/sessions`,
+            },
+            locations: {
+                base: "/partner/locations",
+                byId: (id: string) => `/partner/locations/${id}`,
+            },
+            sessions: {
+                base: "/partner/sessions",
+                stats: "/partner/sessions/stats",
+                byId: (id: string) => `/partner/sessions/${id}`,
+                byStation: (stationId: string) => `/partner/sessions/station/${stationId}`,
+                active: (stationId: string) => `/partner/sessions/station/${stationId}/active`,
+            },
+            users: {
+                base: "/partner/users",
+                byId: (id: string) => `/partner/users/${id}`,
+            },
+            brands: {
+                base: "/partner/brands",
+                models: (brandId: string) => `/partner/brands/${brandId}/models`,
+                connectorTypes: "/partner/brands/connector-types",
+            },
         },
     }
 }
