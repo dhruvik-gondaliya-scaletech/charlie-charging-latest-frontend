@@ -46,33 +46,34 @@ export function Sidebar({ groups, selectedId, onSelect, selectedType }: SidebarP
   };
 
   return (
-    <div className="w-[320px] bg-secondary/30 flex flex-col h-screen sticky top-0 backdrop-blur-3xl border-r border-primary/5">
+    <div className="w-[320px] bg-neutral-900/40 flex flex-col h-screen sticky top-0 backdrop-blur-2xl border-r border-white/5">
       <div className="p-8 pb-4">
         <div className="flex items-center gap-4 mb-10">
-           <div className="h-10 w-10 bg-primary text-primary-foreground flex items-center justify-center rounded-2xl text-[14px] font-black tracking-tighter shadow-lg shadow-primary/20">CC</div>
+           <div className="h-10 w-10 bg-primary text-primary-foreground flex items-center justify-center rounded-2xl text-[14px] font-black tracking-tighter shadow-xl shadow-primary/30">CC</div>
            <div className="flex flex-col">
-             <h2 className="text-[12px] font-black uppercase tracking-[0.2em] text-primary leading-none mb-1.5">Charlie Charging</h2>
-             <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest leading-none">Partner Ecosystem</span>
+             <h2 className="text-[13px] font-black uppercase tracking-[0.25em] text-white leading-none mb-1.5">Charlie Charging</h2>
+             <span className="text-[10px] font-black text-white/30 uppercase tracking-widest leading-none">Partner Ecosystem</span>
            </div>
         </div>
         
         <div className="relative group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20 group-focus-within:text-primary transition-colors" />
           <input 
             type="text" 
             placeholder="Search API reference..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 bg-secondary/50 border border-transparent rounded-2xl text-[13px] font-bold text-foreground placeholder:text-muted-foreground/40 focus:ring-2 focus:ring-primary/10 focus:bg-background focus:border-primary/20 transition-all outline-none"
+            className="w-full pl-11 pr-4 py-3.5 bg-white/5 border border-white/5 rounded-2xl text-[13px] font-bold text-white placeholder:text-white/20 focus:ring-2 focus:ring-primary/20 focus:bg-white/10 focus:border-primary/30 transition-all outline-none"
           />
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto no-scrollbar pt-6 pb-12">
+      <div className="flex-1 overflow-y-auto pt-6 pb-12 custom-scrollbar-dark">
         {/* Guides Section */}
         {filteredGuides.length > 0 && (
           <div className="mb-12">
-            <h3 className="px-10 text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/40 mb-6 flex items-center gap-2">
+            <h3 className="px-10 text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-6 flex items-center gap-2">
+              <span className="w-1 h-1 rounded-full bg-primary/40" />
               Getting Started
             </h3>
             <div className="space-y-1 px-4">
@@ -81,16 +82,16 @@ export function Sidebar({ groups, selectedId, onSelect, selectedType }: SidebarP
                   key={guide.id}
                   onClick={() => onSelect(guide.id, 'guide')}
                   className={cn(
-                    "w-full px-6 py-3 flex items-center gap-3 text-[14px] font-bold transition-all text-left cursor-pointer relative rounded-xl group",
+                    "w-full px-6 py-3.5 flex items-center gap-3 text-[14px] font-bold transition-all text-left cursor-pointer relative rounded-2xl group",
                     selectedType === 'guide' && selectedId === guide.id
-                      ? "text-primary bg-primary/5 shadow-sm"
-                      : "text-muted-foreground/70 hover:text-primary hover:bg-secondary/40"
+                      ? "text-primary bg-primary/10 shadow-lg shadow-primary/5"
+                      : "text-white/60 hover:text-white hover:bg-white/5"
                   )}
                 >
                   {selectedType === 'guide' && selectedId === guide.id && (
-                    <motion.div layoutId="active-indicator" className="absolute left-0 w-1 h-5 bg-primary rounded-r-full" />
+                    <motion.div layoutId="active-indicator" className="absolute left-0 w-1.5 h-6 bg-primary rounded-r-full shadow-[0_0_12px_rgba(var(--primary),0.5)]" />
                   )}
-                  <BookOpen className={cn("w-4 h-4 shrink-0 opacity-40", selectedType === 'guide' && selectedId === guide.id && "opacity-100")} />
+                  <BookOpen className={cn("w-4 h-4 shrink-0 transition-opacity", selectedType === 'guide' && selectedId === guide.id ? "opacity-100" : "opacity-40 group-hover:opacity-60")} />
                   {guide.title}
                 </button>
               ))}
@@ -100,44 +101,47 @@ export function Sidebar({ groups, selectedId, onSelect, selectedType }: SidebarP
 
         {/* API Reference Section */}
         <div>
-          <h3 className="px-10 text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/40 mb-6 flex items-center gap-2">
+          <h3 className="px-10 text-[10px] font-black uppercase tracking-[0.3em] text-white/40 mb-6 flex items-center gap-2">
+            <span className="w-1 h-1 rounded-full bg-primary/40" />
             Endpoints Reference
           </h3>
           {filteredGroups.map((group) => (
             <div key={group.name} className="mb-6 px-4">
               <button 
                 onClick={() => toggleGroup(group.name)}
-                className="w-full px-6 py-2 flex items-center justify-between text-muted-foreground/60 hover:text-primary transition-colors cursor-pointer group"
+                className="w-full px-6 py-2 flex items-center justify-between text-white/40 hover:text-white transition-colors cursor-pointer group"
               >
                 <span className="text-[10px] font-black uppercase tracking-widest">{group.name}</span>
-                {openGroups[group.name] ? <ChevronDown className="h-4 w-4 opacity-40" /> : <ChevronRight className="h-4 w-4 opacity-40" />}
+                {openGroups[group.name] ? <ChevronDown className="h-4 w-4 opacity-40 group-hover:opacity-100" /> : <ChevronRight className="h-4 w-4 opacity-40 group-hover:opacity-100" />}
               </button>
               
               {openGroups[group.name] && (
-                <div className="mt-2 space-y-1">
+                <div className="mt-3 space-y-1">
                   {group.endpoints.map((endpoint) => (
                     <button
                       key={endpoint.id}
                       onClick={() => onSelect(endpoint.id, 'api')}
                       className={cn(
-                        "w-full px-6 py-3 flex items-center justify-between transition-all text-left cursor-pointer relative rounded-xl group",
+                        "w-full px-6 py-3.5 flex items-center justify-between transition-all text-left cursor-pointer relative rounded-2xl group",
                         selectedType === 'api' && selectedId === endpoint.id 
-                          ? "text-primary bg-primary/5 shadow-sm" 
-                          : "text-muted-foreground/70 hover:text-primary hover:bg-secondary/40"
+                          ? "text-primary bg-primary/10 shadow-lg shadow-primary/5" 
+                          : "text-white/60 hover:text-white hover:bg-white/5"
                       )}
                     >
                       {selectedType === 'api' && selectedId === endpoint.id && (
-                        <motion.div layoutId="active-indicator-api" className="absolute left-0 w-1 h-5 bg-primary rounded-r-full" />
+                        <motion.div layoutId="active-indicator-api" className="absolute left-0 w-1.5 h-6 bg-primary rounded-r-full shadow-[0_0_12px_rgba(var(--primary),0.5)]" />
                       )}
                       <div className="flex items-center gap-4 overflow-hidden">
                         <span className={cn(
-                          "text-[9px] font-black px-2 py-0.5 rounded-md leading-none min-w-[42px] text-center uppercase tracking-tighter border border-transparent",
+                          "text-[9px] font-black px-2 py-1 rounded-lg leading-none min-w-[42px] text-center uppercase tracking-tighter border",
                           getMethodColor(endpoint.method),
-                          selectedType === 'api' && selectedId === endpoint.id && "border-current/10"
+                          selectedType === 'api' && selectedId === endpoint.id 
+                            ? "border-primary/20 bg-primary/5" 
+                            : "border-white/5 bg-white/5"
                         )}>
                           {endpoint.method}
                         </span>
-                        <span className="text-[13px] font-bold truncate tracking-tight">
+                        <span className="text-[14px] font-bold truncate tracking-tight">
                           {endpoint.path.split('/').filter(Boolean).pop()?.replace(/-/g, ' ')}
                         </span>
                       </div>

@@ -172,6 +172,8 @@ export const AUTH_CONFIG = {
     tokenKey: process.env.NEXT_PUBLIC_AUTH_TOKEN_KEY || "csms_auth_token",
     userKey: process.env.NEXT_PUBLIC_AUTH_USER_KEY || "csms_user",
     tenantKey: process.env.NEXT_PUBLIC_AUTH_TENANT_KEY || "csms_tenant",
+    docsCredentialsKey: "docs_auth_cred",
+    docsTokenKey: "docs_auth_token",
 }
 
 export const WEBSOCKET_CONFIG = {

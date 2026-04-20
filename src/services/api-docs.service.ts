@@ -27,15 +27,15 @@ class ApiDocsService {
    * Uses direct axios to avoid httpService auth interceptors while testing with doc tokens.
    */
   async testPartnerApi(method: string, url: string, token: string, data?: any, params?: any) {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
     const response = await axios({
-        method,
-        url: `${baseUrl}${url}`,
-        data,
-        params,
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
+      method,
+      url: `${baseUrl}${url}`,
+      data,
+      params,
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
     });
     return response.data;
   }

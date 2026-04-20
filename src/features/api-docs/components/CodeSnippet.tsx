@@ -88,17 +88,24 @@ export function CodeSnippet({ endpoint, formValues, activeResponseStatus }: Code
   };
 
   return (
-    <div className="w-[480px] bg-secondary/20 flex flex-col h-screen sticky top-0 backdrop-blur-3xl border-l border-primary/5">
-      <div className="p-10 pb-6">
-        <h3 className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/50 mb-8 flex items-center gap-2">
-            Playground Output
-        </h3>
-        <div className="flex p-1.5 bg-secondary/50 rounded-2xl ring-1 ring-primary/5">
+    <div className="w-[520px] bg-[#050505] flex flex-col h-screen sticky top-0 border-l border-white/5 shadow-[-50px_0_100px_rgba(0,0,0,0.5)] z-30">
+      <div className="p-12 pb-8">
+        <div className="flex items-center gap-3 mb-10">
+            <div className="p-2.5 rounded-xl bg-white/5 border border-white/5">
+                <Code2 className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+                <h3 className="text-[12px] font-black uppercase tracking-[0.3em] text-white/40">Request Builder</h3>
+                <p className="text-[10px] font-bold text-white/10 uppercase tracking-widest mt-1">Sandbox Environment</p>
+            </div>
+        </div>
+        
+        <div className="flex p-1.5 bg-white/[0.02] rounded-2xl border border-white/5 ring-1 ring-white/5 shadow-inner">
           <button
             onClick={() => setTab('curl')}
             className={cn(
-              "flex-1 flex items-center justify-center gap-2.5 py-2.5 text-[12px] font-bold rounded-xl transition-all cursor-pointer",
-              tab === 'curl' ? "bg-background text-primary shadow-xl shadow-black/5" : "text-muted-foreground/60 hover:text-primary"
+              "flex-1 flex items-center justify-center gap-3 py-3 text-[12px] font-black uppercase tracking-widest rounded-xl transition-all cursor-pointer",
+              tab === 'curl' ? "bg-primary text-primary-foreground shadow-2xl" : "text-white/20 hover:text-white/40 hover:bg-white/5"
             )}
           >
             <Terminal className="h-4 w-4" /> cURL
@@ -106,75 +113,87 @@ export function CodeSnippet({ endpoint, formValues, activeResponseStatus }: Code
           <button
             onClick={() => setTab('node')}
             className={cn(
-              "flex-1 flex items-center justify-center gap-2.5 py-2.5 text-[12px] font-bold rounded-xl transition-all cursor-pointer",
-              tab === 'node' ? "bg-background text-primary shadow-xl shadow-black/5" : "text-muted-foreground/60 hover:text-primary"
+              "flex-1 flex items-center justify-center gap-3 py-3 text-[12px] font-black uppercase tracking-widest rounded-xl transition-all cursor-pointer",
+              tab === 'node' ? "bg-primary text-primary-foreground shadow-2xl" : "text-white/20 hover:text-white/40 hover:bg-white/5"
             )}
           >
-            <Code2 className="h-4 w-4" /> Node.js
+            <Globe className="h-4 w-4" /> Node.js
           </button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto no-scrollbar p-10 pt-4 space-y-12">
+      <div className="flex-1 overflow-y-auto custom-scrollbar-dark p-12 pt-6 space-y-16">
         {/* Request Snippet */}
-        <div className="relative group/snippet">
-          <button
-            onClick={() => handleCopy(code)}
-            className="absolute top-8 right-8 p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-2xl text-white transition-all opacity-0 group-hover/snippet:opacity-100 z-20 cursor-pointer shadow-2xl border border-white/10"
-          >
-            {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
-          </button>
-          
-          <div className="bg-[#0A0A0B] shadow-2xl shadow-black/20 rounded-[2.5rem] p-10 pt-8 overflow-hidden relative min-h-[220px] ring-1 ring-white/5">
-             <div className="flex gap-2 mb-8 opacity-30">
-               <div className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-               <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-               <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+        <div className="space-y-6">
+          <div className="flex items-center justify-between px-2">
+            <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/20 flex items-center gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary/40" />
+                Input Code
+            </h4>
+          </div>
+          <div className="relative group/snippet">
+            <button
+              onClick={() => handleCopy(code)}
+              className="absolute top-6 right-6 p-4 bg-white/10 hover:bg-primary hover:text-primary-foreground backdrop-blur-xl rounded-2xl text-white transition-all opacity-0 group-hover/snippet:opacity-100 z-20 cursor-pointer shadow-3xl border border-white/10"
+            >
+              {copied ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
+            </button>
+            
+            <div className="bg-neutral-900 border border-white/5 shadow-3xl rounded-[2.5rem] p-10 pt-10 overflow-hidden relative group-hover/snippet:border-primary/20 transition-colors">
+               <div className="flex gap-2.5 mb-10 opacity-30">
+                 <div className="w-3 h-3 rounded-full bg-[#FF5F56]" />
+                 <div className="w-3 h-3 rounded-full bg-[#FFBD2E]" />
+                 <div className="w-3 h-3 rounded-full bg-[#27C93F]" />
+              </div>
+              <pre className="font-mono text-[13px] leading-[2] text-indigo-300/80 overflow-x-auto selection:bg-primary/40 custom-scrollbar-dark pb-6 pr-6">
+                {code}
+              </pre>
             </div>
-            <pre className="font-mono text-[12px] leading-[1.8] text-indigo-100/80 overflow-x-auto selection:bg-primary/30 custom-scrollbar-dark pb-4 pr-4">
-              {code}
-            </pre>
           </div>
         </div>
 
         {/* Response Preview */}
         <div className="space-y-8">
           <div className="flex items-center justify-between px-2">
-            <h4 className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/50">Response Preview</h4>
+            <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/20 flex items-center gap-3">
+                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/40" />
+                 Expected Response
+            </h4>
             {selectedResponse && (
                <span className={cn(
-                "px-3 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase border",
+                "px-4 py-2 rounded-xl text-[10px] font-black tracking-[0.2em] uppercase border shadow-lg",
                 selectedResponse.status < 300 
-                  ? "bg-emerald-500/5 text-emerald-500 border-emerald-500/10" 
-                  : "bg-rose-500/5 text-rose-500 border-rose-500/10"
+                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
+                  : "bg-rose-500/10 text-rose-400 border-rose-500/20"
                )}>
-                 {selectedResponse.status} {selectedResponse.status < 300 ? 'OK' : 'Error'}
+                 {selectedResponse.status} {selectedResponse.status < 300 ? 'SUCCESS' : 'ERROR'}
                </span>
             )}
           </div>
           
-          <div className="bg-background/80 backdrop-blur-md rounded-[2.5rem] p-10 overflow-hidden relative group/response shadow-2xl shadow-black/[0.03] border border-primary/5 min-h-[180px]">
+          <div className="bg-black/60 backdrop-blur-md rounded-[2.5rem] p-12 overflow-hidden relative group/response shadow-3xl border border-white/5 hover:border-white/10 transition-colors">
             <button
               onClick={() => handleCopy(JSON.stringify(selectedResponse?.data || {}, null, 2))}
-              className="absolute top-8 right-8 p-3 bg-secondary/50 hover:bg-secondary rounded-2xl text-primary transition-all border border-primary/10 opacity-0 group-hover/response:opacity-100 z-20 cursor-pointer"
+              className="absolute top-8 right-8 p-3.5 bg-white/5 hover:bg-white/10 rounded-2xl text-white transition-all border border-white/10 opacity-0 group-hover/response:opacity-100 z-20 cursor-pointer"
             >
               <Copy className="h-4 w-4" />
             </button>
-            <pre className="font-mono text-[13px] leading-[1.7] text-primary/70 overflow-x-auto max-h-[500px] custom-scrollbar selection:bg-primary/5">
+            <pre className="font-mono text-[13px] leading-[1.8] text-white/40 overflow-x-auto max-h-[600px] custom-scrollbar-dark selection:bg-emerald-500/20">
               {JSON.stringify(selectedResponse?.data || {}, null, 2)}
             </pre>
           </div>
         </div>
 
         {/* Dynamic Context Alert */}
-        <div className="p-10 bg-gradient-to-br from-primary/[0.02] to-primary/[0.08] rounded-[2.5rem] relative overflow-hidden group border border-primary/5">
-          <div className="absolute top-0 right-0 p-6 opacity-[0.03] translate-x-1/4 -translate-y-1/4 group-hover:scale-110 transition-transform duration-700">
-             <Terminal className="h-32 w-32" />
+        <div className="p-10 bg-neutral-900 border border-white/5 rounded-[3rem] relative overflow-hidden group shadow-2xl">
+          <div className="absolute top-0 right-0 p-8 opacity-5 translate-x-1/4 -translate-y-1/4 group-hover:scale-110 transition-transform duration-1000">
+             <Terminal className="h-48 w-48 text-primary" />
           </div>
-          <div className="relative z-10 flex flex-col gap-3">
-            <div className="w-8 h-1 bg-primary/20 rounded-full" />
-            <p className="text-[13px] font-bold text-primary/60 leading-relaxed">
-              Sandbox Sync: Modifying parameters in the central core will dynamically update these samples.
+          <div className="relative z-10 flex flex-col gap-5">
+            <div className="w-10 h-1 bg-primary/30 rounded-full" />
+            <p className="text-[14px] font-bold text-white/40 leading-[1.8]">
+              <strong className="text-white/60 block mb-2 font-black uppercase text-[11px] tracking-widest">Environment Insight</strong>
+              All parameters are dynamically synced across the portal. Modifying core values will reflect here in real-time.
             </p>
           </div>
         </div>
