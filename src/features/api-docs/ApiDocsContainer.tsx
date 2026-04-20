@@ -86,7 +86,7 @@ export function ApiDocsContainer() {
         onSelect={handleSelect}
       />
       
-      <main className="flex-1 overflow-y-auto h-screen custom-scrollbar relative px-16 bg-background">
+      <main className="flex-1 overflow-y-auto h-screen custom-scrollbar relative px-8 bg-background">
         <ApiDetail 
           key={selectedId}
           item={selectedItem!} 
