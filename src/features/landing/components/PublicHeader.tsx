@@ -41,7 +41,7 @@ export function PublicHeader() {
           <Zap className={`h-6 w-6 ${textColor} fill-current group-hover:scale-110 transition-transform`} />
           <span className={`font-bold text-xl tracking-tighter ${textColor}`}>Scale EV</span>
         </Link>
-        
+
         <nav className="hidden md:flex items-center gap-8">
           {['Features', 'Protocols', 'Analytics', 'Pricing'].map((item) => (
             <Link
@@ -58,11 +58,6 @@ export function PublicHeader() {
           <Link href={FRONTEND_ROUTES.LOGIN}>
             <Button variant="ghost" size="sm" className={`${navLinkColor} font-medium transition-all hover:bg-accent/10`}>
               Sign In
-            </Button>
-          </Link>
-          <Link href={FRONTEND_ROUTES.REGISTER}>
-            <Button size="sm" className={`bg-primary ${scrolled ? 'text-background' : 'text-primary-foreground'} px-5 py-2 rounded-full text-sm font-semibold hover:bg-primary/90 hover:scale-[1.05] transition-all shadow-xl shadow-primary/20`}>
-              Get Started
             </Button>
           </Link>
         </div>

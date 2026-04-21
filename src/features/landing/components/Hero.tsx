@@ -44,12 +44,6 @@ export function Hero() {
             variants={staggerItem}
             className="flex flex-col sm:flex-row gap-4"
           >
-            <Link href={FRONTEND_ROUTES.REGISTER}>
-              <Button size="lg" className="bg-primary text-primary-foreground px-8 py-4 h-auto rounded-xl flex items-center justify-center gap-2 font-bold transition-all hover:bg-primary/90 hover:scale-[1.02] shadow-2xl hover:shadow-primary/25">
-                Start Free Trial
-                <ArrowRight className="h-5 w-5" />
-              </Button>
-            </Link>
             <Link href="#demo">
               <Button variant="outline" size="lg" className="px-8 py-4 h-auto rounded-xl border-border font-bold hover:border-foreground hover:bg-accent hover:scale-[1.02] transition-all">
                 Book a Demo
