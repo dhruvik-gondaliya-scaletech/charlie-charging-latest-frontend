@@ -39,7 +39,7 @@ const navItems = [
   { href: FRONTEND_ROUTES.ID_TAGS, label: 'ID Tags', icon: CreditCard, roles: ['admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.TARIFF, label: 'Tariff', icon: Coins, roles: ['admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.WEBHOOKS, label: 'Webhooks', icon: Webhook, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.API_DOCS, label: 'API Docs', icon: Share2, roles: ['admin', 'super_admin'] },
+  // { href: FRONTEND_ROUTES.API_DOCS, label: 'API Docs', icon: Share2, roles: ['admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.TENANTS, label: 'Tenants', icon: Building2, roles: ['super_admin'] },
 ];
 

@@ -20,7 +20,7 @@ export default function LandingContainer() {
         <Features />
         <ProtocolSpecs />
         <Testimonials />
-        <CTASection />
+        {/* <CTASection /> */}
         <ContactSection />
       </main>
       <PublicFooter />
