@@ -49,9 +49,9 @@ export function Sidebar({ groups, selectedId, onSelect, selectedType }: SidebarP
     <div className="w-[280px] bg-neutral-900/40 flex flex-col h-screen sticky top-0 backdrop-blur-2xl border-r border-white/5">
       <div className="p-5 pb-3">
         <div className="flex items-center gap-3 mb-6">
-           <div className="h-8 w-8 bg-primary text-primary-foreground flex items-center justify-center rounded-xl text-[12px] font-black tracking-tighter shadow-lg shadow-primary/30">CC</div>
+           <div className="h-8 w-8 bg-primary text-primary-foreground flex items-center justify-center rounded-xl text-[12px] font-black tracking-tighter shadow-lg shadow-primary/30">SEV</div>
            <div className="flex flex-col">
-             <h2 className="text-[12px] font-black uppercase tracking-[0.2em] text-white leading-none mb-1">Charlie Charging</h2>
+             <h2 className="text-[12px] font-black uppercase tracking-[0.2em] text-white leading-none mb-1">Scale EV</h2>
              <span className="text-[9px] font-black text-white/30 uppercase tracking-widest leading-none">Partner Ecosystem</span>
            </div>
         </div>

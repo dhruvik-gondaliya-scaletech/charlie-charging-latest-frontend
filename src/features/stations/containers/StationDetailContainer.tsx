@@ -378,29 +378,18 @@ export function StationDetailContainer() {
                         <div className="absolute right-0 top-full mt-2 w-48 bg-card border border-border pb-1 pt-1 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                             <button
                                 onClick={() => setIsRebootModalOpen(true)}
-                                className="w-full text-left px-4 py-2 text-sm font-medium hover:bg-muted transition-colors flex items-center"
+                                className="w-full text-left px-4 py-2 text-sm font-medium hover:bg-muted transition-colors flex items-center cursor-pointer"
                             >
                                 <History className="mr-2 h-4 w-4" /> Reboot Station
                             </button>
                             <button
                                 onClick={() => setIsAvailabilityModalOpen(true)}
-                                className="w-full text-left px-4 py-2 text-sm font-medium hover:bg-muted transition-colors flex items-center"
+                                className="w-full text-left px-4 py-2 text-sm font-medium hover:bg-muted transition-colors flex items-center cursor-pointer"
                             >
                                 <ShieldCheck className="mr-2 h-4 w-4" /> Change Availability
                             </button>
                         </div>
                     </div>
-                    <Button
-                        variant="outline"
-                        onClick={() => router.push(FRONTEND_ROUTES.STATIONS_EDIT(id as string))}
-                        className={cn(
-                            "border-border/60 hover:bg-muted font-bold",
-                            activeTab === 'sessions' && "bg-muted border-primary/40 shadow-sm"
-                        )}
-                    >
-                        <Edit className="h-4 w-4 mr-2" />
-                        Configure Station
-                    </Button>
                 </div>
             </motion.div>
 

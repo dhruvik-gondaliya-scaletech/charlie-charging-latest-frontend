@@ -33,6 +33,8 @@ import { useTenantConfig } from '@/hooks/get/useTenantConfig';
 import { useUpdateTenantConfig } from '@/hooks/put/useUpdateTenantConfig';
 import { staggerItem } from '@/lib/motion';
 
+const BASE_DOMAIN = 'scaleev.scaletechsolutions.ai';
+
 export function DriverAppConfig() {
   const { data: config, isLoading } = useTenantConfig();
   const updateConfig = useUpdateTenantConfig();
@@ -40,7 +42,7 @@ export function DriverAppConfig() {
   const form = useForm<DriverAppConfigValues>({
     resolver: zodResolver(DriverAppConfigSchema),
     defaultValues: {
-      appName: 'Charli Charging',
+      appName: 'Scale EV',
       logoUrl: '',
       supportContact: {
         email: '',
@@ -54,7 +56,7 @@ export function DriverAppConfig() {
   useEffect(() => {
     if (config) {
       form.reset({
-        appName: config.appName || 'Charli Charging',
+        appName: config.appName || 'Scale EV',
         logoUrl: config.logoUrl || '',
         supportContact: {
           email: config.supportContact?.email || '',
@@ -146,11 +148,19 @@ export function DriverAppConfig() {
                     <FormItem>
                       <FormLabel className="font-black text-[10px] uppercase tracking-widest text-muted-foreground ml-1">App Domain</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="e.g. charging.my-domain.com" 
-                          {...field} 
-                          className="h-12 bg-background border-border/40 focus-visible:ring-primary/20 rounded-xl font-bold"
-                        />
+                        <div className="flex items-center group transition-all">
+                          <div className="flex items-center h-12 px-4 rounded-l-xl border border-r-0 border-border/40 bg-muted/30 text-muted-foreground/60 text-xs font-bold whitespace-nowrap group-focus-within:border-primary/20 group-focus-within:text-primary transition-all">
+                            https://
+                          </div>
+                          <Input 
+                            placeholder="subdomain" 
+                            {...field} 
+                            className="h-12 bg-background border-border/40 border-x-0 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-none font-bold"
+                          />
+                          <div className="flex items-center h-12 px-4 rounded-r-xl border border-l-0 border-border/40 bg-muted/30 text-muted-foreground/60 text-xs font-bold whitespace-nowrap group-focus-within:border-primary/20 group-focus-within:text-primary transition-all">
+                            .{BASE_DOMAIN}
+                          </div>
+                        </div>
                       </FormControl>
                       <FormDescription className="text-[10px] ml-1">The domain used to identify your tenant's driver configuration.</FormDescription>
                       <FormMessage className="text-[10px] font-bold" />
@@ -283,12 +293,19 @@ export function DriverAppConfig() {
                   )}
                 </div>
                 
-                <h4 className="text-xl font-black tracking-tight text-center">{form.watch('appName') || 'Charli Charging'}</h4>
+                <h4 className="text-xl font-black tracking-tight text-center">{form.watch('appName') || 'Scale EV'}</h4>
                 <div className="h-2 w-32 bg-primary/20 rounded-full mt-2" />
                 
                 <div className="w-full space-y-3 mt-12">
-                  <div className="h-10 w-full bg-muted/20 rounded-xl" />
-                  <div className="h-10 w-full bg-muted/20 rounded-xl" />
+                  <div className="h-14 w-full bg-primary/5 border border-primary/10 rounded-2xl flex flex-col items-center justify-center gap-1 p-3">
+                    <p className="text-[8px] font-black uppercase tracking-widest opacity-40">App Domain</p>
+                    <p className="text-[8px] font-bold text-center break-all text-primary/80 truncate w-full px-2">
+                      https://{form.watch('domain') || 'tenant'}.{BASE_DOMAIN}
+                    </p>
+                  </div>
+                  <div className="h-12 w-full bg-muted/20 rounded-xl flex items-center justify-center">
+                    <div className="h-1 w-1/2 bg-muted/30 rounded-full" />
+                  </div>
                   <div className="h-24 w-full bg-primary/10 rounded-2xl flex flex-col items-center justify-center gap-2 p-4">
                     <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Support Contact</p>
                     <p className="text-[10px] font-bold">{form.watch('supportContact.email') || 'support@contact.com'}</p>
