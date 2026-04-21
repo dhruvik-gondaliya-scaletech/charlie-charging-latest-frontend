@@ -161,6 +161,7 @@ export const FRONTEND_ROUTES = {
     PROFILE: "/profile",
     USERS: "/users",
     DRIVERS: "/drivers",
+    DRIVER_DETAILS: (id: string) => `/drivers/${id}`,
     ID_TAGS: "/id-tags",
     VERIFY_EMAIL: "/verify-email",
     ACCEPT_INVITE: "/accept-invitation",

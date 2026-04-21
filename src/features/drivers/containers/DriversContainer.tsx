@@ -27,27 +27,17 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
 import { DriverFormModal } from '../components/DriverFormModal';
 
-import { useDriverSessions } from '@/hooks/get/useDriverSessions';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-} from '@/components/ui/drawer';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { History } from 'lucide-react';
-
+import { Settings, Users as UsersListIcon, History } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { FRONTEND_ROUTES } from '@/constants/constants';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { DriverAppConfig } from '../components/DriverAppConfig';
-import { Settings, Users as UsersListIcon } from 'lucide-react';
 
 export function DriversContainer() {
+
+  const router = useRouter();
   const { data: drivers, isLoading, error } = useDrivers();
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
-  const [selectedDriverForSessions, setSelectedDriverForSessions] = useState<Driver | null>(null);
-
-  const { data: sessions, isLoading: isLoadingSessions } = useDriverSessions(selectedDriverForSessions?.id || '');
 
   const stats = useMemo(() => {
     if (!drivers) return { total: 0, active: 0, inactive: 0 };
@@ -126,7 +116,7 @@ export function DriversContainer() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setSelectedDriverForSessions(row.original)}
+            onClick={() => router.push(`${FRONTEND_ROUTES.DRIVER_DETAILS(row.original.id)}?name=${encodeURIComponent(`${row.original.firstName} ${row.original.lastName}`)}`)}
             className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-widest border-border/40 hover:bg-primary/10 hover:text-primary transition-all"
           >
             <History className="mr-1.5 h-3 w-3" />
@@ -261,86 +251,6 @@ export function DriversContainer() {
           isOpen={isFormModalOpen}
           onClose={() => setIsFormModalOpen(false)}
         />
-
-        <Drawer open={!!selectedDriverForSessions} onOpenChange={(open) => !open && setSelectedDriverForSessions(null)}>
-          <DrawerContent className="h-[80vh] p-0 border-t border-border/40 bg-background/95 backdrop-blur-xl rounded-t-[2.5rem]">
-            <DrawerHeader className="p-8 border-b border-border/40">
-              <div className="flex items-center justify-between">
-                <div>
-                  <DrawerTitle className="text-2xl font-black tracking-tight">
-                    {selectedDriverForSessions?.firstName} {selectedDriverForSessions?.lastName}
-                  </DrawerTitle>
-                  <DrawerDescription className="font-bold text-[10px] uppercase tracking-widest text-muted-foreground mt-1">
-                    Historical Charging sessions intelligence
-                  </DrawerDescription>
-                </div>
-                <Badge className="bg-primary/10 text-primary font-black uppercase tracking-widest text-[10px] py-1 px-3 border border-primary/20">
-                  {sessions?.length || 0} Sessions
-                </Badge>
-              </div>
-            </DrawerHeader>
-            <ScrollArea className="flex-1 p-8">
-              <div className="grid gap-4">
-                {isLoadingSessions ? (
-                  Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="h-24 rounded-2xl bg-muted/20 animate-pulse border border-border/40" />
-                  ))
-                ) : sessions?.length === 0 ? (
-                  <div className="py-20 text-center">
-                    <History className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">No session history detected</p>
-                  </div>
-                ) : (
-                  sessions?.map((session: any) => (
-                    <div key={session.id} className="group p-5 rounded-2xl border border-border/40 bg-card/10 hover:bg-card/20 transition-all">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                            <Zap className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <h4 className="font-bold text-sm tracking-tight">{session.stationName}</h4>
-                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                              Connector {session.connectorId} • {session.connectorType}
-                            </p>
-                          </div>
-                        </div>
-                        <Badge variant="outline" className={cn(
-                          "font-black uppercase tracking-widest text-[9px] px-2 py-0.5 rounded-full border-2",
-                          session.status === 'COMPLETED' ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/10" :
-                          session.status === 'IN_PROGRESS' ? "bg-primary/10 text-primary border-primary/10 animate-pulse" :
-                          "bg-muted/10 text-muted-foreground border-muted/10"
-                        )}>
-                          {session.status}
-                        </Badge>
-                      </div>
-                      <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border/40">
-                        <div className="space-y-1">
-                          <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Energy</p>
-                          <p className="text-sm font-black tracking-tight">{session.energyDeliveredKwh.toFixed(2)} <span className="text-[10px] opacity-40">kWh</span></p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Duration</p>
-                          <p className="text-sm font-black tracking-tight">{session.durationMinutes} <span className="text-[10px] opacity-40">Min</span></p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Cost</p>
-                          <p className="text-sm font-black tracking-tight text-primary">
-                            {new Intl.NumberFormat('en-IN', { style: 'currency', currency: session.currency || 'INR' }).format(session.totalCost)}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="mt-4 flex items-center gap-2 text-[10px] font-bold text-muted-foreground opacity-60">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(session.startTime).toLocaleString()}
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </ScrollArea>
-          </DrawerContent>
-        </Drawer>
       </motion.div>
     </TooltipProvider>
   );
