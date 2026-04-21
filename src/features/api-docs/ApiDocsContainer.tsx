@@ -5,6 +5,8 @@ import { API_DATA, GUIDE_DATA, ApiEndpoint } from './data/api-data';
 import { Sidebar } from './components/Sidebar';
 import { ApiDetail } from './components/ApiDetail';
 import { CodeSnippet } from './components/CodeSnippet';
+import { secureLoad } from '@/utils/storage-utils';
+import { AUTH_CONFIG } from '@/constants/constants';
 
 export function ApiDocsContainer() {
   const [isMounted, setIsMounted] = useState(false);
@@ -34,14 +36,22 @@ export function ApiDocsContainer() {
       const endpoint = selectedItem as ApiEndpoint;
       setActiveResponseStatus(endpoint.responses[0]?.status || 200);
       
+      const storedCredentials = secureLoad<any>(AUTH_CONFIG.docsCredentialsKey);
       const initialValues: Record<string, any> = {};
+      
       const addDefaults = (params?: Record<string, any>) => {
         if (params) {
           Object.entries(params).forEach(([key, info]) => {
-            initialValues[key] = info.defaultValue ?? '';
+            // Check if we have a stored value for this key (e.g., clientId, clientSecret)
+            if (storedCredentials && storedCredentials[key]) {
+              initialValues[key] = storedCredentials[key];
+            } else {
+              initialValues[key] = info.defaultValue ?? '';
+            }
           });
         }
       };
+
       addDefaults(endpoint.params);
       addDefaults(endpoint.query);
       addDefaults(endpoint.body);
@@ -76,7 +86,7 @@ export function ApiDocsContainer() {
         onSelect={handleSelect}
       />
       
-      <main className="flex-1 overflow-y-auto h-screen custom-scrollbar relative px-16 bg-background">
+      <main className="flex-1 overflow-y-auto h-screen custom-scrollbar relative px-8 bg-background">
         <ApiDetail 
           key={selectedId}
           item={selectedItem!} 

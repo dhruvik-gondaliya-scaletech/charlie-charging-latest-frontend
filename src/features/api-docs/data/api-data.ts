@@ -35,565 +35,564 @@ export interface GuideSection {
 
 export const GUIDE_DATA: GuideSection[] = [
   {
-    id: 'integration-notes',
-    title: 'Integration Notes',
+    id: 'getting-started',
+    title: 'Getting Started',
     content: `
-# Integration Notes
+# Getting Started with Partner APIs
 
-Welcome to the Scale EV API. This documentation will help you integrate your application with our charging management platform.
+The Partner API allows you to integrate Scale EV's charging management capabilities directly into your own systems. This guide will help you get started with authentication and basic integration.
 
 ### Environments
-- **Sandbox**: \`https://api.sandbox.scale-ev.com\`
 - **Production**: \`https://api.scale-ev.com\`
+- **Sandbox**: \`https://api.sandbox.scale-ev.com\`
 
-### Rate Limiting
-To ensure platform stability, we enforce rate limits on all API requests:
-- **Authenticated Requests**: 1000 requests per minute.
-- **Public Requests**: 100 requests per minute.
+### Standard Integration Flow
+To fully onboard a new charging station, follow this logical sequence:
+1. **Authenticate**: Obtain your access token.
+2. **Hardware Specs**: Query supported brands and models.
+3. **Billing**: Create your custom tariffs/rates.
+4. **Site Management**: Create a charging location.
+5. **Onboarding**: Register the station using previous IDs.
 
-If you exceed these limits, the API will return a \`429 Too Many Requests\` response.
-
-### Pagination
-For list endpoints, we use cursor-based pagination. You can control this via the \`page\` and \`limit\` query parameters.
-- Default limit: 20
-- Max limit: 100
+### Response Format
+All requests return a standard JSON object containing status and data:
+\`\`\`json
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Success",
+  "data": { ... },
+  "timestamp": "2026-04-20T12:00:00Z"
+}
+\`\`\`
     `
   },
   {
-    id: 'authentication-guide',
+    id: 'authentication',
     title: 'Authentication',
     content: `
-# Authentication
+# Authentication Guide
 
-All private endpoints require a Bearer Token. You can obtain this token via the \`/auth/login\` endpoint.
+Our Partner API uses OAuth2 client credentials flow. You will need your \`clientId\` and \`clientSecret\` to obtain an access token.
 
-### Header Format
+### 1. Obtain Access Token
+Send a POST request to \`/partner/auth/token\` with your credentials.
+
+\`\`\`bash
+# Example cURL
+curl -X POST "https://api.scale-ev.com/partner/auth/token" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "clientId": "your_client_id",
+    "clientSecret": "your_client_secret"
+  }'
+\`\`\`
+
+### 2. Use Bearer Token
+Include the returned \`access_token\` in the \`Authorization\` header of all subsequent requests.
+
 \`\`\`http
 Authorization: Bearer <your_access_token>
 \`\`\`
 
-Tokens are valid for 24 hours. After expiration, you must re-authenticate.
+### 3. Refreshing Tokens
+Tokens expire after 1 hour. Use the \`refresh_token\` to obtain a new access token via \`/partner/auth/refresh\`.
     `
   }
 ];
 
 export const API_DATA: ApiGroup[] = [
   {
-    name: 'Dashboard',
+    name: 'Partner API - Auth',
     endpoints: [
       {
-        id: 'dashboard-all',
-        method: 'GET',
-        path: '/dashboard',
-        description: 'Get complete dashboard data including stats and recent activity.',
-        query: {
-          limit: { type: 'number', required: false, description: 'Number of recent activities', defaultValue: 10 }
-        },
-        responses: [
-          { 
-            status: 200, 
-            description: 'Dashboard data retrieved', 
-            data: { 
-              stats: { totalStations: 15, availableStations: 12, energyDelivered: 1250.5, activeSessions: 4, capacityUtilization: 0.82, activeUsers: 45 },
-              recentActivity: [
-                { event: 'Transaction Started', station: 'Downtown Hub', user: 'John Doe', eventTime: '2024-03-20T10:00:00Z', status: 'In Progress' }
-              ]
-            },
-            schema: {
-              stats: { 
-                type: 'object', 
-                required: true, 
-                description: 'Global statistics summary.',
-                children: {
-                  totalStations: { type: 'number', required: true, description: 'Total provisioned stations.' },
-                  availableStations: { type: 'number', required: true, description: 'Stations currently available.' },
-                  energyDelivered: { type: 'number', required: true, description: 'Cumulative energy in kWh.' },
-                  activeSessions: { type: 'number', required: true, description: 'Count of ongoing charging sessions.' },
-                  capacityUtilization: { type: 'number', required: true, description: '0-1 scale of fleet usage.' },
-                  activeUsers: { type: 'number', required: true, description: 'Users with sessions in the last 24h.' }
-                }
-              },
-              recentActivity: {
-                type: 'array',
-                required: true,
-                description: 'List of latest system events.',
-                children: {
-                  event: { type: 'string', required: true, description: 'Type of activity.' },
-                  station: { type: 'string', required: true, description: 'Target station name.' },
-                  user: { type: 'string', required: true, description: 'Initiator name.' },
-                  eventTime: { type: 'string', required: true, description: 'ISO timestamp.' },
-                  status: { type: 'string', required: true, description: 'Outcome status.' }
-                }
-              }
-            }
-          }
-        ],
-        requiresAuth: true
-      }
-    ]
-  },
-  {
-    name: 'Brands & Models',
-    endpoints: [
-      {
-        id: 'brands-list',
-        method: 'GET',
-        path: '/brands',
-        description: 'Get all vehicle brands with pagination.',
-        responses: [
-          { 
-            status: 200, 
-            description: 'List of brands', 
-            data: {
-              items: [{ id: 1, identifier: 'tesla', name: 'Tesla', createdAt: '2024-01-01T00:00:00Z' }],
-              meta: { total: 45, page: 1, limit: 10, totalPages: 5 }
-            },
-            schema: {
-              items: { type: 'array', required: true, description: 'List of brand objects.' },
-              meta: { 
-                type: 'object', 
-                required: true, 
-                description: 'Pagination metadata.',
-                children: {
-                  total: { type: 'number', required: true, description: 'Total records.' },
-                  page: { type: 'number', required: true, description: 'Current page.' },
-                  limit: { type: 'number', required: true, description: 'Records per page.' },
-                  totalPages: { type: 'number', required: true, description: 'Total pages available.' }
-                }
-              }
-            }
-          }
-        ],
-        requiresAuth: true
-      }
-    ]
-  },
-  {
-    name: 'Authentication',
-    endpoints: [
-      {
-        id: 'auth-register',
+        id: 'partner-auth-token',
         method: 'POST',
-        path: '/auth/register',
-        description: 'New user registration. Triggers a verification email.',
+        path: '/partner/auth/token',
+        description: 'Get partner access token using client credentials',
         body: {
-          email: { type: 'string', required: true, description: 'User email address', defaultValue: 'newuser@scale-ev.com' },
-          firstName: { type: 'string', required: true, description: 'User first name', defaultValue: 'John' },
-          lastName: { type: 'string', required: true, description: 'User last name', defaultValue: 'Doe' },
-          password: { type: 'string', required: true, description: 'User password (min 6 characters)', defaultValue: 'securePass123' },
-          apiSecret: { type: 'string', required: false, description: 'Optional API secret for tenant-specific registration' }
+          clientId: { type: 'uuid', required: true, description: 'Your Client ID (Tenant ID)' },
+          clientSecret: { type: 'string', required: true, description: 'Your Client Secret (API Secret)' }
         },
         responses: [
-          { 
-            status: 201, 
-            description: 'Registration successful', 
-            data: { message: 'Registration successful. Please check your email for verification.', userId: 'usr_123' },
-            schema: {
-              message: { type: 'string', required: true, description: 'Success message.' },
-              userId: { type: 'string', required: true, description: 'ID of the created user.' }
+          {
+            status: 200,
+            description: 'Successful authentication',
+            data: {
+              access_token: 'eyJhbGciOiJIUzI1Ni...',
+              refresh_token: 'def456...',
+              expires_in: 3600
             }
           },
-          { 
-            status: 400, 
-            description: 'Bad Request', 
-            data: { statusCode: 400, message: ['email must be an email'], error: 'Bad Request' },
-            schema: {
-              statusCode: { type: 'number', required: true, description: 'HTTP status code.' },
-              message: { type: 'string[]', required: true, description: 'List of validation errors.' },
-              error: { type: 'string', required: true, description: 'Error category.' }
-            }
-          },
-          { 
-            status: 409, 
-            description: 'Conflict', 
-            data: { statusCode: 409, message: 'A user with this email already exists', error: 'Conflict' },
-            schema: {
-              statusCode: { type: 'number', required: true, description: 'HTTP status code.' },
-              message: { type: 'string', required: true, description: 'Error message.' },
-              error: { type: 'string', required: true, description: 'Error category.' }
-            }
+          {
+            status: 401,
+            description: 'Unauthorized - Invalid credentials',
+            data: { success: false, statusCode: 401, message: 'Invalid credentials' }
           }
         ],
         requiresAuth: false
       },
       {
-        id: 'auth-login',
+        id: 'partner-auth-refresh',
         method: 'POST',
-        path: '/auth/login',
-        description: 'Authenticate user and return JWT token.',
+        path: '/partner/auth/refresh',
+        description: 'Refresh partner access token',
         body: {
-          email: { type: 'string', required: true, description: 'User email address', defaultValue: 'admin@scale-ev.com' },
-          password: { type: 'string', required: true, description: 'User password', defaultValue: 'admin123' },
+          refreshToken: { type: 'string', required: true, description: 'The refresh token obtained during initial auth' }
         },
         responses: [
-          { 
-            status: 200, 
-            description: 'Successfully authenticated', 
-            data: { 
-              access_token: 'eyJhbGciOiJIUzI1Ni...', 
-              user: { id: 'usr_1', email: 'admin@scale-ev.com', firstName: 'Admin', lastName: 'User', role: 'admin', isActive: true, isEmailVerified: true },
-              tenant: { id: 'ten_1', name: 'Scale Corp' }
-            },
-            schema: {
-              access_token: { type: 'string', required: true, description: 'JWT access token.' },
-              user: { 
-                type: 'object', 
-                required: true, 
-                description: 'User details.',
-                children: {
-                  id: { type: 'string', required: true, description: 'User UUID.' },
-                  email: { type: 'string', required: true, description: 'Email address.' },
-                  firstName: { type: 'string', required: true, description: 'First name.' },
-                  lastName: { type: 'string', required: true, description: 'Last name.' },
-                  role: { type: 'string', required: true, description: 'User role.' },
-                  isActive: { type: 'boolean', required: true, description: 'Account status.' },
-                  isEmailVerified: { type: 'boolean', required: true, description: 'Verification status.' }
-                }
-              },
-              tenant: {
-                type: 'object',
-                required: true,
-                description: 'Tenant details.',
-                children: {
-                  id: { type: 'string', required: true, description: 'Tenant UUID.' },
-                  name: { type: 'string', required: true, description: 'Tenant name.' }
-                }
-              }
-            }
-          },
-          { 
-            status: 401, 
-            description: 'Unauthorized', 
-            data: { statusCode: 401, message: 'Invalid credentials', error: 'Unauthorized' },
-            schema: {
-              statusCode: { type: 'number', required: true, description: 'HTTP status code.' },
-              message: { type: 'string', required: true, description: 'Error message.' }
+          {
+            status: 200,
+            description: 'Token refreshed successfully',
+            data: {
+              access_token: 'new_eyJhbGciOiJIUzI1Ni...',
+              refresh_token: 'new_def456...',
+              expires_in: 3600
             }
           }
         ],
         requiresAuth: false
-      },
+      }
+    ]
+  },
+  {
+    name: 'Partner API - Brands (Hardware Models)',
+    endpoints: [
       {
-        id: 'auth-verify',
+        id: 'partner-brands-list',
         method: 'GET',
-        path: '/auth/verify',
-        description: 'Verify email address via token received in email.',
-        query: {
-          token: { type: 'string', required: true, description: 'The verification token', defaultValue: 'token_123' }
-        },
+        path: '/partner/brands',
+        description: 'List all supported hardware brands',
         responses: [
-          { status: 302, description: 'Redirect to frontend success/error page', data: null },
-          { 
-            status: 404, 
-            description: 'Not Found', 
-            data: { statusCode: 404, message: 'Invalid or expired verification token', error: 'Not Found' },
-            schema: {
-              message: { type: 'string', required: true, description: 'Error details.' }
-            }
-          }
+          { status: 200, description: 'List of brands', data: [{ id: 1, name: 'ABB' }, { id: 2, name: 'Tritium' }] }
         ],
-        requiresAuth: false
+        requiresAuth: true
       },
       {
-        id: 'auth-me',
+        id: 'partner-brands-models',
         method: 'GET',
-        path: '/auth/me',
-        description: 'Get current user profile information.',
+        path: '/partner/brands/:id/models',
+        description: 'List hardware models for a specific brand',
+        params: { id: { type: 'number', required: true, description: 'Brand ID' } },
         responses: [
-          { 
-            status: 200, 
-            description: 'Profile retrieved', 
-            data: { id: 'usr_1', email: 'admin@scale.com', firstName: 'Admin', lastName: 'User', role: 'admin', isActive: true, isEmailVerified: true, tenant: { id: 'ten_1', name: 'Scale Corp' } },
-            schema: {
-              id: { type: 'string', required: true, description: 'User UUID.' },
-              email: { type: 'string', required: true, description: 'Email address.' },
-              tenant: { type: 'object', required: true, description: 'Tenant details.', children: {
-                id: { type: 'string', required: true, description: 'Tenant identifier.' },
-                name: { type: 'string', required: true, description: 'Name of the organization.' }
-              }}
-            }
-          }
+          { status: 200, description: 'Brand models', data: [{ id: 101, name: 'Terra 54' }, { id: 102, name: 'Terra 184' }] }
+        ],
+        requiresAuth: true
+      },
+      {
+        id: 'partner-connector-types',
+        method: 'GET',
+        path: '/partner/brands/connector-types',
+        description: 'List all supported connector standard types',
+        responses: [
+          { status: 200, description: 'Connector types', data: ['Type1', 'Type2', 'CCS1', 'CCS2', 'CHAdeMO'] }
         ],
         requiresAuth: true
       }
     ]
   },
   {
-    name: 'Stations',
+    name: 'Partner API - Tariffs',
     endpoints: [
       {
-        id: 'stations-list',
+        id: 'partner-tariffs-list',
         method: 'GET',
-        path: '/stations',
-        description: 'List all charging stations with advanced filtering.',
-        query: {
-          name: { type: 'string', required: false, description: 'Partial name match', defaultValue: '' },
-          locationId: { type: 'string', required: false, description: 'Filter by location ID', defaultValue: '' },
-          status: { type: 'string', required: false, description: 'Charging status enum', defaultValue: 'Available' }
-        },
+        path: '/partner/tariffs',
+        description: 'List all available billing tariffs',
         responses: [
-          { 
-            status: 200, 
-            description: 'Stations retrieved', 
-            data: {
-              items: [
-                { 
-                  id: 'st_1', name: 'Downtown Hub', serialNumber: 'SN001', model: 'UltraCharge', vendor: 'ABB', 
-                  status: 'Available', isOccupied: false, isActive: true, maxPower: 150, 
-                  connectorCount: 2, chargePointId: 'CP001', ocppVersion: '1.6j', type: 'DC',
-                  connectors: [
-                    { id: 'conn_1', connectorId: 1, type: 'CCS2', status: 'Available', maxPower: 150 }
-                  ]
-                }
-              ],
-              meta: { total: 15, page: 1, limit: 10, totalPages: 2 }
-            },
-            schema: {
-              items: {
-                type: 'array',
-                required: true,
-                description: 'List of station objects.',
-                children: {
-                  id: { type: 'string', required: true, description: 'Station UUID.' },
-                  name: { type: 'string', required: true, description: 'Display name.' },
-                  status: { type: 'string', required: true, description: 'Current charging status.' },
-                  isOccupied: { type: 'boolean', required: true, description: 'Whether any connector is in use.' },
-                  connectors: {
-                    type: 'array',
-                    required: true,
-                    description: 'Hardware connectors on this station.',
-                    children: {
-                      connectorId: { type: 'number', required: true, description: 'Station-local index.' },
-                      type: { type: 'string', required: true, description: 'Socket type (CCS2, Type2, etc).' },
-                      status: { type: 'string', required: true, description: 'Connector status.' }
-                    }
-                  }
-                }
-              }
-            }
-          }
+          { status: 200, description: 'List of tariffs', data: [{ id: 'tar_1', name: 'Peak Hours Rate', pricePerKwh: 0.45, currency: 'USD' }] }
         ],
         requiresAuth: true
       },
       {
-        id: 'stations-create',
+        id: 'partner-tariffs-create',
         method: 'POST',
-        path: '/stations',
-        description: 'Provision a new charging station.',
+        path: '/partner/tariffs',
+        description: 'Create a new billing tariff for charging sessions',
         body: {
-          name: { type: 'string', required: true, description: 'Station name', defaultValue: 'North Station' },
-          locationId: { type: 'string', required: true, description: 'UUID of location', defaultValue: 'loc_1' },
-          identity: { type: 'string', required: true, description: 'OCPP identity string', defaultValue: 'CP_001' }
+          name: { type: 'string', required: true, description: 'Descriptive name for the tariff' },
+          pricePerKwh: { type: 'number', required: true, description: 'Rate per kWh consumed' },
+          connectionFee: { type: 'number', required: true, description: 'Flat fee per session' },
+          serviceFeePercentage: { type: 'number', required: true, description: 'Percentage of total energy cost' },
+          currency: { type: 'string', required: true, description: 'ISO Currency code (USD, INR)', defaultValue: 'USD' }
         },
         responses: [
-          { status: 201, description: 'Station created', data: { id: 'st_2', name: 'North Station' } }
+          { status: 201, description: 'Tariff created', data: { id: 'tar_new', name: 'Standard Rate' } }
         ],
         requiresAuth: true
       },
       {
-        id: 'stations-remote-start',
-        method: 'POST',
-        path: '/stations/:id/remote-start',
-        description: 'Trigger a remote start transaction request.',
-        params: { id: { type: 'string', required: true, description: 'Station UUID', defaultValue: 'st_1' } },
+        id: 'partner-tariffs-detail',
+        method: 'GET',
+        path: '/partner/tariffs/:id',
+        description: 'Get detailed configuration of a tariff',
+        params: { id: { type: 'uuid', required: true, description: 'Tariff identifier' } },
+        responses: [
+          { status: 200, description: 'Tariff details', data: { id: 'tar_1', name: 'Peak Rate', pricePerKwh: 0.45 } }
+        ],
+        requiresAuth: true
+      },
+      {
+        id: 'partner-tariffs-update',
+        method: 'PATCH',
+        path: '/partner/tariffs/:id',
+        description: 'Update existing tariff values',
+        params: { id: { type: 'uuid', required: true, description: 'Tariff identifier' } },
         body: {
-          connectorId: { type: 'number', required: true, description: 'Connector index', defaultValue: 1 },
-          idTag: { type: 'string', required: true, description: 'RFID tag', defaultValue: 'RFID_123' },
-          userId: { type: 'string', required: true, description: 'User UUID', defaultValue: 'usr_1' }
+          name: { type: 'string', required: false, description: 'New name' },
+          pricePerKwh: { type: 'number', required: false, description: 'Updated rate' }
         },
         responses: [
-          { 
-            status: 200, 
-            description: 'Request accepted', 
-            data: { status: 'Accepted', transactionId: 501 },
-            schema: {
-              status: { type: 'string', required: true, description: 'OCPP response status (Accepted/Rejected).' },
-              transactionId: { type: 'number', required: false, description: 'ID of the started transaction.' }
-            }
-          }
+          { status: 200, description: 'Updated successfully', data: { id: 'tar_1', name: 'Revised Peak Rate' } }
+        ],
+        requiresAuth: true
+      },
+      {
+        id: 'partner-tariffs-delete',
+        method: 'DELETE',
+        path: '/partner/tariffs/:id',
+        description: 'Remove a tariff (Note: Assigned stations will require a new tariff)',
+        params: { id: { type: 'uuid', required: true, description: 'Tariff identifier' } },
+        responses: [
+          { status: 200, description: 'Deleted', data: { success: true } }
         ],
         requiresAuth: true
       }
     ]
   },
   {
-    name: 'Sessions',
+    name: 'Partner API - Locations',
     endpoints: [
       {
-        id: 'sessions-list',
+        id: 'partner-locations-list',
         method: 'GET',
-        path: '/sessions',
-        description: 'Get all charging sessions with filtering.',
+        path: '/partner/locations',
+        description: 'Get all locations matching filter criteria. Station registration requires a valid Location ID.',
         query: {
-          status: { type: 'string', required: false, description: 'in-progress/completed/failed', defaultValue: '' }
+          name: { type: 'string', required: false, description: 'Filter by name' },
+          city: { type: 'string', required: false, description: 'Filter by city' },
+          isActive: { type: 'boolean', required: false, description: 'Filter by active status' }
         },
         responses: [
-          { 
-            status: 200, 
-            description: 'Sessions retrieved', 
-            data: {
-              items: [
-                { 
-                  id: 'sess_1', stationId: 'st_1', stationName: 'Downtown Hub', userId: 'usr_1', 
-                  connectorId: 1, transactionId: 501, status: 'completed', 
-                  startTime: '2024-03-20T10:00:00Z', endTime: '2024-03-20T11:00:00Z', 
-                  energyDeliveredKwh: 22.5, durationMinutes: 60 
-                }
-              ],
-              meta: { total: 150, page: 1, limit: 10, totalPages: 15 }
-            },
-            schema: {
-              items: {
-                type: 'array',
-                required: true,
-                description: 'List of session records.',
-                children: {
-                  id: { type: 'string', required: true, description: 'Session UUID.' },
-                  status: { type: 'string', required: true, description: 'Session state.' },
-                  energyDeliveredKwh: { type: 'number', required: true, description: 'Energy delivered in kWh.' },
-                  durationMinutes: { type: 'number', required: true, description: 'Total session duration.' }
-                }
-              }
-            }
-          }
-        ],
-        requiresAuth: true
-      }
-    ]
-  },
-  {
-    name: 'Locations',
-    endpoints: [
-      {
-        id: 'locations-list',
-        method: 'GET',
-        path: '/locations',
-        description: 'Get all charging locations.',
-        query: { name: { type: 'string', required: false, description: 'Search by name', defaultValue: '' } },
-        responses: [
-          { 
-            status: 200, 
-            description: 'List retrieved', 
-            data: {
-              items: [{ id: 'loc_1', name: 'West Hub', address: '123 Main St', city: 'San Jose', state: 'CA', zipCode: '95112', country: 'USA', isActive: true }],
-              meta: { total: 5, page: 1, limit: 10, totalPages: 1 }
-            },
-            schema: {
-              items: { type: 'array', required: true, description: 'List of location objects.' },
-              meta: { type: 'object', required: true, description: 'Pagination metadata.' }
-            }
+          {
+            status: 200,
+            description: 'List of locations',
+            data: [{ id: 'loc_1', name: 'Main Hub', address: '123 Street', city: 'London', country: 'UK' }]
           }
         ],
         requiresAuth: true
       },
       {
-        id: 'locations-create',
+        id: 'partner-locations-create',
         method: 'POST',
-        path: '/locations',
-        description: 'Create a new location.',
+        path: '/partner/locations',
+        description: 'Create a new site location to host charging hardware',
         body: {
-          name: { type: 'string', required: true, description: 'Location name', defaultValue: 'East Hub' },
-          address: { type: 'string', required: true, description: 'Full address', defaultValue: '456 Side St' },
-          city: { type: 'string', required: true, description: 'City', defaultValue: 'San Jose' },
-          state: { type: 'string', required: true, description: 'State', defaultValue: 'CA' },
-          zipCode: { type: 'string', required: true, description: 'Zip Code', defaultValue: '95113' },
-          country: { type: 'string', required: true, description: 'Country', defaultValue: 'USA' }
+          name: { type: 'string', required: true, description: 'Location name' },
+          address: { type: 'string', required: false, description: 'Street address' },
+          city: { type: 'string', required: false, description: 'City name' },
+          country: { type: 'string', required: false, description: 'Country name' },
+          latitude: { type: 'number', required: false, description: 'GPS Latitude' },
+          longitude: { type: 'number', required: false, description: 'GPS Longitude' }
         },
         responses: [
-          { status: 201, description: 'Location created', data: { id: 'loc_2', name: 'East Hub' } }
+          { status: 201, description: 'Location created', data: { id: 'loc_new', name: 'New Location' } }
+        ],
+        requiresAuth: true
+      },
+      {
+        id: 'partner-locations-detail',
+        method: 'GET',
+        path: '/partner/locations/:id',
+        description: 'Retrieve detailed information about a location',
+        params: { id: { type: 'uuid', required: true, description: 'Location identifier' } },
+        responses: [
+          { status: 200, description: 'Location details', data: { id: 'loc_1', name: 'Main Hub', status: 'Active' } }
+        ],
+        requiresAuth: true
+      },
+      {
+        id: 'partner-locations-update',
+        method: 'PATCH',
+        path: '/partner/locations/:id',
+        description: 'Update location details (address, coordinates, etc.)',
+        params: { id: { type: 'uuid', required: true, description: 'Location identifier' } },
+        body: {
+          name: { type: 'string', required: false, description: 'New name' },
+          address: { type: 'string', required: false, description: 'Street address' },
+          city: { type: 'string', required: false, description: 'City' },
+          latitude: { type: 'number', required: false, description: 'GPS Lat' },
+          longitude: { type: 'number', required: false, description: 'GPS Lng' }
+        },
+        responses: [
+          { status: 200, description: 'Updated successfully', data: { id: 'loc_1', name: 'New Name' } }
+        ],
+        requiresAuth: true
+      },
+      {
+        id: 'partner-locations-delete',
+        method: 'DELETE',
+        path: '/partner/locations/:id',
+        description: 'Remove a location and its associated metadata',
+        params: { id: { type: 'uuid', required: true, description: 'Location identifier' } },
+        responses: [
+          { status: 200, description: 'Deleted', data: { success: true } }
         ],
         requiresAuth: true
       }
     ]
   },
   {
-    name: 'Tenants',
+    name: 'Partner API - Stations',
     endpoints: [
       {
-        id: 'tenants-list',
+        id: 'partner-stations-list',
         method: 'GET',
-        path: '/tenants',
-        description: 'List all active tenants with user counts.',
+        path: '/partner/stations',
+        description: 'List all charging stations with optional filters',
+        query: {
+          name: { type: 'string', required: false, description: 'Search by station name' },
+          locationId: { type: 'uuid', required: false, description: 'Filter by location ID' },
+          status: { type: 'enum', required: false, description: 'Filter by charging status (Available, Charging, Occupied, Error, Offline)' },
+          type: { type: 'enum', required: false, description: 'Filter by station type (AC or DC)' }
+        },
         responses: [
-          { 
-            status: 200, 
-            description: 'List retrieved', 
-            data: {
-              items: [{ id: 'ten_1', name: 'Scale Corp', slug: 'scale-corp', isActive: true, userCount: 12 }],
-              meta: { total: 1, page: 1, limit: 10, totalPages: 1 }
-            },
-            schema: {
-              items: {
-                type: 'array',
-                required: true,
-                description: 'List of tenant summaries.',
-                children: {
-                  id: { type: 'string', required: true, description: 'Tenant UUID.' },
-                  name: { type: 'string', required: true, description: 'Company name.' },
-                  slug: { type: 'string', required: true, description: 'URL-friendly identifier.' },
-                  userCount: { type: 'number', required: true, description: 'Number of associated users.' }
-                }
-              }
-            }
+          {
+            status: 200,
+            description: 'List of stations',
+            data: [
+              { id: '123e4567...', name: 'Main Street Station', serialNumber: 'SN001', model: 'Terra 54', vendor: 'ABB', type: 'DC', maxPower: 50, status: 'Available' }
+            ]
           }
+        ],
+        requiresAuth: true
+      },
+      {
+        id: 'partner-stations-create',
+        method: 'POST',
+        path: '/partner/stations',
+        description: 'Register a new charging station. Requires valid Location ID and Tariff ID.',
+        body: {
+          name: { type: 'string', required: true, description: 'Station name', defaultValue: 'New Station' },
+          serialNumber: { type: 'string', required: true, description: 'Hardware serial number' },
+          model: { type: 'string', required: true, description: 'Hardware model' },
+          vendor: { type: 'string', required: true, description: 'Hardware manufacturer' },
+          type: { type: 'enum', required: true, description: 'Charging type (AC / DC)' },
+          maxPower: { type: 'number', required: true, description: 'Maximum power in kW' },
+          connectorTypes: { type: 'array', required: true, description: 'List of connectors (Type2, CCS1, CCS2, CHAdeMO)' },
+          chargePointId: { type: 'string', required: true, description: 'Unique OCPP Charge Point Identity' },
+          locationId: { type: 'uuid', required: false, description: 'ID obtained from Locations API' },
+          tariffId: { type: 'uuid', required: true, description: 'ID obtained from Tariffs API' }
+        },
+        responses: [
+          { status: 201, description: 'Station created', data: { id: 'uuid-123...', name: 'New Station', chargePointId: 'ST_001' } }
+        ],
+        requiresAuth: true
+      },
+      {
+        id: 'partner-stations-stats',
+        method: 'GET',
+        path: '/partner/stations/stats',
+        description: 'Get charging station statistics across your ecosystem',
+        responses: [
+          {
+            status: 200,
+            description: 'Station statistics',
+            data: { total: 10, online: 8, charging: 2, error: 0 }
+          }
+        ],
+        requiresAuth: true
+      },
+      {
+        id: 'partner-stations-detail',
+        method: 'GET',
+        path: '/partner/stations/:id',
+        description: 'Get a charging station by ID',
+        params: {
+          id: { type: 'uuid', required: true, description: 'Station identifier' }
+        },
+        responses: [
+          { status: 200, description: 'Station details', data: { id: 'st_1', name: 'Downtown Station 1', connectors: [] } }
+        ],
+        requiresAuth: true
+      },
+      {
+        id: 'partner-stations-update',
+        method: 'PATCH',
+        path: '/partner/stations/:id',
+        description: 'Update a charging station configuration',
+        params: { id: { type: 'uuid', required: true, description: 'Station ID' } },
+        body: {
+          name: { type: 'string', required: false, description: 'Updated station name' },
+          status: { type: 'enum', required: false, description: 'Override charging status' },
+          isActive: { type: 'boolean', required: false, description: 'Enable/Disable station' },
+          maxPower: { type: 'number', required: false, description: 'Update max power output' },
+          locationId: { type: 'uuid', required: false, description: 'Move station to another location' },
+          tariffId: { type: 'uuid', required: false, description: 'Update billing tariff' }
+        },
+        responses: [
+          { status: 200, description: 'Station updated successfully', data: { id: 'st_1', name: 'Updated Name' } }
+        ],
+        requiresAuth: true
+      },
+      {
+        id: 'partner-stations-delete',
+        method: 'DELETE',
+        path: '/partner/stations/:id',
+        description: 'Delete a charging station record',
+        params: { id: { type: 'uuid', required: true, description: 'Station identifier' } },
+        responses: [
+          { status: 200, description: 'Station successfully deleted', data: { success: true } }
+        ],
+        requiresAuth: true
+      },
+      {
+        id: 'partner-stations-remote-start',
+        method: 'POST',
+        path: '/partner/stations/:id/remote-start',
+        description: 'Remotely start a charging session. Requires active connection.',
+        params: { id: { type: 'uuid', required: true, description: 'Station ID' } },
+        body: {
+          connectorId: { type: 'number', required: true, description: 'Connector index (usually 1 or 2)', defaultValue: 1 },
+          userId: { type: 'uuid', required: false, description: 'Internal user ID for the session' },
+          driverId: { type: 'string', required: false, description: 'Driver identifier for tracking' },
+          estimatedCost: { type: 'number', required: false, description: 'Pre-auth amount in currency units' },
+          targetKwh: { type: 'number', required: false, description: 'Target energy for auto-stop' },
+          targetCost: { type: 'number', required: false, description: 'Target cost for auto-stop' },
+          targetMinutes: { type: 'number', required: false, description: 'Target duration for auto-stop' }
+        },
+        responses: [
+          { status: 200, description: 'Command accepted by Charge Point', data: { status: 'Accepted', transactionId: 54321 } },
+          { status: 400, description: 'Invalid command or station offline', data: { status: 'Rejected', reason: 'StationOffline' } }
+        ],
+        requiresAuth: true
+      },
+      {
+        id: 'partner-stations-remote-stop',
+        method: 'POST',
+        path: '/partner/stations/:id/remote-stop',
+        description: 'Remotely stop an ongoing charging session',
+        params: { id: { type: 'uuid', required: true, description: 'Station identifier' } },
+        body: {
+          transactionId: { type: 'number', required: true, description: 'The active transaction ID to stop' }
+        },
+        responses: [
+          { status: 200, description: 'Stop command accepted', data: { status: 'Accepted' } }
+        ],
+        requiresAuth: true
+      },
+      {
+        id: 'partner-stations-sessions',
+        method: 'GET',
+        path: '/partner/stations/:id/sessions',
+        description: 'Get all charging sessions for defensive monitoring',
+        params: { id: { type: 'uuid', required: true, description: 'Station identifier' } },
+        query: {
+          connectorId: { type: 'number', required: false, description: 'Filter by specific connector' },
+          status: { type: 'enum', required: false, description: 'Filter by session status' },
+          startFrom: { type: 'date', required: false, description: 'Filter by start date' }
+        },
+        responses: [
+          { status: 200, description: 'List of sessions for the station', data: [{ id: 'sess_1', energyDeliveredKwh: 15.5, startTime: '2026-04-20T10:00:00Z' }] }
         ],
         requiresAuth: true
       }
     ]
   },
   {
-    name: 'Users',
+    name: 'Partner API - Sessions',
     endpoints: [
       {
-        id: 'users-list',
+        id: 'partner-sessions-list',
         method: 'GET',
-        path: '/users',
-        description: 'List all users in your tenant.',
+        path: '/partner/sessions',
+        description: 'Get all charging sessions with optional status and time filters',
+        query: {
+          stationId: { type: 'uuid', required: false, description: 'Filter by station' },
+          status: { type: 'enum', required: false, description: 'Filter by session status (Charging, Completed, Pending)' },
+          startFrom: { type: 'date', required: false, description: 'Filter by start date' }
+        },
         responses: [
-          { 
-            status: 200, 
-            description: 'Users retrieved', 
-            data: {
-              items: [{ id: 'usr_1', email: 'admin@scale.com', firstName: 'Admin', lastName: 'User', role: 'admin', isActive: true, isEmailVerified: true }],
-              meta: { total: 45, page: 1, limit: 10, totalPages: 5 }
-            },
-            schema: {
-              items: { type: 'array', required: true, description: 'List of user objects.' }
-            }
-          }
+          { status: 200, description: 'List of sessions', data: [{ id: 'sess_1', stationId: 'st_1', status: 'Charging', energyDeliveredKwh: 12.5 }] }
+        ],
+        requiresAuth: true
+      },
+      {
+        id: 'partner-sessions-stats',
+        method: 'GET',
+        path: '/partner/sessions/stats',
+        description: 'Get aggregate session analytics',
+        query: { stationId: { type: 'uuid', required: false, description: 'Optionally filter stats by station' } },
+        responses: [
+          { status: 200, description: 'Operational stats', data: { totalSessions: 154, totalEnergyKwh: 4321.5, avgDurationMinutes: 45 } }
+        ],
+        requiresAuth: true
+      },
+      {
+        id: 'partner-sessions-detail',
+        method: 'GET',
+        path: '/partner/sessions/:id',
+        description: 'Get full session breakdown and telemetry',
+        params: { id: { type: 'uuid', required: true, description: 'Session identifier' } },
+        responses: [
+          { status: 200, description: 'Session data', data: { id: 'sess_1', energy: 12.5, cost: 4.5, duration: 32 } }
+        ],
+        requiresAuth: true
+      },
+      {
+        id: 'partner-sessions-by-station',
+        method: 'GET',
+        path: '/partner/sessions/station/:stationId',
+        description: 'List all sessions for a specific station (Shortcut)',
+        params: { stationId: { type: 'uuid', required: true, description: 'Station ID' } },
+        query: {
+          status: { type: 'enum', required: false, description: 'Filter by session status' }
+        },
+        responses: [
+          { status: 200, description: 'List of sessions', data: [{ id: 'sess_1', status: 'Completed' }] }
+        ],
+        requiresAuth: true
+      },
+      {
+        id: 'partner-sessions-active-by-station',
+        method: 'GET',
+        path: '/partner/sessions/station/:stationId/active',
+        description: 'Get the currently active session on a specific station',
+        params: { stationId: { type: 'uuid', required: true, description: 'Station ID' } },
+        query: {
+          connectorId: { type: 'number', required: false, description: 'Filter by connector' }
+        },
+        responses: [
+          { status: 200, description: 'Active session (or null)', data: { id: 'sess_active', status: 'Charging' } }
         ],
         requiresAuth: true
       }
     ]
   },
   {
-    name: 'Webhooks',
+    name: 'Partner API - Users',
     endpoints: [
       {
-        id: 'webhooks-list',
+        id: 'partner-users-list',
         method: 'GET',
-        path: '/webhooks',
-        description: 'List all active webhook configurations.',
+        path: '/partner/users',
+        description: 'List all ecosystem users',
+        query: {
+          search: { type: 'string', required: false, description: 'Search by first name, last name, or email (fuzzy match)' }
+        },
         responses: [
-          { 
-            status: 200, 
-            description: 'List retrieved', 
-            data: {
-              items: [{ id: 'wh_1', name: 'Billing Hook', url: 'https://site.com/hook', events: ['StartTransaction', 'StopTransaction'], isActive: true }],
-              meta: { total: 2, page: 1, limit: 10, totalPages: 1 }
-            },
-            schema: {
-              items: {
-                type: 'array',
-                required: true,
-                description: 'Webhook configurations.',
-                children: {
-                  url: { type: 'string', required: true, description: 'Target endpoint.' },
-                  events: { type: 'string[]', required: true, description: 'Subscribed OCPP events.' }
-                }
-              }
-            }
-          }
+          { status: 200, description: 'List of users', data: [{ id: 'usr_1', email: 'user@example.com', name: 'John Doe' }] }
+        ],
+        requiresAuth: true
+      },
+      {
+        id: 'partner-users-detail',
+        method: 'GET',
+        path: '/partner/users/:id',
+        description: 'Get user profile and account details',
+        params: { id: { type: 'uuid', required: true, description: 'User identifier' } },
+        responses: [
+          { status: 200, description: 'User profile', data: { id: 'usr_1', email: 'user@example.com', credits: 100 } }
         ],
         requiresAuth: true
       }

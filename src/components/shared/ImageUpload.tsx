@@ -74,10 +74,9 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
         ) : value ? (
           <>
             <div className="relative h-full w-full">
-              <Image
+              <img
                 src={value}
                 alt="Uploaded logo"
-                fill
                 className="object-contain p-4"
               />
             </div>

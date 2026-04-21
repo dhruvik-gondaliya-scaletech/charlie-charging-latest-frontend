@@ -11,6 +11,8 @@ export const API_CONFIG = {
             acceptInvitation: "/auth/accept-invitation",
             forgotPassword: "/auth/forgot-password",
             resetPassword: "/auth/reset-password",
+            getCredentials: "/auth/get-credentials",
+            documentationToken: "/auth/documentation-token",
         },
         users: {
             base: "/users",
@@ -102,6 +104,40 @@ export const API_CONFIG = {
             calculateSessionCost: (id: string) => `/billing/sessions/${id}/calculate`,
         },
         contact: "/contact",
+        partner: {
+            auth: {
+                token: "/partner/auth/token",
+                refresh: "/partner/auth/refresh",
+            },
+            stations: {
+                base: "/partner/stations",
+                stats: "/partner/stations/stats",
+                byId: (id: string) => `/partner/stations/${id}`,
+                remoteStart: (id: string) => `/partner/stations/${id}/remote-start`,
+                remoteStop: (id: string) => `/partner/stations/${id}/remote-stop`,
+                sessions: (id: string) => `/partner/stations/${id}/sessions`,
+            },
+            locations: {
+                base: "/partner/locations",
+                byId: (id: string) => `/partner/locations/${id}`,
+            },
+            sessions: {
+                base: "/partner/sessions",
+                stats: "/partner/sessions/stats",
+                byId: (id: string) => `/partner/sessions/${id}`,
+                byStation: (stationId: string) => `/partner/sessions/station/${stationId}`,
+                active: (stationId: string) => `/partner/sessions/station/${stationId}/active`,
+            },
+            users: {
+                base: "/partner/users",
+                byId: (id: string) => `/partner/users/${id}`,
+            },
+            brands: {
+                base: "/partner/brands",
+                models: (brandId: string) => `/partner/brands/${brandId}/models`,
+                connectorTypes: "/partner/brands/connector-types",
+            },
+        },
     }
 }
 
@@ -126,17 +162,21 @@ export const FRONTEND_ROUTES = {
     PROFILE: "/profile",
     USERS: "/users",
     DRIVERS: "/drivers",
+    DRIVER_DETAILS: (id: string) => `/drivers/${id}`,
     ID_TAGS: "/id-tags",
     VERIFY_EMAIL: "/verify-email",
     ACCEPT_INVITE: "/accept-invitation",
     FORGOT_PASSWORD: "/forgot-password",
     RESET_PASSWORD: "/reset-password",
+    API_DOCS: "/api-docs",
 }
 
 export const AUTH_CONFIG = {
     tokenKey: process.env.NEXT_PUBLIC_AUTH_TOKEN_KEY || "csms_auth_token",
     userKey: process.env.NEXT_PUBLIC_AUTH_USER_KEY || "csms_user",
     tenantKey: process.env.NEXT_PUBLIC_AUTH_TENANT_KEY || "csms_tenant",
+    docsCredentialsKey: "docs_auth_cred",
+    docsTokenKey: "docs_auth_token",
 }
 
 export const WEBSOCKET_CONFIG = {

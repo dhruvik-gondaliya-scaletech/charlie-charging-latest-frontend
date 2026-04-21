@@ -96,7 +96,7 @@ const AddressAutocomplete: React.FC<AddressAutocompleteProps> = ({
                 }),
                 {
                     headers: {
-                        'User-Agent': 'CharliChargingCSMS/1.0 (contact@example.com)',
+                        'User-Agent': 'ScaleEVCSMS/1.0 (contact@example.com)',
                     },
                 }
             );
