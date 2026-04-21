@@ -128,11 +128,11 @@ export function DriverSessionsContainer() {
               variant="outline"
               className={cn(
                 'font-black uppercase tracking-widest text-[9px] px-2.5 py-0.5 rounded-full border-2 transition-all',
-                status === 'COMPLETED'
-                  ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]'
-                  : status === 'IN_PROGRESS'
-                    ? 'bg-primary/10 text-primary border-primary/20 animate-pulse'
-                    : 'bg-muted/10 text-muted-foreground border-muted/20'
+                (status === 'completed' || status === 'COMPLETED')
+                  ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                  : (status === 'in_progress' || status === 'IN_PROGRESS')
+                    ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                    : 'bg-destructive/10 text-destructive border-destructive/20'
               )}
             >
               {status}
