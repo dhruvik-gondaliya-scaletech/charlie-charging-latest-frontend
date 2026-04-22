@@ -18,6 +18,7 @@ export const API_CONFIG = {
             base: "/users",
             profile: "/users/profile",
             changePassword: "/users/change-password",
+            byId: (id: string) => `/users/${id}`,
         },
         drivers: {
             base: "/drivers",

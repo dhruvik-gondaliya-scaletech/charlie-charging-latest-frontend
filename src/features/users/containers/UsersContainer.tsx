@@ -17,8 +17,10 @@ import {
   Activity,
   ShieldAlert,
   Loader2,
+  Trash2,
 } from 'lucide-react';
 import { useInviteUser } from '@/hooks/post/useAuthMutations';
+import { useDeleteUser } from '@/hooks/delete/useUserMutations';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Table } from '@/components/shared/Table';
 import { User } from '@/types';
@@ -27,11 +29,14 @@ import { UserInvitationModal } from '../components/UserInvitationModal';
 import { StatCard } from '../../dashboard/components/StatCard';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
+import { AnimatedModal } from '@/components/shared/AnimatedModal';
 
 export function UsersContainer() {
   const { data: users, isLoading, error } = useUsers();
   const inviteUser = useInviteUser();
+  const deleteUser = useDeleteUser();
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
 
   const stats = useMemo(() => {
     if (!users) return { total: 0, active: 0, pending: 0 };
@@ -41,6 +46,15 @@ export function UsersContainer() {
       pending: users.filter(u => !u.isEmailVerified).length,
     };
   }, [users]);
+
+  const handleDeleteConfirm = () => {
+    if (!deleteTarget) return;
+    deleteUser.mutate(deleteTarget.id, {
+      onSettled: () => {
+        setDeleteTarget(null);
+      },
+    });
+  };
 
   const columns: ColumnDef<User>[] = useMemo(
     () => [
@@ -115,29 +129,39 @@ export function UsersContainer() {
         header: 'Actions',
         cell: ({ row }) => {
           const user = row.original;
-          // Only enabled if isActive is false OR isEmailVerified is false
           const isPending = !user.isActive || !user.isEmailVerified;
 
           return (
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={!isPending || inviteUser.isPending}
-              onClick={() => {
-                inviteUser.mutate({
-                  email: user.email,
-                  role: 'admin',
-                });
-              }}
-              className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-wider bg-primary/5 hover:bg-primary/10 border-primary/10 text-primary transition-all flex items-center gap-1.5"
-            >
-              {inviteUser.isPending ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : (
-                <Mail className="h-3 w-3" />
-              )}
-              Resend Mail
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!isPending || inviteUser.isPending}
+                onClick={() => {
+                  inviteUser.mutate({
+                    email: user.email,
+                    role: 'admin',
+                  });
+                }}
+                className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-wider bg-primary/5 hover:bg-primary/10 border-primary/10 text-primary transition-all flex items-center gap-1.5"
+              >
+                {inviteUser.isPending ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Mail className="h-3 w-3" />
+                )}
+                Resend Mail
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setDeleteTarget(user)}
+                className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-wider bg-destructive/5 hover:bg-destructive/10 border-destructive/10 text-destructive transition-all flex items-center gap-1.5"
+              >
+                <Trash2 className="h-3 w-3" />
+                <span className='leading-none'>Delete</span>
+              </Button>
+            </div>
           );
         },
       },
@@ -173,7 +197,7 @@ export function UsersContainer() {
             <h1 className="text-3xl font-extrabold tracking-tight bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
               Personnel Registry
             </h1>
-            <p className="text-sm font-medium text-muted-foreground mt-1 tracking-tight">Enterprise workforce & access control management</p>
+            <p className="text-sm font-medium text-muted-foreground mt-1 tracking-tight">Enterprise workforce &amp; access control management</p>
           </div>
         </motion.div>
 
@@ -252,6 +276,54 @@ export function UsersContainer() {
           isOpen={isInviteModalOpen}
           onClose={() => setIsInviteModalOpen(false)}
         />
+
+        {/* Delete Confirmation Modal */}
+        <AnimatedModal
+          isOpen={!!deleteTarget}
+          onClose={() => setDeleteTarget(null)}
+          title="Delete User"
+          description="This action will remove the user from the system. They will no longer be able to log in."
+          size="sm"
+          footer={
+            <div className="flex gap-3 w-full sm:w-auto">
+              <Button
+                variant="outline"
+                onClick={() => setDeleteTarget(null)}
+                className="flex-1 sm:flex-none"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDeleteConfirm}
+                disabled={deleteUser.isPending}
+                className="flex-1 sm:flex-none"
+              >
+                {deleteUser.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <Trash2 className="h-4 w-4 mr-2" />
+                )}
+                Delete User
+              </Button>
+            </div>
+          }
+        >
+          <div className="flex flex-col items-center justify-center py-6 text-center">
+            <div className="h-20 w-20 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
+              <Trash2 className="h-10 w-10 text-destructive" />
+            </div>
+            <p className="text-sm font-medium text-muted-foreground">
+              Are you sure you want to delete{' '}
+              <span className="font-bold text-foreground">
+                {deleteTarget?.firstName || deleteTarget?.lastName
+                  ? `${deleteTarget?.firstName || ''} ${deleteTarget?.lastName || ''}`.trim()
+                  : deleteTarget?.email}
+              </span>
+              ?
+            </p>
+          </div>
+        </AnimatedModal>
       </motion.div>
     </TooltipProvider>
   );
