@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/popover';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { AnimatedModal } from './AnimatedModal';
+import { BrandLogo } from './BrandLogo';
 
 const navItems = [
   { href: FRONTEND_ROUTES.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard, roles: ['user', 'admin', 'super_admin'] },
@@ -60,9 +61,8 @@ export function Sidebar() {
 
   return (
     <div className="flex flex-col h-full bg-card border-r">
-      <div className="p-6 h-[100px] flex flex-col items-center justify-center text-center shrink-0">
-        <h1 className="text-2xl font-bold">Scale EV</h1>
-        {/* <p className="text-sm text-muted-foreground">Charging Station Management</p> */}
+      <div className="p-4 h-[100px] flex items-center justify-center shrink-0">
+        <BrandLogo width={180} height={70} />
       </div>
 
       <Separator />
