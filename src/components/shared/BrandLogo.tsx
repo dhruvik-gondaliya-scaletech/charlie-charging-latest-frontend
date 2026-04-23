@@ -10,9 +10,10 @@ interface BrandLogoProps {
   className?: string;
   width?: number;
   height?: number;
+  variant?: 'light' | 'dark';
 }
 
-export function BrandLogo({ className, width = 160, height = 60 }: BrandLogoProps) {
+export function BrandLogo({ className, width = 160, height = 60, variant }: BrandLogoProps) {
   const { theme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
 
@@ -25,7 +26,7 @@ export function BrandLogo({ className, width = 160, height = 60 }: BrandLogoProp
     return <div style={{ width, height }} className={cn("animate-pulse bg-muted/20 rounded-lg", className)} />;
   }
 
-  const currentTheme = resolvedTheme || theme;
+  const currentTheme = variant || resolvedTheme || theme;
   const isDark = currentTheme === 'dark';
 
   return (

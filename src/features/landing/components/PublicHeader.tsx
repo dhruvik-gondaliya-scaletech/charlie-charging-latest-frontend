@@ -2,13 +2,15 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FRONTEND_ROUTES } from '@/constants/constants';
 import { motion } from 'framer-motion';
+import { useTheme } from 'next-themes';
+import { BrandLogo } from '@/components/shared/BrandLogo';
 
 export function PublicHeader() {
   const [scrolled, setScrolled] = React.useState(false);
+  const { theme, resolvedTheme } = useTheme();
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -18,8 +20,14 @@ export function PublicHeader() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const textColor = scrolled ? 'text-background' : 'text-foreground';
+  const currentTheme = resolvedTheme || theme;
   const navLinkColor = scrolled ? 'text-background/80 hover:text-background' : 'text-muted-foreground hover:text-foreground';
+
+  // When scrolled, the background color inverts (Light -> Dark, Dark -> Light)
+  // so we need to pick the logo variant that contrasts with the new background
+  const logoVariant = scrolled
+    ? (currentTheme === 'dark' ? 'light' : 'dark')
+    : undefined; // undefined lets BrandLogo use the system theme
 
   return (
     <motion.header
@@ -37,9 +45,13 @@ export function PublicHeader() {
           }
         `}
       >
-        <Link href="/" className="flex items-center gap-2 group">
-          <Zap className={`h-6 w-6 ${textColor} fill-current group-hover:scale-110 transition-transform`} />
-          <span className={`font-bold text-xl tracking-tighter ${textColor}`}>Scale EV</span>
+        <Link href="/" className="flex items-center group">
+          <BrandLogo
+            width={130}
+            height={36}
+            variant={logoVariant}
+            className="transition-transform duration-300 group-hover:scale-105"
+          />
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">
