@@ -24,11 +24,15 @@ class UserService {
   }
 
   async updateProfile(data: UpdateProfileData) {
-    return httpService.put<User>(API_CONFIG.endpoints.users.profile, data);
+    return httpService.patch<User>(API_CONFIG.endpoints.users.profile, data);
   }
 
   async changePassword(data: ChangePasswordData) {
-    return httpService.put(API_CONFIG.endpoints.users.changePassword, data);
+    return httpService.post(API_CONFIG.endpoints.users.changePassword, data);
+  }
+
+  async deleteUser(id: string) {
+    return httpService.delete(API_CONFIG.endpoints.users.byId(id));
   }
 }
 
