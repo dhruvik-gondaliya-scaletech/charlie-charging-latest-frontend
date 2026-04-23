@@ -93,6 +93,7 @@ export function StationWizard({
             locationId: (initialData.location && typeof initialData.location === 'object' ? (initialData.location as any).id : initialData.locationId) || '',
             tariffId: (initialData as any).tariffId || '',
             type: initialData.type || 'AC',
+            visibility: (initialData as any).visibility || 'public',
             connectorTypes: initialData.connectorTypes || [],
         },
     });
@@ -141,6 +142,7 @@ export function StationWizard({
                 locationId: (initialData.location && typeof initialData.location === 'object' ? (initialData.location as any).id : initialData.locationId) || '',
                 tariffId: (initialData as any).tariffId || '',
                 type: initialData.type || 'AC',
+                visibility: (initialData as any).visibility || 'public',
                 connectorTypes: initialData.connectorTypes || [],
             }, {
                 keepDirtyValues: true, // Don't overwrite what user already typed if they started
@@ -152,7 +154,7 @@ export function StationWizard({
     const nextStep = async () => {
         let fieldsToValidate: (keyof WizardValues)[] = [];
         if (step === 1) fieldsToValidate = ['name', 'vendor', 'model', 'maxPower'];
-        if (step === 2) fieldsToValidate = ['serialNumber', 'chargePointId', 'type', 'locationId', 'tariffId'];
+        if (step === 2) fieldsToValidate = ['serialNumber', 'chargePointId', 'type', 'locationId', 'tariffId', 'visibility'];
 
         const isValid = await form.trigger(fieldsToValidate);
         if (isValid) setStep(prev => Math.min(prev + 1, 4));
@@ -517,6 +519,49 @@ export function StationWizard({
                                                         </SelectContent>
                                                     </Select>
                                                     <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1.5 opacity-70">Pricing rules applied to sessions</p>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+
+                                        <FormField
+                                            control={form.control as any}
+                                            name="visibility"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="font-bold flex items-center gap-1.5 focus:text-primary transition-colors">
+                                                        <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                                                        Visibility*
+                                                    </FormLabel>
+                                                    <Select
+                                                        onValueChange={field.onChange}
+                                                        defaultValue={field.value}
+                                                    >
+                                                        <FormControl>
+                                                            <SelectTrigger className="bg-muted/30 py-6 h-auto font-bold hover:bg-muted/40 transition-all border-border/60 w-full">
+                                                                <SelectValue placeholder="Select visibility" />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent className="rounded-xl border-border/60 shadow-2xl">
+                                                            <SelectItem value="public" className="font-bold py-3 focus:bg-primary/5">
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-500">
+                                                                        <Activity className="h-3.5 w-3.5" />
+                                                                    </div>
+                                                                    <span>Public</span>
+                                                                </div>
+                                                            </SelectItem>
+                                                            <SelectItem value="private" className="font-bold py-3 focus:bg-primary/5">
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="p-1.5 rounded-lg bg-rose-500/10 text-rose-500">
+                                                                        <ShieldCheck className="h-3.5 w-3.5" />
+                                                                    </div>
+                                                                    <span>Private</span>
+                                                                </div>
+                                                            </SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1.5 opacity-70">Public vs Private access</p>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}

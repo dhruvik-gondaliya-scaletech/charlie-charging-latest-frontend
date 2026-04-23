@@ -56,6 +56,7 @@ export interface Station {
   chargePointId: string;
   ocppVersion: string;
   type: 'AC' | 'DC';
+  visibility: 'public' | 'private';
   connectorCount: number;
   ocppConfiguration?: Record<string, unknown>;
   connectors: Connector[];

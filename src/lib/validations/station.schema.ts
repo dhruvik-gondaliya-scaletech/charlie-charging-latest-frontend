@@ -12,6 +12,7 @@ export const stationSchema = z.object({
   locationId: z.string().min(1, 'Location is required'),
   tariffId: z.string().min(1, 'Tariff is required'),
   type: z.enum(['AC', 'DC'], { message: 'Station type is required' }),
+  visibility: z.enum(['public', 'private'], { message: 'Visibility is required' }),
   connectorTypes: z.array(z.string()).min(1, 'At least one connector type is required'),
 });
 

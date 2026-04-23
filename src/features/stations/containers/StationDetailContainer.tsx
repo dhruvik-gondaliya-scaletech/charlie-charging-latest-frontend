@@ -497,6 +497,7 @@ export function StationDetailContainer() {
                                                 { label: 'Connection Fee', value: stationTariff ? `${stationTariff.connectionFee} ${stationTariff.currency}` : '-', icon: Terminal },
                                                 { label: 'Idle Fee', value: stationTariff ? `${stationTariff.idleFee} ${stationTariff.currency}` : '-', icon: Terminal },
                                                 { label: 'Station Type', value: station.type || 'AC', icon: Zap },
+                                                { label: 'Visibility', value: station.visibility === 'private' ? 'Private' : 'Public', icon: ShieldCheck },
                                             ].map((item, i) => (
                                                 <div key={i} className="flex items-start gap-3 group">
                                                     <div className="mt-1 p-1.5 rounded-md bg-muted/40 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
