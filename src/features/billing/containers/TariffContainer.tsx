@@ -184,7 +184,7 @@ export function TariffContainer() {
             onClick={() => setIsCreateOpen(true)}
             className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 font-bold shrink-0"
           >
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="h-4 w-4" />
             Create Tariff
           </Button>
         </div>

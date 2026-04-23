@@ -14,10 +14,9 @@ import {
   ShieldAlert,
   Clock,
   Banknote,
-  Navigation2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { fadeInUp, staggerContainer, staggerItem } from '@/lib/motion';
+import { fadeInUp, staggerContainer } from '@/lib/motion';
 import { Table } from '@/components/shared/Table';
 import { DriverSession } from '@/types';
 import { formatDate, formatTime } from '@/lib/date';
@@ -48,9 +47,6 @@ export function DriverSessionsContainer() {
         header: 'Station & Connector',
         cell: ({ row }) => (
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-sm transition-transform group-hover:scale-110">
-              <Navigation2 className="h-4 w-4" />
-            </div>
             <div className="flex flex-col">
               <span className="font-bold tracking-tight text-foreground">{row.original.stationName}</span>
               <div className="flex items-center gap-1.5 text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest mt-0.5">
@@ -69,9 +65,7 @@ export function DriverSessionsContainer() {
         header: 'Time Horizon',
         cell: ({ row }) => (
           <div className="flex items-center gap-3">
-            <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-500 border border-blue-500/20">
-              <Calendar className="h-3.5 w-3.5" />
-            </div>
+            <Calendar className="h-3.5 w-3.5" />
             <div className="flex flex-col">
               <span className="text-[11px] font-black uppercase text-foreground tracking-tight">
                 {formatDate(row.original.startTime, 'MMM dd, yyyy')}
@@ -98,8 +92,8 @@ export function DriverSessionsContainer() {
         accessorKey: 'durationMinutes',
         header: 'Duration',
         cell: ({ row }) => (
-          <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground/80 tracking-tight">
-            <Clock className="h-4 w-4 opacity-40 text-blue-500" />
+          <div className="flex items-center gap-2 text-xs font-bold tracking-tight">
+            <Clock className="h-4 w-4 text-blue-500" />
             <span>{row.original.durationMinutes}</span>
             <span className="text-[9px] uppercase tracking-widest opacity-40">Min</span>
           </div>
@@ -110,7 +104,7 @@ export function DriverSessionsContainer() {
         header: 'Financials',
         cell: ({ row }) => (
           <div className="flex items-center gap-1.5 font-black text-sm text-primary tracking-tight">
-            <Banknote className="h-4 w-4 opacity-70" />
+            <Banknote className="h-4 w-4 text-amber-500" />
             {new Intl.NumberFormat('en-IN', {
               style: 'currency',
               currency: row.original.currency || 'INR',

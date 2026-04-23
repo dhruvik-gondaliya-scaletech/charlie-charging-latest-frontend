@@ -29,6 +29,7 @@ import { UserInvitationModal } from '../components/UserInvitationModal';
 import { StatCard } from '../../dashboard/components/StatCard';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
+import { ActionIconButton } from '@/components/shared/ActionIconButton';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 
 export function UsersContainer() {
@@ -133,9 +134,9 @@ export function UsersContainer() {
 
           return (
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
+              <ActionIconButton
+                tooltip="Resend Invitation"
+                tone="primary"
                 disabled={!isPending || inviteUser.isPending}
                 onClick={() => {
                   inviteUser.mutate({
@@ -143,24 +144,18 @@ export function UsersContainer() {
                     role: 'admin',
                   });
                 }}
-                className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-wider bg-primary/5 hover:bg-primary/10 border-primary/10 text-primary transition-all flex items-center gap-1.5"
-              >
-                {inviteUser.isPending ? (
+                icon={inviteUser.isPending ? (
                   <Loader2 className="h-3 w-3 animate-spin" />
                 ) : (
                   <Mail className="h-3 w-3" />
                 )}
-                Resend Mail
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
+              />
+              <ActionIconButton
+                tooltip="Delete User"
+                tone="destructive"
                 onClick={() => setDeleteTarget(user)}
-                className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-wider bg-destructive/5 hover:bg-destructive/10 border-destructive/10 text-destructive transition-all flex items-center gap-1.5"
-              >
-                <Trash2 className="h-3 w-3" />
-                <span className='leading-none'>Delete</span>
-              </Button>
+                icon={<Trash2 className="h-3 w-3" />}
+              />
             </div>
           );
         },

@@ -32,6 +32,7 @@ import { useRouter } from 'next/navigation';
 import { FRONTEND_ROUTES } from '@/constants/constants';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { DriverAppConfig } from '../components/DriverAppConfig';
+import { ActionIconButton } from '@/components/shared/ActionIconButton';
 
 export function DriversContainer() {
 
@@ -111,17 +112,20 @@ export function DriversContainer() {
       },
       {
         id: 'actions',
-        header: 'Intelligence',
+        header: 'Sessions',
         cell: ({ row }) => (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => router.push(`${FRONTEND_ROUTES.DRIVER_DETAILS(row.original.id)}?name=${encodeURIComponent(`${row.original.firstName} ${row.original.lastName}`)}`)}
-            className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-widest border-border/40 hover:bg-primary/10 hover:text-primary transition-all"
-          >
-            <History className="mr-1.5 h-3 w-3" />
-            Sessions
-          </Button>
+          <ActionIconButton
+            tooltip="View Sessions"
+            tone="primary"
+            onClick={() =>
+              router.push(
+                `${FRONTEND_ROUTES.DRIVER_DETAILS(row.original.id)}?name=${encodeURIComponent(
+                  `${row.original.firstName} ${row.original.lastName}`
+                )}`
+              )
+            }
+            icon={<History className="h-3 w-3" />}
+          />
         ),
       },
     ],
@@ -216,7 +220,7 @@ export function DriversContainer() {
                     onClick={() => setIsFormModalOpen(true)}
                     className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
                   >
-                    <UserPlus className="mr-2 h-4 w-4" />
+                    <UserPlus className="h-4 w-4" />
                     Add Driver
                   </Button>
                 }

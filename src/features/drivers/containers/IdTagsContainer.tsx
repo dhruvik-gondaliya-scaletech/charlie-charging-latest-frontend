@@ -81,7 +81,7 @@ export function IdTagsContainer() {
         header: 'Status',
         cell: ({ row }) => {
           const status = row.original.status;
-          
+
           let badgeClass = "bg-muted/30 text-muted-foreground border-muted-foreground/20";
           let icon = <AlertTriangle className="h-3 w-3" />;
 
@@ -217,7 +217,7 @@ export function IdTagsContainer() {
                 }}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
               >
-                <Plus className="mr-2 h-4 w-4" />
+                <Plus className="h-4 w-4" />
                 Enroll New Tag
               </Button>
             }
