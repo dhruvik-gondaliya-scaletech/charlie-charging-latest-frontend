@@ -60,7 +60,7 @@ export function Sidebar() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-card border-r">
+    <div className="hidden md:flex flex-col h-full bg-card border-r">
       <div className="p-4 h-[100px] flex items-center justify-center shrink-0">
         <BrandLogo width={180} height={70} />
       </div>

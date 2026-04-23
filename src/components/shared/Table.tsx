@@ -21,6 +21,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -71,6 +72,7 @@ interface TableProps<T> {
   renderRowDetails?: (row: T) => ReactNode;
   onRowClick?: (row: T) => void;
   emptyState?: ReactNode;
+  renderMobileCard?: (item: T, index: number) => ReactNode;
   totalCount?: number;
   pageIndex?: number;
   onPageChange?: (page: number) => void;
@@ -171,6 +173,7 @@ export function Table<T>({
   pageIndex: externalPageIndex,
   onPageChange,
   onPageSizeChange,
+  renderMobileCard,
 }: TableProps<T>) {
 
   const [sorting, setSorting] = useState<SortingState>(() =>
@@ -449,28 +452,77 @@ export function Table<T>({
   return (
     <div className={`space-y-6 ${className}`}>
       {showSearch && (
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 px-1">
           {title || <div />}
-          <div className={`flex items-center justify-${searchPosition} gap-2`}>
+          <div className={cn(
+            "flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto",
+            searchPosition === 'end' ? 'sm:justify-end' : searchPosition === 'center' ? 'sm:justify-center' : 'sm:justify-start'
+          )}>
             {prependWithSearch}
-            <input
-              type="text"
-              placeholder="Search..."
-              value={search}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="max-w-sm px-4 py-2 border border-input bg-background rounded-lg focus:ring-2 focus:ring-ring focus:border-input transition-all"
-            />
+            <div className="relative group flex-1 sm:flex-none">
+              <input
+                type="text"
+                placeholder="Search..."
+                value={search}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="w-full sm:min-w-[240px] px-4 py-2 border border-input bg-background rounded-lg focus:ring-2 focus:ring-ring focus:border-input transition-all"
+              />
+            </div>
             {appendWithSearch}
           </div>
         </div>
       )}
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-4">
+        {isLoading ? (
+          Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="bg-card border border-border rounded-2xl p-4 space-y-3">
+              <div className="h-6 bg-muted animate-pulse rounded-lg w-3/4" />
+              <div className="h-4 bg-muted animate-pulse rounded-lg w-1/2" />
+              <div className="flex gap-2">
+                <div className="h-8 bg-muted animate-pulse rounded-lg w-20" />
+                <div className="h-8 bg-muted animate-pulse rounded-lg w-20" />
+              </div>
+            </div>
+          ))
+        ) : table.getRowModel().rows.length > 0 ? (
+          table.getRowModel().rows.map((row, index) => (
+            <div key={row.id}>
+              {renderMobileCard ? (
+                renderMobileCard(row.original, index)
+              ) : (
+                <div className="bg-card border border-border rounded-2xl p-4 shadow-sm">
+                  {row.getVisibleCells().map((cell) => {
+                    const header = cell.column.columnDef.header;
+                    return (
+                      <div key={cell.id} className="flex flex-col mb-3 last:mb-0">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">
+                          {typeof header === 'string' ? header : cell.column.id}
+                        </span>
+                        <div className="text-sm font-medium">
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ))
+        ) : (
+          <div className="py-12 text-center text-muted-foreground bg-card rounded-2xl border border-dashed border-border/60">
+            {emptyState || "No data available"}
+          </div>
+        )}
+      </div>
 
-      <div className="rounded-lg border border-border bg-card overflow-hidden shadow-sm">
+      {/* Desktop Table View */}
+      <div className="hidden md:block rounded-xl border border-border bg-card overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <div
             id="table-container"
             ref={tableContainerRef}
-            className="overflow-y-auto"
+            className="overflow-y-auto custom-scrollbar-dark"
             style={{ maxHeight }}
           >
             <div style={{ width: "100%" }}>
@@ -616,86 +668,93 @@ export function Table<T>({
             </div>
           </div>
         </div>
+      </div>
 
-        {showPagination && !isLoading && filteredData.length > 0 && (
-          <div className="flex flex-col gap-4 px-6 py-4 bg-card border-t border-border">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <span className="whitespace-nowrap">Rows per page:</span>
-                  <Select
-                    value={currentPageSize.toString()}
-                    onValueChange={(value) => handlePageSizeChange(Number(value))}
-                  >
-                    <SelectTrigger className="h-8 w-[70px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="10">10</SelectItem>
-                      <SelectItem value="25">25</SelectItem>
-                      <SelectItem value="50">50</SelectItem>
-                      <SelectItem value="100">100</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <span className="whitespace-nowrap">
-                  Showing {displayPageIndex * currentPageSize + 1} to{" "}
-                  {Math.min((displayPageIndex + 1) * currentPageSize, displayTotalCount)} of{" "}
-                  {displayTotalCount} results
-                </span>
+      {showPagination && !isLoading && filteredData.length > 0 && (
+        <div className="flex flex-col gap-4 px-4 sm:px-6 py-4 bg-card border-t border-border">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-6 w-full">
+            <div className="flex flex-col sm:flex-row items-center gap-x-8 gap-y-4 text-sm text-muted-foreground w-full lg:w-auto justify-center lg:justify-start">
+              <div className="flex items-center gap-3">
+                <span className="whitespace-nowrap font-medium">Rows per page:</span>
+                <Select
+                  value={currentPageSize.toString()}
+                  onValueChange={(value) => handlePageSizeChange(Number(value))}
+                >
+                  <SelectTrigger className="h-9 w-[80px] bg-muted/20 border-border/40 rounded-xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-border/40">
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="25">25</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                    <SelectItem value="100">100</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="w-full sm:w-auto flex justify-center sm:justify-end">
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious
-                        onClick={() => displayPageIndex > 0 && handlePageChange(displayPageIndex - 1)}
-                        className={displayPageIndex === 0 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                      />
-                    </PaginationItem>
-                    {Array.from({ length: displayTotalPages }, (_, i) => i).map((pageNum) => {
-                      if (
-                        pageNum === 0 ||
-                        pageNum === displayTotalPages - 1 ||
-                        (pageNum >= displayPageIndex - 1 && pageNum <= displayPageIndex + 1)
-                      ) {
-                        return (
-                          <PaginationItem key={pageNum}>
-                            <PaginationLink
-                              onClick={() => handlePageChange(pageNum)}
-                              isActive={displayPageIndex === pageNum}
-                              className="cursor-pointer"
-                            >
-                              {pageNum + 1}
-                            </PaginationLink>
-                          </PaginationItem>
-                        );
-                      } else if (
-                        pageNum === displayPageIndex - 2 ||
-                        pageNum === displayPageIndex + 2
-                      ) {
-                        return (
-                          <PaginationItem key={pageNum}>
-                            <PaginationEllipsis />
-                          </PaginationItem>
-                        );
-                      }
-                      return null;
-                    })}
-                    <PaginationItem>
-                      <PaginationNext
-                        onClick={() => displayPageIndex < displayTotalPages - 1 && handlePageChange(displayPageIndex + 1)}
-                        className={displayPageIndex === displayTotalPages - 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
-              </div>
-
+              <span className="whitespace-nowrap font-medium text-xs sm:text-sm bg-muted/10 px-3 py-1 rounded-full border border-border/10">
+                Showing <span className="text-foreground font-bold">{displayPageIndex * currentPageSize + 1}</span> to{" "}
+                <span className="text-foreground font-bold">{Math.min((displayPageIndex + 1) * currentPageSize, displayTotalCount)}</span> of{" "}
+                <span className="text-foreground font-bold">{displayTotalCount}</span> results
+              </span>
+            </div>
+            <div className="w-full lg:w-auto flex justify-center lg:justify-end border-t lg:border-t-0 pt-4 lg:pt-0 border-border/10">
+              <Pagination>
+                <PaginationContent className="gap-1 sm:gap-2">
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() => displayPageIndex > 0 && handlePageChange(displayPageIndex - 1)}
+                      className={cn(
+                        "h-9 px-3 sm:px-4 rounded-xl border-border/40 hover:bg-muted font-bold transition-all",
+                        displayPageIndex === 0 ? "pointer-events-none opacity-50" : "cursor-pointer"
+                      )}
+                    />
+                  </PaginationItem>
+                  {Array.from({ length: displayTotalPages }, (_, i) => i).map((pageNum) => {
+                    if (
+                      pageNum === 0 ||
+                      pageNum === displayTotalPages - 1 ||
+                      (pageNum >= displayPageIndex - 1 && pageNum <= displayPageIndex + 1)
+                    ) {
+                      return (
+                        <PaginationItem key={pageNum}>
+                          <PaginationLink
+                            onClick={() => handlePageChange(pageNum)}
+                            isActive={displayPageIndex === pageNum}
+                            className={cn(
+                              "h-9 w-9 sm:h-10 sm:w-10 rounded-xl border-border/40 cursor-pointer font-bold transition-all",
+                            )}
+                          >
+                            {pageNum + 1}
+                          </PaginationLink>
+                        </PaginationItem>
+                      );
+                    } else if (
+                      pageNum === displayPageIndex - 2 ||
+                      pageNum === displayPageIndex + 2
+                    ) {
+                      return (
+                        <PaginationItem key={pageNum} className="hidden sm:inline-block">
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      );
+                    }
+                    return null;
+                  })}
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => displayPageIndex < displayTotalPages - 1 && handlePageChange(displayPageIndex + 1)}
+                      className={cn(
+                        "h-9 px-3 sm:px-4 rounded-xl border-border/40 hover:bg-muted font-bold transition-all",
+                        displayPageIndex === displayTotalPages - 1 ? "pointer-events-none opacity-50" : "cursor-pointer"
+                      )}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

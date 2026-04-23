@@ -98,7 +98,7 @@ export function IdTagFormModal({ isOpen, onClose, initialData }: IdTagFormModalP
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="idTag" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">RFID Tag ID</Label>
+          <Label htmlFor="idTag" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 ml-1">RFID Tag ID</Label>
           <div className="relative">
             <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
             <Input
@@ -113,7 +113,7 @@ export function IdTagFormModal({ isOpen, onClose, initialData }: IdTagFormModalP
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="driverId" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Assign to Driver</Label>
+          <Label htmlFor="driverId" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 ml-1">Assign to Driver</Label>
           <Controller
             control={control}
             name="driverId"
@@ -145,7 +145,7 @@ export function IdTagFormModal({ isOpen, onClose, initialData }: IdTagFormModalP
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="status" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Token Status</Label>
+            <Label htmlFor="status" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 ml-1">Token Status</Label>
             <Controller
               control={control}
               name="status"
@@ -171,7 +171,7 @@ export function IdTagFormModal({ isOpen, onClose, initialData }: IdTagFormModalP
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="expiryDate" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Expiry Date</Label>
+            <Label htmlFor="expiryDate" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 ml-1">Expiry Date</Label>
             <div className="relative">
               <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
               <Input

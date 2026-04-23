@@ -161,12 +161,12 @@ export function IdTagsContainer() {
         variants={staggerContainer}
         initial="initial"
         animate="animate"
-        className="space-y-8 p-4 md:p-8 max-w-[1600px] mx-auto"
+        className="space-y-6 sm:space-y-8 p-4 sm:p-6 md:p-8 max-w-[1600px] mx-auto"
       >
         {/* Header Section */}
         <motion.div variants={staggerItem} className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="space-y-1">
-            <h1 className="text-3xl font-extrabold tracking-tight bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
               Access Control (ID Tags)
             </h1>
             <p className="text-sm font-medium text-muted-foreground mt-1 tracking-tight">Manage RFID tags and authentication tokens for drivers</p>
@@ -224,6 +224,80 @@ export function IdTagsContainer() {
             pageSize={DEFAULT_PAGE_SIZE}
             maxHeight="700px"
             className="border-none shadow-none"
+            renderMobileCard={(tag) => {
+              const status = tag.status;
+              let badgeClass = "bg-muted/30 text-muted-foreground border-muted-foreground/20";
+              let icon = <AlertTriangle className="h-3 w-3" />;
+
+              if (status === IdTagStatus.ACCEPTED) {
+                badgeClass = "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+                icon = <CheckCircle2 className="h-3 w-3" />;
+              } else if (status === IdTagStatus.BLOCKED) {
+                badgeClass = "bg-destructive/10 text-destructive border-destructive/20";
+                icon = <XCircle className="h-3 w-3" />;
+              } else if (status === IdTagStatus.EXPIRED) {
+                badgeClass = "bg-amber-500/10 text-amber-500 border-amber-500/20";
+                icon = <AlertTriangle className="h-3 w-3" />;
+              }
+
+              return (
+                <div className="bg-card border border-border rounded-[1.5rem] p-5 shadow-sm space-y-4">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 rounded-xl bg-primary/5 text-primary border border-primary/10">
+                        <CreditCard className="h-5 w-5" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-black tracking-widest text-foreground uppercase text-lg leading-tight">
+                          {tag.idTag}
+                        </span>
+                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
+                          <User className="h-3 w-3 opacity-60" />
+                          {tag.driver ? `${tag.driver.firstName} ${tag.driver.lastName}` : 'Unassigned'}
+                        </div>
+                      </div>
+                    </div>
+                    <Badge variant="outline" className={`${badgeClass} font-bold px-2.5 py-0.5 rounded-full text-[9px] uppercase tracking-widest flex items-center gap-1`}>
+                      {icon}
+                      {status}
+                    </Badge>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 py-1">
+                    <div className="space-y-1">
+                      <span className="text-[9px] font-bold uppercase text-muted-foreground/50 tracking-wider flex items-center gap-1">
+                        <Calendar className="h-2.5 w-2.5" /> Expiry
+                      </span>
+                      <p className="text-sm font-semibold">{tag.expiryDate ? formatDate(tag.expiryDate) : 'Never'}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-1 border-t border-border/50">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="h-8 px-3 rounded-xl font-bold text-xs"
+                      onClick={() => {
+                        setSelectedIdTag(tag);
+                        setIsFormModalOpen(true);
+                      }}
+                    >
+                      <Edit2 className="h-3.5 w-3.5 mr-1.5" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-3 rounded-xl font-bold text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+                      onClick={() => setIdTagToDelete(tag.idTag)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-1.5" />
+                      Revoke
+                    </Button>
+                  </div>
+                </div>
+              );
+            }}
             emptyState={
               <div className="py-24 flex flex-col items-center justify-center text-center gap-6 bg-card/10 rounded-[2.5rem] border-2 border-dashed border-border/40">
                 <div className="p-6 rounded-full bg-primary/5 text-primary/40 ring-1 ring-primary/10">

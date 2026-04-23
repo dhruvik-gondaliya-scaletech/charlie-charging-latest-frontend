@@ -81,13 +81,13 @@ export function DriverAppConfig() {
   }
 
   return (
-    <motion.div variants={staggerItem} className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-1">
+    <motion.div variants={staggerItem} className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 p-1">
       <div className="lg:col-span-2 space-y-8">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             {/* General Branding Section */}
             <Card className="border-border/40 bg-card/10 backdrop-blur-sm overflow-hidden rounded-[2.5rem] shadow-none">
-              <CardHeader className="p-8 pb-4">
+              <CardHeader className="p-5 sm:p-8 pb-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
@@ -104,13 +104,13 @@ export function DriverAppConfig() {
                   </Badge>
                 </div>
               </CardHeader>
-              <CardContent className="p-8 py-4 space-y-6">
+              <CardContent className="p-5 sm:p-8 py-4 space-y-6">
                 <FormField
                   control={form.control}
                   name="appName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="font-black text-[10px] uppercase tracking-widest text-muted-foreground ml-1">App Display Name</FormLabel>
+                      <FormLabel className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 ml-1">App Display Name</FormLabel>
                       <FormControl>
                         <Input 
                           placeholder="e.g. My Charging App" 
@@ -129,7 +129,7 @@ export function DriverAppConfig() {
                   name="logoUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="font-black text-[10px] uppercase tracking-widest text-muted-foreground ml-1">Application Logo</FormLabel>
+                      <FormLabel className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 ml-1">Application Logo</FormLabel>
                       <FormControl>
                         <ImageUpload 
                           value={field.value} 
@@ -146,19 +146,19 @@ export function DriverAppConfig() {
                   name="domain"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="font-black text-[10px] uppercase tracking-widest text-muted-foreground ml-1">App Domain</FormLabel>
+                      <FormLabel className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 ml-1">App Domain</FormLabel>
                       <FormControl>
-                        <div className="flex items-center group transition-all">
-                          <div className="flex items-center h-12 px-4 rounded-l-xl border border-r-0 border-border/40 bg-muted/30 text-muted-foreground/60 text-xs font-bold whitespace-nowrap group-focus-within:border-primary/20 group-focus-within:text-primary transition-all">
+                        <div className="flex flex-col sm:flex-row sm:items-center group transition-all border border-border/40 rounded-xl overflow-hidden focus-within:border-primary/40">
+                          <div className="flex items-center h-10 sm:h-12 px-4 bg-muted/30 text-muted-foreground/60 text-[10px] sm:text-xs font-bold whitespace-nowrap group-focus-within:text-primary transition-all border-b sm:border-b-0 sm:border-r border-border/40">
                             https://
                           </div>
                           <Input 
                             placeholder="subdomain" 
                             {...field} 
-                            className="h-12 bg-background border-border/40 border-x-0 focus-visible:ring-0 focus-visible:ring-offset-0 rounded-none font-bold"
+                            className="h-10 sm:h-12 bg-background border-none focus-visible:ring-0 focus-visible:ring-offset-0 rounded-none font-bold text-sm sm:text-base flex-1"
                           />
-                          <div className="flex items-center h-12 px-4 rounded-r-xl border border-l-0 border-border/40 bg-muted/30 text-muted-foreground/60 text-xs font-bold whitespace-nowrap group-focus-within:border-primary/20 group-focus-within:text-primary transition-all">
-                            .{BASE_DOMAIN}
+                          <div className="flex items-center h-10 sm:h-12 px-4 bg-muted/30 text-muted-foreground/60 text-[10px] sm:text-xs font-bold whitespace-nowrap group-focus-within:text-primary transition-all border-t sm:border-t-0 sm:border-l border-border/40 overflow-hidden">
+                            <span className="truncate">.{BASE_DOMAIN}</span>
                           </div>
                         </div>
                       </FormControl>
@@ -172,7 +172,7 @@ export function DriverAppConfig() {
 
             {/* Support Information Section */}
             <Card className="border-border/40 bg-card/10 backdrop-blur-sm overflow-hidden rounded-[2.5rem] shadow-none">
-              <CardHeader className="p-8 pb-4">
+              <CardHeader className="p-5 sm:p-8 pb-4">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                     <Smartphone className="h-5 w-5" />
@@ -183,14 +183,14 @@ export function DriverAppConfig() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="p-8 py-4 space-y-6">
+              <CardContent className="p-5 sm:p-8 py-4 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
                     name="supportContact.email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="font-black text-[10px] uppercase tracking-widest text-muted-foreground ml-1">Support Email</FormLabel>
+                        <FormLabel className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 ml-1">Support Email</FormLabel>
                         <div className="relative">
                           <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground opacity-40" />
                           <FormControl>
@@ -211,7 +211,7 @@ export function DriverAppConfig() {
                     name="supportContact.phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="font-black text-[10px] uppercase tracking-widest text-muted-foreground ml-1">Support Phone</FormLabel>
+                        <FormLabel className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 ml-1">Support Phone</FormLabel>
                         <div className="relative">
                           <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground opacity-40" />
                           <FormControl>
@@ -233,7 +233,7 @@ export function DriverAppConfig() {
                   name="supportContact.website"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="font-black text-[10px] uppercase tracking-widest text-muted-foreground ml-1">Support Website</FormLabel>
+                      <FormLabel className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 ml-1">Support Website</FormLabel>
                       <div className="relative">
                         <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground opacity-40" />
                         <FormControl>
@@ -249,7 +249,7 @@ export function DriverAppConfig() {
                   )}
                 />
               </CardContent>
-              <div className="p-8 pt-4 border-t border-border/40 bg-muted/20">
+              <div className="p-5 sm:p-8 pt-4 border-t border-border/40 bg-muted/20">
                 <Button 
                   type="submit" 
                   disabled={updateConfig.isPending}

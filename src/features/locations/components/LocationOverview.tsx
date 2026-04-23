@@ -89,7 +89,7 @@ export function LocationOverview({ location }: LocationOverviewProps) {
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    <div className="aspect-square rounded-2xl bg-muted/10 overflow-hidden border border-primary/10 relative">
+                    <div className="aspect-video sm:aspect-square rounded-2xl bg-muted/10 overflow-hidden border border-primary/10 relative">
                         {location.latitude && location.longitude ? (
                             <LeafletMap
                                 latitude={location.latitude}

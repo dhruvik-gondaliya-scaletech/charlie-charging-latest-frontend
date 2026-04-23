@@ -142,7 +142,7 @@ export function ConfigurationManager({ stationId }: ConfigurationManagerProps) {
                     filteredKeys.map((ck: ConfigurationKey) => (
                         <div
                             key={ck.key}
-                            className="group flex flex-col md:flex-row md:items-center justify-between p-4 rounded-2xl border border-border/60 bg-card/40 hover:bg-card hover:shadow-sm transition-all gap-4"
+                            className="group flex flex-col md:flex-row md:items-start md:items-center justify-between p-4 sm:p-5 rounded-2xl border border-border/60 bg-card/40 hover:bg-card hover:shadow-sm transition-all gap-4 sm:gap-6"
                         >
                             <div className="space-y-1.5 flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
@@ -164,7 +164,7 @@ export function ConfigurationManager({ stationId }: ConfigurationManagerProps) {
                                 </p>
                             </div>
 
-                            <div className="flex items-center gap-2 md:w-80">
+                            <div className="flex items-center gap-2 w-full md:w-80">
                                 <Input
                                     value={pendingChanges[ck.key] ?? ck.value ?? ''}
                                     onChange={(e) => handleValueChange(ck.key, e.target.value)}

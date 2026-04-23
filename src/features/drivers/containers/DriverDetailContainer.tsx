@@ -140,7 +140,7 @@ export function DriverSessionsContainer() {
 
   if (isLoadingDriver || (isLoadingSessions && !sessions)) {
     return (
-      <div className="space-y-8 p-4 md:p-8 max-w-[1600px] mx-auto">
+      <div className="space-y-6 sm:space-y-8 p-4 sm:p-6 md:p-8 max-w-[1600px] mx-auto">
         <div className="space-y-4">
           <Skeleton className="h-4 w-32" />
           <Skeleton className="h-10 w-64" />
@@ -177,12 +177,12 @@ export function DriverSessionsContainer() {
       variants={staggerContainer}
       initial="initial"
       animate="animate"
-      className="space-y-8 p-4 md:p-8 max-w-[1600px] mx-auto"
+      className="space-y-6 sm:space-y-8 p-4 sm:p-6 md:p-8 max-w-[1600px] mx-auto"
     >
       <motion.div variants={fadeInUp} className="space-y-1">
         <BackButton href={FRONTEND_ROUTES.DRIVERS} label="Return to Driver Registry" />
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-4xl font-black tracking-tighter bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tighter bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
             {driver?.firstName} {driver?.lastName}
           </h1>
           <div className="h-2 w-2 rounded-full bg-border" />
@@ -249,6 +249,78 @@ export function DriverSessionsContainer() {
           pageSize={10}
           maxHeight="800px"
           className="border-none shadow-none"
+          renderMobileCard={(session) => (
+            <div className="bg-card/50 backdrop-blur-md border border-border/40 rounded-[2rem] p-6 space-y-5 shadow-sm group">
+              <div className="flex justify-between items-start gap-4">
+                <div className="space-y-1">
+                  <h4 className="text-base font-black tracking-tight text-foreground">{session.stationName}</h4>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-primary/30 bg-primary/5 text-primary font-black uppercase tracking-widest">
+                      Port #{session.connectorId}
+                    </Badge>
+                    <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">{session.connectorType || 'Type 2'}</span>
+                  </div>
+                </div>
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    'font-black uppercase tracking-widest text-[8px] px-2 py-0.5 rounded-full border shadow-xs',
+                    (session.status === 'completed' || session.status === 'COMPLETED')
+                      ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                      : (session.status === 'in_progress' || session.status === 'IN_PROGRESS')
+                        ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                        : 'bg-destructive/10 text-destructive border-destructive/20'
+                  )}
+                >
+                  {session.status}
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-2 gap-y-5 gap-x-4 pt-2 border-t border-border/10">
+                <div className="space-y-1">
+                  <span className="text-[9px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-1.5">
+                    <Calendar className="h-3 w-3" /> Time Horizon
+                  </span>
+                  <div className="flex flex-col">
+                    <span className="text-[11px] font-bold text-foreground">{formatDate(session.startTime, 'MMM dd, yyyy')}</span>
+                    <span className="text-[10px] font-medium text-muted-foreground/60">{formatTime(session.startTime)}</span>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <span className="text-[9px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-1.5">
+                    <Zap className="h-3 w-3" /> Energy Yield
+                  </span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-sm font-black text-foreground">{session.energyDeliveredKwh.toFixed(2)}</span>
+                    <span className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-widest">kWh</span>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <span className="text-[9px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-1.5">
+                    <Clock className="h-3 w-3" /> Duration
+                  </span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-sm font-black text-foreground">{session.durationMinutes}</span>
+                    <span className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-widest">MIN</span>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <span className="text-[9px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-1.5">
+                    <Banknote className="h-3 w-3" /> Financials
+                  </span>
+                  <div className="text-sm font-black text-primary">
+                    {new Intl.NumberFormat('en-IN', {
+                      style: 'currency',
+                      currency: session.currency || 'INR',
+                    }).format(session.totalCost)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           emptyState={
             <div className="py-32 flex flex-col items-center justify-center text-center gap-6">
               <div className="p-8 rounded-full bg-primary/5 text-primary/30 ring-1 ring-primary/10 animate-pulse">

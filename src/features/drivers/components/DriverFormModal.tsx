@@ -60,7 +60,7 @@ export function DriverFormModal({ isOpen, onClose }: DriverFormModalProps) {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="firstName" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">First Name</Label>
+            <Label htmlFor="firstName" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 ml-1">First Name</Label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
               <Input
@@ -73,7 +73,7 @@ export function DriverFormModal({ isOpen, onClose }: DriverFormModalProps) {
             {errors.firstName && <p className="text-[10px] font-bold text-destructive uppercase tracking-widest ml-1">{errors.firstName.message}</p>}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="lastName" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Last Name</Label>
+            <Label htmlFor="lastName" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 ml-1">Last Name</Label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
               <Input
@@ -88,7 +88,7 @@ export function DriverFormModal({ isOpen, onClose }: DriverFormModalProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Email Address</Label>
+          <Label htmlFor="email" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 ml-1">Email Address</Label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
             <Input
@@ -103,7 +103,7 @@ export function DriverFormModal({ isOpen, onClose }: DriverFormModalProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Access Password</Label>
+          <Label htmlFor="password" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 ml-1">Access Password</Label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
             <Input
@@ -118,7 +118,7 @@ export function DriverFormModal({ isOpen, onClose }: DriverFormModalProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="phoneNumber" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Phone Number (Optional)</Label>
+          <Label htmlFor="phoneNumber" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 ml-1">Phone Number (Optional)</Label>
           <div className="relative">
             <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
             <Input

@@ -81,7 +81,7 @@ export function LocationDetailContainer() {
             variants={staggerContainer}
             initial="initial"
             animate="animate"
-            className="space-y-8 p-4 md:p-8 max-w-[1600px] mx-auto"
+            className="space-y-6 sm:space-y-8 p-4 sm:p-6 md:p-8 max-w-[1600px] mx-auto"
         >
             {/* Header Section */}
             <motion.div variants={fadeInUp} className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
@@ -90,8 +90,8 @@ export function LocationDetailContainer() {
                         href={FRONTEND_ROUTES.LOCATIONS}
                         label="Return to Locations"
                     />
-                    <div className="flex flex-wrap items-center gap-3">
-                        <h1 className="text-4xl font-black tracking-tight text-foreground uppercase">{location.name}</h1>
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-foreground uppercase">{location.name}</h1>
                         <Badge
                             variant="outline"
                             className={cn(
@@ -142,9 +142,9 @@ export function LocationDetailContainer() {
             {/* Main Content Tabs */}
             <motion.div variants={fadeInUp}>
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-                    <TabsList className="bg-muted/40 p-1 border border-border/40 rounded-2xl backdrop-blur-md h-auto flex-wrap sm:flex-nowrap">
-                        <TabsTrigger value="overview" className="rounded-xl font-black uppercase tracking-widest text-[11px] px-8 py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm">Overview</TabsTrigger>
-                        <TabsTrigger value="stations" className="rounded-xl font-black uppercase tracking-widest text-[11px] px-8 py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm">Assigned Stations</TabsTrigger>
+                    <TabsList className="bg-muted/40 p-1 border border-border/40 rounded-2xl backdrop-blur-md h-auto flex-wrap sm:flex-nowrap w-full sm:w-auto">
+                        <TabsTrigger value="overview" className="flex-1 sm:flex-none rounded-xl font-black uppercase tracking-widest text-[11px] px-4 sm:px-8 py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">Overview</TabsTrigger>
+                        <TabsTrigger value="stations" className="flex-1 sm:flex-none rounded-xl font-black uppercase tracking-widest text-[11px] px-4 sm:px-8 py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">Assigned Stations</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="overview">
