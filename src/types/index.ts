@@ -337,7 +337,7 @@ export interface Session {
   userFirstName?: string | null;
   userLastName?: string | null;
   connectorId: number;
-  connectorTypes?: string | null;
+  connectorType?: string | null;
   connectorMaxPower?: number | null;
   idTag: string;
   transactionId: string | number;
