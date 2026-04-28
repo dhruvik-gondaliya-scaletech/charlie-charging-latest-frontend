@@ -402,7 +402,7 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
                                     <div>
                                         <p className="font-bold text-foreground leading-tight">{fullName}</p>
                                         <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mt-0.5">
-                                            {session.connectorTypes || 'CCS2'} • {session.connectorMaxPower || 22}kW
+                                            {session.connectorType || 'CCS2'} • {session.connectorMaxPower || 22}kW
                                         </p>
                                     </div>
                                 </div>
