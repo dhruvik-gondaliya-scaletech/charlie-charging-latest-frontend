@@ -33,7 +33,7 @@ import { useTenantConfig } from '@/hooks/get/useTenantConfig';
 import { useUpdateTenantConfig } from '@/hooks/put/useUpdateTenantConfig';
 import { staggerItem } from '@/lib/motion';
 
-const BASE_DOMAIN = 'scale-ev.scaletech.xyz';
+const BASE_DOMAIN = 'scaleev.scaletech.xyz';
 
 export function DriverAppConfig() {
   const { data: config, isLoading } = useTenantConfig();
