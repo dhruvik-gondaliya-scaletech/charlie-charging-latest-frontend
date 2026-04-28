@@ -317,47 +317,49 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
                 </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 p-4 bg-muted/20 backdrop-blur-sm border border-border/40 rounded-2xl shadow-sm">
-                <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-muted/20 backdrop-blur-sm border border-border/40 rounded-2xl shadow-sm">
+                <div className="flex items-center gap-2 w-full sm:w-auto">
                     <Filter className="h-3.5 w-3.5 text-muted-foreground/60" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Filters:</span>
                 </div>
 
-                {/* Status Filter */}
-                <div className="flex items-center gap-2">
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                        <SelectTrigger className="w-[160px] h-10 rounded-xl border-border/40 bg-card/20 font-bold text-xs">
-                            <SelectValue placeholder="All Statuses" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-xl border-border/40 bg-card/95 backdrop-blur-xl">
-                            <SelectItem value="all" className="text-xs font-semibold">All Statuses</SelectItem>
-                            <SelectItem value="completed" className="text-xs font-semibold">Completed</SelectItem>
-                            <SelectItem value="in-progress" className="text-xs font-semibold">In Progress</SelectItem>
-                            <SelectItem value="failed" className="text-xs font-semibold">Failed</SelectItem>
-                        </SelectContent>
-                    </Select>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1 w-full">
+                    {/* Status Filter */}
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <Select value={statusFilter} onValueChange={setStatusFilter}>
+                            <SelectTrigger className="w-full sm:w-[160px] h-10 rounded-xl border-border/40 bg-card/20 font-bold text-xs">
+                                <SelectValue placeholder="All Statuses" />
+                            </SelectTrigger>
+                            <SelectContent className="w-[var(--radix-select-trigger-width)] sm:w-auto rounded-xl border-border/40 bg-card/95 backdrop-blur-xl">
+                                <SelectItem value="all" className="text-xs font-semibold">All Statuses</SelectItem>
+                                <SelectItem value="completed" className="text-xs font-semibold">Completed</SelectItem>
+                                <SelectItem value="in-progress" className="text-xs font-semibold">In Progress</SelectItem>
+                                <SelectItem value="failed" className="text-xs font-semibold">Failed</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {/* Date Range Picker */}
+                    <div className="flex items-center gap-2 w-full sm:w-auto sm:border-l sm:border-border/20 sm:pl-3">
+                        <DatePicker 
+                            dateRange={dateRange} 
+                            onDateRangeChange={setDateRange}
+                            className="h-10 w-full sm:w-auto"
+                        />
+                    </div>
                 </div>
 
-                {/* Date Range Picker */}
-                <div className="flex items-center gap-2 border-l border-border/20 pl-3">
-                    <DatePicker 
-                        dateRange={dateRange} 
-                        onDateRangeChange={setDateRange}
-                        className="h-10"
-                    />
-                </div>
-
-                <div className="flex items-center gap-2 ml-auto">
+                <div className="flex items-center gap-2 w-full sm:w-auto sm:ml-auto">
                     {/* Reset Filters Button */}
                     {isAnyFilterActive && (
                         <Button
                             variant="ghost"
                             size="sm"
                             onClick={handleResetFilters}
-                            className="h-10 px-4 text-xs font-bold text-destructive hover:bg-destructive/10 hover:text-destructive transition-all flex items-center gap-2 rounded-xl"
+                            className="h-10 px-4 text-xs font-bold text-destructive hover:bg-destructive/10 hover:text-destructive transition-all flex items-center gap-2 rounded-xl flex-1 sm:flex-none justify-center"
                         >
                             <RotateCcw className="h-3.5 w-3.5" />
-                            Reset Filters
+                            Reset
                         </Button>
                     )}
 
@@ -365,7 +367,7 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
                     <Button
                         variant="outline"
                         onClick={() => refetch()}
-                        className="h-10 flex items-center gap-2 font-bold bg-background hover:bg-muted border-border/40 transition-all active:scale-95 rounded-xl shadow-sm px-4"
+                        className="h-10 flex items-center gap-2 font-bold bg-background hover:bg-muted border-border/40 transition-all active:scale-95 rounded-xl shadow-sm px-4 flex-1 sm:flex-none justify-center"
                         disabled={isLoading}
                     >
                         <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin text-primary")} />
@@ -381,6 +383,69 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
                 pageSize={10}
                 maxHeight="800px"
                 className="border-none shadow-none"
+                renderMobileCard={(session) => {
+                    const status = session.status as string;
+                    let colorClasses = "";
+                    if (status?.toLowerCase().includes('completed')) colorClasses = "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+                    else if (status?.toLowerCase().includes('progress')) colorClasses = "bg-blue-500/10 text-blue-500 border-blue-500/20";
+                    else colorClasses = "bg-destructive/10 text-destructive border-destructive/20";
+
+                    const fullName = session.userFirstName && session.userLastName ? `${session.userFirstName} ${session.userLastName}` : 'Guest User';
+
+                    return (
+                        <div className="bg-card border border-border/50 rounded-3xl p-5 space-y-4 shadow-sm">
+                            <div className="flex justify-between items-start">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
+                                        <UserIcon className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-foreground leading-tight">{fullName}</p>
+                                        <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mt-0.5">
+                                            {session.connectorTypes || 'CCS2'} • {session.connectorMaxPower || 22}kW
+                                        </p>
+                                    </div>
+                                </div>
+                                <Badge variant="outline" className={cn("rounded-lg border px-2 py-0.5 text-[9px] font-black uppercase tracking-widest", colorClasses)}>
+                                    {status.replace('_', ' ')}
+                                </Badge>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 py-2 border-y border-border/10">
+                                <div className="space-y-1">
+                                    <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-1">
+                                        <Clock className="h-2.5 w-2.5" /> Start Time
+                                    </p>
+                                    <p className="text-xs font-bold">{formatDate(session.startTime, 'MMM dd')} at {formatTime(session.startTime)}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-1">
+                                        <Zap className="h-2.5 w-2.5" /> Energy
+                                    </p>
+                                    <p className="text-xs font-bold">{(session.energyDeliveredKwh || 0).toFixed(2)} kWh</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-1">
+                                <div className="flex items-center gap-1.5">
+                                    <Clock className="h-3.5 w-3.5 text-muted-foreground/40" />
+                                    <span className="text-xs font-bold text-muted-foreground">
+                                        {formatDurationUtil(session.startTime, session.endTime)}
+                                    </span>
+                                </div>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => onViewLogs?.(session.id)}
+                                    className="h-9 rounded-xl text-[10px] font-black uppercase tracking-widest text-primary bg-primary/5 hover:bg-primary/10"
+                                >
+                                    <Terminal className="h-3.5 w-3.5 mr-1.5" />
+                                    Logs
+                                </Button>
+                            </div>
+                        </div>
+                    );
+                }}
                 emptyState={
                     <div className="py-20 flex flex-col items-center justify-center text-center gap-6">
                         <div className="h-16 w-16 rounded-full bg-muted/30 flex items-center justify-center border border-dashed border-border/60">

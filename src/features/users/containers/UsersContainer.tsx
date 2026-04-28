@@ -29,6 +29,7 @@ import { UserInvitationModal } from '../components/UserInvitationModal';
 import { StatCard } from '../../dashboard/components/StatCard';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
+import { ActionIconButton } from '@/components/shared/ActionIconButton';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 
 export function UsersContainer() {
@@ -133,9 +134,9 @@ export function UsersContainer() {
 
           return (
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
+              <ActionIconButton
+                tooltip="Resend Invitation"
+                tone="primary"
                 disabled={!isPending || inviteUser.isPending}
                 onClick={() => {
                   inviteUser.mutate({
@@ -143,24 +144,18 @@ export function UsersContainer() {
                     role: 'admin',
                   });
                 }}
-                className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-wider bg-primary/5 hover:bg-primary/10 border-primary/10 text-primary transition-all flex items-center gap-1.5"
-              >
-                {inviteUser.isPending ? (
+                icon={inviteUser.isPending ? (
                   <Loader2 className="h-3 w-3 animate-spin" />
                 ) : (
                   <Mail className="h-3 w-3" />
                 )}
-                Resend Mail
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
+              />
+              <ActionIconButton
+                tooltip="Delete User"
+                tone="destructive"
                 onClick={() => setDeleteTarget(user)}
-                className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-wider bg-destructive/5 hover:bg-destructive/10 border-destructive/10 text-destructive transition-all flex items-center gap-1.5"
-              >
-                <Trash2 className="h-3 w-3" />
-                <span className='leading-none'>Delete</span>
-              </Button>
+                icon={<Trash2 className="h-3 w-3" />}
+              />
             </div>
           );
         },
@@ -250,6 +245,95 @@ export function UsersContainer() {
             pageSize={DEFAULT_PAGE_SIZE}
             maxHeight="700px"
             className="border-none shadow-none"
+            renderMobileCard={(user) => {
+              const isActive = user.isActive;
+              const isVerified = user.isEmailVerified;
+              const isPending = !isActive || !isVerified;
+
+              return (
+                <div className="bg-card border border-border rounded-[1.5rem] p-5 shadow-sm space-y-4">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                        {(user.firstName?.[0] || user.email[0]).toUpperCase()}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-bold text-foreground">
+                          {user.firstName || user.lastName ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : 'New Operator'}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 mt-0.5">
+                          <Mail className="h-2.5 w-2.5" />
+                          {user.email}
+                        </span>
+                      </div>
+                    </div>
+                    <Badge variant="outline" className="capitalize font-black px-2 py-0.5 rounded-full border bg-muted/30 text-[9px] tracking-tight flex items-center gap-1">
+                      <Shield className="h-3 w-3 opacity-60" />
+                      {user.role}
+                    </Badge>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 py-1">
+                    <div className="space-y-1">
+                      <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Status</span>
+                      <div>
+                        {!isActive ? (
+                          <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20 font-bold px-2 py-0.5 rounded-full text-[9px] uppercase tracking-widest flex items-center gap-1 w-fit">
+                            <XCircle className="h-3 w-3" />
+                            Inactive
+                          </Badge>
+                        ) : !isVerified ? (
+                          <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20 font-bold px-2 py-0.5 rounded-full text-[9px] uppercase tracking-widest flex items-center gap-1 w-fit">
+                            <Activity className="h-3 w-3" />
+                            Pending
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 font-bold px-2 py-0.5 rounded-full text-[9px] uppercase tracking-widest flex items-center gap-1 w-fit">
+                            <CheckCircle2 className="h-3 w-3" />
+                            Active
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Added</span>
+                      <p className="text-sm font-semibold">{formatDate(user.createdAt)}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-1 border-t border-border/50">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={!isPending || inviteUser.isPending}
+                      className="h-8 px-3 rounded-xl font-bold text-xs"
+                      onClick={() => {
+                        inviteUser.mutate({
+                          email: user.email,
+                          role: 'admin',
+                        });
+                      }}
+                    >
+                      {inviteUser.isPending ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                      ) : (
+                        <Mail className="h-3.5 w-3.5 mr-1.5" />
+                      )}
+                      Re-invite
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-3 rounded-xl font-bold text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+                      onClick={() => setDeleteTarget(user)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              );
+            }}
             emptyState={
               <div className="py-24 flex flex-col items-center justify-center text-center gap-6 bg-card/10 rounded-[2.5rem] border-2 border-dashed border-border/40">
                 <div className="p-6 rounded-full bg-primary/5 text-primary/40 ring-1 ring-primary/10">

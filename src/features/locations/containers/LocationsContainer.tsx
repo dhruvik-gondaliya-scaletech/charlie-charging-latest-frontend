@@ -171,13 +171,13 @@ export function LocationsContainer() {
         variants={staggerContainer}
         initial="initial"
         animate="animate"
-        className="space-y-8 p-4 md:p-8 max-w-[1600px] mx-auto"
+        className="space-y-6 sm:space-y-8 p-4 sm:p-6 md:p-8 max-w-[1600px] mx-auto"
       >
-        <motion.div variants={staggerItem}>
-          <h1 className="text-3xl font-extrabold tracking-tight bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+        <motion.div variants={staggerItem} className="space-y-1">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
             Locations
           </h1>
-          <p className="text-sm font-medium text-muted-foreground mt-1 tracking-tight">Manange your charging locations</p>
+          <p className="text-xs sm:text-sm font-medium text-muted-foreground tracking-tight">Manange your charging locations</p>
         </motion.div>
 
         <motion.div variants={staggerItem} className="relative">
@@ -199,6 +199,69 @@ export function LocationsContainer() {
             pageSize={DEFAULT_PAGE_SIZE || 25}
             maxHeight="650px"
             className="border-none shadow-none"
+            renderMobileCard={(location) => (
+              <div className="bg-card border border-border rounded-[1.5rem] p-5 shadow-sm space-y-4">
+                <div className="flex justify-between items-start text-left">
+                  <div className="space-y-1">
+                    <h3
+                      className="font-bold text-lg cursor-pointer hover:text-primary transition-colors leading-tight"
+                      onClick={() => handleViewDetails(location)}
+                    >
+                      {location.name}
+                    </h3>
+                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                      <MapPin className="h-3 w-3" />
+                      <span className="text-xs font-medium truncate max-w-[200px]">{location.city}, {location.state}</span>
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm",
+                      location.isActive
+                        ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                        : "bg-muted text-muted-foreground border-border"
+                    )}
+                  >
+                    {location.isActive ? 'Live' : 'Inactive'}
+                  </Badge>
+                </div>
+
+                <div className="space-y-1">
+                  <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Full Address</span>
+                  <p className="text-sm font-medium leading-normal">{location.address}</p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="bg-primary/5 text-primary border-primary/10 font-bold px-2.5 py-1 rounded-xl shadow-sm text-xs">
+                    <Zap className="h-3 w-3 mr-1" />
+                    {location.stationCount || 0} Stations
+                  </Badge>
+                </div>
+
+                {/* No Separator needed if using ghost/secondary buttons at bottom */}
+                <div className="flex items-center justify-end gap-2 pt-1 border-t border-border/50">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="h-8 px-3 rounded-xl font-bold text-xs"
+                    onClick={() => handleEdit(location)}
+                  >
+                    <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-3 rounded-xl font-bold text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    onClick={() => handleDelete(location)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                    Delete
+                  </Button>
+                </div>
+              </div>
+            )}
             emptyState={
               <div className="py-20 flex flex-col items-center justify-center text-center gap-6 bg-card/10 rounded-[2.5rem] border-2 border-dashed border-border/40">
                 <div className="p-6 rounded-full bg-primary/5 text-primary/40 ring-1 ring-primary/10">

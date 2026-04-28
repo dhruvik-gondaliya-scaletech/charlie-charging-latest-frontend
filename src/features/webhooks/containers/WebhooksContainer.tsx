@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ColumnDef } from '@tanstack/react-table';
@@ -47,6 +48,7 @@ import { DEFAULT_PAGE_SIZE, FRONTEND_ROUTES } from '@/constants/constants';
 import { cn } from '@/lib/utils';
 
 export function WebhooksContainer() {
+  const router = useRouter();
   const { data: webhooks, isLoading } = useWebhooks();
   const createWebhook = useCreateWebhook();
   const updateWebhook = useUpdateWebhook();
@@ -369,6 +371,110 @@ export function WebhooksContainer() {
             pageSize={DEFAULT_PAGE_SIZE}
             maxHeight="700px"
             className="border-none shadow-none"
+            renderMobileCard={(webhook) => (
+              <div className="bg-card border border-border rounded-[1.5rem] p-5 shadow-sm space-y-4">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1">
+                    <h3 className="font-bold text-lg leading-tight">{webhook.name}</h3>
+                    <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
+                      <Globe className="h-2.5 w-2.5" />
+                      {new URL(webhook.url).hostname}
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      'capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm text-[9px] uppercase tracking-tighter',
+                      webhook.isActive
+                        ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                        : 'bg-muted text-muted-foreground border-border'
+                    )}
+                  >
+                    {webhook.isActive ? 'live' : 'paused'}
+                  </Badge>
+                </div>
+
+                <div className="space-y-1">
+                  <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Endpoint URL</span>
+                  <p className="text-sm font-mono text-muted-foreground break-all bg-muted/30 p-2 rounded-lg border border-border/20">
+                    {webhook.url}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-1.5">
+                  {webhook.events.slice(0, 3).map((event) => (
+                    <Badge
+                      key={event}
+                      variant="outline"
+                      className="rounded-full bg-primary/5 border-primary/20 text-primary px-2.5 py-0.5 text-[9px] uppercase font-bold"
+                    >
+                      {event}
+                    </Badge>
+                  ))}
+                  {webhook.events.length > 3 && (
+                    <Badge variant="outline" className="rounded-full bg-muted border-border text-muted-foreground px-2 py-0.5 text-[9px] font-bold">
+                      +{webhook.events.length - 3}
+                    </Badge>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-border/50">
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    className="h-8 w-8 rounded-xl bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20"
+                    onClick={() => {
+                      router.push(`${FRONTEND_ROUTES.WEBHOOKS_LOGS(webhook.id)}?name=${encodeURIComponent(webhook.name)}`);
+                    }}
+                  >
+                    <FileText className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    className="h-8 w-8 rounded-xl bg-amber-500/10 text-amber-500 border-amber-500/20 hover:bg-amber-500/20"
+                    onClick={() => {
+                      setSelectedWebhook(webhook);
+                      setIsSecretOpen(true);
+                    }}
+                  >
+                    <Key className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    className="h-8 w-8 rounded-xl bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
+                    onClick={() => {
+                      setSelectedWebhook(webhook);
+                      setIsFormOpen(true);
+                    }}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    className={cn(
+                      "h-8 w-8 rounded-xl border-2 hover:opacity-80 transition-opacity",
+                      webhook.isActive
+                        ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                        : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                    )}
+                    onClick={() => handleToggleStatus(webhook)}
+                  >
+                    {webhook.isActive ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    onClick={() => handleDelete(webhook)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
           />
         </motion.div>
 

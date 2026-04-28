@@ -24,7 +24,7 @@ type ButtonProps = React.ComponentProps<typeof Button>;
 const toneClasses: Record<ActionTone, string> = {
   default: 'hover:bg-muted/30 hover:text-foreground',
   primary: 'hover:bg-primary/10 hover:text-primary',
-  destructive: 'hover:bg-destructive/10 hover:text-destructive',
+  destructive: 'hover:bg-destructive/10 hover:text-destructive text-destructive',
   info: 'hover:bg-blue-500/10 hover:text-blue-500',
   warning: 'hover:bg-amber-500/10 hover:text-amber-500',
   success: 'hover:bg-emerald-500/10 hover:text-emerald-500',

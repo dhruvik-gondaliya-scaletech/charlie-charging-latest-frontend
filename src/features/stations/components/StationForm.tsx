@@ -143,7 +143,7 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
                             )}
                         />
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                             <FormField
                                 control={form.control as any}
                                 name="serialNumber"
@@ -190,7 +190,7 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                             <FormField
                                 control={form.control as any}
                                 name="vendor"
@@ -235,7 +235,7 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                             <FormField
                                 control={form.control as any}
                                 name="type"
@@ -406,7 +406,7 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
                         name="connectorTypes"
                         render={({ field }) => (
                             <FormItem>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
                                     {connectorTypesFromApi.map((connector: any) => {
                                         const connectorId = connector.identifier;
                                         const isSelected = field.value?.includes(connectorId);

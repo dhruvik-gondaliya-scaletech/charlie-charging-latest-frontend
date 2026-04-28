@@ -177,7 +177,7 @@ export function StationWizard({
             <div className="flex flex-col gap-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-black tracking-tight">{isEdit ? (initialData.name || 'Edit Station') : 'Register New Station'}</h1>
+                        <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight truncate">{isEdit ? (initialData.name || 'Edit Station') : 'Register New Station'}</h1>
                         <p className="text-muted-foreground font-medium">Step {step} of 4: {STEPS[step - 1].description}</p>
                     </div>
                     <Button variant="ghost" onClick={onCancel} className="font-bold text-muted-foreground">
@@ -197,7 +197,7 @@ export function StationWizard({
                     ))}
                 </div>
 
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-4 gap-2 sm:gap-4">
                     {STEPS.map((s) => (
                         <div
                             key={s.id}
@@ -236,7 +236,7 @@ export function StationWizard({
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -20 }}
                             transition={{ duration: 0.3, ease: 'easeInOut' }}
-                            className="bg-card/40 backdrop-blur-xl border border-border/40 rounded-3xl p-6 md:p-8"
+                            className="bg-card/40 backdrop-blur-xl border border-border/40 rounded-3xl p-5 sm:p-6 md:p-8"
                         >
                             {step === 1 && (
                                 <div className="space-y-6">
@@ -303,7 +303,7 @@ export function StationWizard({
                                                             getOptionValue={(brand) => brand.name}
                                                             placeholder="Select Vendor"
                                                             searchPlaceholder="Search vendors..."
-                                                            className="bg-muted/30 py-6 h-auto"
+                                                            className="bg-muted/30 py-6 h-auto w-full"
                                                         />
                                                     </FormControl>
                                                     <FormMessage />
@@ -339,7 +339,7 @@ export function StationWizard({
                                                             placeholder={selectedBrandId ? "Select Model" : "Select Brand First"}
                                                             searchPlaceholder="Search models..."
                                                             disabled={!selectedBrandId}
-                                                            className="bg-muted/30 py-6 h-auto"
+                                                            className="bg-muted/30 py-6 h-auto w-full"
                                                         />
                                                     </FormControl>
                                                     <FormMessage />

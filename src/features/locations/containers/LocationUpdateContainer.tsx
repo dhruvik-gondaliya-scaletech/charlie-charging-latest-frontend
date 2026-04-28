@@ -58,7 +58,7 @@ export function LocationUpdateContainer({ locationId }: LocationUpdateContainerP
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 p-4 sm:p-6 md:p-8 max-w-5xl mx-auto">
             <BackButton
                 href={FRONTEND_ROUTES.LOCATIONS}
                 label="Return to Locations"
@@ -69,13 +69,13 @@ export function LocationUpdateContainer({ locationId }: LocationUpdateContainerP
                         <MapPin className="h-6 w-6" />
                     </div>
                     <div>
-                        <h1 className="text-3xl font-black tracking-tight">Location Configuration</h1>
+                        <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Location Configuration</h1>
                         <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest opacity-70">Update operational metrics for this charging site</p>
                     </div>
                 </div>
             </div>
 
-            <div className="bg-card/30 backdrop-blur-xl border border-border/40 rounded-[2.5rem] p-8 md:p-12 shadow-2xl shadow-primary/5">
+            <div className="bg-card/30 backdrop-blur-xl border border-border/40 rounded-[2.5rem] p-4 sm:p-8 md:p-12 shadow-2xl shadow-primary/5">
                 <LocationForm
                     initialData={location}
                     onSubmit={handleSubmit}

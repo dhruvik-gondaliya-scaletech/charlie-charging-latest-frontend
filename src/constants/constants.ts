@@ -156,7 +156,7 @@ export const FRONTEND_ROUTES = {
     TARIFF: "/tariff",
     TENANTS: "/tenants",
     WEBHOOKS: "/webhooks",
-    WEBHOOKS_LOGS: (id: string) => `/webhooks/${id}/logs`,
+    WEBHOOKS_LOGS: (id: string) => `/webhooks/${id}`,
     OCPI: "/ocpi",
     REGISTER: "/register",
     LOGIN: "/login",

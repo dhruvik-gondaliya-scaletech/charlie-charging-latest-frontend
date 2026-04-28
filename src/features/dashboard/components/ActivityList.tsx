@@ -118,6 +118,59 @@ export function ActivityList({ activities, isLoading = false }: ActivityListProp
       showPagination={true}
       maxHeight="540px"
       className="border-none shadow-none bg-transparent"
+      renderMobileCard={(activity) => {
+        const status = activity.status.toLowerCase();
+        let colorClasses = "";
+        if (status === 'completed' || status === 'success') {
+          colorClasses = "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+        } else if (status === 'active' || status === 'in progress' || status === 'charging') {
+          colorClasses = "bg-blue-500/10 text-blue-500 border-blue-500/20";
+        } else if (status === 'failed' || status === 'error' || status === 'faulted') {
+          colorClasses = "bg-destructive/10 text-destructive border-destructive/20";
+        } else {
+          colorClasses = "bg-muted text-muted-foreground border-border";
+        }
+
+        return (
+          <div className="bg-card/40 mx-4 border border-border/40 rounded-2xl p-4 space-y-3">
+            <div className="flex justify-between items-start">
+              <div className="flex items-center gap-2">
+                <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Activity className="h-3.5 w-3.5 text-primary" />
+                </div>
+                <span className="font-bold text-sm tracking-tight">{activity.event}</span>
+              </div>
+              <Badge variant="outline" className={cn("capitalize font-bold px-2 py-0.5 rounded-full border text-[9px] uppercase tracking-tighter", colorClasses)}>
+                {activity.status}
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
+                <Battery className="h-3 w-3 text-blue-500/70" />
+                {activity.station}
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium justify-end">
+                <User className="h-3 w-3 text-purple-500/70" />
+                {activity.user}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-1 border-t border-border/10">
+              <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60">
+                <Clock className="h-3 w-3" />
+                {formatTimeAgo(activity.eventTime)}
+              </div>
+              {activity.energyDelivered !== undefined && (
+                <div className="flex items-center gap-1 text-[10px] font-bold text-amber-500/90 font-mono">
+                  <Zap className="h-3 w-3" />
+                  {activity.energyDelivered.toFixed(1)} kWh
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }}
     />
   );
 }

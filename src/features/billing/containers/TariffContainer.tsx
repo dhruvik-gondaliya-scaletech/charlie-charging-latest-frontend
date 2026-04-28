@@ -184,7 +184,7 @@ export function TariffContainer() {
             onClick={() => setIsCreateOpen(true)}
             className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 font-bold shrink-0"
           >
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="h-4 w-4" />
             Create Tariff
           </Button>
         </div>
@@ -205,6 +205,69 @@ export function TariffContainer() {
           showSearch={false}
           pageSize={25}
           maxHeight="650px"
+          renderMobileCard={(tariff) => (
+            <div className="bg-card border border-border rounded-[1.5rem] p-5 shadow-sm space-y-4">
+              <div className="flex justify-between items-start">
+                <div className="space-y-1">
+                  <h3 className="font-bold text-lg leading-tight">{tariff.name}</h3>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="bg-primary/5 text-primary border-primary/10 font-bold px-2 py-0.5 rounded-lg shadow-sm text-xs">
+                      {tariff.currency} {Number(tariff.pricePerKwh ?? 0).toFixed(2)} / kWh
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 py-1">
+                <div className="space-y-1">
+                  <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Service Fee</span>
+                  <p className="text-sm font-bold">{Number(tariff.serviceFeePercentage ?? 0).toFixed(2)}%</p>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Connection</span>
+                  <p className="text-sm font-bold">{tariff.currency} {Number(tariff.connectionFee ?? 0).toFixed(2)}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 pt-1">
+                <div className="space-y-1">
+                  <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Idle Fee</span>
+                  <p className="text-sm font-bold">{tariff.currency} {Number(tariff.idleFee ?? 0).toFixed(2)}</p>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Created</span>
+                  <p className="text-[10px] font-medium text-muted-foreground">{formatDate(tariff.createdAt)}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/50">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="h-8 px-3 rounded-xl font-bold text-xs"
+                  onClick={() => {
+                    setSelectedTariff(tariff);
+                    setIsEditOpen(true);
+                  }}
+                >
+                  <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                  Edit
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-3 rounded-xl font-bold text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  onClick={() => {
+                    setSelectedTariff(tariff);
+                    setIsDeleteOpen(true);
+                  }}
+                >
+                  <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                  Delete
+                </Button>
+              </div>
+            </div>
+          )}
           emptyState={
             <div className="py-20 flex flex-col items-center justify-center text-center gap-6 bg-card/10 rounded-[2.5rem] border-2 border-dashed border-border/40">
               <div className="p-6 rounded-full bg-primary/5 text-primary/40 ring-1 ring-primary/10">

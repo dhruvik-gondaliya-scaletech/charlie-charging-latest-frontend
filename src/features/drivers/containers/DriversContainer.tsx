@@ -32,6 +32,7 @@ import { useRouter } from 'next/navigation';
 import { FRONTEND_ROUTES } from '@/constants/constants';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { DriverAppConfig } from '../components/DriverAppConfig';
+import { ActionIconButton } from '@/components/shared/ActionIconButton';
 
 export function DriversContainer() {
 
@@ -111,17 +112,20 @@ export function DriversContainer() {
       },
       {
         id: 'actions',
-        header: 'Intelligence',
+        header: 'Sessions',
         cell: ({ row }) => (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => router.push(`${FRONTEND_ROUTES.DRIVER_DETAILS(row.original.id)}?name=${encodeURIComponent(`${row.original.firstName} ${row.original.lastName}`)}`)}
-            className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-widest border-border/40 hover:bg-primary/10 hover:text-primary transition-all"
-          >
-            <History className="mr-1.5 h-3 w-3" />
-            Sessions
-          </Button>
+          <ActionIconButton
+            tooltip="View Sessions"
+            tone="primary"
+            onClick={() =>
+              router.push(
+                `${FRONTEND_ROUTES.DRIVER_DETAILS(row.original.id)}?name=${encodeURIComponent(
+                  `${row.original.firstName} ${row.original.lastName}`
+                )}`
+              )
+            }
+            icon={<History className="h-3 w-3" />}
+          />
         ),
       },
     ],
@@ -148,12 +152,12 @@ export function DriversContainer() {
         variants={staggerContainer}
         initial="initial"
         animate="animate"
-        className="space-y-8 p-4 md:p-8 max-w-[1600px] mx-auto"
+        className="space-y-6 sm:space-y-8 p-4 sm:p-6 md:p-8 max-w-[1600px] mx-auto"
       >
         {/* Header Section */}
         <motion.div variants={staggerItem} className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="space-y-1">
-            <h1 className="text-3xl font-extrabold tracking-tight bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
               Driver Management
             </h1>
             <p className="text-sm font-medium text-muted-foreground mt-1 tracking-tight">Manage charging network drivers and access</p>
@@ -161,12 +165,12 @@ export function DriversContainer() {
         </motion.div>
 
         <Tabs defaultValue="config" className="w-full space-y-8">
-          <TabsList className="bg-card/10 backdrop-blur-sm p-1 rounded-xl border border-border/40 h-10 w-fit">
-            <TabsTrigger value="config" className="px-6 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-black uppercase tracking-widest text-[10px] transition-all flex items-center gap-2">
+          <TabsList className="bg-card/10 backdrop-blur-sm p-1 rounded-xl border border-border/40 h-auto flex-wrap sm:flex-nowrap w-fit">
+            <TabsTrigger value="config" className="flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-0 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-black uppercase tracking-widest text-[9px] sm:text-[10px] transition-all flex items-center gap-2">
               <Settings className="h-3 w-3" />
               App Configuration
             </TabsTrigger>
-            <TabsTrigger value="drivers" className="px-6 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-black uppercase tracking-widest text-[10px] transition-all flex items-center gap-2">
+            <TabsTrigger value="drivers" className="flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-0 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-black uppercase tracking-widest text-[9px] sm:text-[10px] transition-all flex items-center gap-2">
               <UsersListIcon className="h-3 w-3" />
               Drivers
             </TabsTrigger>
@@ -216,13 +220,77 @@ export function DriversContainer() {
                     onClick={() => setIsFormModalOpen(true)}
                     className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
                   >
-                    <UserPlus className="mr-2 h-4 w-4" />
+                    <UserPlus className="h-4 w-4" />
                     Add Driver
                   </Button>
                 }
                 pageSize={DEFAULT_PAGE_SIZE}
                 maxHeight="700px"
                 className="border-none shadow-none"
+                renderMobileCard={(driver) => (
+                  <div className="bg-card border border-border rounded-[1.5rem] p-5 shadow-sm space-y-4">
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                          {driver.firstName[0]}{driver.lastName[0]}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-bold text-foreground">
+                            {`${driver.firstName} ${driver.lastName}`.trim()}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 mt-0.5">
+                            <Mail className="h-2.5 w-2.5" />
+                            {driver.email}
+                          </span>
+                        </div>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "capitalize font-bold px-2 py-0.5 rounded-full border shadow-sm text-[9px] uppercase tracking-tighter",
+                          driver.isActive
+                            ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                            : "bg-destructive/10 text-destructive border-destructive/20"
+                        )}
+                      >
+                        {driver.isActive ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 py-1">
+                      <div className="space-y-1">
+                        <span className="text-[9px] font-bold uppercase text-muted-foreground/50 tracking-wider flex items-center gap-1">
+                          <Phone className="h-2.5 w-2.5" /> Contact
+                        </span>
+                        <p className="text-sm font-semibold">{driver.phoneNumber || 'N/A'}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-[9px] font-bold uppercase text-muted-foreground/50 tracking-wider flex items-center gap-1">
+                          <Calendar className="h-2.5 w-2.5" /> Joined
+                        </span>
+                        <p className="text-sm font-semibold">{formatDate(driver.createdAt)}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 pt-1 border-t border-border/50">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="h-8 px-4 rounded-xl font-bold text-xs w-full"
+                        onClick={() =>
+                          router.push(
+                            `${FRONTEND_ROUTES.DRIVER_DETAILS(driver.id)}?name=${encodeURIComponent(
+                              `${driver.firstName} ${driver.lastName}`
+                            )}`
+                          )
+                        }
+                      >
+                        <History className="h-3.5 w-3.5 mr-1.5" />
+                        Charging History
+                      </Button>
+                    </div>
+                  </div>
+                )}
                 emptyState={
                   <div className="py-24 flex flex-col items-center justify-center text-center gap-6 bg-card/10 rounded-[2.5rem] border-2 border-dashed border-border/40">
                     <div className="p-6 rounded-full bg-primary/5 text-primary/40 ring-1 ring-primary/10">

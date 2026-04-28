@@ -18,7 +18,19 @@ import {
     LogOut,
     Loader2,
     Edit,
+    ChevronDown,
+    Settings,
 } from 'lucide-react';
+import {
+    Drawer,
+    DrawerClose,
+    DrawerContent,
+    DrawerDescription,
+    DrawerFooter,
+    DrawerHeader,
+    DrawerTitle,
+    DrawerTrigger,
+} from "@/components/ui/drawer";
 import { motion } from 'framer-motion';
 import { fadeInUp, staggerContainer } from '@/lib/motion';
 import { ChargingStatus } from '@/types';
@@ -331,7 +343,7 @@ export function StationDetailContainer() {
             variants={staggerContainer}
             initial="initial"
             animate="animate"
-            className="space-y-8 p-4 md:p-8 max-w-[1600px] mx-auto"
+            className="space-y-6 sm:space-y-8 p-4 sm:p-6 md:p-8 max-w-[1600px] mx-auto"
         >
             {/* Header Section */}
             <motion.div variants={fadeInUp} className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
@@ -340,12 +352,12 @@ export function StationDetailContainer() {
                         href={FRONTEND_ROUTES.STATIONS}
                         label="Return to Stations"
                     />
-                    <div className="flex flex-wrap items-center gap-3">
-                        <h1 className="text-4xl font-black tracking-tight text-foreground">{station.name}</h1>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                        <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black tracking-tight text-foreground truncate">{station.name}</h1>
                         <Badge
                             variant="outline"
                             className={cn(
-                                "px-3 py-1 rounded-full border shadow-sm font-bold uppercase tracking-widest text-[10px]",
+                                "w-fit px-3 py-1 rounded-full border shadow-sm font-bold uppercase tracking-widest text-[10px]",
                                 station.status === ChargingStatus.AVAILABLE ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/30" :
                                     station.status === ChargingStatus.CHARGING ? "bg-blue-500/10 text-blue-500 border-blue-500/30" :
                                         "bg-destructive/10 text-destructive border-destructive/30"
@@ -368,27 +380,78 @@ export function StationDetailContainer() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <div className="relative group">
+                    {/* Desktop Actions */}
+                    <div className="hidden md:block relative group">
                         <Button
                             variant="default"
-                            className="bg-primary/90 hover:bg-primary font-bold shadow-md"
+                            className="bg-primary/90 hover:bg-primary font-bold shadow-md h-12 px-6 rounded-xl"
                         >
-                            Station Actions
+                            Manage Station
+                            <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
                         </Button>
-                        <div className="absolute right-0 top-full mt-2 w-48 bg-card border border-border pb-1 pt-1 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                        <div className="absolute right-0 top-full mt-2 w-56 bg-card border border-border p-1.5 rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 backdrop-blur-xl bg-card/95">
                             <button
                                 onClick={() => setIsRebootModalOpen(true)}
-                                className="w-full text-left px-4 py-2 text-sm font-medium hover:bg-muted transition-colors flex items-center cursor-pointer"
+                                className="w-full text-left px-4 py-3 text-sm font-bold hover:bg-muted transition-all flex items-center cursor-pointer rounded-xl"
                             >
-                                <History className="mr-2 h-4 w-4" /> Reboot Station
+                                <History className="mr-3 h-4 w-4 text-orange-500" /> Reboot System
                             </button>
                             <button
                                 onClick={() => setIsAvailabilityModalOpen(true)}
-                                className="w-full text-left px-4 py-2 text-sm font-medium hover:bg-muted transition-colors flex items-center cursor-pointer"
+                                className="w-full text-left px-4 py-3 text-sm font-bold hover:bg-muted transition-all flex items-center cursor-pointer rounded-xl"
                             >
-                                <ShieldCheck className="mr-2 h-4 w-4" /> Change Availability
+                                <ShieldCheck className="mr-3 h-4 w-4 text-emerald-500" /> Availability Matrix
                             </button>
                         </div>
+                    </div>
+
+                    {/* Mobile Actions Drawer */}
+                    <div className="md:hidden w-full">
+                        <Drawer>
+                            <DrawerTrigger asChild>
+                                <Button
+                                    variant="default"
+                                    className="w-full bg-primary font-bold shadow-lg h-12 rounded-2xl"
+                                >
+                                    <Settings className="mr-2 h-4 w-4" />
+                                    Station Actions
+                                </Button>
+                            </DrawerTrigger>
+                            <DrawerContent className="bg-card border-none rounded-t-[2.5rem]">
+                                <div className="mx-auto w-12 h-1.5 rounded-full bg-muted/40 mt-4 mb-4" />
+                                <DrawerHeader className="text-left px-6">
+                                    <DrawerTitle className="text-2xl font-black">Control Panel</DrawerTitle>
+                                    <DrawerDescription className="text-sm font-medium">Manage operational parameters for {station.name}</DrawerDescription>
+                                </DrawerHeader>
+                                <div className="px-4 py-6 grid gap-3">
+                                    <Button 
+                                        variant="outline" 
+                                        className="h-16 justify-start text-base font-bold rounded-2xl border-border/40 gap-4"
+                                        onClick={() => setIsRebootModalOpen(true)}
+                                    >
+                                        <div className="p-2 rounded-xl bg-orange-500/10 text-orange-500">
+                                            <History className="h-5 w-5" />
+                                        </div>
+                                        Reboot System
+                                    </Button>
+                                    <Button 
+                                        variant="outline" 
+                                        className="h-16 justify-start text-base font-bold rounded-2xl border-border/40 gap-4"
+                                        onClick={() => setIsAvailabilityModalOpen(true)}
+                                    >
+                                        <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500">
+                                            <ShieldCheck className="h-5 w-5" />
+                                        </div>
+                                        Availability Matrix
+                                    </Button>
+                                </div>
+                                <DrawerFooter className="px-6 pb-8">
+                                    <DrawerClose asChild>
+                                        <Button variant="ghost" className="h-12 rounded-xl font-bold text-muted-foreground">Dismiss Panel</Button>
+                                    </DrawerClose>
+                                </DrawerFooter>
+                            </DrawerContent>
+                        </Drawer>
                     </div>
                 </div>
             </motion.div>
@@ -415,12 +478,12 @@ export function StationDetailContainer() {
             {/* Main Content Tabs */}
             <motion.div variants={fadeInUp}>
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-                    <TabsList className="bg-muted/40 p-1 border border-border/40 rounded-2xl backdrop-blur-md overflow-x-auto h-auto flex-wrap sm:flex-nowrap">
-                        <TabsTrigger value="connectors" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Connectors</TabsTrigger>
-                        <TabsTrigger value="overview" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Overview</TabsTrigger>
-                        <TabsTrigger value="sessions" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Sessions</TabsTrigger>
-                        <TabsTrigger value="config" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Config</TabsTrigger>
-                        <TabsTrigger value="logs" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Live Logs</TabsTrigger>
+                    <TabsList className="bg-muted/40 p-1 border border-border/40 rounded-2xl backdrop-blur-md overflow-x-auto w-full inline-flex h-auto sm:flex-nowrap justify-start no-scrollbar">
+                        <TabsTrigger value="connectors" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Connectors</TabsTrigger>
+                        <TabsTrigger value="overview" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Overview</TabsTrigger>
+                        <TabsTrigger value="sessions" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Sessions</TabsTrigger>
+                        <TabsTrigger value="config" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Config</TabsTrigger>
+                        <TabsTrigger value="logs" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Live Logs</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="connectors">
@@ -481,7 +544,7 @@ export function StationDetailContainer() {
                                         </div>
                                     </CardHeader>
                                     <CardContent className="space-y-8">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6 p-2">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 sm:gap-x-8 lg:gap-x-12 gap-y-4 sm:gap-y-6 p-1 sm:p-2">
                                             {[
                                                 { label: 'Manufacturer', value: station.vendor, icon: ShieldCheck },
                                                 { label: 'Hardware Model', value: station.model, icon: Cpu },
@@ -505,7 +568,7 @@ export function StationDetailContainer() {
                                                     </div>
                                                     <div className="flex flex-col gap-0.5 border-b border-border/10 flex-1 pb-2">
                                                         <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{item.label}</span>
-                                                        <span className="text-sm font-bold tracking-tight">{item.value}</span>
+                                                        <span className="text-[10px] sm:text-sm font-bold tracking-tight">{item.value}</span>
                                                     </div>
                                                 </div>
                                             ))}
