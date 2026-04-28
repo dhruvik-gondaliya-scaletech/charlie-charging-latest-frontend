@@ -54,6 +54,7 @@ export function StationsContainer() {
   const [search, setSearch] = useState(searchParams.get('name') || '');
   const [status, setStatus] = useState<string>(searchParams.get('status') || 'ALL');
   const [type, setType] = useState<string>(searchParams.get('type') || 'ALL');
+  const [visibility, setVisibility] = useState<string>(searchParams.get('visibility') || 'ALL');
 
   const debouncedSearch = useDebounce(search, 500);
 
@@ -63,18 +64,20 @@ export function StationsContainer() {
     if (debouncedSearch) params.set('name', debouncedSearch);
     if (status !== 'ALL') params.set('status', status);
     if (type !== 'ALL') params.set('type', type);
+    if (visibility !== 'ALL') params.set('visibility', visibility);
 
     const queryString = params.toString();
     const newPath = `${window.location.pathname}${queryString ? `?${queryString}` : ''}`;
 
     // Use window.history.replaceState to avoid adding to history stack on every keystroke
     window.history.replaceState(null, '', newPath);
-  }, [debouncedSearch, status, type]);
+  }, [debouncedSearch, status, type, visibility]);
 
   const { data: stations, isLoading, isFetching, error } = useStations({
     name: debouncedSearch || undefined,
     status: status === 'ALL' ? undefined : status,
     type: type === 'ALL' ? undefined : type,
+    visibility: visibility === 'ALL' ? undefined : visibility,
   });
   const { data: stats, isLoading: isStatsLoading } = useStationStats();
 
@@ -118,9 +121,10 @@ export function StationsContainer() {
     setSearch('');
     setStatus('ALL');
     setType('ALL');
+    setVisibility('ALL');
   };
 
-  const isFiltered = search !== '' || status !== 'ALL' || type !== 'ALL';
+  const isFiltered = search !== '' || status !== 'ALL' || type !== 'ALL' || visibility !== 'ALL';
 
   const handleEdit = (station: Station) => {
     router.push(`${FRONTEND_ROUTES.STATIONS_EDIT(station.id)}?name=${encodeURIComponent(station.name)}`);
@@ -322,7 +326,7 @@ export function StationsContainer() {
         </motion.div>
 
         {/* Filter Bar */}
-        <motion.div variants={staggerItem} className="flex flex-col md:flex-row gap-4 items-end bg-card/30 p-4 rounded-2xl border border-border/40 backdrop-blur-md">
+        <motion.div variants={staggerItem} className="flex flex-col lg:flex-row gap-4 lg:items-end bg-card/30 p-4 rounded-2xl border border-border/40 backdrop-blur-md">
           <div className="flex-1 w-full space-y-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Search Stations</label>
             <div className="relative group">
@@ -344,7 +348,7 @@ export function StationsContainer() {
             </div>
           </div>
 
-          <div className="w-full md:w-48 space-y-2">
+          <div className="w-full md:w-48 shrink-0 space-y-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Status</label>
             <Select value={status} onValueChange={setStatus}>
               <SelectTrigger className="bg-background/50 border-border/40 rounded-xl">
@@ -359,7 +363,7 @@ export function StationsContainer() {
             </Select>
           </div>
 
-          <div className="w-full md:w-40 space-y-2">
+          <div className="w-full md:w-40 shrink-0 space-y-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Type</label>
             <Select value={type} onValueChange={setType}>
               <SelectTrigger className="bg-background/50 border-border/40 rounded-xl">
@@ -373,7 +377,21 @@ export function StationsContainer() {
             </Select>
           </div>
 
-          <div className="flex gap-2 w-full md:w-auto">
+          <div className="w-full md:w-36 shrink-0 space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Visibility</label>
+            <Select value={visibility} onValueChange={setVisibility}>
+              <SelectTrigger className="bg-background/50 border-border/40 rounded-xl">
+                <SelectValue placeholder="Visibilities" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All</SelectItem>
+                <SelectItem value="public">Public</SelectItem>
+                <SelectItem value="private">Private</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex gap-2 w-full md:w-auto shrink-0">
             {isFiltered && (
               <Button
                 variant="ghost"

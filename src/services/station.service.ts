@@ -39,6 +39,7 @@ export interface GetStationsParams {
   status?: string;
   locationId?: string;
   type?: string;
+  visibility?: string;
 }
 
 export interface GetOcppLogsParams {
@@ -66,6 +67,7 @@ class StationService {
     if (params?.status) queryParams.append('status', params.status);
     if (params?.locationId) queryParams.append('locationId', params.locationId);
     if (params?.type) queryParams.append('type', params.type);
+    if (params?.visibility) queryParams.append('visibility', params.visibility);
 
     const url = queryParams.toString() ? `${API_CONFIG.endpoints.stations.base}?${queryParams.toString()}` : API_CONFIG.endpoints.stations.base;
     return httpService.get<Station[]>(url);
