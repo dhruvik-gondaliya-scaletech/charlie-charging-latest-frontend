@@ -45,7 +45,12 @@ export function LoginContainer() {
       await login(data.email, data.password);
     } catch (error: any) {
       console.error('Login failed:', error);
-      const message = error.response?.data?.message || error.message || 'An unexpected error occurred. Please try again.';
+      let message = error.response?.data?.message || error.message || 'An unexpected error occurred. Please try again.';
+      
+      if (error.response?.status === 401) {
+        message = 'Invalid email or password. Please check your credentials and try again.';
+      }
+
       setAlertMessage({
         type: 'error',
         message: message,

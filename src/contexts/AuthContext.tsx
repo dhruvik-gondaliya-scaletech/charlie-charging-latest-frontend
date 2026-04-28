@@ -92,7 +92,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       toast.success('Login successful!');
       router.push('/dashboard');
     } catch (error) {
-      console.error('Login error:', error);
       throw error;
     }
   };
