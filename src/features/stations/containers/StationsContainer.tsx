@@ -12,13 +12,14 @@ import { useWebSocketConnection, useRealTimeEvent } from '@/hooks/useRealTime';
 import { StationStatusChangeEvent, ConnectorStatusChangeEvent } from '@/lib/realtime.service';
 import { useQueryClient } from '@tanstack/react-query';
 import { StatCard } from '@/features/dashboard/components/StatCard';
-import { Activity, WifiOff, AlertCircle } from 'lucide-react';
+import { Activity, WifiOff, AlertCircle, Loader2 } from 'lucide-react';
 import {
   invalidateQueriesDebounced,
   updateStationInListCache
 } from '@/lib/query-utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { ActionIconButton } from '@/components/shared/ActionIconButton';
 import { Plus, Pencil, Trash2, AlertTriangle, Zap, Search, X } from 'lucide-react';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Input } from '@/components/ui/input';
@@ -43,6 +44,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { Separator } from '@/components/ui/separator';
 
 export function StationsContainer() {
   const router = useRouter();
@@ -53,6 +55,7 @@ export function StationsContainer() {
   const [search, setSearch] = useState(searchParams.get('name') || '');
   const [status, setStatus] = useState<string>(searchParams.get('status') || 'ALL');
   const [type, setType] = useState<string>(searchParams.get('type') || 'ALL');
+  const [visibility, setVisibility] = useState<string>(searchParams.get('visibility') || 'ALL');
 
   const debouncedSearch = useDebounce(search, 500);
 
@@ -62,18 +65,20 @@ export function StationsContainer() {
     if (debouncedSearch) params.set('name', debouncedSearch);
     if (status !== 'ALL') params.set('status', status);
     if (type !== 'ALL') params.set('type', type);
+    if (visibility !== 'ALL') params.set('visibility', visibility);
 
     const queryString = params.toString();
     const newPath = `${window.location.pathname}${queryString ? `?${queryString}` : ''}`;
 
     // Use window.history.replaceState to avoid adding to history stack on every keystroke
     window.history.replaceState(null, '', newPath);
-  }, [debouncedSearch, status, type]);
+  }, [debouncedSearch, status, type, visibility]);
 
   const { data: stations, isLoading, isFetching, error } = useStations({
     name: debouncedSearch || undefined,
     status: status === 'ALL' ? undefined : status,
     type: type === 'ALL' ? undefined : type,
+    visibility: visibility === 'ALL' ? undefined : visibility,
   });
   const { data: stats, isLoading: isStatsLoading } = useStationStats();
 
@@ -90,7 +95,8 @@ export function StationsContainer() {
       updateStationInListCache(queryClient, data.stationId, { status: data.status });
 
       // 2. Debounced refresh
-      invalidateQueriesDebounced(queryClient, [['stations'], ['station-stats']]);
+      invalidateQueriesDebounced(queryClient, ['stations']);
+      invalidateQueriesDebounced(queryClient, ['station-stats']);
     }
   );
 
@@ -100,9 +106,9 @@ export function StationsContainer() {
     (data) => {
       console.log(`Connector ${data.connectorId} on station ${data.stationId} status updated to ${data.status}`);
 
-      // Since connectors aren't directly shown in the main table list (it's usually a summary),
       // we'll just debounce the refresh for the list.
-      invalidateQueriesDebounced(queryClient, [['stations'], ['station-stats']]);
+      invalidateQueriesDebounced(queryClient, ['stations']);
+      invalidateQueriesDebounced(queryClient, ['station-stats']);
     }
   );
 
@@ -117,9 +123,10 @@ export function StationsContainer() {
     setSearch('');
     setStatus('ALL');
     setType('ALL');
+    setVisibility('ALL');
   };
 
-  const isFiltered = search !== '' || status !== 'ALL' || type !== 'ALL';
+  const isFiltered = search !== '' || status !== 'ALL' || type !== 'ALL' || visibility !== 'ALL';
 
   const handleEdit = (station: Station) => {
     router.push(`${FRONTEND_ROUTES.STATIONS_EDIT(station.id)}?name=${encodeURIComponent(station.name)}`);
@@ -221,37 +228,19 @@ export function StationsContainer() {
         header: 'Actions',
         cell: ({ row }) => (
           <div className="flex items-center gap-1">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 hover:bg-primary/10 hover:text-primary cursor-pointer"
-                  onClick={() => handleEdit(row.original)}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="text-xs">Edit Station</p>
-              </TooltipContent>
-            </Tooltip>
+            <ActionIconButton
+              tone="primary"
+              tooltip="Edit Station"
+              icon={<Pencil className="h-4 w-4" />}
+              onClick={() => handleEdit(row.original)}
+            />
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive cursor-pointer"
-                  onClick={() => handleDelete(row.original)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="text-xs">Delete Station</p>
-              </TooltipContent>
-            </Tooltip>
+            <ActionIconButton
+              tone="destructive"
+              tooltip="Delete Station"
+              icon={<Trash2 className="h-4 w-4" />}
+              onClick={() => handleDelete(row.original)}
+            />
           </div>
         ),
       },
@@ -279,10 +268,10 @@ export function StationsContainer() {
         variants={staggerContainer}
         initial="initial"
         animate="animate"
-        className="space-y-8 p-4 md:p-8 max-w-[1600px] mx-auto"
+        className="space-y-6 sm:space-y-8 p-4 sm:p-6 md:p-8 max-w-[1600px] mx-auto"
       >
         <motion.div variants={staggerItem}>
-          <h1 className="text-3xl font-extrabold tracking-tight bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
             Stations
           </h1>
           <p className="text-sm font-medium text-muted-foreground mt-1 tracking-tight">Manage and monitor your stations</p>
@@ -339,7 +328,7 @@ export function StationsContainer() {
         </motion.div>
 
         {/* Filter Bar */}
-        <motion.div variants={staggerItem} className="flex flex-col md:flex-row gap-4 items-end bg-card/30 p-4 rounded-2xl border border-border/40 backdrop-blur-md">
+        <motion.div variants={staggerItem} className="flex flex-col md:flex-row gap-4 items-stretch md:items-end bg-card/30 p-4 rounded-2xl border border-border/40 backdrop-blur-md">
           <div className="flex-1 w-full space-y-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Search Stations</label>
             <div className="relative group">
@@ -361,7 +350,7 @@ export function StationsContainer() {
             </div>
           </div>
 
-          <div className="w-full md:w-48 space-y-2">
+          <div className="w-full md:w-48 shrink-0 space-y-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Status</label>
             <Select value={status} onValueChange={setStatus}>
               <SelectTrigger className="bg-background/50 border-border/40 rounded-xl">
@@ -376,7 +365,7 @@ export function StationsContainer() {
             </Select>
           </div>
 
-          <div className="w-full md:w-40 space-y-2">
+          <div className="w-full md:w-40 shrink-0 space-y-2">
             <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Type</label>
             <Select value={type} onValueChange={setType}>
               <SelectTrigger className="bg-background/50 border-border/40 rounded-xl">
@@ -390,7 +379,21 @@ export function StationsContainer() {
             </Select>
           </div>
 
-          <div className="flex gap-2 w-full md:w-auto">
+          <div className="w-full md:w-36 shrink-0 space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Visibility</label>
+            <Select value={visibility} onValueChange={setVisibility}>
+              <SelectTrigger className="bg-background/50 border-border/40 rounded-xl">
+                <SelectValue placeholder="Visibilities" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All</SelectItem>
+                <SelectItem value="public">Public</SelectItem>
+                <SelectItem value="private">Private</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex gap-2 w-full md:w-auto shrink-0">
             {isFiltered && (
               <Button
                 variant="ghost"
@@ -425,6 +428,86 @@ export function StationsContainer() {
             pageSize={DEFAULT_PAGE_SIZE || 25}
             maxHeight="650px"
             className="border-none shadow-none"
+            renderMobileCard={(station) => {
+              const status = station.status as ChargingStatus;
+              let colorClasses = "";
+              if (status === ChargingStatus.AVAILABLE) {
+                colorClasses = "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+              } else if (status === ChargingStatus.CHARGING || status === ChargingStatus.PREPARING || status === ChargingStatus.FINISHING) {
+                colorClasses = "bg-blue-500/10 text-blue-500 border-blue-500/20";
+              } else if (status === ChargingStatus.OFFLINE || status === ChargingStatus.FAULTED || status === ChargingStatus.UNAVAILABLE) {
+                colorClasses = "bg-destructive/10 text-destructive border-destructive/20";
+              } else {
+                colorClasses = "bg-muted text-muted-foreground border-border";
+              }
+
+              return (
+                <div className="bg-card border border-border rounded-[1.5rem] p-5 shadow-sm space-y-4">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-1">
+                      <h3
+                        className="font-bold text-lg cursor-pointer hover:text-primary transition-colors leading-tight"
+                        onClick={() => router.push(`${FRONTEND_ROUTES.STATIONS_DETAILS(station.id)}?name=${encodeURIComponent(station.name)}`)}
+                      >
+                        {station.name}
+                      </h3>
+                      <code className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono text-muted-foreground block w-fit">
+                        {station.chargePointId}
+                      </code>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={cn("capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm", colorClasses)}
+                    >
+                      {status}
+                    </Badge>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 pt-2">
+                    <div className="space-y-0.5">
+                      <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Hardware</span>
+                      <p className="text-sm font-semibold truncate">{station.vendor}</p>
+                      <p className="text-[10px] text-muted-foreground uppercase truncate opacity-70 tracking-tighter">{station.model}</p>
+                    </div>
+                    <div className="space-y-0.5">
+                      <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Max Power</span>
+                      <p className="text-sm font-bold flex items-center gap-1">
+                        {station.maxPower}
+                        <span className="text-[10px] text-muted-foreground uppercase font-black">kW</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-[10px] font-medium text-muted-foreground italic">
+                      Added {station.createdAt ? formatDate(station.createdAt) : 'N/A'}
+                    </span>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="h-8 px-3 rounded-xl font-bold text-xs"
+                        onClick={() => handleEdit(station)}
+                      >
+                        <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                        Edit
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-3 rounded-xl font-bold text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+                        onClick={() => handleDelete(station)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              );
+            }}
             emptyState={
               <div className="py-20 flex flex-col items-center justify-center text-center gap-6 bg-card/10 rounded-[2.5rem] border-2 border-dashed border-border/40">
                 <div className="p-6 rounded-full bg-primary/5 text-primary/40 ring-1 ring-primary/10">
@@ -474,7 +557,14 @@ export function StationsContainer() {
                 disabled={deleteStation.isPending}
                 className="font-bold"
               >
-                {deleteStation.isPending ? 'Removing...' : 'Confirm Deletion'}
+                {deleteStation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Removing...
+                  </>
+                ) : (
+                  'Confirm Deletion'
+                )}
               </Button>
             </div>
           }

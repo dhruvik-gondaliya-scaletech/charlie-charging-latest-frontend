@@ -10,7 +10,9 @@ export const stationSchema = z.object({
   vendor: z.string().min(1, 'Vendor is required'),
   maxPower: z.coerce.number().min(1, 'Max power must be at least 1kW').max(1000, 'Max power cannot exceed 1000kW').default(22),
   locationId: z.string().min(1, 'Location is required'),
+  tariffId: z.string().min(1, 'Tariff is required'),
   type: z.enum(['AC', 'DC'], { message: 'Station type is required' }),
+  visibility: z.enum(['public', 'private'], { message: 'Visibility is required' }),
   connectorTypes: z.array(z.string()).min(1, 'At least one connector type is required'),
 });
 

@@ -13,6 +13,7 @@ export interface CreateStationData {
   maxPower: number;
   connectorTypes: ConnectorType[];
   locationId: string;
+  tariffId: string;
   chargePointId: string;
   ocppVersion: string;
   ocppConfiguration?: Record<string, unknown>;
@@ -28,6 +29,7 @@ export interface UpdateStationData {
   maxPower?: number;
   connectorTypes?: ConnectorType[];
   locationId?: string;
+  tariffId?: string;
   ocppConfiguration?: Record<string, unknown>;
   status?: ChargingStatus;
 }
@@ -37,6 +39,7 @@ export interface GetStationsParams {
   status?: string;
   locationId?: string;
   type?: string;
+  visibility?: string;
 }
 
 export interface GetOcppLogsParams {
@@ -64,6 +67,7 @@ class StationService {
     if (params?.status) queryParams.append('status', params.status);
     if (params?.locationId) queryParams.append('locationId', params.locationId);
     if (params?.type) queryParams.append('type', params.type);
+    if (params?.visibility) queryParams.append('visibility', params.visibility);
 
     const url = queryParams.toString() ? `${API_CONFIG.endpoints.stations.base}?${queryParams.toString()}` : API_CONFIG.endpoints.stations.base;
     return httpService.get<Station[]>(url);
@@ -97,9 +101,22 @@ class StationService {
     });
   }
 
-  async remoteStopTransaction(id: string, transactionId: number) {
+  async remoteStopTransaction(id: string, transactionId: string | number) {
     return httpService.post(API_CONFIG.endpoints.stations.remoteStop(id), {
       transactionId,
+    });
+  }
+
+  async resetStation(id: string, type: 'Hard' | 'Soft') {
+    return httpService.post(API_CONFIG.endpoints.stations.reset(id), {
+      type,
+    });
+  }
+
+  async changeAvailability(id: string, type: 'Operative' | 'Inoperative', connectorId?: number) {
+    return httpService.post(API_CONFIG.endpoints.stations.availability(id), {
+      type,
+      connectorId,
     });
   }
 

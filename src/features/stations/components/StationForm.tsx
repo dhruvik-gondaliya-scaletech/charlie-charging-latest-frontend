@@ -74,6 +74,7 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
             maxPower: initialData?.maxPower || 22, // Defaulting to 22kW
             locationId: initialData?.locationId || '',
             type: initialData?.type || 'AC',
+            visibility: initialData?.visibility || 'public',
             connectorTypes: (initialData?.connectorTypes as ConnectorType[]) || [ConnectorType.MENNEKES],
         },
     });
@@ -93,6 +94,7 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
                 maxPower: initialData.maxPower ?? 22,
                 locationId: initialData.locationId || '',
                 type: initialData.type || 'AC',
+                visibility: initialData.visibility || 'public',
                 connectorTypes: (initialData.connectorTypes as ConnectorType[]) || [],
             }, {
                 keepDirtyValues: true,
@@ -141,7 +143,7 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
                             )}
                         />
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                             <FormField
                                 control={form.control as any}
                                 name="serialNumber"
@@ -188,7 +190,7 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                             <FormField
                                 control={form.control as any}
                                 name="vendor"
@@ -233,7 +235,7 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                             <FormField
                                 control={form.control as any}
                                 name="type"
@@ -289,6 +291,51 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
                                             <Input type="number" className="bg-muted/10 border-border/40 font-medium h-10" {...field} />
                                         </FormControl>
                                         <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">Maximum charging power in kilowatts</p>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-6">
+                            <FormField
+                                control={form.control as any}
+                                name="visibility"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-70 flex items-center gap-1.5">
+                                            <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                                            Visibility*
+                                        </FormLabel>
+                                        <Select
+                                            onValueChange={field.onChange}
+                                            defaultValue={field.value}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger className="bg-muted/10 border-border/40 font-medium h-12 hover:bg-muted/20 transition-all">
+                                                    <SelectValue placeholder="Select visibility" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent className="rounded-xl border-border/60 shadow-2xl">
+                                                <SelectItem value="public" className="font-bold py-2.5">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="p-1 rounded-lg bg-emerald-500/10 text-emerald-500">
+                                                            <Activity className="h-3 w-3" />
+                                                        </div>
+                                                        <span>Public</span>
+                                                    </div>
+                                                </SelectItem>
+                                                <SelectItem value="private" className="font-bold py-2.5">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="p-1 rounded-lg bg-rose-500/10 text-rose-500">
+                                                            <ShieldCheck className="h-3 w-3" />
+                                                        </div>
+                                                        <span>Private</span>
+                                                    </div>
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter mt-1 opacity-70">Public vs Private visibility</p>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -359,7 +406,7 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
                         name="connectorTypes"
                         render={({ field }) => (
                             <FormItem>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
                                     {connectorTypesFromApi.map((connector: any) => {
                                         const connectorId = connector.identifier;
                                         const isSelected = field.value?.includes(connectorId);

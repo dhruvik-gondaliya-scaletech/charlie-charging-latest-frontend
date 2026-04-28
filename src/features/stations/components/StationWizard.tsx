@@ -45,6 +45,7 @@ import { InfiniteScrollDropdown } from '@/components/shared/InfiniteScrollDropdo
 import { useBrands } from '@/hooks/get/useBrands';
 import { useModels } from '@/hooks/get/useModels';
 import { useConnectorTypes } from '@/hooks/get/useConnectorTypes';
+import { useTariffs } from '@/hooks/get/useBilling';
 import { Brand, ConnectorType } from '@/types';
 
 type WizardValues = z.infer<typeof stationSchema>;
@@ -90,7 +91,9 @@ export function StationWizard({
             vendor: initialData.vendor || '',
             maxPower: initialData.maxPower || 22,
             locationId: (initialData.location && typeof initialData.location === 'object' ? (initialData.location as any).id : initialData.locationId) || '',
+            tariffId: (initialData as any).tariffId || '',
             type: initialData.type || 'AC',
+            visibility: (initialData as any).visibility || 'public',
             connectorTypes: initialData.connectorTypes || [],
         },
     });
@@ -114,6 +117,8 @@ export function StationWizard({
     const { data: connectorTypesResponse, isLoading: isConnectorTypesLoading } = useConnectorTypes();
     const connectorTypesFromApi = (connectorTypesResponse as any) || [];
 
+    const { data: tariffs, isLoading: tariffsLoading } = useTariffs();
+
     // Handle auto-filling brand ID if initialData has a vendor name
     useEffect(() => {
         if (initialData?.vendor && brands.length > 0 && !selectedBrandId) {
@@ -135,7 +140,9 @@ export function StationWizard({
                 vendor: initialData.vendor || '',
                 maxPower: initialData.maxPower ?? 22,
                 locationId: (initialData.location && typeof initialData.location === 'object' ? (initialData.location as any).id : initialData.locationId) || '',
+                tariffId: (initialData as any).tariffId || '',
                 type: initialData.type || 'AC',
+                visibility: (initialData as any).visibility || 'public',
                 connectorTypes: initialData.connectorTypes || [],
             }, {
                 keepDirtyValues: true, // Don't overwrite what user already typed if they started
@@ -147,7 +154,7 @@ export function StationWizard({
     const nextStep = async () => {
         let fieldsToValidate: (keyof WizardValues)[] = [];
         if (step === 1) fieldsToValidate = ['name', 'vendor', 'model', 'maxPower'];
-        if (step === 2) fieldsToValidate = ['serialNumber', 'chargePointId', 'type', 'locationId'];
+        if (step === 2) fieldsToValidate = ['serialNumber', 'chargePointId', 'type', 'locationId', 'tariffId', 'visibility'];
 
         const isValid = await form.trigger(fieldsToValidate);
         if (isValid) setStep(prev => Math.min(prev + 1, 4));
@@ -170,7 +177,7 @@ export function StationWizard({
             <div className="flex flex-col gap-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-black tracking-tight">{isEdit ? (initialData.name || 'Edit Station') : 'Register New Station'}</h1>
+                        <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight truncate">{isEdit ? (initialData.name || 'Edit Station') : 'Register New Station'}</h1>
                         <p className="text-muted-foreground font-medium">Step {step} of 4: {STEPS[step - 1].description}</p>
                     </div>
                     <Button variant="ghost" onClick={onCancel} className="font-bold text-muted-foreground">
@@ -190,7 +197,7 @@ export function StationWizard({
                     ))}
                 </div>
 
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-4 gap-2 sm:gap-4">
                     {STEPS.map((s) => (
                         <div
                             key={s.id}
@@ -229,7 +236,7 @@ export function StationWizard({
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -20 }}
                             transition={{ duration: 0.3, ease: 'easeInOut' }}
-                            className="bg-card/40 backdrop-blur-xl border border-border/40 rounded-3xl p-6 md:p-8"
+                            className="bg-card/40 backdrop-blur-xl border border-border/40 rounded-3xl p-5 sm:p-6 md:p-8"
                         >
                             {step === 1 && (
                                 <div className="space-y-6">
@@ -296,7 +303,7 @@ export function StationWizard({
                                                             getOptionValue={(brand) => brand.name}
                                                             placeholder="Select Vendor"
                                                             searchPlaceholder="Search vendors..."
-                                                            className="bg-muted/30 py-6 h-auto"
+                                                            className="bg-muted/30 py-6 h-auto w-full"
                                                         />
                                                     </FormControl>
                                                     <FormMessage />
@@ -332,7 +339,7 @@ export function StationWizard({
                                                             placeholder={selectedBrandId ? "Select Model" : "Select Brand First"}
                                                             searchPlaceholder="Search models..."
                                                             disabled={!selectedBrandId}
-                                                            className="bg-muted/30 py-6 h-auto"
+                                                            className="bg-muted/30 py-6 h-auto w-full"
                                                         />
                                                     </FormControl>
                                                     <FormMessage />
@@ -479,6 +486,82 @@ export function StationWizard({
                                                         </SelectContent>
                                                     </Select>
                                                     <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1.5 opacity-70">Physical deployment site</p>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+
+                                        <FormField
+                                            control={form.control as any}
+                                            name="tariffId"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="font-bold flex items-center gap-1.5 focus:text-primary transition-colors">
+                                                        <Save className="h-3.5 w-3.5 text-primary" />
+                                                        Tariff*
+                                                    </FormLabel>
+                                                    <Select
+                                                        onValueChange={field.onChange}
+                                                        defaultValue={field.value}
+                                                        disabled={tariffsLoading}
+                                                    >
+                                                        <FormControl>
+                                                            <SelectTrigger className="bg-muted/30 py-6 h-auto font-bold hover:bg-muted/40 transition-all border-border/60 w-full">
+                                                                <SelectValue placeholder="Select a tariff" />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent className="rounded-xl border-border/60 shadow-2xl">
+                                                            {(tariffs || []).map((tariff: any) => (
+                                                                <SelectItem key={tariff.id} value={tariff.id} className="font-bold">
+                                                                    {tariff.name}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1.5 opacity-70">Pricing rules applied to sessions</p>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+
+                                        <FormField
+                                            control={form.control as any}
+                                            name="visibility"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="font-bold flex items-center gap-1.5 focus:text-primary transition-colors">
+                                                        <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                                                        Visibility*
+                                                    </FormLabel>
+                                                    <Select
+                                                        onValueChange={field.onChange}
+                                                        defaultValue={field.value}
+                                                    >
+                                                        <FormControl>
+                                                            <SelectTrigger className="bg-muted/30 py-6 h-auto font-bold hover:bg-muted/40 transition-all border-border/60 w-full">
+                                                                <SelectValue placeholder="Select visibility" />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent className="rounded-xl border-border/60 shadow-2xl">
+                                                            <SelectItem value="public" className="font-bold py-3 focus:bg-primary/5">
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-500">
+                                                                        <Activity className="h-3.5 w-3.5" />
+                                                                    </div>
+                                                                    <span>Public</span>
+                                                                </div>
+                                                            </SelectItem>
+                                                            <SelectItem value="private" className="font-bold py-3 focus:bg-primary/5">
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="p-1.5 rounded-lg bg-rose-500/10 text-rose-500">
+                                                                        <ShieldCheck className="h-3.5 w-3.5" />
+                                                                    </div>
+                                                                    <span>Private</span>
+                                                                </div>
+                                                            </SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1.5 opacity-70">Public vs Private access</p>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}

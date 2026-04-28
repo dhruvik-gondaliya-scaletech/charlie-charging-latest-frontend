@@ -128,7 +128,7 @@ export function StationLogs({ stationId, sessionId, onClearSessionId }: StationL
     }
 
     return (
-        <div className="flex flex-col gap-0 h-[800px]">
+        <div className="flex flex-col gap-0 h-auto min-h-[600px] md:h-[800px]">
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2 mb-6">
                 <div>
@@ -143,63 +143,65 @@ export function StationLogs({ stationId, sessionId, onClearSessionId }: StationL
             {/* Sticky Header: Multi-layered Filters */}
             <div className="sticky top-0 z-30 bg-card/95 backdrop-blur-sm pb-6 pt-1 space-y-4">
                 {/* Advanced Server-side Filters */}
-                <div className="flex flex-wrap items-center gap-3 p-4 bg-muted/20 backdrop-blur-sm border border-border/40 rounded-2xl shadow-sm">
-                    <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center lg:items-center gap-3 p-3 sm:p-4 bg-muted/20 backdrop-blur-sm border border-border/40 rounded-2xl shadow-sm">
+                    <div className="flex items-center gap-2 w-full lg:w-auto">
                         <Filter className="h-3.5 w-3.5 text-muted-foreground/60" />
                         <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Filters:</span>
                     </div>
 
-                    {/* Direction Filter */}
-                    <div className="flex items-center gap-2">
-                        <Select value={directionFilter} onValueChange={setDirectionFilter}>
-                            <SelectTrigger className="w-[140px] h-10 rounded-xl border-border/40 bg-card/20 font-bold text-xs">
-                                <SelectValue placeholder="Direction" />
-                            </SelectTrigger>
-                            <SelectContent className="rounded-xl border-border/40 bg-card/95 backdrop-blur-xl">
-                                <SelectItem value="all" className="text-xs font-semibold">All Flow</SelectItem>
-                                <SelectItem value="INCOMING" className="text-xs font-semibold">Incoming</SelectItem>
-                                <SelectItem value="OUTGOING" className="text-xs font-semibold">Outgoing</SelectItem>
-                            </SelectContent>
-                        </Select>
+                    <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 flex-1 w-full">
+                        {/* Direction Filter */}
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                            <Select value={directionFilter} onValueChange={setDirectionFilter}>
+                                <SelectTrigger className="w-full sm:w-[140px] h-10 rounded-xl border-border/40 bg-card/20 font-bold text-xs">
+                                    <SelectValue placeholder="Direction" />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl border-border/40 bg-card/95 backdrop-blur-xl">
+                                    <SelectItem value="all" className="text-xs font-semibold">All Flow</SelectItem>
+                                    <SelectItem value="INCOMING" className="text-xs font-semibold">Incoming</SelectItem>
+                                    <SelectItem value="OUTGOING" className="text-xs font-semibold">Outgoing</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {/* Message Type Filter */}
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                            <Select value={messageTypeFilter} onValueChange={setMessageTypeFilter}>
+                                <SelectTrigger className="w-full sm:w-[220px] h-10 rounded-xl border-border/40 bg-card/20 font-bold text-xs">
+                                    <SelectValue placeholder="Message Type" />
+                                </SelectTrigger>
+                                <SelectContent className="max-h-[400px] w-[var(--radix-select-trigger-width)] sm:w-auto rounded-xl border-border/40 bg-card/95 backdrop-blur-xl">
+                                    <SelectItem value="all" className="text-xs font-semibold">Any Message Type</SelectItem>
+                                    {OCPP_MESSAGE_TYPES.sort().map((type) => (
+                                        <SelectItem key={type} value={type} className="text-xs font-medium">
+                                            {type}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {/* Date Range Picker */}
+                        <div className="flex items-center gap-2 w-full sm:w-auto sm:border-l sm:border-border/20 sm:pl-3">
+                            <DatePicker
+                                dateRange={dateRange}
+                                onDateRangeChange={setDateRange}
+                                className="h-10 w-full sm:w-auto"
+                            />
+                        </div>
                     </div>
 
-                    {/* Message Type Filter */}
-                    <div className="flex items-center gap-2">
-                        <Select value={messageTypeFilter} onValueChange={setMessageTypeFilter}>
-                            <SelectTrigger className="w-[220px] h-10 rounded-xl border-border/40 bg-card/20 font-bold text-xs">
-                                <SelectValue placeholder="Message Type" />
-                            </SelectTrigger>
-                            <SelectContent className="max-h-[400px] rounded-xl border-border/40 bg-card/95 backdrop-blur-xl">
-                                <SelectItem value="all" className="text-xs font-semibold">Any Message Type</SelectItem>
-                                {OCPP_MESSAGE_TYPES.sort().map((type) => (
-                                    <SelectItem key={type} value={type} className="text-xs font-medium">
-                                        {type}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    {/* Date Range Picker */}
-                    <div className="flex items-center gap-2 border-l border-border/20 pl-3">
-                        <DatePicker
-                            dateRange={dateRange}
-                            onDateRangeChange={setDateRange}
-                            className="h-10"
-                        />
-                    </div>
-
-                    <div className="flex items-center gap-2 ml-auto">
+                    <div className="flex items-center gap-2 w-full lg:w-auto lg:ml-auto">
                         {/* Reset Filters Button */}
                         {isAnyFilterActive && (
                             <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={handleResetFilters}
-                                className="h-10 px-4 text-xs font-bold text-destructive hover:bg-destructive/10 hover:text-destructive transition-all flex items-center gap-2 rounded-xl"
+                                className="h-10 px-4 text-xs font-bold text-destructive hover:bg-destructive/10 hover:text-destructive transition-all flex items-center gap-2 rounded-xl flex-1 lg:flex-none justify-center"
                             >
                                 <RotateCcw className="h-3.5 w-3.5" />
-                                Reset Filters
+                                Reset
                             </Button>
                         )}
 
@@ -207,7 +209,7 @@ export function StationLogs({ stationId, sessionId, onClearSessionId }: StationL
                         <Button
                             variant="outline"
                             onClick={() => refetch()}
-                            className="h-10 flex items-center gap-2 font-bold bg-background hover:bg-muted border-border/40 transition-all active:scale-95 rounded-xl shadow-sm px-4"
+                            className="h-10 flex items-center gap-2 font-bold bg-background hover:bg-muted border-border/40 transition-all active:scale-95 rounded-xl shadow-sm px-4 flex-1 lg:flex-none justify-center"
                             disabled={isLoading}
                         >
                             <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin text-primary")} />
@@ -255,7 +257,7 @@ export function StationLogs({ stationId, sessionId, onClearSessionId }: StationL
                             )}
                         >
                             <div
-                                className="flex items-center justify-between p-5 cursor-pointer"
+                                className="flex items-center justify-between p-3.5 sm:p-5 cursor-pointer"
                                 onClick={() => setExpandedLogId(expandedLogId === log.id ? null : log.id)}
                             >
                                 <div className="flex items-center gap-5 min-w-0">
@@ -267,14 +269,14 @@ export function StationLogs({ stationId, sessionId, onClearSessionId }: StationL
                                     </div>
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-3 mb-1">
-                                            <p className="text-base font-bold tracking-tight truncate">
+                                            <p className="text-sm sm:text-base font-bold tracking-tight truncate">
                                                 {log.messageType}
                                             </p>
                                         </div>
-                                        <p className="text-xs text-muted-foreground font-medium flex items-center gap-2">
+                                        <p className="text-xs text-muted-foreground font-medium flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
                                             {formatDate(log.createdAt)}
-                                            <span className="h-1 w-1 rounded-full bg-muted-foreground/30" />
-                                            <span className="font-mono text-[11px] opacity-70">{log.messageId || 'NO-ID'}</span>
+                                            <span className="hidden sm:block h-1 w-1 rounded-full bg-muted-foreground/30" />
+                                            <span className="font-mono text-[10px] sm:text-[11px] opacity-70 truncate">{log.messageId || 'NO-ID'}</span>
                                         </p>
                                     </div>
                                 </div>

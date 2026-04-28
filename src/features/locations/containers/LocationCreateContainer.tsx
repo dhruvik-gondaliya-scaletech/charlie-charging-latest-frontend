@@ -28,7 +28,7 @@ export function LocationCreateContainer() {
             variants={staggerContainer}
             initial="initial"
             animate="animate"
-            className="p-4 md:p-8 max-w-5xl mx-auto"
+            className="p-4 sm:p-6 md:p-8 max-w-5xl mx-auto"
         >
             <motion.div variants={fadeInUp} className="space-y-6">
                 <BackButton
@@ -41,13 +41,13 @@ export function LocationCreateContainer() {
                             <MapPin className="h-6 w-6" />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-black tracking-tight">Strategic Site Definition</h1>
+                            <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Strategic Site Definition</h1>
                             <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest opacity-70"> Register a new charging destination in the ecosystem</p>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-card/30 backdrop-blur-xl border border-border/40 rounded-[2.5rem] p-8 md:p-12 shadow-2xl shadow-primary/5">
+                <div className="bg-card/30 backdrop-blur-xl border border-border/40 rounded-[2.5rem] p-4 sm:p-8 md:p-12 shadow-2xl shadow-primary/5">
                     <LocationForm
                         onSubmit={handleSubmit}
                         isLoading={createLocation.isPending}

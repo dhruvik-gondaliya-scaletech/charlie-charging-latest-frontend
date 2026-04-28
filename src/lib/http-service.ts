@@ -17,15 +17,25 @@ class HttpService {
     this.axiosInstance.interceptors.request.use(
       (config) => {
         if (typeof window !== 'undefined') {
-          const token = localStorage.getItem(AUTH_CONFIG.tokenKey);
-          
-          if (token) {
-            if (this.isTokenExpired(token)) {
-              this.handleExpiredToken();
-              return config;
-            }
+          const url = config.url || '';
+          const isPublicAuthRoute = 
+            url.includes('/auth/login') || 
+            url.includes('/auth/register') || 
+            url.includes('/auth/forgot-password') || 
+            url.includes('/auth/reset-password') || 
+            url.includes('/auth/verify-email');
+
+          if (!isPublicAuthRoute) {
+            const token = localStorage.getItem(AUTH_CONFIG.tokenKey);
             
-            config.headers.Authorization = `Bearer ${token}`;
+            if (token) {
+              if (this.isTokenExpired(token)) {
+                this.handleExpiredToken();
+                return config;
+              }
+              
+              config.headers.Authorization = `Bearer ${token}`;
+            }
           }
         }
         return config;
@@ -45,13 +55,10 @@ class HttpService {
       (error) => {
         if (error.response?.status === 401) {
           const url = error.config?.url || '';
-          
-          const shouldAutoLogout =
-            url.includes('/auth/') ||
-            url.includes('/users/profile') ||
-            (url.includes('/users') && !url.includes('/change-password'));
+          const isLoginRequest = url.includes('/auth/login');
 
-          if (shouldAutoLogout && typeof window !== 'undefined') {
+          // If it's a 401 and NOT a login request, we should logout as the token is invalid/expired
+          if (!isLoginRequest && typeof window !== 'undefined') {
             this.handleUnauthorized();
           }
         }

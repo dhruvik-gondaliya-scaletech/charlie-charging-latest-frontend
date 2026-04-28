@@ -5,7 +5,6 @@ import { UserRole } from './lib/permissions';
 
 const publicRoutes = [
   FRONTEND_ROUTES.LOGIN,
-  FRONTEND_ROUTES.REGISTER,
   FRONTEND_ROUTES.VERIFY_EMAIL,
   FRONTEND_ROUTES.ACCEPT_INVITE,
   FRONTEND_ROUTES.FORGOT_PASSWORD,
@@ -13,7 +12,6 @@ const publicRoutes = [
 ];
 const authRoutes = [
   FRONTEND_ROUTES.LOGIN,
-  FRONTEND_ROUTES.REGISTER,
   FRONTEND_ROUTES.FORGOT_PASSWORD,
   FRONTEND_ROUTES.RESET_PASSWORD,
 ];
@@ -69,7 +67,7 @@ export function proxy(request: NextRequest) {
     if (isAuthenticated) {
       return NextResponse.redirect(new URL(FRONTEND_ROUTES.DASHBOARD, request.url));
     }
-    return NextResponse.redirect(new URL(FRONTEND_ROUTES.LOGIN, request.url));
+    return NextResponse.next();
   }
 
   if (isAuthRoute && isAuthenticated) {

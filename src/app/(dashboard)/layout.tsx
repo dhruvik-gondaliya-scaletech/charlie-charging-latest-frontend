@@ -3,6 +3,7 @@
 import { ProtectedRoute } from '@/components/shared/ProtectedRoute';
 import { Sidebar } from '@/components/shared/Sidebar';
 import { Header } from '@/components/shared/Header';
+import { BottomNav } from '@/components/shared/BottomNav';
 
 export default function DashboardLayout({
   children,
@@ -11,15 +12,16 @@ export default function DashboardLayout({
 }) {
   return (
     <ProtectedRoute>
-      <div className="flex h-screen overflow-hidden">
-        <aside className="w-64 shrink-0">
+      <div className="flex h-screen overflow-hidden bg-background">
+        <aside className="hidden md:block w-64 shrink-0">
           <Sidebar />
         </aside>
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden relative">
           <Header />
-          <main className="flex-1 overflow-y-auto bg-background p-6 no-scrollbar">
+          <main className="flex-1 overflow-y-auto p-4 md:p-6 no-scrollbar pb-24 md:pb-6">
             {children}
           </main>
+          <BottomNav />
         </div>
       </div>
     </ProtectedRoute>

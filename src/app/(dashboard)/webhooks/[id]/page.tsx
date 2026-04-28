@@ -1,7 +1,7 @@
 import { WebhookLogsContainer } from '@/features/webhooks/containers/WebhookLogsContainer';
 
 export const metadata = {
-    title: 'Webhook Delivery Logs | Charlie Charging',
+    title: 'Webhook Delivery Logs | Scale EV',
     description: 'Detailed delivery history and real-time monitoring for webhook event streams.',
 };
 

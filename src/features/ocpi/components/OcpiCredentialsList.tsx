@@ -11,6 +11,7 @@ import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
 import { cn } from '@/lib/utils';
 import { useOcpiCredentials } from '@/hooks/get/useOcpi';
 import { useDeleteOcpiCredential } from '@/hooks/post/useOcpiMutations';
+import { ActionIconButton } from '@/components/shared/ActionIconButton';
 
 import {
     Tooltip,
@@ -18,8 +19,6 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
-
-import { Button } from '@/components/ui/button';
 import { OcpiPartyDetailsModal } from './OcpiPartyDetailsModal';
 import { useState } from 'react';
 
@@ -148,44 +147,19 @@ export function OcpiCredentialsList() {
             header: 'Actions',
             size: 80,
             cell: ({ row }) => (
-                <div className="flex items-center gap-1">
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
-                                    onClick={() => handleViewDetails(row.original)}
-                                >
-                                    <Info className="h-4 w-4" />
-                                    <span className="sr-only">View Details</span>
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p className="text-xs">View Details</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                                    onClick={() => onDelete?.(row.original.id)}
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                    <span className="sr-only">Delete Connection</span>
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p className="text-xs">Delete Connection</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+                <div className="flex items-center justify-end gap-1">
+                    <ActionIconButton
+                        tone="info"
+                        tooltip="View Details"
+                        icon={<Info className="h-4 w-4" />}
+                        onClick={() => handleViewDetails(row.original)}
+                    />
+                    <ActionIconButton
+                        tone="destructive"
+                        tooltip="Delete Connection"
+                        icon={<Trash2 className="h-4 w-4" />}
+                        onClick={() => onDelete(row.original.id)}
+                    />
                 </div>
             ),
         },

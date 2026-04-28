@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useParams } from 'next/navigation';
-import { useStation } from '@/hooks/get/useStations';
+import { useParams, useRouter } from 'next/navigation';
+import { useStation, useStationSessions } from '@/hooks/get/useStations';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,11 +17,23 @@ import {
     AlertCircle,
     LogOut,
     Loader2,
+    Edit,
+    ChevronDown,
+    Settings,
 } from 'lucide-react';
+import {
+    Drawer,
+    DrawerClose,
+    DrawerContent,
+    DrawerDescription,
+    DrawerFooter,
+    DrawerHeader,
+    DrawerTitle,
+    DrawerTrigger,
+} from "@/components/ui/drawer";
 import { motion } from 'framer-motion';
 import { fadeInUp, staggerContainer } from '@/lib/motion';
 import { ChargingStatus } from '@/types';
-import { formatDate } from '@/lib/date';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -30,8 +42,7 @@ import { StatCard } from '../../dashboard/components/StatCard';
 import { StationSessions } from '../components/StationSessions';
 import { StationLogs } from '../components/StationLogs';
 import { ConnectorCard } from '../components/ConnectorCard';
-import { useRemoteStart, useRemoteStop } from '@/hooks/delete/useStationMutations';
-import { useStationSessions } from '@/hooks/get/useStations';
+import { useRemoteStart, useRemoteStop, useResetStation, useChangeAvailability } from '@/hooks/delete/useStationMutations';
 import { useAuth } from '@/contexts/AuthContext';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import WebSocketUrlDisplay from '@/components/shared/WebSocketUrlDisplay';
@@ -40,6 +51,7 @@ import { FRONTEND_ROUTES } from '@/constants/constants';
 import { SessionStatus } from '@/types';
 import { BackButton } from '@/components/shared/BackButton';
 import { useWebSocketConnection, useRealTimeEvent } from '@/hooks/useRealTime';
+import { useTariffs } from '@/hooks/get/useBilling';
 import {
     StationStatusChangeEvent,
     ConnectorStatusChangeEvent,
@@ -54,12 +66,16 @@ import { useQueryClient } from '@tanstack/react-query';
 
 export function StationDetailContainer() {
     const { id } = useParams();
+    const router = useRouter();
     const queryClient = useQueryClient();
     const { user, tenant } = useAuth();
     const { data: station, isLoading, error } = useStation(id as string);
+    const { data: tariffs } = useTariffs();
     const { data: sessions } = useStationSessions(id as string);
     const [activeTab, setActiveTab] = useState('connectors');
     const [filterSessionId, setFilterSessionId] = useState<string | undefined>(undefined);
+
+    const stationTariff = tariffs?.find((t) => t.id === station?.tariffId);
 
     const handleViewSessionLogs = (sessionId: string) => {
         setFilterSessionId(sessionId);
@@ -228,7 +244,7 @@ export function StationDetailContainer() {
 
         remoteStop.mutate({
             id: station?.id || '',
-            transactionId: parseInt(stopTransactionId),
+            transactionId: stopTransactionId,
         }, {
             onSuccess: (response: any) => {
                 setIsStopModalOpen(false);
@@ -248,6 +264,24 @@ export function StationDetailContainer() {
                     return next;
                 });
             }
+        });
+    };
+
+    const resetStation = useResetStation();
+    const changeAvailability = useChangeAvailability();
+
+    const [isRebootModalOpen, setIsRebootModalOpen] = useState(false);
+    const [isAvailabilityModalOpen, setIsAvailabilityModalOpen] = useState(false);
+
+    const confirmReboot = (type: 'Hard' | 'Soft') => {
+        resetStation.mutate({ id: station?.id || '', type }, {
+            onSuccess: () => setIsRebootModalOpen(false)
+        });
+    };
+
+    const confirmAvailability = (type: 'Operative' | 'Inoperative') => {
+        changeAvailability.mutate({ id: station?.id || '', type }, {
+            onSuccess: () => setIsAvailabilityModalOpen(false)
         });
     };
 
@@ -309,7 +343,7 @@ export function StationDetailContainer() {
             variants={staggerContainer}
             initial="initial"
             animate="animate"
-            className="space-y-8 p-4 md:p-8 max-w-[1600px] mx-auto"
+            className="space-y-6 sm:space-y-8 p-4 sm:p-6 md:p-8 max-w-[1600px] mx-auto"
         >
             {/* Header Section */}
             <motion.div variants={fadeInUp} className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
@@ -318,12 +352,12 @@ export function StationDetailContainer() {
                         href={FRONTEND_ROUTES.STATIONS}
                         label="Return to Stations"
                     />
-                    <div className="flex flex-wrap items-center gap-3">
-                        <h1 className="text-4xl font-black tracking-tight text-foreground">{station.name}</h1>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                        <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black tracking-tight text-foreground truncate">{station.name}</h1>
                         <Badge
                             variant="outline"
                             className={cn(
-                                "px-3 py-1 rounded-full border shadow-sm font-bold uppercase tracking-widest text-[10px]",
+                                "w-fit px-3 py-1 rounded-full border shadow-sm font-bold uppercase tracking-widest text-[10px]",
                                 station.status === ChargingStatus.AVAILABLE ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/30" :
                                     station.status === ChargingStatus.CHARGING ? "bg-blue-500/10 text-blue-500 border-blue-500/30" :
                                         "bg-destructive/10 text-destructive border-destructive/30"
@@ -342,6 +376,82 @@ export function StationDetailContainer() {
                             <Terminal className="h-3.5 w-3.5" />
                             {station.chargePointId}
                         </div>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                    {/* Desktop Actions */}
+                    <div className="hidden md:block relative group">
+                        <Button
+                            variant="default"
+                            className="bg-primary/90 hover:bg-primary font-bold shadow-md h-12 px-6 rounded-xl"
+                        >
+                            Manage Station
+                            <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
+                        </Button>
+                        <div className="absolute right-0 top-full mt-2 w-56 bg-card border border-border p-1.5 rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 backdrop-blur-xl bg-card/95">
+                            <button
+                                onClick={() => setIsRebootModalOpen(true)}
+                                className="w-full text-left px-4 py-3 text-sm font-bold hover:bg-muted transition-all flex items-center cursor-pointer rounded-xl"
+                            >
+                                <History className="mr-3 h-4 w-4 text-orange-500" /> Reboot System
+                            </button>
+                            <button
+                                onClick={() => setIsAvailabilityModalOpen(true)}
+                                className="w-full text-left px-4 py-3 text-sm font-bold hover:bg-muted transition-all flex items-center cursor-pointer rounded-xl"
+                            >
+                                <ShieldCheck className="mr-3 h-4 w-4 text-emerald-500" /> Availability Matrix
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Mobile Actions Drawer */}
+                    <div className="md:hidden w-full">
+                        <Drawer>
+                            <DrawerTrigger asChild>
+                                <Button
+                                    variant="default"
+                                    className="w-full bg-primary font-bold shadow-lg h-12 rounded-2xl"
+                                >
+                                    <Settings className="mr-2 h-4 w-4" />
+                                    Station Actions
+                                </Button>
+                            </DrawerTrigger>
+                            <DrawerContent className="bg-card border-none rounded-t-[2.5rem]">
+                                <div className="mx-auto w-12 h-1.5 rounded-full bg-muted/40 mt-4 mb-4" />
+                                <DrawerHeader className="text-left px-6">
+                                    <DrawerTitle className="text-2xl font-black">Control Panel</DrawerTitle>
+                                    <DrawerDescription className="text-sm font-medium">Manage operational parameters for {station.name}</DrawerDescription>
+                                </DrawerHeader>
+                                <div className="px-4 py-6 grid gap-3">
+                                    <Button 
+                                        variant="outline" 
+                                        className="h-16 justify-start text-base font-bold rounded-2xl border-border/40 gap-4"
+                                        onClick={() => setIsRebootModalOpen(true)}
+                                    >
+                                        <div className="p-2 rounded-xl bg-orange-500/10 text-orange-500">
+                                            <History className="h-5 w-5" />
+                                        </div>
+                                        Reboot System
+                                    </Button>
+                                    <Button 
+                                        variant="outline" 
+                                        className="h-16 justify-start text-base font-bold rounded-2xl border-border/40 gap-4"
+                                        onClick={() => setIsAvailabilityModalOpen(true)}
+                                    >
+                                        <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500">
+                                            <ShieldCheck className="h-5 w-5" />
+                                        </div>
+                                        Availability Matrix
+                                    </Button>
+                                </div>
+                                <DrawerFooter className="px-6 pb-8">
+                                    <DrawerClose asChild>
+                                        <Button variant="ghost" className="h-12 rounded-xl font-bold text-muted-foreground">Dismiss Panel</Button>
+                                    </DrawerClose>
+                                </DrawerFooter>
+                            </DrawerContent>
+                        </Drawer>
                     </div>
                 </div>
             </motion.div>
@@ -368,12 +478,12 @@ export function StationDetailContainer() {
             {/* Main Content Tabs */}
             <motion.div variants={fadeInUp}>
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-                    <TabsList className="bg-muted/40 p-1 border border-border/40 rounded-2xl backdrop-blur-md overflow-x-auto h-auto flex-wrap sm:flex-nowrap">
-                        <TabsTrigger value="connectors" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Connectors</TabsTrigger>
-                        <TabsTrigger value="overview" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Overview</TabsTrigger>
-                        <TabsTrigger value="sessions" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Sessions</TabsTrigger>
-                        <TabsTrigger value="config" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Config</TabsTrigger>
-                        <TabsTrigger value="logs" className="rounded-xl font-bold px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Live Logs</TabsTrigger>
+                    <TabsList className="bg-muted/40 p-1 border border-border/40 rounded-2xl backdrop-blur-md overflow-x-auto w-full inline-flex h-auto sm:flex-nowrap justify-start no-scrollbar">
+                        <TabsTrigger value="connectors" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Connectors</TabsTrigger>
+                        <TabsTrigger value="overview" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Overview</TabsTrigger>
+                        <TabsTrigger value="sessions" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Sessions</TabsTrigger>
+                        <TabsTrigger value="config" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Config</TabsTrigger>
+                        <TabsTrigger value="logs" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Live Logs</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="connectors">
@@ -434,7 +544,7 @@ export function StationDetailContainer() {
                                         </div>
                                     </CardHeader>
                                     <CardContent className="space-y-8">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6 p-2">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 sm:gap-x-8 lg:gap-x-12 gap-y-4 sm:gap-y-6 p-1 sm:p-2">
                                             {[
                                                 { label: 'Manufacturer', value: station.vendor, icon: ShieldCheck },
                                                 { label: 'Hardware Model', value: station.model, icon: Cpu },
@@ -444,8 +554,13 @@ export function StationDetailContainer() {
                                                 { label: 'OCPP Version', value: station.ocppVersion, icon: Zap },
                                                 { label: 'Connector Count', value: station.connectors?.length || station.connectorCount || 0, icon: Zap },
                                                 { label: 'Max Capacity', value: `${station.maxPower} kW`, icon: Activity },
-                                                { label: 'Registration Date', value: formatDate(station.createdAt || new Date().toISOString()), icon: History },
+                                                { label: 'Tariff', value: stationTariff?.name || (station?.tariffId ? 'Tariff not found' : 'Not assigned'), icon: History },
+                                                { label: 'Price per kWh', value: stationTariff ? `${stationTariff.pricePerKwh} ${stationTariff.currency}` : '-', icon: Zap },
+                                                { label: 'Service Fee', value: stationTariff ? `${stationTariff.serviceFeePercentage}%` : '-', icon: Activity },
+                                                { label: 'Connection Fee', value: stationTariff ? `${stationTariff.connectionFee} ${stationTariff.currency}` : '-', icon: Terminal },
+                                                { label: 'Idle Fee', value: stationTariff ? `${stationTariff.idleFee} ${stationTariff.currency}` : '-', icon: Terminal },
                                                 { label: 'Station Type', value: station.type || 'AC', icon: Zap },
+                                                { label: 'Visibility', value: station.visibility === 'private' ? 'Private' : 'Public', icon: ShieldCheck },
                                             ].map((item, i) => (
                                                 <div key={i} className="flex items-start gap-3 group">
                                                     <div className="mt-1 p-1.5 rounded-md bg-muted/40 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
@@ -453,7 +568,7 @@ export function StationDetailContainer() {
                                                     </div>
                                                     <div className="flex flex-col gap-0.5 border-b border-border/10 flex-1 pb-2">
                                                         <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{item.label}</span>
-                                                        <span className="text-sm font-bold tracking-tight">{item.value}</span>
+                                                        <span className="text-[10px] sm:text-sm font-bold tracking-tight">{item.value}</span>
                                                     </div>
                                                 </div>
                                             ))}
@@ -559,7 +674,7 @@ export function StationDetailContainer() {
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-3 p-4 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-600 text-sm font-medium">
+                    <div className="flex items-center gap-3 p-4 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-500 dark:text-orange-400 text-sm font-medium">
                         <AlertCircle className="h-5 w-5 shrink-0" />
                         <p>This will send a remote stop command to the station for the active transaction.</p>
                     </div>
@@ -575,6 +690,84 @@ export function StationDetailContainer() {
                             <span className="text-sm text-muted-foreground font-medium">Connector</span>
                             <span className="font-bold">Port #{selectedConnectorId}</span>
                         </div>
+                    </div>
+                </div>
+            </AnimatedModal>
+
+            {/* Reboot Modal */}
+            <AnimatedModal
+                isOpen={isRebootModalOpen}
+                onClose={() => setIsRebootModalOpen(false)}
+                title="Reboot Station"
+                description={`Send a reboot command to ${station.name}.`}
+                size="md"
+                footer={
+                    <div className="flex gap-3 justify-end w-full">
+                        <Button variant="outline" onClick={() => setIsRebootModalOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={() => confirmReboot('Soft')}
+                            disabled={resetStation.isPending}
+                            className="font-bold"
+                        >
+                            Soft Reset
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={() => confirmReboot('Hard')}
+                            disabled={resetStation.isPending}
+                            className="font-bold"
+                        >
+                            Hard Reset
+                        </Button>
+                    </div>
+                }
+            >
+                <div className="space-y-4">
+                    <div className="flex items-center gap-3 p-4 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-500 dark:text-orange-400 text-sm font-medium">
+                        <AlertCircle className="h-5 w-5 shrink-0" />
+                        <p>A soft reset will wait for active transactions to end. A hard reset is immediate and may interrupt charging.</p>
+                    </div>
+                </div>
+            </AnimatedModal>
+
+            {/* Change Availability Modal */}
+            <AnimatedModal
+                isOpen={isAvailabilityModalOpen}
+                onClose={() => setIsAvailabilityModalOpen(false)}
+                title="Change Station Availability"
+                description={`Turn ${station.name} on or off.`}
+                size="md"
+                footer={
+                    <div className="flex gap-3 justify-end w-full">
+                        <Button variant="outline" onClick={() => setIsAvailabilityModalOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={() => confirmAvailability('Inoperative')}
+                            disabled={changeAvailability.isPending}
+                            className="font-bold"
+                        >
+                            {changeAvailability.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : 'Turn OFF'}
+                        </Button>
+                        <Button
+                            variant="default"
+                            onClick={() => confirmAvailability('Operative')}
+                            disabled={changeAvailability.isPending}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                        >
+                            {changeAvailability.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : 'Turn ON'}
+                        </Button>
+                    </div>
+                }
+            >
+                <div className="space-y-4">
+                    <div className="flex items-center gap-3 p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-500 dark:text-blue-400 text-sm font-medium">
+                        <ShieldCheck className="h-5 w-5 shrink-0" />
+                        <p>Changes the station's operational status. This command will be sent directly to the charge point.</p>
                     </div>
                 </div>
             </AnimatedModal>
