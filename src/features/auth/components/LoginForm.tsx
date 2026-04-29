@@ -61,13 +61,6 @@ export function LoginForm({ onSubmit, isLoading }: LoginFormProps) {
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? 'Signing in...' : 'Sign in'}
       </Button>
-
-      <div className="mt-4 text-center text-sm">
-        <span className="text-muted-foreground">Don&apos;t have an account? </span>
-        <Link href="/register" className="text-primary hover:underline">
-          Sign up
-        </Link>
-      </div>
     </form>
   );
 }

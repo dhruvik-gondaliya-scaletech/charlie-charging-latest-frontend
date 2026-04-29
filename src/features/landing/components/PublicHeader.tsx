@@ -5,22 +5,19 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { FRONTEND_ROUTES } from '@/constants/constants';
 import { motion } from 'framer-motion';
-import { useTheme } from 'next-themes';
 import { BrandLogo } from '@/components/shared/BrandLogo';
 
-import { 
-  Drawer, 
-  DrawerContent, 
-  DrawerTrigger, 
-  DrawerTitle, 
-  DrawerDescription 
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTrigger,
+  DrawerTitle,
 } from '@/components/ui/drawer';
 import { Menu } from 'lucide-react';
 
 export function PublicHeader() {
   const [scrolled, setScrolled] = React.useState(false);
   const [isOpen, setIsOpen] = React.useState(false);
-  const { theme, resolvedTheme } = useTheme();
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -30,12 +27,9 @@ export function PublicHeader() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const currentTheme = resolvedTheme || theme;
-  const navLinkColor = scrolled ? 'text-background/80 hover:text-background' : 'text-muted-foreground hover:text-foreground';
-
-  const logoVariant = scrolled
-    ? (currentTheme === 'dark' ? 'light' : 'dark')
-    : undefined;
+  const navLinkColor = scrolled
+    ? 'text-foreground/70 hover:text-foreground'
+    : 'text-muted-foreground hover:text-foreground';
 
   const navItems = ['Features', 'Protocols', 'Analytics', 'Contact'];
 
@@ -50,7 +44,7 @@ export function PublicHeader() {
           flex items-center justify-between w-full max-w-7xl px-4 md:px-8 h-16
           transition-all duration-500 pointer-events-auto
           ${scrolled
-            ? 'bg-foreground/80 backdrop-blur-2xl border border-border/50 rounded-2xl shadow-xl shadow-primary/10 py-4 scale-[0.98]'
+            ? 'bg-background/80 backdrop-blur-2xl border border-border/50 rounded-full shadow-xl shadow-primary/10 py-4 scale-[0.98]'
             : 'bg-transparent border-transparent py-6 scale-100'
           }
         `}
@@ -59,7 +53,6 @@ export function PublicHeader() {
           <BrandLogo
             width={120}
             height={32}
-            variant={logoVariant}
             className="transition-transform duration-300 group-hover:scale-105"
           />
         </Link>
@@ -97,9 +90,6 @@ export function PublicHeader() {
                   <DrawerTitle className="text-left">
                     <BrandLogo width={120} height={32} />
                   </DrawerTitle>
-                  <DrawerDescription className="text-left mt-2 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                    Menu
-                  </DrawerDescription>
                 </div>
                 <div className="flex-1 p-6 flex flex-col gap-4">
                   {navItems.map((item) => (
@@ -119,9 +109,6 @@ export function PublicHeader() {
                       Sign In
                     </Button>
                   </Link>
-                  <Button className="w-full h-12 rounded-xl font-bold bg-primary text-primary-foreground shadow-lg shadow-primary/20">
-                    Get Started
-                  </Button>
                 </div>
               </div>
             </DrawerContent>
