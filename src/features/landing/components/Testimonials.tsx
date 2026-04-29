@@ -6,13 +6,13 @@ import Image from 'next/image';
 export function Testimonials() {
   const testimonials = [
     {
-      quote: "Charli Charging's transition to OCPP 2.0.1 saved our network months of manual migration. The telemetry accuracy is simply unmatched.",
+      quote: "Scale EV's transition to OCPP 2.0.1 saved our network months of manual migration. The telemetry accuracy is simply unmatched.",
       author: "Marcelo",
       role: "CTO, Charli Charging",
       avatar: "/assets/marcelo.jpg",
     },
     {
-      quote: "Managing 5,000+ points across Europe used to be a nightmare. Charli Charging gave us the visibility we needed to reach 98% network uptime.",
+      quote: "Managing 5,000+ points across Europe used to be a nightmare. Scale EV gave us the visibility we needed to reach 98% network uptime.",
       author: "Alex",
       role: "Founder, Charli Charging",
       avatar: "/assets/alex.png",
@@ -30,7 +30,7 @@ export function Testimonials() {
 
       <div className="max-w-6xl mx-auto relative z-10">
         <div className="text-center max-w-2xl mx-auto mb-20">
-          <motion.h2 
+          <motion.h2
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}

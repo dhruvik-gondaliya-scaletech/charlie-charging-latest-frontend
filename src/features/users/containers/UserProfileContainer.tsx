@@ -78,7 +78,7 @@ export function UserProfileContainer() {
             <motion.div variants={fadeInUp} className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                 <div className="space-y-1">
                     <BackButton
-                        label="Return to Previous Matrix"
+                        label="Back"
                     />
                     <div className="flex flex-wrap items-center gap-3">
                         <h1 className="text-4xl font-black tracking-tight text-foreground uppercase">
