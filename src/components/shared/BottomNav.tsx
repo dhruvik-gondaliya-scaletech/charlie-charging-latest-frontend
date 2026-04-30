@@ -43,7 +43,7 @@ const mainNavItems = [
 const moreNavItems = [
   { href: FRONTEND_ROUTES.USERS, label: 'Operators', icon: Users, roles: ['admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.DRIVERS, label: 'Drivers', icon: User, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.ID_TAGS, label: 'ID Tags', icon: CreditCard, roles: ['admin', 'super_admin'] },
+  // { href: FRONTEND_ROUTES.ID_TAGS, label: 'ID Tags', icon: CreditCard, roles: ['admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.TARIFF, label: 'Tariff', icon: Coins, roles: ['admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.WEBHOOKS, label: 'Webhooks', icon: Webhook, roles: ['admin', 'super_admin'] },
 ];
@@ -127,8 +127,8 @@ export function BottomNav() {
               </div>
               <Separator className="my-2" />
               <DrawerFooter>
-                <Button 
-                  variant="destructive" 
+                <Button
+                  variant="destructive"
                   className="w-full rounded-xl h-12 font-bold"
                   onClick={() => {
                     setIsMoreOpen(false);
