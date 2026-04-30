@@ -6,63 +6,95 @@ import Image from 'next/image';
 export function Testimonials() {
   const testimonials = [
     {
-      quote: "Scale EV's transition to OCPP 2.0.1 saved our network months of manual migration. The telemetry accuracy is simply unmatched.",
-      author: "Marcus Chen",
-      role: "CTO, ElectraPath",
-      avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuAuNS6OrlKan9gdxTsCwn6mYGBYGfFohL4N_jIqb6R_ZfR4Btp9MJGh6WCHssklIHbsCJEb5TUwjqssvINgnWxQ7mDD9KUUggw1Pt7_u0DPAoL-20KiqKMEoLqvYfRkjj0sN5fx5I7s3q6PME3DxxYZB80TDE0G6hiItb7Ehf8AaFHQ0GGzAVnbBhx8tmK86lSsGMO2FZfFqHvLKC5RRdOkHEHsyjiR3dsk6AI1EpAc3QpC9CjRfIILS_IQVrDITcv0mFKemuec9H5G"
-    },
-    {
       quote: "Managing 5,000+ points across Europe used to be a nightmare. Scale EV gave us the visibility we needed to reach 98% network uptime.",
-      author: "Sarah Jenkins",
-      role: "Director of Ops, GridGlobal",
-      avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuClxRTtomLAC3b59VUyT6slkZGAzVuGEA6pgMNLtPG6yrLOcKcHmv1RwVHFiUouvSZpKVvGKgs9Ooufg6UHmWOCZlHh7YyJx2aRvtmTzln4CN6S_uFoWvNmW1dPsnqUzO3WCxy4lyv0JoHwMM27OZOA8x4I0C1Fc69IbmcPg4WBVO1UjmNsWrVkNKLlE7loBC_vW9S-z8Z8I32jan8R4RZXXwY6Fnal3T8sPu517HS-PS0Z8A8i432047tin_WceFxPgBuOPZunFdKH",
+      author: "Alex",
+      role: "Founder, Charli Charging",
+      avatar: "/assets/alex.png",
       featured: true
+    }, {
+      quote: "Scale EV's reliable OCPP 1.6 implementation saved our network months of manual migration. The telemetry accuracy is simply unmatched.",
+      author: "Marcelo",
+      role: "CTO, Charli Charging",
+      avatar: "/assets/marcelo.jpg",
     },
-    {
-      quote: "The roaming capabilities through OCPI were the turning point for our expansion. Integration was practically instantaneous.",
-      author: "David Rossi",
-      role: "VP Growth, ChargeStream",
-      avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuCR__IMrkH_dxoRunFF3dHF7CaXfSEEmll34GrucnrrmsDEhxUjPss7wY610FMIJc2XdnyxuT7REhxxhQ6lA6DRV5AZTKM2YPZKTTqtNN1ntHfBeTi6L-N-yAYZchlutNnTbJp3z6zdkISB9sCICVcyBcYwzDBqsJqRCZUE9-7dEcC9rOjbnvm1Elgf8vR9qTfK74DKq-CpeXi5gVj-z1anOkpzKT9oba6hyzmMAQk2AmODQuIdYkSkIvtWm1WpZ5OpsNEyKyteytxT"
-    }
   ];
 
   return (
-    <section className="py-24 px-8 bg-muted/30">
-      <div className="max-w-7xl mx-auto">
-        <h2 className="text-center text-4xl font-bold tracking-tighter mb-20 text-foreground">
-          Voices from the front line.
-        </h2>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <section className="py-24 px-8 bg-muted/10 relative overflow-hidden">
+      {/* Decorative background elements */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+        <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 bg-primary/5 blur-[120px] rounded-full" />
+        <div className="absolute top-1/3 right-1/4 -translate-y-1/2 w-64 h-64 bg-primary/3 blur-[100px] rounded-full" />
+      </div>
+
+      <div className="max-w-6xl mx-auto relative z-10">
+        <div className="text-center max-w-2xl mx-auto mb-20">
+          <motion.h2
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-4xl lg:text-5xl font-bold tracking-tighter text-foreground mb-4"
+          >
+            Voices from the front line.
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="text-muted-foreground font-medium"
+          >
+            Trusted by the leaders who are building the infrastructure of tomorrow.
+          </motion.p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12">
           {testimonials.map((t, idx) => (
-            <motion.div 
+            <motion.div
               key={idx}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: idx * 0.1 }}
-              className={`${
-                t.featured 
-                  ? 'bg-primary text-primary-foreground shadow-2xl lg:-mt-6 ring-4 ring-primary/10' 
-                  : 'bg-card text-card-foreground border border-border shadow-sm'
-              } p-10 rounded-2xl relative group transition-all duration-300 hover:scale-[1.02]`}
+              transition={{ delay: idx * 0.1, duration: 0.6 }}
+              className={`
+                group p-8 lg:p-12 rounded-[2.5rem] relative transition-all duration-500 hover:scale-[1.01]
+                ${t.featured
+                  ? 'bg-foreground text-background shadow-2xl shadow-primary/10'
+                  : 'bg-card/50 backdrop-blur-xl border border-border shadow-sm hover:border-primary/20'
+                }
+              `}
             >
-              <span className="text-6xl absolute top-6 right-8 opacity-10 font-serif pointer-events-none">&quot;</span>
-              <p className="text-lg mb-8 relative z-10 leading-relaxed italic font-medium">
+              <div className={`
+                absolute top-8 right-10 text-8xl font-serif opacity-10 pointer-events-none select-none
+                ${t.featured ? 'text-background' : 'text-foreground'}
+              `}>
+                &quot;
+              </div>
+
+              <p className={`
+                text-xl lg:text-2xl mb-12 relative z-10 leading-relaxed font-bold tracking-tight
+                ${t.featured ? 'text-background/90' : 'text-foreground/90'}
+              `}>
                 &quot;{t.quote}&quot;
               </p>
-              <div className="flex items-center gap-4">
-                <div className="relative w-12 h-12 rounded-full overflow-hidden grayscale group-hover:grayscale-0 transition-all duration-500 border-2 border-border/50">
-                  <Image 
-                    src={t.avatar} 
-                    alt={t.author || "Testimonial Author"} 
-                    fill 
+
+              <div className="flex items-center gap-5 mt-auto">
+                <div className="relative w-14 h-14 rounded-2xl overflow-hidden grayscale group-hover:grayscale-0 transition-all duration-700 border-2 border-border/20 shadow-lg">
+                  <Image
+                    src={t.avatar}
+                    alt={t.author || "Testimonial Author"}
+                    fill
                     className="object-cover"
                     unoptimized
                   />
                 </div>
                 <div>
-                  <p className="font-bold text-sm tracking-tight">{t.author}</p>
-                  <p className={`text-xs font-medium ${t.featured ? 'opacity-80' : 'text-muted-foreground'}`}>{t.role}</p>
+                  <p className={`text-base font-black tracking-tight ${t.featured ? 'text-background' : 'text-foreground'}`}>
+                    {t.author}
+                  </p>
+                  <p className={`text-xs font-bold uppercase tracking-widest ${t.featured ? 'text-background/60' : 'text-muted-foreground/80'}`}>
+                    {t.role}
+                  </p>
                 </div>
               </div>
             </motion.div>

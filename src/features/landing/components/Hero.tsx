@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Car } from 'lucide-react';
+import { ArrowRight, Car, Zap, Activity } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FRONTEND_ROUTES } from '@/constants/constants';
@@ -10,34 +10,41 @@ import { staggerContainer, staggerItem } from '@/lib/motion';
 
 export function Hero() {
   return (
-    <section className="relative pt-32 pb-20 px-8 overflow-hidden bg-background">
-      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+    <section className="relative pt-40 pb-24 px-8 overflow-hidden bg-background">
+      {/* Background Decorative Elements */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/5 blur-[120px] rounded-full animate-pulse"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-primary/10 blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
+      </div>
+
+      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center relative z-10">
         <motion.div
           variants={staggerContainer}
           initial="initial"
           animate="animate"
           className="z-10"
         >
-          <motion.span
+          <motion.div
             variants={staggerItem}
-            className="inline-block py-1 px-3 bg-muted text-[10px] font-bold tracking-widest rounded-full mb-6 uppercase text-foreground"
+            className="inline-flex items-center gap-2 py-1.5 px-4 bg-muted/50 backdrop-blur-xl border border-border/50 text-[10px] font-black tracking-[0.2em] rounded-full mb-8 uppercase text-foreground/70"
           >
-            Next Gen Infrastructure
-          </motion.span>
+            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></div>
+            Next Gen EV Infrastructure
+          </motion.div>
 
           <motion.h1
             variants={staggerItem}
-            className="text-5xl lg:text-7xl font-bold tracking-tighter leading-[1.1] mb-6 text-foreground"
+            className="text-6xl lg:text-8xl font-bold tracking-tighter leading-[0.95] mb-8 text-foreground"
           >
-            Charging infrastructure that <br />
-            scales with you
+            Infrastructure <br />
+            <span className="text-primary">Without Weight.</span>
           </motion.h1>
 
           <motion.p
             variants={staggerItem}
-            className="text-lg lg:text-xl text-muted-foreground max-w-xl mb-10 leading-relaxed font-medium"
+            className="text-xl lg:text-2xl text-muted-foreground max-w-xl mb-12 leading-relaxed font-medium"
           >
-            Enterprise-grade OCPP 1.6, OCPP 2.0.1 and OCPI 2.2.1 compliant management platform for global charging networks.
+            Enterprise-grade OCPP management platform. Scale your charging network with spatial precision and buttery-smooth operations.
           </motion.p>
 
           <motion.div
@@ -45,49 +52,70 @@ export function Hero() {
             className="flex flex-col sm:flex-row gap-4"
           >
             <Link href="#demo">
-              <Button variant="outline" size="lg" className="px-8 py-4 h-auto rounded-xl border-border font-bold hover:border-foreground hover:bg-accent hover:scale-[1.02] transition-all">
+              <Button size="lg" className="px-10 py-7 h-auto rounded-2xl font-black text-lg shadow-2xl shadow-primary/20 hover:scale-[1.02] transition-all bg-primary text-primary-foreground group">
                 Book a Demo
+                <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+              </Button>
+            </Link>
+            <Link href="#features">
+              <Button variant="outline" size="lg" className="px-10 py-7 h-auto rounded-2xl border-border font-bold text-lg hover:border-foreground hover:bg-accent/50 backdrop-blur-xl transition-all">
+                Explore Features
               </Button>
             </Link>
           </motion.div>
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5, duration: 1 }}
-          className="relative group"
+          initial={{ opacity: 0, scale: 0.9, rotateX: 5, rotateY: -5 }}
+          animate={{ opacity: 1, scale: 1, rotateX: 0, rotateY: 0 }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          className="relative perspective-2000"
         >
-          <div className="absolute inset-0 bg-gradient-to-tr from-muted to-transparent rounded-[2rem] -rotate-3 transition-transform group-hover:rotate-0 duration-700"></div>
-          <div className="relative bg-card/40 backdrop-blur-xl border border-border/50 rounded-[2rem] p-4 shadow-2xl overflow-hidden">
-            <div className="relative aspect-[4/3] w-full rounded-[1.5rem] overflow-hidden grayscale hover:grayscale-0 transition-all duration-1000">
+          <div className="relative bg-card/20 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-4 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] overflow-hidden">
+            <div className="relative aspect-[16/10] w-full rounded-[2rem] overflow-hidden group">
               <Image
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDukuUyW5bKUbQ6p99A4rho16Xq--ItrrjPpodd2Ncvl-gJRK_nK96QfIRKh4nAf4cyCDXq_jYU6x9N4eX7dxwAL_SJ7ZBSs__6LRYansEpP8I-S__kHUi647s2ATRBt2MIRDSrNkSSfILRsR8-j6HB-9q4NhuRRtGGEbvV4jxWDmYIKEMW0GrDn_3vj0roC0BBqCP-GG6Eaim5VAK5tAmgG6tsRAcXUvvMacSZMYAite31YUkKy3zrUdUVgry2MkC3YSwA-9PijQAv"
-                alt="Minimalist high-contrast dashboard"
+                src="/assets/ev_dashboard.png"
+                alt="Scale EV Dashboard"
                 fill
-                className="object-cover"
+                className="object-cover transition-transform duration-1000 group-hover:scale-105"
+                priority
                 unoptimized
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent pointer-events-none"></div>
             </div>
 
-            {/* Floating Data Card */}
+            {/* Floating Data Cards - Spatial Depth */}
             <motion.div
-              initial={{ x: -20, opacity: 0 }}
+              initial={{ x: 50, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 1, duration: 0.8 }}
-              className="absolute bottom-10 -left-6 bg-card/80 backdrop-blur-xl p-6 rounded-2xl shadow-xl border border-border hidden md:block"
+              transition={{ delay: 0.8, duration: 1 }}
+              className="absolute top-12 -right-8 bg-card/80 backdrop-blur-2xl p-6 rounded-2xl shadow-2xl border border-border/50 hidden xl:block z-20"
             >
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                  <Car className="h-5 w-5 text-primary-foreground" />
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Activity className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest font-bold opacity-50 text-foreground">Active Sessions</p>
-                  <p className="text-xl font-bold text-foreground">1,284</p>
+                  <p className="text-[10px] uppercase tracking-widest font-black opacity-50">Uptime</p>
+                  <p className="text-2xl font-bold">99.99<span className="text-sm opacity-50">%</span></p>
                 </div>
               </div>
-              <div className="w-32 h-1 bg-muted rounded-full overflow-hidden">
-                <div className="w-2/3 h-full bg-primary"></div>
+            </motion.div>
+
+            <motion.div
+              initial={{ x: -50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 1, duration: 1 }}
+              className="absolute bottom-12 -left-8 bg-card/80 backdrop-blur-2xl p-6 rounded-2xl shadow-2xl border border-border/50 hidden xl:block z-20"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Zap className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest font-black opacity-50">Sessions</p>
+                  <p className="text-2xl font-bold">4.2<span className="text-sm opacity-50">k+</span></p>
+                </div>
               </div>
             </motion.div>
           </div>
@@ -96,3 +124,4 @@ export function Hero() {
     </section>
   );
 }
+
