@@ -6,18 +6,17 @@ import Image from 'next/image';
 export function Testimonials() {
   const testimonials = [
     {
-      quote: "Scale EV's transition to OCPP 2.0.1 saved our network months of manual migration. The telemetry accuracy is simply unmatched.",
-      author: "Marcelo",
-      role: "CTO, Charli Charging",
-      avatar: "/assets/marcelo.jpg",
-    },
-    {
       quote: "Managing 5,000+ points across Europe used to be a nightmare. Scale EV gave us the visibility we needed to reach 98% network uptime.",
       author: "Alex",
       role: "Founder, Charli Charging",
       avatar: "/assets/alex.png",
       featured: true
-    }
+    }, {
+      quote: "Scale EV's reliable OCPP 1.6 implementation saved our network months of manual migration. The telemetry accuracy is simply unmatched.",
+      author: "Marcelo",
+      role: "CTO, Charli Charging",
+      avatar: "/assets/marcelo.jpg",
+    },
   ];
 
   return (

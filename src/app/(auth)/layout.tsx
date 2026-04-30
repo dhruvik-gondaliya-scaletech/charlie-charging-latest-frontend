@@ -20,14 +20,16 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 transition-all duration-700 bg-gradient-to-t from-white via-white/60 to-transparent dark:from-zinc-950 dark:via-zinc-950/40 dark:to-transparent" />
         </div>
-        
+
         <div className="relative z-10 p-16 flex flex-col justify-between w-full">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <BrandLogo width={180} height={48} />
+            <Link href="/" className="flex items-center group">
+              <BrandLogo width={180} height={48} />
+            </Link>
           </motion.div>
 
           <div className="max-w-xl">
