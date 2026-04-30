@@ -37,7 +37,7 @@ const navItems = [
   { href: FRONTEND_ROUTES.LOCATIONS, label: 'Locations', icon: MapPin, roles: ['user', 'admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.USERS, label: 'Operators', icon: Users, roles: ['admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.DRIVERS, label: 'Drivers', icon: User, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.ID_TAGS, label: 'ID Tags', icon: CreditCard, roles: ['admin', 'super_admin'] },
+  // { href: FRONTEND_ROUTES.ID_TAGS, label: 'ID Tags', icon: CreditCard, roles: ['admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.TARIFF, label: 'Tariff', icon: Coins, roles: ['admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.WEBHOOKS, label: 'Webhooks', icon: Webhook, roles: ['admin', 'super_admin'] },
   // { href: FRONTEND_ROUTES.API_DOCS, label: 'API Docs', icon: Share2, roles: ['admin', 'super_admin'] },
