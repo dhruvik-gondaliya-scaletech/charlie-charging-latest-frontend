@@ -33,7 +33,7 @@ export function BrandLogo({ className, width = 160, height = 60, variant }: Bran
     <div className={cn("relative flex items-center justify-center", className)} style={{ width, height }}>
       <Image
         src={isDark ? ASSETS.LOGOS.DARK : ASSETS.LOGOS.LIGHT}
-        alt="Charli Charging Logo"
+        alt="Scale EV Logo"
         fill
         className="object-contain"
         priority
