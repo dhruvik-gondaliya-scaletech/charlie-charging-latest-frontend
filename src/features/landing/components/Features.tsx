@@ -1,9 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Card, CardContent } from '@/components/ui/card';
-import { Activity, Globe, BarChart3, Settings, Smartphone, CreditCard, ShieldCheck, Zap, Layers } from 'lucide-react';
-import { staggerContainer, staggerItem } from '@/lib/motion';
+import { Activity, Globe, BarChart3, Settings, Smartphone, CreditCard, ShieldCheck, Zap, Layers, ArrowRight } from 'lucide-react';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
 
 const features = [
   {
@@ -52,66 +52,67 @@ const features = [
 
 export function Features() {
   return (
-    <section id="features" className="py-32 px-8 bg-background relative overflow-hidden">
+    <section id="features" className="py-24 px-6 lg:px-8 bg-muted/5 relative overflow-hidden">
       <div className="max-w-7xl mx-auto relative z-10">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-24 gap-8">
-          <div className="max-w-2xl">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="text-primary text-[10px] font-black tracking-[0.3em] uppercase mb-4"
-            >
-              The Core Engine
-            </motion.div>
-            <motion.h2
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="text-5xl lg:text-7xl font-bold tracking-tighter mb-8 leading-[0.95] text-foreground"
-            >
-              Master complexity <br />through <span className="text-muted-foreground">precision.</span>
-            </motion.h2>
-          </div>
+        <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="z-10"
+          >
+            <p className="text-primary font-bold tracking-widest uppercase text-xs mb-4">Scalable EV Solutions</p>
+            <h2 className="text-3xl lg:text-4xl font-bold tracking-tight mb-6 leading-tight text-foreground">
+              Accelerate Your EV <br />Charging Business
+            </h2>
+            <p className="text-muted-foreground text-lg mb-6 leading-relaxed max-w-xl">
+              Scale EV provides leading technology solutions for the management, operation, and billing of electric vehicle charging stations.
+            </p>
+            <p className="text-muted-foreground mb-10 leading-relaxed max-w-xl">
+              Whether you are building an EV charging network, managing a fleet, or running a retail business, our platform provides the tools you need to succeed in the electric revolution.
+            </p>
+            <Button size="lg" className="px-8 py-6 h-auto rounded-xl font-bold text-base bg-primary text-primary-foreground group">
+              Plan Now
+              <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+            </Button>
+          </motion.div>
+
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="text-muted-foreground text-lg font-medium max-w-sm mb-2"
+            className="relative"
           >
-            Every session, every station, every watt. Managed from a singular, high-performance interface.
+            <div className="relative w-full aspect-[4/3] rounded-[2rem] overflow-hidden shadow-2xl border border-border/50">
+              <Image
+                src="/assets/ev_dashboard.png"
+                alt="Scale EV Platform Dashboard"
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            </div>
+
+            {/* Mobile App Overlay */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3 }}
+              className="absolute -bottom-10 -right-10 w-[200px] h-[400px] hidden md:block"
+            >
+              <div className="relative h-full w-full rounded-[2.5rem] border-8 border-foreground overflow-hidden shadow-2xl">
+                <Image
+                  src="/assets/ev_driver_app.png"
+                  alt="Scale EV Mobile App"
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
+              </div>
+            </motion.div>
           </motion.div>
         </div>
-
-        <motion.div
-          variants={staggerContainer}
-          initial="initial"
-          whileInView="animate"
-          viewport={{ once: true }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-          {features.map((feature, idx) => (
-            <motion.div key={idx} variants={staggerItem} className={feature.className}>
-              <Card className="h-full border border-border/50 bg-card/30 backdrop-blur-3xl rounded-[2.5rem] overflow-hidden group hover:border-primary/30 transition-all duration-500 relative">
-                <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-700`}></div>
-                <CardContent className="p-10 relative z-10 h-full flex flex-col">
-                  <div className="w-14 h-14 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 shadow-xl shadow-primary/5">
-                    <feature.icon className="h-7 w-7" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-4 text-foreground">{feature.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed font-medium flex-1">
-                    {feature.description}
-                  </p>
-                  <div className="mt-8 pt-8 border-t border-border/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center text-primary font-black text-[10px] uppercase tracking-widest gap-2">
-                    Learn more <Zap className="h-3 w-3" />
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </motion.div>
       </div>
     </section>
   );
