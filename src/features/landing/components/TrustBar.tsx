@@ -25,13 +25,13 @@ export function TrustBar() {
           transition={{ duration: 0.8 }}
           className="flex justify-center items-center group"
         >
-          <div className="relative p-8 rounded-[2rem] bg-card/30 backdrop-blur-xl border border-white/5 shadow-2xl transition-all duration-700 group-hover:scale-105 group-hover:bg-card/50">
+          <div className="relative p-6 sm:p-8 rounded-[2rem] bg-card/30 backdrop-blur-xl border border-white/5 shadow-2xl transition-all duration-700 group-hover:scale-105 group-hover:bg-card/50 w-full max-w-[280px] sm:max-w-[320px]">
             <Image
               src="/assets/charli_charging.svg"
               alt="Charli Charging"
               width={320}
               height={80}
-              className="h-20 w-auto object-contain transition-all duration-500 group-hover:brightness-110"
+              className="h-16 sm:h-20 w-full object-contain transition-all duration-500 group-hover:brightness-110"
               priority
             />
           </div>

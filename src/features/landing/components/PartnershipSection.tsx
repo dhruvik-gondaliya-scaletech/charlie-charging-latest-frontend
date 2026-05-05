@@ -35,12 +35,12 @@ export function PartnershipSection() {
             The Scale EV ecosystem is built on transparency, security, and world-class support. We partner with the biggest names in tech and energy to ensure your charging network remains future-proof.
           </p>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10 opacity-60">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 mb-10 opacity-60">
             {/* Simple logo placeholders to match reference style */}
-            <div className="flex items-center justify-center h-10 font-bold text-lg tracking-tighter italic">stripe</div>
-            <div className="flex items-center justify-center h-10 font-bold text-lg tracking-widest">SAP</div>
-            <div className="flex items-center justify-center h-10 font-bold text-lg tracking-tighter">SIEMENS</div>
-            <div className="flex items-center justify-center h-10 font-bold text-lg">ORACLE</div>
+            <div className="flex items-center justify-center h-10 font-bold text-base sm:text-lg tracking-tighter italic">stripe</div>
+            <div className="flex items-center justify-center h-10 font-bold text-base sm:text-lg tracking-widest">SAP</div>
+            <div className="flex items-center justify-center h-10 font-bold text-base sm:text-lg tracking-tighter">SIEMENS</div>
+            <div className="flex items-center justify-center h-10 font-bold text-base sm:text-lg">ORACLE</div>
           </div>
 
           <Button className="px-8 py-6 h-auto rounded-xl font-bold text-base shadow-lg shadow-primary/20 bg-primary text-primary-foreground group">

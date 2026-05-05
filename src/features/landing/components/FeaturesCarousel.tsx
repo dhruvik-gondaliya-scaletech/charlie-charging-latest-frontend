@@ -32,7 +32,7 @@ export function FeaturesCarousel() {
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="grid grid-cols-2 gap-6"
+            className="grid grid-cols-1 sm:grid-cols-2 gap-6"
           >
             {[
               { title: "Smart Scheduling", desc: "Automate charging sessions based on grid demand." },

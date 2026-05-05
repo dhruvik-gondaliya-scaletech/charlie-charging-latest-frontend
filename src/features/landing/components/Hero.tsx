@@ -10,7 +10,7 @@ import { staggerContainer, staggerItem } from '@/lib/motion';
 
 export function Hero() {
   return (
-    <section className="relative pt-32 pb-20 px-6 lg:px-8 overflow-hidden bg-background">
+    <section className="relative pt-24 lg:pt-32 pb-20 px-6 lg:px-8 overflow-hidden bg-background">
       <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center relative z-10">
         <motion.div
           variants={staggerContainer}

@@ -19,7 +19,7 @@ export function GlobalNetwork() {
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="relative w-full aspect-[21/9] bg-muted/20 rounded-[3rem] overflow-hidden border border-border/50"
+          className="relative w-full aspect-video md:aspect-[21/9] bg-muted/20 rounded-[2rem] lg:rounded-[3rem] overflow-hidden border border-border/50"
         >
           {/* Using a high-quality world map placeholder */}
           <Image
