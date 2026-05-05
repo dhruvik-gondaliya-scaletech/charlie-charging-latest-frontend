@@ -558,7 +558,7 @@ export function StationDetailContainer() {
                                                 { label: 'Price per kWh', value: stationTariff ? `${stationTariff.pricePerKwh} ${stationTariff.currency}` : '-', icon: Zap },
                                                 { label: 'Service Fee', value: stationTariff ? `${stationTariff.serviceFeePercentage}%` : '-', icon: Activity },
                                                 { label: 'Connection Fee', value: stationTariff ? `${stationTariff.connectionFee} ${stationTariff.currency}` : '-', icon: Terminal },
-                                                { label: 'Idle Fee', value: stationTariff ? `${stationTariff.idleFee} ${stationTariff.currency}` : '-', icon: Terminal },
+                                                { label: 'Idle Fee Per Minute', value: stationTariff ? `${stationTariff.idleFeePerMinute} ${stationTariff.currency}` : '-', icon: Terminal },
                                                 { label: 'Station Type', value: station.type || 'AC', icon: Zap },
                                                 { label: 'Visibility', value: station.visibility === 'private' ? 'Private' : 'Public', icon: ShieldCheck },
                                             ].map((item, i) => (
