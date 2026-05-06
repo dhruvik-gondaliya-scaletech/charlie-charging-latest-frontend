@@ -23,11 +23,13 @@ import { LocationOverview } from '../components/LocationOverview';
 import { LocationStations } from '../components/LocationStations';
 import { FRONTEND_ROUTES } from '@/constants/constants';
 import { BackButton } from '@/components/shared/BackButton';
+import { ApplyTariffModal } from '../components/ApplyTariffModal';
 
 export function LocationDetailContainer() {
     const { id } = useParams();
     const router = useRouter();
     const [activeTab, setActiveTab] = useState('overview');
+    const [isTariffModalOpen, setIsTariffModalOpen] = useState(false);
 
     const { data: location, isLoading: isLocationLoading, error: locationError } = useLocation(id as string);
     const { data: stations, isLoading: isStationsLoading } = useStations({ locationId: id as string });
@@ -109,6 +111,15 @@ export function LocationDetailContainer() {
                         </div>
                     </div>
                 </div>
+                
+                <div className="flex items-center gap-3 mt-4 md:mt-0">
+                    <Button 
+                        onClick={() => setIsTariffModalOpen(true)}
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-md transition-all uppercase tracking-widest text-xs px-6 py-2"
+                    >
+                        Apply Tariff
+                    </Button>
+                </div>
             </motion.div>
 
             {/* Stats Grid */}
@@ -156,6 +167,12 @@ export function LocationDetailContainer() {
                     </TabsContent>
                 </Tabs>
             </motion.div>
+            
+            <ApplyTariffModal 
+                isOpen={isTariffModalOpen} 
+                onClose={() => setIsTariffModalOpen(false)} 
+                locationId={id as string} 
+            />
         </motion.div>
     );
 }

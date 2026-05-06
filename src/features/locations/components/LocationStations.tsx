@@ -7,7 +7,9 @@ import { Table } from '@/components/shared/Table';
 import { Badge } from '@/components/ui/badge';
 import { Zap } from 'lucide-react';
 import { Station, ChargingStatus } from '@/types';
+import { useTariffs } from '@/hooks/get/useBilling';
 import { cn } from '@/lib/utils';
+
 import { FRONTEND_ROUTES } from '@/constants/constants';
 import {
     TooltipProvider,
@@ -20,6 +22,14 @@ interface LocationStationsProps {
 
 export function LocationStations({ stations, isLoading }: LocationStationsProps) {
     const router = useRouter();
+    const { data: tariffs } = useTariffs();
+    const tariffMap = useMemo(() => {
+        if (!tariffs) return {};
+        return tariffs.reduce((acc: Record<string, string>, t) => {
+            acc[t.id] = `${t.name} (${t.currency})`;
+            return acc;
+        }, {});
+    }, [tariffs]);
 
     const columns: ColumnDef<Station>[] = useMemo(
         () => [
@@ -84,8 +94,26 @@ export function LocationStations({ stations, isLoading }: LocationStationsProps)
                     </div>
                 ),
             },
+            {
+                accessorKey: 'tariffId',
+                header: 'Tariff',
+                cell: ({ row }) => {
+                    const tariffId = row.original.tariffId;
+                    if (!tariffId) {
+                        return <span className="text-xs text-muted-foreground italic">No tariff</span>;
+                    }
+                    return (
+                        <Badge
+                            variant="outline"
+                            className="bg-primary/5 text-primary border-primary/20 font-bold px-2.5 py-0.5 rounded-full text-[10px] tracking-widest uppercase"
+                        >
+                            {tariffMap[tariffId] || tariffId}
+                        </Badge>
+                    );
+                },
+            },
         ],
-        [router]
+        [router, tariffMap]
     );
 
     return (

@@ -9,7 +9,10 @@ export interface Tariff {
   pricePerKwh: number;
   serviceFeePercentage: number;
   connectionFee: number;
-  idleFee: number;
+  idleFeePerMinute: number;
+  isIdleFeeEnabled: boolean;
+  idleGracePeriodMinutes: number;
+  maxIdleFee: number;
   currency: Currency;
   createdAt: string;
   updatedAt: string;
@@ -20,7 +23,10 @@ export interface CreateTariffData {
   pricePerKwh: number;
   serviceFeePercentage: number;
   connectionFee: number;
-  idleFee: number;
+  idleFeePerMinute: number;
+  isIdleFeeEnabled: boolean;
+  idleGracePeriodMinutes: number;
+  maxIdleFee: number;
   currency: Currency;
 }
 
@@ -38,6 +44,10 @@ export interface EstimateCostResponse {
   servicefee: number;
   connectionfee: number;
   total_cost: number;
+  isIdleFeeEnabled?: boolean;
+  idleFeePerMinute?: number;
+  idleGracePeriodMinutes?: number;
+  maxIdleFee?: number;
 }
 
 class BillingService {
