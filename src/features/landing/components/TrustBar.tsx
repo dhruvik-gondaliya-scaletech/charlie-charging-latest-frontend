@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 export function TrustBar() {
   return (
     <section className="py-20 bg-background relative overflow-hidden border-y border-border/50">
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5 opacity-50"></div>
+      <div className="absolute inset-0 bg-linear-to-r from-primary/5 via-transparent to-primary/5 opacity-50"></div>
 
       <div className="max-w-7xl mx-auto px-8 relative z-10 flex flex-col items-center">
         <motion.p

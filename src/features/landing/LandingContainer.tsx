@@ -2,9 +2,7 @@ import { PublicHeader } from './components/PublicHeader';
 import { Hero } from './components/Hero';
 import { TrustBar } from './components/TrustBar';
 import { Features } from './components/Features';
-import { ProtocolSpecs } from './components/ProtocolSpecs';
 import { AppPreview } from './components/AppPreview';
-import { Pricing } from './components/Pricing';
 import { FAQ } from './components/FAQ';
 import { Testimonials } from './components/Testimonials';
 import { ContactSection } from './components/ContactSection';
@@ -13,8 +11,6 @@ import { SolutionsGrid } from './components/SolutionsGrid';
 import { StatsSection } from './components/StatsSection';
 import { PartnershipSection } from './components/PartnershipSection';
 import { FeaturesCarousel } from './components/FeaturesCarousel';
-import { GlobalNetwork } from './components/GlobalNetwork';
-import { FleetCharging } from './components/FleetCharging';
 
 export default function LandingContainer() {
   return (
@@ -22,6 +18,9 @@ export default function LandingContainer() {
       <PublicHeader />
       <main>
         <Hero />
+
+        <TrustBar />
+
         <PartnershipSection />
         
         {/* Accelerate your business section */}
@@ -35,12 +34,6 @@ export default function LandingContainer() {
 
         {/* Impact Stats */}
         <StatsSection />
-
-        {/* Global Reach Map */}
-        <GlobalNetwork />
-
-        {/* Fleet Specifics */}
-        <FleetCharging />
 
         {/* Social Proof */}
         <Testimonials />
