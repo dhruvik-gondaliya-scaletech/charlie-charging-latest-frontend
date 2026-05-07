@@ -150,6 +150,21 @@ class StationService {
       configurations: [{ key, value }],
     });
   }
+
+  async getStationChargingProfile(stationId: string) {
+    return httpService.get<any>(API_CONFIG.endpoints.stations.chargingProfile(stationId));
+  }
+
+  async setStationChargingLimit(stationId: string, unit: 'A' | 'W', value: number) {
+    return httpService.post(API_CONFIG.endpoints.stations.chargingProfile(stationId), {
+      unit,
+      value,
+    });
+  }
+
+  async removeStationChargingLimit(stationId: string) {
+    return httpService.delete(API_CONFIG.endpoints.stations.chargingProfile(stationId));
+  }
 }
 
 export const stationService = new StationService();

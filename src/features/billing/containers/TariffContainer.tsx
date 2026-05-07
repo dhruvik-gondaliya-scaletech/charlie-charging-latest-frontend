@@ -76,12 +76,21 @@ export function TariffContainer() {
         accessorKey: 'idleFee',
         header: 'Idle Fee',
         cell: ({ row }) => {
+          const isEnabled = row.original.isIdleFeeEnabled;
+          if (!isEnabled) {
+            return <span className="font-bold text-muted-foreground text-xs bg-muted/40 px-2 py-0.5 rounded-md">Disabled</span>;
+          }
           const currency = row.original.currency || '—';
-          const value = row.getValue<number>('idleFee');
+          const value = row.original.idleFeePerMinute;
           return (
-            <span className="font-bold">
-              {currency} {Number(value ?? 0).toFixed(2)}
-            </span>
+            <div className="flex flex-col gap-0.5">
+              <span className="font-bold text-sm">
+                {currency} {Number(value ?? 0).toFixed(2)} <span className="text-xs text-muted-foreground font-medium">/ min</span>
+              </span>
+              <span className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
+                Grace: {row.original.idleGracePeriodMinutes}m
+              </span>
+            </div>
           );
         },
       },
@@ -232,7 +241,14 @@ export function TariffContainer() {
               <div className="grid grid-cols-2 gap-4 pt-1">
                 <div className="space-y-1">
                   <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Idle Fee</span>
-                  <p className="text-sm font-bold">{tariff.currency} {Number(tariff.idleFee ?? 0).toFixed(2)}</p>
+                  {tariff.isIdleFeeEnabled ? (
+                    <div className="flex flex-col">
+                      <p className="text-sm font-bold">{tariff.currency} {Number(tariff.idleFeePerMinute ?? 0).toFixed(2)}<span className="text-xs text-muted-foreground font-medium">/min</span></p>
+                      <p className="text-[10px] text-muted-foreground font-medium">Grace: {tariff.idleGracePeriodMinutes}m {tariff.maxIdleFee ? `• Max: ${tariff.currency} ${tariff.maxIdleFee}` : ''}</p>
+                    </div>
+                  ) : (
+                    <p className="text-sm font-bold text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-md w-fit">Disabled</p>
+                  )}
                 </div>
                 <div className="space-y-1">
                   <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Created</span>

@@ -1,16 +1,16 @@
-'use client';
-
 import { PublicHeader } from './components/PublicHeader';
 import { Hero } from './components/Hero';
 import { TrustBar } from './components/TrustBar';
 import { Features } from './components/Features';
-import { ProtocolSpecs } from './components/ProtocolSpecs';
 import { AppPreview } from './components/AppPreview';
-import { Pricing } from './components/Pricing';
 import { FAQ } from './components/FAQ';
 import { Testimonials } from './components/Testimonials';
 import { ContactSection } from './components/ContactSection';
 import { PublicFooter } from './components/PublicFooter';
+import { SolutionsGrid } from './components/SolutionsGrid';
+import { StatsSection } from './components/StatsSection';
+import { PartnershipSection } from './components/PartnershipSection';
+import { FeaturesCarousel } from './components/FeaturesCarousel';
 
 export default function LandingContainer() {
   return (
@@ -18,19 +18,31 @@ export default function LandingContainer() {
       <PublicHeader />
       <main>
         <Hero />
+
         <TrustBar />
-        <div id="features">
-          <Features />
-        </div>
-        <div id="protocols">
-          <ProtocolSpecs />
-        </div>
-        <div id="app">
-          <AppPreview />
-        </div>
+
+        <PartnershipSection />
+        
+        {/* Accelerate your business section */}
+        <Features />
+
+        {/* Slanted background features carousel */}
+        <FeaturesCarousel />
+
+        {/* Comprehensive Solutions Grid */}
+        <SolutionsGrid />
+
+        {/* Impact Stats */}
+        <StatsSection />
+
+        {/* Social Proof */}
         <Testimonials />
-        {/* <Pricing /> */}
+
+        {/* Optional: App Preview */}
+        <AppPreview />
+
         <FAQ />
+        
         <ContactSection />
       </main>
       <PublicFooter />

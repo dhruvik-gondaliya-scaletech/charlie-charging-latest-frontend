@@ -42,6 +42,7 @@ export const API_CONFIG = {
             setConfiguration: (id: string) => `/stations/${id}/configuration`,
             ocppLogs: (id: string) => `/ocpp-logs?stationId=${id}`,
             sessions: (id: string) => `/stations/${id}/sessions`,
+            chargingProfile: (id: string) => `/stations/${id}/charging-profile`,
         },
         locations: {
             base: "/locations",

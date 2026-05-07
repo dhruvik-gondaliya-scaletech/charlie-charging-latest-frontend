@@ -38,10 +38,12 @@ import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ConfigurationManager } from '../components/ConfigurationManager';
+import { QrCodeTab } from '../components/QrCodeTab';
 import { StatCard } from '../../dashboard/components/StatCard';
 import { StationSessions } from '../components/StationSessions';
 import { StationLogs } from '../components/StationLogs';
 import { ConnectorCard } from '../components/ConnectorCard';
+import { StationSmartCharging } from '../components/StationSmartCharging';
 import { useRemoteStart, useRemoteStop, useResetStation, useChangeAvailability } from '@/hooks/delete/useStationMutations';
 import { useAuth } from '@/contexts/AuthContext';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
@@ -58,7 +60,16 @@ import {
     MeterValuesEvent,
     TransactionEvent
 } from '@/lib/realtime.service';
-import {
+import { useTenantConfig } from '@/hooks/get/useTenantConfig';
+import QRCode from 'react-qr-code';
+import { 
+    Download, 
+    Copy, 
+    ExternalLink, 
+    QrCode as QrCodeIcon,
+    Check
+} from 'lucide-react';
+import { 
     invalidateQueriesDebounced,
     updateStationDetailCache
 } from '@/lib/query-utils';
@@ -481,8 +492,10 @@ export function StationDetailContainer() {
                     <TabsList className="bg-muted/40 p-1 border border-border/40 rounded-2xl backdrop-blur-md overflow-x-auto w-full inline-flex h-auto sm:flex-nowrap justify-start no-scrollbar">
                         <TabsTrigger value="connectors" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Connectors</TabsTrigger>
                         <TabsTrigger value="overview" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Overview</TabsTrigger>
+                        <TabsTrigger value="qr-code" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">QR Code</TabsTrigger>
                         <TabsTrigger value="sessions" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Sessions</TabsTrigger>
                         <TabsTrigger value="config" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Config</TabsTrigger>
+                        <TabsTrigger value="smart-charging" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Smart Charging</TabsTrigger>
                         <TabsTrigger value="logs" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Live Logs</TabsTrigger>
                     </TabsList>
 
@@ -527,6 +540,10 @@ export function StationDetailContainer() {
                         </div>
                     </TabsContent>
 
+                    <TabsContent value="qr-code">
+                        <QrCodeTab station={station} />
+                    </TabsContent>
+
                     <TabsContent value="overview">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <div className="lg:col-span-2 space-y-6">
@@ -558,7 +575,7 @@ export function StationDetailContainer() {
                                                 { label: 'Price per kWh', value: stationTariff ? `${stationTariff.pricePerKwh} ${stationTariff.currency}` : '-', icon: Zap },
                                                 { label: 'Service Fee', value: stationTariff ? `${stationTariff.serviceFeePercentage}%` : '-', icon: Activity },
                                                 { label: 'Connection Fee', value: stationTariff ? `${stationTariff.connectionFee} ${stationTariff.currency}` : '-', icon: Terminal },
-                                                { label: 'Idle Fee', value: stationTariff ? `${stationTariff.idleFee} ${stationTariff.currency}` : '-', icon: Terminal },
+                                                { label: 'Idle Fee Per Minute', value: stationTariff ? `${stationTariff.idleFeePerMinute} ${stationTariff.currency}` : '-', icon: Terminal },
                                                 { label: 'Station Type', value: station.type || 'AC', icon: Zap },
                                                 { label: 'Visibility', value: station.visibility === 'private' ? 'Private' : 'Public', icon: ShieldCheck },
                                             ].map((item, i) => (
@@ -617,6 +634,14 @@ export function StationDetailContainer() {
                         <Card className="border-border/40 bg-card/20 backdrop-blur-sm rounded-3xl overflow-hidden border">
                             <CardContent className="p-6">
                                 <ConfigurationManager stationId={station.id} />
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="smart-charging">
+                        <Card className="border-border/40 bg-card/20 backdrop-blur-sm rounded-3xl overflow-hidden border">
+                            <CardContent className="p-6">
+                                <StationSmartCharging stationId={station.id} />
                             </CardContent>
                         </Card>
                     </TabsContent>

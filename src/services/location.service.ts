@@ -38,6 +38,10 @@ class LocationService {
   async deleteLocation(id: string) {
     return httpService.delete(API_CONFIG.endpoints.locations.byId(id));
   }
+
+  async applyTariffToLocation(id: string, tariffId: string) {
+    return httpService.post(`${API_CONFIG.endpoints.locations.byId(id)}/apply-tariff`, { tariffId });
+  }
 }
 
 export const locationService = new LocationService();
