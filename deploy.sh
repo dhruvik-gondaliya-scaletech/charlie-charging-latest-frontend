@@ -15,7 +15,7 @@ docker rm $CONTAINER_NAME || true
 
 # Step 2: Pull latest code
 echo "📥 Pulling latest code..."
-git pull origin feat/docker-file
+git pull origin main
 
 # Step 3: Load env + Build new Docker image
 echo "🏗️ Building Docker image with env..."
@@ -23,7 +23,7 @@ echo "🏗️ Building Docker image with env..."
 # Load .env file
 if [ -f .env ]; then
   set -a
-  source .env
+  . ./.env
   set +a
 fi
 
