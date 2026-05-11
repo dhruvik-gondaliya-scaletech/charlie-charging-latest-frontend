@@ -1,0 +1,66 @@
+# ---------- 1. Install dependencies ----------
+FROM node:20-alpine AS deps
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm install
+
+# ---------- 2. Build the app ----------
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+ENV NEXT_PUBLIC_NODE_ENV=production
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Set build arguments for Next.js (needed at build time for client-side)
+ARG NEXT_PUBLIC_API_BASE_URL
+ARG NEXT_PUBLIC_API_TIMEOUT
+ARG NEXT_PUBLIC_WS_URL
+ARG NEXT_PUBLIC_AUTH_TOKEN_KEY
+ARG NEXT_PUBLIC_AUTH_USER_KEY
+ARG NEXT_PUBLIC_AUTH_TENANT_KEY
+ARG NEXT_PUBLIC_CSMS_WEBSOCKET_BASE_URL
+ARG NEXT_PUBLIC_FRONTEND_PRIVATE_KEY
+ARG NEXT_PUBLIC_STORAGE_SECRET
+ARG NEXT_PUBLIC_SITE_URL
+
+
+ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+ENV NEXT_PUBLIC_API_TIMEOUT=$NEXT_PUBLIC_API_TIMEOUT
+ENV NEXT_PUBLIC_WS_URL=$NEXT_PUBLIC_WS_URL
+ENV NEXT_PUBLIC_AUTH_TOKEN_KEY=$NEXT_PUBLIC_AUTH_TOKEN_KEY
+ENV NEXT_PUBLIC_AUTH_USER_KEY=$NEXT_PUBLIC_AUTH_USER_KEY
+ENV NEXT_PUBLIC_AUTH_TENANT_KEY=$NEXT_PUBLIC_AUTH_TENANT_KEY
+ENV NEXT_PUBLIC_CSMS_WEBSOCKET_BASE_URL=$NEXT_PUBLIC_CSMS_WEBSOCKET_BASE_URL
+ENV NEXT_PUBLIC_FRONTEND_PRIVATE_KEY=$NEXT_PUBLIC_FRONTEND_PRIVATE_KEY
+ENV NEXT_PUBLIC_STORAGE_SECRET=$NEXT_PUBLIC_STORAGE_SECRET
+ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
+
+# Disable telemetry (optional)
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN npm run build
+
+# ---------- 3. Run the app ----------
+FROM node:20-alpine AS runner
+WORKDIR /app
+
+ENV NEXT_PUBLIC_NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Create non-root user (security best practice)
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nextjs -u 1001
+
+# Copy only required files
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/node_modules ./node_modules
+
+USER nextjs
+
+EXPOSE 6163
+CMD ["npm", "start", "--", "-p", "6163"]
