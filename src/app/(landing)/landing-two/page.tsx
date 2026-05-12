@@ -1,4 +1,4 @@
-import LandingContainer from '@/features/landing-two/container/LandingContainer';
+import LandingContainer from '@/features/landing-two/LandingContainer';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
