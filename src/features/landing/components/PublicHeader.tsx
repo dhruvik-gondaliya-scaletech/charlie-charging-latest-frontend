@@ -29,9 +29,8 @@ export function PublicHeader() {
   const navItems = [
     { name: 'Features', href: '#features' },
     { name: 'App', href: '#app' },
-    { name: 'Analytics', href: '#demo' },
+    // { name: 'Pricing', href: '#pricing' },
     { name: 'FAQ', href: '#faq' },
-    { name: 'Contact', href: '#contact' },
   ];
 
   return (
