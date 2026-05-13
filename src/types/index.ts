@@ -387,4 +387,11 @@ export interface PaginatedResponse<T> {
   meta: PaginationMeta;
 }
 
-export interface BrandResponse extends PaginatedResponse<Brand> { }
+export type BrandResponse = PaginatedResponse<Brand>;
+
+export interface StationChargingProfile {
+  chargingRateUnit: 'A' | 'W';
+  limitValue: number;
+  syncStatus: 'synced' | 'pending' | 'failed';
+  lastSyncedAt?: string;
+}
