@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { PortalEndpoint } from '../data/portal-data';
 import { Play, RefreshCw, CheckCircle2, AlertCircle, Layers, Globe } from 'lucide-react';
 import { getStoredDocsToken, getStoredCredentials } from '../hooks/useDocsAuth';
-import { API_CONFIG } from '@/constants/constants';
+import { API_CONFIG, AUTH_CONFIG } from '@/constants/constants';
+import { secureSave } from '@/utils/storage-utils';
 
 interface LivePlaygroundProps {
   endpoint: PortalEndpoint;
@@ -164,6 +165,16 @@ export function LivePlayground({ endpoint }: LivePlaygroundProps) {
       const isJson = res.headers.get('content-type')?.includes('application/json');
       const responseData = isJson ? await res.json() : await res.text();
 
+      // Automatically capture valid token leases to seamless update the active Bearer headers
+      if (res.ok && responseData && typeof responseData === 'object') {
+        const resObj = responseData as Record<string, unknown>;
+        const capturedToken = resObj.access_token || resObj.token || (resObj.data as Record<string, unknown>)?.access_token;
+        if (typeof capturedToken === 'string') {
+          secureSave(AUTH_CONFIG.docsTokenKey, capturedToken);
+          setAuthToken(capturedToken);
+        }
+      }
+
       setResponse({
         status: res.status,
         data: responseData,
@@ -229,9 +240,9 @@ export function LivePlayground({ endpoint }: LivePlaygroundProps) {
   };
 
   return (
-    <div className="bg-gray-950 border border-gray-800/80 rounded-xl overflow-hidden flex flex-col shadow-xl">
+    <div className="flex flex-col h-full w-full bg-gray-950">
       {/* Playground Sub-Header Controls */}
-      <div className="bg-gray-900/60 px-4 py-3 border-b border-gray-800/80 flex items-center justify-between gap-3 flex-wrap">
+      <div className="bg-gray-900/60 px-4 py-3 border-b border-gray-800/80 flex items-center justify-between gap-3 flex-wrap shrink-0">
         <div className="flex items-center gap-2">
           <Globe className="w-4 h-4 text-emerald-400" />
           <span className="text-xs font-semibold text-gray-200">Interactive Console</span>
@@ -257,7 +268,7 @@ export function LivePlayground({ endpoint }: LivePlaygroundProps) {
       </div>
 
       {/* Target Preview Overlay */}
-      <div className="px-4 py-2 bg-gray-900/20 border-b border-gray-800/40 font-mono text-[11px] flex items-center gap-2 overflow-x-auto">
+      <div className="px-4 py-2 bg-gray-900/20 border-b border-gray-800/40 font-mono text-[11px] flex items-center gap-2 overflow-x-auto shrink-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <span className="text-gray-500 select-none shrink-0">Target URL:</span>
         <span className="text-emerald-400/90 tracking-tight font-medium">
           {API_CONFIG.baseUrl || 'https://api.scale-ev.com'}
@@ -266,7 +277,7 @@ export function LivePlayground({ endpoint }: LivePlaygroundProps) {
       </div>
 
       {/* Dynamic Forms Frame */}
-      <div className="p-4 space-y-5 flex-1 overflow-y-auto max-h-[420px]">
+      <div className="p-4 space-y-5 flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {/* API Token Input injection */}
         {endpoint.requiresAuth && (
           <div className="space-y-1.5 bg-gray-900/40 p-3 rounded-lg border border-gray-800/60">
@@ -300,7 +311,7 @@ export function LivePlayground({ endpoint }: LivePlaygroundProps) {
       </div>
 
       {/* Submit Trigger Actions */}
-      <div className="p-4 bg-gray-900/40 border-t border-gray-800/80">
+      <div className="p-4 bg-gray-900/40 border-t border-gray-800/80 shrink-0">
         <button
           onClick={executeLiveCall}
           disabled={isLoading}
@@ -322,7 +333,7 @@ export function LivePlayground({ endpoint }: LivePlaygroundProps) {
 
       {/* Real-time Result Output Inspector */}
       {response && (
-        <div className="border-t border-gray-800 bg-gray-950 animate-in fade-in duration-200">
+        <div className="border-t border-gray-800 bg-gray-950 animate-in fade-in duration-200 shrink-0">
           <div className="px-4 py-2 bg-gray-900/60 border-b border-gray-800/60 flex items-center justify-between text-xs">
             <span className="font-semibold text-gray-300">Execution Output</span>
             <div className="flex items-center gap-3 font-mono text-[11px]">
@@ -342,7 +353,7 @@ export function LivePlayground({ endpoint }: LivePlaygroundProps) {
               )}
             </div>
           </div>
-          <div className="p-4 overflow-x-auto font-mono text-xs max-h-60 overflow-y-auto">
+          <div className="p-4 overflow-x-auto font-mono text-xs max-h-60 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {response.error ? (
               <div className="text-rose-400 p-3 bg-rose-500/10 rounded-lg border border-rose-500/20 whitespace-pre-wrap">
                 {response.error}

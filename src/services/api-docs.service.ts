@@ -22,13 +22,19 @@ class ApiDocsService {
     const response = await httpService.post<unknown>(API_CONFIG.endpoints.auth.documentationToken);
     if (response && typeof response === 'object') {
       const resObj = response as Record<string, unknown>;
-      const token = resObj.access_token || resObj.token;
+      let token = resObj.access_token || resObj.token;
+      
+      if (!token && resObj.data && typeof resObj.data === 'object') {
+        const dataObj = resObj.data as Record<string, unknown>;
+        token = dataObj.access_token || dataObj.token;
+      }
+
       if (typeof token === 'string') {
         return token;
       }
       return JSON.stringify(response);
     }
-    return typeof response === 'string' ? response : String(response);
+    return typeof response === 'string' ? response : JSON.stringify(response);
   }
 
   /**

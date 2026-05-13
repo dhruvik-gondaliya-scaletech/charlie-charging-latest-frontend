@@ -53,12 +53,12 @@ export function DocsPortalWrapper({ categorySlug, endpointId }: DocsPortalWrappe
   }
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-950 text-gray-100 antialiased selection:bg-emerald-500 selection:text-black">
+    <div className="flex flex-col lg:flex-row min-h-screen lg:h-screen lg:overflow-hidden bg-gray-950 text-gray-100 antialiased selection:bg-emerald-500 selection:text-black">
       {/* Absolute Master Navigation Sidebar Container */}
       <DocsSidebar activeCategory={categorySlug} activeEndpoint={endpointId} />
 
-      {/* Primary Dynamic Content Frame Render Layer */}
-      <main className="flex-1 p-4 lg:p-8 overflow-y-auto max-w-7xl mx-auto w-full space-y-8">
+      {/* Primary Dynamic Content Frame Render Layer (Middle Content) */}
+      <main className="flex-1 lg:h-full lg:overflow-y-auto p-4 lg:p-8 space-y-8 max-w-5xl mx-auto w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {isGuide && guide ? (
           /* Render Content Documentation Block */
           <div className="max-w-4xl space-y-6">
@@ -166,27 +166,26 @@ export function DocsPortalWrapper({ categorySlug, endpointId }: DocsPortalWrappe
             </div>
           </div>
         ) : endpoint ? (
-          /* Render Enterprise API Split Layout Container */
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* Main Center Specification Stream Pane */}
-            <div className="lg:col-span-7 xl:col-span-7 space-y-8">
-              <EndpointDetail endpoint={endpoint} />
+          /* Main Center Specification Stream Pane */
+          <div className="space-y-8">
+            <EndpointDetail endpoint={endpoint} />
 
-              <div className="pt-4 border-t border-gray-800/60">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3 block">
-                  Code Snippets Generator
-                </h3>
-                <RequestCodePanel endpoint={endpoint} />
-              </div>
-            </div>
-
-            {/* Right Sticky Playable Request Sandbox Column */}
-            <div className="lg:col-span-5 xl:col-span-5 lg:sticky lg:top-6 space-y-4">
-              <LivePlayground endpoint={endpoint} />
+            <div className="pt-4 border-t border-gray-800/60">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3 block">
+                Code Snippets Generator
+              </h3>
+              <RequestCodePanel endpoint={endpoint} />
             </div>
           </div>
         ) : null}
       </main>
+
+      {/* Right Sticky / Fixed Sandbox Column */}
+      {endpoint && (
+        <aside className="w-full lg:w-[420px] xl:w-[460px] lg:h-full shrink-0 border-t lg:border-t-0 lg:border-l border-gray-800 bg-gray-950 flex flex-col overflow-hidden">
+          <LivePlayground endpoint={endpoint} />
+        </aside>
+      )}
     </div>
   );
 }

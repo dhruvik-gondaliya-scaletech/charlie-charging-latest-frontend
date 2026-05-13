@@ -41,7 +41,7 @@ export function DocsSidebar({ activeCategory, activeEndpoint }: DocsSidebarProps
       </div>
 
       {/* Navigation Groups Container */}
-      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6 scrollbar-thin scrollbar-thumb-gray-800 scrollbar-track-transparent">
+      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {/* Integration Guides */}
         <div>
           <div className="flex items-center gap-2 px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
