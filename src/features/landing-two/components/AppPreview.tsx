@@ -96,9 +96,6 @@ export function AppPreview() {
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
-              <Button variant="outline" className="px-8 py-5 h-auto rounded-xl border-white/10 text-white font-bold hover:bg-white/5 transition-all">
-                View Demo
-              </Button>
             </div>
           </motion.div>
 
