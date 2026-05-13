@@ -5,7 +5,7 @@ import forge from 'node-forge';
  * @param encryptedData Base64 encoded string from the backend.
  * @returns The decrypted object or string.
  */
-export function decryptCredentials(encryptedData: string): any {
+export function decryptCredentials(encryptedData: string): Record<string, unknown> | null {
   const privateKeyPem = process.env.NEXT_PUBLIC_FRONTEND_PRIVATE_KEY || ''; 
   
   if (!privateKeyPem) {

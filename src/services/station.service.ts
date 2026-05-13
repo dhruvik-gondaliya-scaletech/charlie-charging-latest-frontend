@@ -1,6 +1,6 @@
 import httpService from '@/lib/http-service';
 import { API_CONFIG } from '@/constants/constants';
-import { Station, OcppLog, OcppLogResponse, GetConfigurationResponse, SetConfigurationResponse, BulkSetConfigurationResponse, ChargingStatus, ConnectorType, Session, SessionFilterParams } from '@/types';
+import { Station, OcppLogResponse, GetConfigurationResponse, ChargingStatus, ConnectorType, Session, SessionFilterParams, StationChargingProfile } from '@/types';
 
 export interface CreateStationData {
   name: string;
@@ -151,8 +151,8 @@ class StationService {
     });
   }
 
-  async getStationChargingProfile(stationId: string) {
-    return httpService.get<any>(API_CONFIG.endpoints.stations.chargingProfile(stationId));
+  async getStationChargingProfile(stationId: string): Promise<StationChargingProfile> {
+    return httpService.get<StationChargingProfile>(API_CONFIG.endpoints.stations.chargingProfile(stationId));
   }
 
   async setStationChargingLimit(stationId: string, unit: 'A' | 'W', value: number) {
