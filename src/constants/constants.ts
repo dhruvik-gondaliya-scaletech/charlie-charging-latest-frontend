@@ -170,9 +170,9 @@ export const FRONTEND_ROUTES = {
     ACCEPT_INVITE: "/accept-invitation",
     FORGOT_PASSWORD: "/forgot-password",
     RESET_PASSWORD: "/reset-password",
-    API_DOCS: "/api-docs",
     LANDING_PAGE_ONE: "/landing-one",
     LANDING_PAGE_TWO: "/landing-two",
+    API_DOCS: "/docs",
 }
 
 export const AUTH_CONFIG = {
