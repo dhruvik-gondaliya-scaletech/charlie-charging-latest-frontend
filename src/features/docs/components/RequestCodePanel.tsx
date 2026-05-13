@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { PortalEndpoint } from '../data/portal-data';
 import { Copy, Check, Terminal } from 'lucide-react';
 import { API_CONFIG } from '@/constants/constants';
+import { cn } from '@/lib/utils';
 
 interface RequestCodePanelProps {
   endpoint: PortalEndpoint;
@@ -92,10 +93,10 @@ export function RequestCodePanel({ endpoint }: RequestCodePanelProps) {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-2.5 py-1 rounded-md text-[11px] font-mono transition-all ${activeTab === tab
+              className={cn('px-2.5 py-1 rounded-md text-[11px] font-mono transition-all cursor-pointer', activeTab === tab
                 ? 'bg-gray-800 text-gray-200 font-bold shadow-sm'
                 : 'text-gray-500 hover:text-gray-400'
-                }`}
+              )}
             >
               {tab === 'curl' ? 'cURL' : tab === 'node' ? 'Node.js' : 'Python'}
             </button>
@@ -105,7 +106,7 @@ export function RequestCodePanel({ endpoint }: RequestCodePanelProps) {
         {/* Action Copy icon */}
         <button
           onClick={handleCopy}
-          className="p-1.5 rounded-md text-gray-500 hover:text-gray-300 hover:bg-gray-800/50 transition-colors relative group"
+          className="p-1.5 rounded-md text-gray-500 hover:text-gray-300 hover:bg-gray-800/50 transition-colors relative group cursor-pointer"
           title="Copy snippet"
         >
           {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}

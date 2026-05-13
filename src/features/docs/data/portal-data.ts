@@ -137,15 +137,15 @@ export const PORTAL_GROUPS: PortalGroup[] = [
     endpoints: tariffsEndpoints
   },
   {
-    name: 'Brand Customization',
+    name: 'Brands & Hardware',
     categorySlug: 'brands',
     endpoints: brandsEndpoints
   },
-  {
-    name: 'Drivers & Users',
-    categorySlug: 'users',
-    endpoints: usersEndpoints
-  }
+  // {
+  //   name: 'Drivers & Users',
+  //   categorySlug: 'users',
+  //   endpoints: usersEndpoints
+  // }
 ];
 
 // Helper utility to lookup an endpoint by categorySlug and endpointId

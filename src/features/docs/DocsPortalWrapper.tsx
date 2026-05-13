@@ -3,7 +3,6 @@
 import React from 'react';
 import Link from 'next/link';
 import { getPortalEndpoint, getGuideSection } from './data/portal-data';
-import { DocsSidebar } from './components/DocsSidebar';
 import { EndpointDetail } from './components/EndpointDetail';
 import { RequestCodePanel } from './components/RequestCodePanel';
 import { LivePlayground } from './components/LivePlayground';
@@ -24,39 +23,33 @@ export function DocsPortalWrapper({ categorySlug, endpointId }: DocsPortalWrappe
   // Render Premium 404 Missing Document Layout
   if (!guide && !endpoint) {
     return (
-      <div className="flex flex-col lg:flex-row min-h-screen bg-gray-950 text-gray-100 antialiased selection:bg-emerald-500 selection:text-black">
-        <DocsSidebar activeCategory={categorySlug} activeEndpoint={endpointId} />
-        <main className="flex-1 flex items-center justify-center p-6">
-          <div className="max-w-md w-full border border-gray-800 bg-gray-900/40 rounded-2xl p-8 text-center space-y-4 backdrop-blur-sm shadow-2xl">
-            <div className="w-12 h-12 bg-rose-500/10 text-rose-400 rounded-xl flex items-center justify-center mx-auto border border-rose-500/20">
-              <FileQuestion className="w-6 h-6" />
-            </div>
-            <div className="space-y-1">
-              <h2 className="text-lg font-bold text-gray-200">Document Not Discovered</h2>
-              <p className="text-xs text-gray-500 leading-relaxed">
-                The requested URL route parameter mapped to <span className="text-amber-400 font-mono">/{categorySlug}/{endpointId}</span> does not associate with any configured Partner API specification layout schema.
-              </p>
-            </div>
-            <div className="pt-2">
-              <Link
-                href="/docs/guides/getting-started"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 rounded-lg text-xs font-medium transition-colors border border-gray-700"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Back to Getting Started Guide</span>
-              </Link>
-            </div>
+      <main className="flex-1 flex items-center justify-center p-6 min-w-0">
+        <div className="max-w-md w-full border border-gray-800 bg-gray-900/40 rounded-2xl p-8 text-center space-y-4 backdrop-blur-sm shadow-2xl">
+          <div className="w-12 h-12 bg-rose-500/10 text-rose-400 rounded-xl flex items-center justify-center mx-auto border border-rose-500/20">
+            <FileQuestion className="w-6 h-6" />
           </div>
-        </main>
-      </div>
+          <div className="space-y-1">
+            <h2 className="text-lg font-bold text-gray-200">Document Not Discovered</h2>
+            <p className="text-xs text-gray-500 leading-relaxed">
+              The requested URL route parameter mapped to <span className="text-amber-400 font-mono">/{categorySlug}/{endpointId}</span> does not associate with any configured Partner API specification layout schema.
+            </p>
+          </div>
+          <div className="pt-2">
+            <Link
+              href="/docs/guides/getting-started"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 rounded-lg text-xs font-medium transition-colors border border-gray-700 cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Getting Started Guide</span>
+            </Link>
+          </div>
+        </div>
+      </main>
     );
   }
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen lg:h-screen lg:overflow-hidden bg-gray-950 text-gray-100 antialiased selection:bg-emerald-500 selection:text-black">
-      {/* Absolute Master Navigation Sidebar Container */}
-      <DocsSidebar activeCategory={categorySlug} activeEndpoint={endpointId} />
-
+    <div className="flex-1 flex flex-col lg:flex-row min-w-0 lg:h-full lg:overflow-hidden">
       {/* Primary Dynamic Content Frame Render Layer (Middle Content) */}
       <main className="flex-1 lg:h-full lg:overflow-y-auto p-4 lg:p-8 space-y-8 max-w-5xl mx-auto w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {isGuide && guide ? (

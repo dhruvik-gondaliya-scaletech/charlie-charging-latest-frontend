@@ -1,5 +1,6 @@
 import React from 'react';
 import { Metadata } from 'next';
+import { DocsSidebar } from '@/features/docs/components/DocsSidebar';
 
 export const metadata: Metadata = {
   title: 'Partner API Reference Portal | Scale EV',
@@ -8,7 +9,8 @@ export const metadata: Metadata = {
 
 export default function DocsRootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 selection:bg-emerald-500 selection:text-black">
+    <div className="flex flex-col lg:flex-row min-h-screen lg:h-screen lg:overflow-hidden bg-gray-950 text-gray-100 antialiased selection:bg-emerald-500 selection:text-black">
+      <DocsSidebar />
       {children}
     </div>
   );

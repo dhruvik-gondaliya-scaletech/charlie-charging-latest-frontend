@@ -120,7 +120,7 @@ export function CredentialsCard() {
                     />
                     <button 
                       onClick={() => copyToClipboard(displayCredentials.clientId, 'id')}
-                      className="absolute right-2 p-1.5 rounded-lg bg-gray-950 hover:bg-gray-800 transition-all border border-gray-800 text-gray-400 hover:text-white"
+                      className="absolute right-2 p-1.5 rounded-lg bg-gray-950 hover:bg-gray-800 transition-all border border-gray-800 text-gray-400 hover:text-white cursor-pointer"
                       title="Copy Client ID"
                     >
                       {copiedField === 'id' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -143,14 +143,14 @@ export function CredentialsCard() {
                     <div className="absolute right-2 flex items-center gap-1">
                       <button 
                         onClick={() => setShowSecret(!showSecret)}
-                        className="p-1.5 rounded-lg bg-gray-950 hover:bg-gray-800 transition-all border border-gray-800 text-gray-400 hover:text-white"
+                        className="p-1.5 rounded-lg bg-gray-950 hover:bg-gray-800 transition-all border border-gray-800 text-gray-400 hover:text-white cursor-pointer"
                         title={showSecret ? 'Obfuscate Secret' : 'Reveal Secret'}
                       >
                         {showSecret ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                       </button>
                       <button 
                         onClick={() => copyToClipboard(displayCredentials.clientSecret, 'secret')}
-                        className="p-1.5 rounded-lg bg-gray-950 hover:bg-gray-800 transition-all border border-gray-800 text-gray-400 hover:text-white"
+                        className="p-1.5 rounded-lg bg-gray-950 hover:bg-gray-800 transition-all border border-gray-800 text-gray-400 hover:text-white cursor-pointer"
                         title="Copy Client Secret"
                       >
                         {copiedField === 'secret' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -224,7 +224,7 @@ export function CredentialsCard() {
               />
               <button 
                 onClick={() => copyToClipboard(activeToken, 'token')}
-                className="absolute right-2 p-1.5 rounded-lg bg-gray-950 hover:bg-gray-800 transition-all border border-gray-800 text-gray-400 hover:text-white"
+                className="absolute right-2 p-1.5 rounded-lg bg-gray-950 hover:bg-gray-800 transition-all border border-gray-800 text-gray-400 hover:text-white cursor-pointer"
                 title="Copy Bearer Token"
               >
                 {copiedField === 'token' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
