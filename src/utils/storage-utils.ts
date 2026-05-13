@@ -5,7 +5,7 @@ const STORAGE_SECRET = process.env.NEXT_PUBLIC_STORAGE_SECRET || 'charlie-docs-o
 /**
  * Encrypts and saves data to localStorage
  */
-export function secureSave(key: string, data: any): void {
+export function secureSave(key: string, data: unknown): void {
   if (typeof window === 'undefined') return;
 
   try {
@@ -37,16 +37,37 @@ export function secureLoad<T>(key: string): T | null {
     const stored = localStorage.getItem(key);
     if (!stored) return null;
 
-    const { iv, data } = JSON.parse(stored);
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(stored);
+    } catch {
+      return null;
+    }
+
+    if (!parsed || typeof parsed !== 'object' || !('iv' in parsed) || !('data' in parsed) || typeof (parsed as Record<string, unknown>).iv !== 'string' || typeof (parsed as Record<string, unknown>).data !== 'string') {
+      return null;
+    }
+
+    const { iv, data } = parsed as { iv: string; data: string };
     const decipher = forge.cipher.createDecipher('AES-CBC', forge.util.createBuffer(forge.util.encodeUtf8(STORAGE_SECRET.padEnd(16, '0').slice(0, 16))));
 
-    decipher.start({ iv: forge.util.decode64(iv) });
-    decipher.update(forge.util.createBuffer(forge.util.decode64(data)));
-    decipher.finish();
+    try {
+      decipher.start({ iv: forge.util.decode64(iv) });
+      decipher.update(forge.util.createBuffer(forge.util.decode64(data)));
+      const success = decipher.finish();
 
-    return JSON.parse(forge.util.decodeUtf8(decipher.output.toString())) as T;
-  } catch (error) {
-    console.error('Failed to securely load data:', error);
+      if (!success) {
+        return null;
+      }
+
+      const decryptedBytes = decipher.output.toString();
+      if (!decryptedBytes) return null;
+
+      return JSON.parse(forge.util.decodeUtf8(decryptedBytes)) as T;
+    } catch {
+      return null;
+    }
+  } catch {
     return null;
   }
 }
