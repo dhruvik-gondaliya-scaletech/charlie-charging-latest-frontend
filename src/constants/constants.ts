@@ -173,6 +173,7 @@ export const FRONTEND_ROUTES = {
     RESET_PASSWORD: "/reset-password",
     LANDING_PAGE_ONE: "/landing-one",
     LANDING_PAGE_TWO: "/landing-two",
+    LANDING_PAGE_THREE: "/landing-three",
     API_DOCS: "/docs",
 }
 
