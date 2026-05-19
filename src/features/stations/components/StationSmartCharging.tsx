@@ -15,7 +15,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Zap, Loader2, RefreshCw, Trash2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useStationChargingProfile } from '@/hooks/get/useSmartCharging';
-import { useSetChargingLimit, useRemoveChargingLimit } from '@/hooks/mutate/useSmartChargingMutations';
+import { useSetChargingLimit, useRemoveChargingLimit, useLiveChargingProfile } from '@/hooks/mutate/useSmartChargingMutations';
 import { cn } from '@/lib/utils';
 
 interface StationSmartChargingProps {
@@ -26,6 +26,7 @@ export function StationSmartCharging({ stationId }: StationSmartChargingProps) {
   const { data: profile, isLoading, isError, refetch } = useStationChargingProfile(stationId);
   const setLimit = useSetChargingLimit();
   const removeLimit = useRemoveChargingLimit();
+  const fetchLive = useLiveChargingProfile();
 
   const [unit, setUnit] = useState<'A' | 'W'>('A');
   const [value, setValue] = useState<string>('');
@@ -44,6 +45,22 @@ export function StationSmartCharging({ stationId }: StationSmartChargingProps) {
 
   const handleRemove = () => {
     removeLimit.mutate(stationId);
+  };
+
+  const handleFetchLive = () => {
+    fetchLive.mutate(stationId, {
+      onSuccess: (data) => {
+        console.log('Live Profile Data:', data);
+        // Map OCPP 1.6 or 2.0.1 response structure to form
+        const schedule = data?.chargingSchedule || data?.schedule;
+        if (schedule) {
+          setUnit(schedule.chargingRateUnit === 'W' || schedule.chargingRateUnit === 'Watts' ? 'W' : 'A');
+          if (schedule.chargingSchedulePeriod?.[0]) {
+            setValue(schedule.chargingSchedulePeriod[0].limit.toString());
+          }
+        }
+      }
+    });
   };
 
   if (isLoading) {
@@ -81,9 +98,21 @@ export function StationSmartCharging({ stationId }: StationSmartChargingProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="border-border/40 bg-card/20 backdrop-blur-sm rounded-3xl overflow-hidden border shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-lg font-bold">Configure Limit</CardTitle>
-            <CardDescription>Set the maximum charging rate for the entire station</CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <div>
+              <CardTitle className="text-lg font-bold">Configure Limit</CardTitle>
+              <CardDescription>Set the maximum charging rate for the entire station</CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleFetchLive}
+              disabled={fetchLive.isPending}
+              className="rounded-xl border-primary/20 text-primary hover:bg-primary/5 font-bold text-[10px] uppercase tracking-widest h-8"
+            >
+              {fetchLive.isPending ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <RefreshCw className="h-3 w-3 mr-2" />}
+              Sync from Charger
+            </Button>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-3">

@@ -32,3 +32,19 @@ export const useRemoveChargingLimit = () => {
     },
   });
 };
+
+export const useLiveChargingProfile = () => {
+  return useMutation({
+    mutationFn: (stationId: string) => stationService.getLiveChargingProfile(stationId),
+    onSuccess: (data) => {
+      if (data?.status === 'Accepted' || data?.status === 'Ok') {
+        toast.success('Live profile retrieved from station');
+      } else {
+        toast.error(`Station rejected request: ${data?.status || 'Unknown error'}`);
+      }
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to fetch live profile from station');
+    },
+  });
+};

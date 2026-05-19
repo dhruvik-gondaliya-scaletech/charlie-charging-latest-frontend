@@ -13,7 +13,7 @@ import { useCreateIdTag } from '@/hooks/post/useCreateIdTag';
 import { useUpdateIdTag } from '@/hooks/patch/useUpdateIdTag';
 import { useDrivers } from '@/hooks/get/useDrivers';
 import { IdTag, IdTagStatus } from '@/types';
-import { CreditCard, User, Activity, Calendar, Loader2 } from 'lucide-react';
+import { CreditCard, User, Activity, Calendar, Loader2, Building2 } from 'lucide-react';
 
 interface IdTagFormModalProps {
   isOpen: boolean;
@@ -38,7 +38,8 @@ export function IdTagFormModal({ isOpen, onClose, initialData }: IdTagFormModalP
     defaultValues: {
       idTag: '',
       status: IdTagStatus.ACCEPTED,
-      driverId: '',
+      driverId: 'unassigned',
+      companyName: '',
       expiryDate: '',
     }
   });
@@ -48,14 +49,16 @@ export function IdTagFormModal({ isOpen, onClose, initialData }: IdTagFormModalP
       reset({
         idTag: initialData.idTag,
         status: initialData.status,
-        driverId: initialData.driverId,
+        driverId: initialData.driverId || 'unassigned',
+        companyName: initialData.companyName || '',
         expiryDate: initialData.expiryDate ? new Date(initialData.expiryDate).toISOString().split('T')[0] : '',
       });
     } else {
       reset({
         idTag: '',
         status: IdTagStatus.ACCEPTED,
-        driverId: '',
+        driverId: 'unassigned',
+        companyName: '',
         expiryDate: '',
       });
     }
@@ -64,6 +67,8 @@ export function IdTagFormModal({ isOpen, onClose, initialData }: IdTagFormModalP
   const onSubmit = (data: IdTagFormValues) => {
     const payload = {
       ...data,
+      driverId: data.driverId === 'unassigned' ? null : data.driverId,
+      companyName: data.companyName || null,
       expiryDate: data.expiryDate ? new Date(data.expiryDate).toISOString() : undefined,
     };
 
@@ -111,6 +116,20 @@ export function IdTagFormModal({ isOpen, onClose, initialData }: IdTagFormModalP
           </div>
           {errors.idTag && <p className="text-[10px] font-bold text-destructive uppercase tracking-widest ml-1">{errors.idTag.message}</p>}
         </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="companyName" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 ml-1">Company Name</Label>
+          <div className="relative">
+            <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
+            <Input
+              id="companyName"
+              placeholder="e.g. Tesla Inc."
+              className="pl-10 h-11 bg-muted/20 border-border/40 focus:ring-primary/20 rounded-xl font-bold"
+              {...register('companyName')}
+            />
+          </div>
+          {errors.companyName && <p className="text-[10px] font-bold text-destructive uppercase tracking-widest ml-1">{errors.companyName.message}</p>}
+        </div>
 
         <div className="space-y-2">
           <Label htmlFor="driverId" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 ml-1">Assign to Driver</Label>
@@ -118,7 +137,7 @@ export function IdTagFormModal({ isOpen, onClose, initialData }: IdTagFormModalP
             control={control}
             name="driverId"
             render={({ field }) => (
-              <Select onValueChange={field.onChange} value={field.value}>
+              <Select onValueChange={field.onChange} value={field.value || 'unassigned'}>
                 <SelectTrigger className="h-11 bg-muted/20 border-border/40 focus:ring-primary/20 rounded-xl font-bold">
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-muted-foreground/50" />
@@ -126,6 +145,9 @@ export function IdTagFormModal({ isOpen, onClose, initialData }: IdTagFormModalP
                   </div>
                 </SelectTrigger>
                 <SelectContent className="rounded-xl border-border/40 bg-background/95 backdrop-blur-xl">
+                  <SelectItem value="unassigned" className="font-bold py-2.5 text-muted-foreground italic">
+                    None (Unassigned)
+                  </SelectItem>
                   {drivers?.map((driver) => (
                     <SelectItem key={driver.id} value={driver.id} className="font-bold py-2.5">
                       {driver.firstName} {driver.lastName} ({driver.email})

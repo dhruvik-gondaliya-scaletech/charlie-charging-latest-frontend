@@ -11,6 +11,7 @@ export const DriverAppConfigSchema = z.object({
   logoUrl: z.string().url('Invalid logo URL').optional().or(z.literal('')),
   domain: z.string().min(3, 'Domain is required').regex(/^[a-z0-9][a-z0-9-.]*[a-z0-9]$/, 'Invalid domain format'),
   supportContact: SupportContactSchema.optional(),
+  isActive: z.boolean().default(true),
 });
 
 export type DriverAppConfigValues = z.infer<typeof DriverAppConfigSchema>;

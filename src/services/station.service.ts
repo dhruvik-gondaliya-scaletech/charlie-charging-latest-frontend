@@ -155,6 +155,10 @@ class StationService {
     return httpService.get<StationChargingProfile>(API_CONFIG.endpoints.stations.chargingProfile(stationId));
   }
 
+  async getLiveChargingProfile(stationId: string) {
+    return httpService.get<any>(API_CONFIG.endpoints.stations.liveChargingProfile(stationId));
+  }
+
   async setStationChargingLimit(stationId: string, unit: 'A' | 'W', value: number) {
     return httpService.post(API_CONFIG.endpoints.stations.chargingProfile(stationId), {
       unit,
