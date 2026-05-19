@@ -17,6 +17,7 @@ import {
   Trash2,
   Edit2,
   ShieldAlert,
+  Building2,
 } from 'lucide-react';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Table } from '@/components/shared/Table';
@@ -75,6 +76,16 @@ export function IdTagsContainer() {
             </div>
           );
         },
+      },
+      {
+        accessorKey: 'companyName',
+        header: 'Company',
+        cell: ({ row }) => (
+          <div className="flex items-center gap-2 text-xs font-bold text-foreground tracking-tight uppercase">
+            <Building2 className="h-3.5 w-3.5 opacity-40 text-primary" />
+            {row.getValue('companyName') || <span className="text-muted-foreground opacity-40">—</span>}
+          </div>
+        ),
       },
       {
         accessorKey: 'status',
@@ -270,6 +281,14 @@ export function IdTagsContainer() {
                       </span>
                       <p className="text-sm font-semibold">{tag.expiryDate ? formatDate(tag.expiryDate) : 'Never'}</p>
                     </div>
+                    {tag.companyName && (
+                      <div className="space-y-1">
+                        <span className="text-[9px] font-bold uppercase text-muted-foreground/50 tracking-wider flex items-center gap-1">
+                          <Building2 className="h-2.5 w-2.5" /> Company
+                        </span>
+                        <p className="text-sm font-semibold uppercase">{tag.companyName}</p>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex items-center justify-end gap-2 pt-1 border-t border-border/50">
