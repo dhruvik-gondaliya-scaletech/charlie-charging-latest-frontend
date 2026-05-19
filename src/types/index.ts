@@ -212,7 +212,8 @@ export interface Driver {
 export interface IdTag {
   idTag: string;
   status: IdTagStatus;
-  driverId: string;
+  driverId?: string | null;
+  companyName?: string | null;
   driver?: Driver;
   expiryDate?: string;
   createdAt: string;
@@ -230,13 +231,15 @@ export interface CreateDriverData {
 export interface CreateIdTagData {
   idTag: string;
   status: IdTagStatus;
-  driverId: string;
+  driverId?: string | null;
+  companyName?: string | null;
   expiryDate?: string;
 }
 
 export interface UpdateIdTagData {
   status?: IdTagStatus;
-  driverId?: string;
+  driverId?: string | null;
+  companyName?: string | null;
   expiryDate?: string;
 }
 

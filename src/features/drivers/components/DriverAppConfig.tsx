@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
 import {
@@ -31,6 +31,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ImageUpload } from '@/components/shared/ImageUpload';
+import { Switch } from '@/components/ui/switch';
 import { DriverAppConfigSchema, DriverAppConfigValues } from '@/lib/validations/config.schema';
 import { useTenantConfig } from '@/hooks/get/useTenantConfig';
 import { useUpdateTenantConfig } from '@/hooks/put/useUpdateTenantConfig';
@@ -53,7 +54,7 @@ export function DriverAppConfig() {
   };
 
   const form = useForm<DriverAppConfigValues>({
-    resolver: zodResolver(DriverAppConfigSchema),
+    resolver: zodResolver(DriverAppConfigSchema) as unknown as Resolver<DriverAppConfigValues>,
     defaultValues: {
       appName: 'Scale EV',
       logoUrl: '',
@@ -63,6 +64,7 @@ export function DriverAppConfig() {
         website: '',
       },
       domain: '',
+      isActive: true,
     },
   });
 
@@ -77,6 +79,7 @@ export function DriverAppConfig() {
           website: config.supportContact?.website || '',
         },
         domain: config.domain || '',
+        isActive: config.isActive ?? true,
       });
     }
   }, [config, form]);
@@ -187,6 +190,27 @@ export function DriverAppConfig() {
                         </FormControl>
                         <FormDescription className="text-[10px] ml-1">The domain used to identify your tenant's driver configuration.</FormDescription>
                         <FormMessage className="text-[10px] font-bold" />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="isActive"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between rounded-2xl border border-border/40 bg-card/30 p-4 shadow-sm backdrop-blur-sm transition-all hover:bg-card/50">
+                        <div className="space-y-1">
+                          <FormLabel className="text-sm font-black tracking-tight text-foreground">Driver App Usage</FormLabel>
+                          <FormDescription className="text-[10px] font-bold text-muted-foreground/80 leading-normal">
+                            Enable or disable access to the driver application.
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
                       </FormItem>
                     )}
                   />

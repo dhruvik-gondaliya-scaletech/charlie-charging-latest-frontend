@@ -43,6 +43,7 @@ export const API_CONFIG = {
             ocppLogs: (id: string) => `/ocpp-logs?stationId=${id}`,
             sessions: (id: string) => `/stations/${id}/sessions`,
             chargingProfile: (id: string) => `/stations/${id}/charging-profile`,
+            liveChargingProfile: (id: string) => `/stations/${id}/live-profile`,
         },
         locations: {
             base: "/locations",
