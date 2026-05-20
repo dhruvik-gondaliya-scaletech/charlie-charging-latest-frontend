@@ -27,10 +27,10 @@ export interface OcpiEndpoint {
 
 export interface OcpiCredential {
     id: string;
-    token_a?: string;
-    token_b?: string;
-    token_c?: string;
-    url: string;
+    tokenA?: string;
+    tokenB?: string;
+    tokenC?: string;
+    partnerVersionsUrl: string;
     countryCode: string;
     partyId: string;
     roles: OcpiRole[];

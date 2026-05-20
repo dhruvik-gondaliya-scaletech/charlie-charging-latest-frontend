@@ -69,19 +69,19 @@ export function OcpiCredentialsList() {
             cell: ({ row }) => row.original.countryCode || '-',
         },
         {
-            accessorKey: 'url',
+            accessorKey: 'partnerVersionsUrl',
             header: 'URL',
             cell: ({ row }) => (
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <span className="max-w-[200px] truncate font-mono text-xs text-muted-foreground block cursor-help">
-                                {row.original.url}
+                                {row.original.partnerVersionsUrl}
                             </span>
                         </TooltipTrigger>
                         <TooltipContent>
                             <p className="text-xs">
-                                {row.original.url}
+                                {row.original.partnerVersionsUrl}
                             </p>
                         </TooltipContent>
                     </Tooltip>
@@ -93,7 +93,7 @@ export function OcpiCredentialsList() {
             header: 'Status',
             size: 100,
             cell: ({ row }) => {
-                const hasHandshake = !!row.original.token_b && !!row.original.token_c;
+                const hasHandshake = !!row.original.tokenB && !!row.original.tokenC;
                 const colorClasses = hasHandshake
                     ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
                     : 'bg-blue-500/10 text-blue-500 border-blue-500/20';
@@ -109,7 +109,7 @@ export function OcpiCredentialsList() {
             },
         },
         {
-            accessorKey: 'token_a',
+            accessorKey: 'tokenA',
             header: 'Registration Token',
             size: 150,
             cell: ({ row }) => (
@@ -119,13 +119,13 @@ export function OcpiCredentialsList() {
                             <div className="flex flex-col gap-1 cursor-help">
                                 <span className="text-[10px] text-muted-foreground uppercase font-bold">Token A</span>
                                 <code className="text-[10px] bg-muted px-1.5 py-0.5 rounded truncate max-w-[120px] block">
-                                    {row.original.token_a}
+                                    {row.original.tokenA}
                                 </code>
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
                             <p className="text-xs">
-                                {row.original.token_a}
+                                {row.original.tokenA}
                             </p>
                         </TooltipContent>
                     </Tooltip>
