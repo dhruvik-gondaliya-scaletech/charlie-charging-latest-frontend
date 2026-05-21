@@ -79,6 +79,56 @@ export function OcpiLocationsList() {
         search
     });
 
+    const renderMobileCard = (item: OcpiLocation) => {
+        const evses = item.evses || [];
+        const connectorsCount = evses.reduce((acc, evse) => acc + (evse.connectors?.length || 0), 0);
+
+        return (
+            <div className="bg-card border border-border rounded-2xl p-5 shadow-xs space-y-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex flex-col">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Location ID</span>
+                        <span className="font-mono font-bold text-xs text-foreground">{item.id}</span>
+                    </div>
+                    <Badge variant="outline" className="w-fit text-[10px] px-2 py-0 border-primary/20 bg-primary/5 text-primary">
+                        {item.country || '—'}
+                    </Badge>
+                </div>
+
+                <div className="space-y-2">
+                    <div className="flex flex-col gap-0.5">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Name</span>
+                        <span className="text-sm font-bold text-foreground">{item.name}</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Address</span>
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <MapPin className="h-3 w-3 shrink-0 text-muted-foreground" />
+                            <span className="truncate">{item.address}, {item.city}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 pt-3 border-t border-border/40">
+                    <div className="flex flex-col gap-0.5">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">EVSEs</span>
+                        <span className="text-xs font-semibold">{evses.length} Available</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Connectors</span>
+                        <span className="text-xs font-semibold">{connectorsCount} Total</span>
+                    </div>
+                </div>
+
+                <div className="pt-3 border-t border-border/40 flex justify-between items-center text-[10px] text-muted-foreground">
+                    <span>
+                        Updated: {item.last_updated ? format(new Date(item.last_updated), 'MMM d, p') : '—'}
+                    </span>
+                </div>
+            </div>
+        );
+    };
+
     if (isError) {
         return (
             <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-xl bg-destructive/5 text-center">
@@ -113,6 +163,7 @@ export function OcpiLocationsList() {
             pageSize={pageSize}
             sortByKey="name"
             sortOrder="asc"
+            renderMobileCard={renderMobileCard}
             emptyState={
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                     <Globe className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />

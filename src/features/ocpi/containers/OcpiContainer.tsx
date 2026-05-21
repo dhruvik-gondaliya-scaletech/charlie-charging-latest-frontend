@@ -86,7 +86,7 @@ export function OcpiContainer() {
             {/* Header */}
             <motion.div
                 variants={staggerItem}
-                className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
+                className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between"
             >
                 <div className="space-y-1">
                     <h1 className="text-3xl font-extrabold tracking-tight bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
@@ -96,12 +96,12 @@ export function OcpiContainer() {
                         Monitor and manage OCPI roaming connections, credentials, and tokens.
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full md:w-auto">
                     <Button
                         variant="outline"
                         onClick={() => syncAll()}
                         disabled={isSyncing}
-                        className="bg-background/50 backdrop-blur-sm border shadow-sm font-bold shrink-0"
+                        className="bg-background/50 backdrop-blur-sm border shadow-sm font-bold shrink-0 w-full sm:w-auto"
                     >
                         <RefreshCw className={cn("mr-2 h-4 w-4", isSyncing && "animate-spin")} />
                         {isSyncing ? "Syncing..." : "Push Global Sync"}
@@ -110,14 +110,14 @@ export function OcpiContainer() {
                         variant="outline"
                         onClick={() => syncTokens()}
                         disabled={isSyncingTokens}
-                        className="bg-background/50 backdrop-blur-sm border-amber-500/30 text-amber-600 shadow-sm font-bold shrink-0 hover:bg-amber-500/5 placeholder:hover:text-amber-700"
+                        className="bg-background/50 backdrop-blur-sm border-amber-500/30 text-amber-600 shadow-sm font-bold shrink-0 hover:bg-amber-500/5 placeholder:hover:text-amber-700 w-full sm:w-auto"
                     >
                         <ShieldCheck className={cn("mr-2 h-4 w-4", isSyncingTokens && "animate-spin")} />
                         {isSyncingTokens ? "Pulling..." : "Pull Roaming Tokens"}
                     </Button>
                     <Button
                         onClick={() => setIsModalOpen(true)}
-                        className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 font-bold shrink-0"
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 font-bold shrink-0 w-full sm:w-auto"
                     >
                         <Plus className="mr-2 h-4 w-4" />
                         Connect New Party
@@ -126,7 +126,7 @@ export function OcpiContainer() {
             </motion.div>
 
             {/* Stats */}
-            <motion.div variants={staggerItem} className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <motion.div variants={staggerItem} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard
                     title="Connected Parties"
                     value={stats?.connectedParties ?? 0}
@@ -164,14 +164,14 @@ export function OcpiContainer() {
             {/* Tabs */}
             <motion.div variants={staggerItem}>
                 <Tabs defaultValue="credentials" className="space-y-4">
-                    <TabsList className="bg-background/50 backdrop-blur-sm border p-1 rounded-xl">
-                        <TabsTrigger value="credentials" className="rounded-lg px-6">Connected Parties</TabsTrigger>
-                        <TabsTrigger value="tokens" className="rounded-lg px-6">Roaming Tokens</TabsTrigger>
-                        <TabsTrigger value="sessions" className="rounded-lg px-6">Roaming Sessions</TabsTrigger>
-                        <TabsTrigger value="cdrs" className="rounded-lg px-6">Billing (CDRs)</TabsTrigger>
-                        <TabsTrigger value="tariffs" className="rounded-lg px-6">Tariffs</TabsTrigger>
-                        <TabsTrigger value="locations" className="rounded-lg px-6">Locations</TabsTrigger>
-                        <TabsTrigger value="commands" className="rounded-lg px-6 text-rose-500 font-bold">Command Console</TabsTrigger>
+                    <TabsList className="bg-background/50 backdrop-blur-sm border p-1 rounded-xl overflow-x-auto w-full inline-flex h-auto sm:flex-nowrap justify-start no-scrollbar">
+                        <TabsTrigger value="credentials" className="rounded-lg px-6 min-w-fit shrink-0">Connected Parties</TabsTrigger>
+                        <TabsTrigger value="tokens" className="rounded-lg px-6 min-w-fit shrink-0">Roaming Tokens</TabsTrigger>
+                        <TabsTrigger value="sessions" className="rounded-lg px-6 min-w-fit shrink-0">Roaming Sessions</TabsTrigger>
+                        <TabsTrigger value="cdrs" className="rounded-lg px-6 min-w-fit shrink-0">Billing (CDRs)</TabsTrigger>
+                        <TabsTrigger value="tariffs" className="rounded-lg px-6 min-w-fit shrink-0">Tariffs</TabsTrigger>
+                        <TabsTrigger value="locations" className="rounded-lg px-6 min-w-fit shrink-0">Locations</TabsTrigger>
+                        <TabsTrigger value="commands" className="rounded-lg px-6 min-w-fit shrink-0 text-rose-500 font-bold">Command Console</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="credentials" className="pt-2">

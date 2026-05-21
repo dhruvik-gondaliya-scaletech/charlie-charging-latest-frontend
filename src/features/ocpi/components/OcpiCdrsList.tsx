@@ -125,6 +125,57 @@ export function OcpiCdrsList() {
         search
     });
 
+    const renderMobileCard = (item: OcpiCdr) => {
+        const cost = item.total_cost?.incl_vat || 0;
+        const hours = item.total_time || 0;
+        const mins = Math.round(hours * 60);
+
+        return (
+            <div className="bg-card border border-border rounded-2xl p-5 shadow-xs space-y-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex flex-col">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">CDR ID</span>
+                        <span className="font-mono font-bold text-xs text-foreground">{item.id.slice(0, 16)}…</span>
+                    </div>
+                    <div className="font-bold text-foreground text-sm">
+                        ₹{cost.toFixed(2)}
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-0.5">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Party</span>
+                        <span className="text-xs font-semibold">{item.party_id || '—'} ({item.country_code || '—'})</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Energy</span>
+                        <div className="flex items-center gap-1 text-xs font-bold text-amber-500">
+                            <Zap className="h-3.5 w-3.5 fill-current" />
+                            <span>{(item.total_energy ?? 0).toFixed(2)} kWh</span>
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Duration</span>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Clock className="h-3.5 w-3.5" />
+                            <span>{mins < 60 ? `${mins}m` : `${hours.toFixed(1)}h`}</span>
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Location</span>
+                        <span className="text-xs font-medium text-muted-foreground truncate">{item.location_id || '—'}</span>
+                    </div>
+                </div>
+
+                <div className="pt-3 border-t border-border/40 flex justify-between items-center text-[10px] text-muted-foreground">
+                    <span>
+                        Date: {item.last_updated ? format(new Date(item.last_updated), 'MMM d, p') : '—'}
+                    </span>
+                </div>
+            </div>
+        );
+    };
+
     if (isError) {
         return (
             <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-xl bg-destructive/5 text-center">
@@ -159,6 +210,7 @@ export function OcpiCdrsList() {
             pageSize={pageSize}
             sortByKey="last_updated"
             sortOrder="desc"
+            renderMobileCard={renderMobileCard}
             emptyState={
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                     <Receipt className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
