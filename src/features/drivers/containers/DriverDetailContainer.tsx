@@ -14,6 +14,7 @@ import {
   ShieldAlert,
   Clock,
   Banknote,
+  Leaf,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { fadeInUp, staggerContainer } from '@/lib/motion';
@@ -87,6 +88,21 @@ export function DriverSessionsContainer() {
             <span className="text-[9px] text-muted-foreground uppercase tracking-widest opacity-40 italic">kWh</span>
           </div>
         ),
+      },
+      {
+        id: 'co2Emitted',
+        header: 'CO2 Emitted',
+        cell: ({ row }) => {
+          const energy = row.original.energyDeliveredKwh || 0;
+          const co2Emitted = energy * 0.273;
+          return (
+            <div className="flex items-center gap-2 font-black text-sm tracking-tight text-foreground">
+              <Leaf className="h-4 w-4 text-emerald-500" />
+              <span>{co2Emitted.toFixed(2)}</span>
+              <span className="text-[9px] text-muted-foreground uppercase tracking-widest opacity-40 italic">kg</span>
+            </div>
+          );
+        },
       },
       {
         accessorKey: 'durationMinutes',
@@ -294,6 +310,16 @@ export function DriverSessionsContainer() {
                   <div className="flex items-baseline gap-1">
                     <span className="text-sm font-black text-foreground">{session.energyDeliveredKwh.toFixed(2)}</span>
                     <span className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-widest">kWh</span>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <span className="text-[9px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-1.5">
+                    <Leaf className="h-3 w-3 text-emerald-500" /> CO2 Emitted
+                  </span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-sm font-black text-foreground">{(session.energyDeliveredKwh * 0.273).toFixed(2)}</span>
+                    <span className="text-[8px] font-bold text-muted-foreground/40 uppercase tracking-widest">kg</span>
                   </div>
                 </div>
 

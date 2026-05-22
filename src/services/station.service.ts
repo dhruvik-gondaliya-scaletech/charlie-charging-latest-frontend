@@ -120,6 +120,12 @@ class StationService {
     });
   }
 
+  async unlockConnector(id: string, connectorId: number) {
+    return httpService.post(API_CONFIG.endpoints.stations.unlock(id), {
+      connectorId,
+    });
+  }
+
   async getOcppLogs(stationId: string, filters?: GetOcppLogsParams): Promise<OcppLogResponse> {
     const data = await httpService.get<OcppLogResponse>(API_CONFIG.endpoints.stations.ocppLogs(stationId), {
       params: filters,

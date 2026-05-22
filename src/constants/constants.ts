@@ -38,6 +38,7 @@ export const API_CONFIG = {
             remoteStop: (id: string) => `/stations/${id}/remote-stop`,
             reset: (id: string) => `/stations/${id}/reset`,
             availability: (id: string) => `/stations/${id}/availability`,
+            unlock: (id: string) => `/stations/${id}/unlock`,
             configuration: (id: string) => `/stations/${id}/configuration`,
             setConfiguration: (id: string) => `/stations/${id}/configuration`,
             ocppLogs: (id: string) => `/ocpp-logs?stationId=${id}`,

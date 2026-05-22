@@ -22,7 +22,8 @@ import {
     Calendar,
     RefreshCw,
     Terminal,
-    RotateCcw
+    RotateCcw,
+    Leaf
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -189,6 +190,21 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
                             <Zap className="h-3.5 w-3.5 text-emerald-500" />
                             <span>{energy.toFixed(2)}</span>
                             <span className="text-[9px] text-muted-foreground uppercase tracking-widest">kWh</span>
+                        </div>
+                    );
+                },
+            },
+            {
+                id: 'co2Emitted',
+                header: 'CO2 Emitted',
+                cell: ({ row }) => {
+                    const energy = row.original.energyDeliveredKwh || row.original.energyDelivered || 0;
+                    const co2Emitted = energy * 0.273;
+                    return (
+                        <div className="flex items-center gap-1.5 font-black text-foreground">
+                            <Leaf className="h-3.5 w-3.5 text-emerald-500" />
+                            <span>{co2Emitted.toFixed(2)}</span>
+                            <span className="text-[9px] text-muted-foreground uppercase tracking-widest">kg</span>
                         </div>
                     );
                 },
@@ -411,7 +427,7 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
                                 </Badge>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 py-2 border-y border-border/10">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 py-2 border-y border-border/10">
                                 <div className="space-y-1">
                                     <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-1">
                                         <Clock className="h-2.5 w-2.5" /> Start Time
@@ -422,7 +438,13 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
                                     <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-1">
                                         <Zap className="h-2.5 w-2.5" /> Energy
                                     </p>
-                                    <p className="text-xs font-bold">{(session.energyDeliveredKwh || 0).toFixed(2)} kWh</p>
+                                    <p className="text-xs font-bold">{(session.energyDeliveredKwh || session.energyDelivered || 0).toFixed(2)} kWh</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-1">
+                                        <Leaf className="h-2.5 w-2.5 text-emerald-500" /> CO2 Emitted
+                                    </p>
+                                    <p className="text-xs font-bold">{((session.energyDeliveredKwh || session.energyDelivered || 0) * 0.273).toFixed(2)} kg</p>
                                 </div>
                             </div>
 

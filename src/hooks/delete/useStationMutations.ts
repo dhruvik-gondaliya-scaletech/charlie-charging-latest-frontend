@@ -101,6 +101,19 @@ export const useChangeAvailability = () => {
   });
 };
 
+export const useUnlockConnector = () => {
+  return useMutation({
+    mutationFn: ({ id, connectorId }: { id: string; connectorId: number }) =>
+      stationService.unlockConnector(id, connectorId),
+    onSuccess: () => {
+      toast.success('Unlock connector command sent');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to send unlock command');
+    },
+  });
+};
+
 export const useSetConfiguration = () => {
   const queryClient = useQueryClient();
 
