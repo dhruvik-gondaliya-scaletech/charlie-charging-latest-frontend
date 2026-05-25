@@ -174,6 +174,7 @@ export const FRONTEND_ROUTES = {
     LANDING_PAGE_ONE: "/landing-one",
     LANDING_PAGE_TWO: "/landing-two",
     LANDING_PAGE_THREE: "/landing-three",
+    LANDING_PAGE_FOUR: "/landing-four",
     API_DOCS: "/docs",
 }
 
