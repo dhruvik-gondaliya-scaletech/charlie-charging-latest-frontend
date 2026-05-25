@@ -15,7 +15,7 @@ export function FAQSection() {
   return (
     <section id="faq" className="py-24 bg-muted/20 border-y border-border/40 relative overflow-hidden">
       <div className="max-w-4xl mx-auto px-6">
-        
+
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-16 flex flex-col space-y-4">
           <span className="text-[11px] font-bold tracking-widest text-primary uppercase">
@@ -41,7 +41,7 @@ export function FAQSection() {
                 {/* Accordion Header Trigger */}
                 <button
                   onClick={() => toggleFAQ(idx)}
-                  className="w-full flex items-center justify-between p-6 text-left focus:outline-none"
+                  className="w-full flex items-center justify-between p-6 text-left focus:outline-none cursor-pointer"
                 >
                   <span className="text-sm font-bold tracking-tight text-foreground select-none pr-4">
                     {faq.question}

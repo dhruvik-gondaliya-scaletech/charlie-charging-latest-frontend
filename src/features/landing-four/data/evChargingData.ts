@@ -1,15 +1,15 @@
-import { 
-  Zap, 
-  CreditCard, 
-  Activity, 
-  Smartphone, 
-  Truck, 
-  Globe, 
-  ShieldCheck, 
-  Cpu, 
-  Layers, 
-  Coins, 
-  Calendar, 
+import {
+  Zap,
+  CreditCard,
+  Activity,
+  Smartphone,
+  Truck,
+  Globe,
+  ShieldCheck,
+  Cpu,
+  Layers,
+  Coins,
+  Calendar,
   HeartPulse
 } from 'lucide-react';
 
@@ -249,26 +249,18 @@ export const industriesData: IndustryItem[] = [
 
 export const testimonialsData: Testimonial[] = [
   {
-    name: 'Sarah Jenkins',
-    role: 'VP of Fleet Logistics',
-    company: 'VoltTransit Networks',
+    name: 'Alex',
+    role: 'Founder & CEO',
+    company: 'Charli Charging',
     quote: 'ScaleEV has completely transformed our fleet operations. The smart charging and scheduling features have cut our energy costs by 30% while ensuring our delivery vehicles are always ready to go.',
-    avatar: '/assets/marcelo.jpg',
-    rating: 5,
-  },
-  {
-    name: 'Marcus Chen',
-    role: 'Director of Asset Management',
-    company: 'Luminate Properties',
-    quote: 'We deployed ScaleEV across all our commercial properties in less than a month. The white-label driver app and seamless payment integration have significantly enhanced our tenant satisfaction.',
     avatar: '/assets/alex.png',
     rating: 5,
   },
   {
-    name: 'Elena Rostova',
-    role: 'Smart Grid Project Manager',
-    company: 'Aether Utilities',
-    quote: "As a utility company, load management is critical for us. ScaleEV's dynamic load balancing has allowed us to connect twice as many chargers without upgrading our substation infrastructure.",
+    name: 'Marcelo',
+    role: 'CTO',
+    company: 'Charli Charging',
+    quote: 'We deployed ScaleEV across all our commercial properties in less than a month. The white-label driver app and seamless payment integration have significantly enhanced our tenant satisfaction.',
     avatar: '/assets/marcelo.jpg',
     rating: 5,
   },

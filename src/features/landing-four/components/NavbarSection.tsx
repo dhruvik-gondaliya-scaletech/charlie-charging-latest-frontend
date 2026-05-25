@@ -26,20 +26,31 @@ export function NavbarSection() {
       <motion.header
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6, ease: 'easeOut' }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 w-full ${
-          scrolled 
-            ? 'bg-background/80 backdrop-blur-md border-b border-border/40 shadow-sm py-3' 
-            : 'bg-transparent py-5'
-        }`}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-6 px-4 sm:px-6 pointer-events-none"
       >
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+        <div
+          className={`
+            flex items-center justify-between w-full max-w-7xl h-16 px-6
+            transition-all duration-700 pointer-events-auto relative
+            ${scrolled 
+              ? 'bg-background/60 dark:bg-background/40 backdrop-blur-2xl border border-border/80 dark:border-white/10 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.06)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.2)] scale-[0.98]' 
+              : 'bg-transparent border-transparent scale-100'
+            }
+          `}
+        >
+          {/* Glow accent behind logo when scrolled */}
+          {scrolled && (
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/5 via-transparent to-primary/5 pointer-events-none -z-10" />
+          )}
+
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-1.5 group">
-            <span className="text-xl font-black tracking-tight text-foreground flex items-center">
-              <span className="text-primary font-black">Scale</span>
-              <span className="font-bold">EV</span>
-            </span>
+          <Link href="/" className="flex items-center group relative z-10">
+            <BrandLogo
+              width={110}
+              height={30}
+              className="transition-transform duration-500 group-hover:scale-105"
+            />
           </Link>
 
           {/* Desktop Nav Items */}
@@ -57,7 +68,7 @@ export function NavbarSection() {
           </nav>
 
           {/* Actions */}
-          <div className="hidden lg:flex items-center space-x-4">
+          <div className="hidden lg:flex items-center space-x-4 relative z-10">
             <Link href="#demo">
               <Button variant="ghost" className="font-semibold text-[13px] tracking-wide hover:bg-primary/5 hover:text-primary transition-all">
                 Book Demo
@@ -73,7 +84,7 @@ export function NavbarSection() {
           {/* Mobile menu button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 text-foreground/80 hover:text-foreground hover:bg-muted/40 rounded-full transition-colors"
+            className="lg:hidden p-2 text-foreground/80 hover:text-foreground hover:bg-muted/40 rounded-full transition-colors relative z-10"
             aria-label="Toggle Menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
