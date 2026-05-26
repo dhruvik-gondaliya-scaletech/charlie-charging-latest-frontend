@@ -241,7 +241,7 @@ export const industriesData: IndustryItem[] = [
   },
   {
     title: 'EV Car Builders (OEMs)',
-    description: 'Provide car owners with a seamless charging experience using white-labeled mobile apps and RFID cards.',
+    description: 'Provide car owners with a seamless charging experience using white-labeled mobile web apps and RFID cards.',
     image: '/assets/ev_car_builders.png',
     badge: 'Automotive OEMs',
   },

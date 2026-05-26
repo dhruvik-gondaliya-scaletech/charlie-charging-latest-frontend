@@ -3,10 +3,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles } from 'lucide-react';
+import BookADemo from './BookADemo';
 
 export function CTASection() {
   return (
-    <section className="py-24 bg-background relative overflow-hidden">
+    <section id="cta" className="py-24 bg-background relative overflow-hidden">
       {/* Background glow radial */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[160px] pointer-events-none" />
 
@@ -38,25 +39,24 @@ export function CTASection() {
 
             {/* Description */}
             <p className="text-neutral-400 text-xs md:text-sm font-medium leading-relaxed">
-              Join companies worldwide that trust ScaleEV to power their charging infrastructure. Get started with your 14-day free trial or talk to our experts.
+              Join companies worldwide that trust ScaleEV to power their charging infrastructure. Book a demo to speak with our experts.
             </p>
 
             {/* Action buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full pt-4">
-              <button className="w-full sm:w-auto px-6 py-3 rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow-md hover:bg-primary/95 transition-all flex items-center justify-center space-x-2">
-                <span>Start Free Trial</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-              <button className="w-full sm:w-auto px-6 py-3 rounded-xl bg-neutral-800 border border-neutral-700 text-neutral-200 text-xs font-bold hover:bg-neutral-750 transition-all">
-                Book a Demo
-              </button>
+            <div className="flex items-center justify-center w-full pt-4">
+              <BookADemo>
+                <button className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow-md hover:bg-primary/95 transition-all flex items-center justify-center space-x-2 cursor-pointer">
+                  <span>Book a Demo</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </BookADemo>
             </div>
 
             {/* Value indicators */}
             <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 pt-6 text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
-              <div>✓ 14-Day Free Trial</div>
-              <div>✓ No Credit Card Required</div>
               <div>✓ OCPP 1.6J/2.0.1 Compliant</div>
+              <div>✓ White-Label Platform</div>
+              <div>✓ Enterprise Scale Ready</div>
             </div>
 
           </div>

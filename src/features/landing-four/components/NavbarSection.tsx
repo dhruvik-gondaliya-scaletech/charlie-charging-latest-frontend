@@ -8,6 +8,7 @@ import { navItems } from '../data/evChargingData';
 import { Button } from '@/components/ui/button';
 import { BrandLogo } from '@/components/shared/BrandLogo';
 import { FRONTEND_ROUTES } from '@/constants/constants';
+import BookADemo from './BookADemo';
 
 export function NavbarSection() {
   const [scrolled, setScrolled] = useState(false);
@@ -33,8 +34,8 @@ export function NavbarSection() {
           className={`
             flex items-center justify-between w-full max-w-7xl h-16 px-6
             transition-all duration-700 pointer-events-auto relative
-            ${scrolled 
-              ? 'bg-background/60 dark:bg-background/40 backdrop-blur-2xl border border-border/80 dark:border-white/10 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.06)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.2)] scale-[0.98]' 
+            ${scrolled
+              ? 'bg-background/60 dark:bg-background/40 backdrop-blur-2xl border border-border/80 dark:border-white/10 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.06)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.2)] scale-[0.98]'
               : 'bg-transparent border-transparent scale-100'
             }
           `}
@@ -69,11 +70,11 @@ export function NavbarSection() {
 
           {/* Actions */}
           <div className="hidden lg:flex items-center space-x-4 relative z-10">
-            <Link href="#demo">
+            <BookADemo>
               <Button variant="ghost" className="font-semibold text-[13px] tracking-wide hover:bg-primary/5 hover:text-primary transition-all">
                 Book Demo
               </Button>
-            </Link>
+            </BookADemo>
             <Link href={FRONTEND_ROUTES.LOGIN}>
               <Button className="font-bold text-[13px] tracking-wide px-5 py-2.5 rounded-full shadow-lg shadow-primary/10 hover:shadow-primary/25 hover:scale-[1.02] active:scale-[0.98] transition-all bg-primary text-primary-foreground">
                 Partner Login
@@ -119,11 +120,11 @@ export function NavbarSection() {
             </div>
 
             <div className="flex flex-col space-y-3 pt-6 border-t border-border/40">
-              <Link href="#demo" onClick={() => setMobileMenuOpen(false)}>
+              <BookADemo onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="outline" className="w-full h-12 rounded-xl text-[14px] font-semibold border-border hover:bg-muted">
                   Book Demo
                 </Button>
-              </Link>
+              </BookADemo>
               <Link href={FRONTEND_ROUTES.LOGIN} onClick={() => setMobileMenuOpen(false)}>
                 <Button className="w-full h-12 rounded-xl text-[14px] font-bold shadow-lg shadow-primary/25 bg-primary text-primary-foreground flex items-center justify-center gap-2">
                   Partner Login <ArrowRight className="w-4 h-4" />

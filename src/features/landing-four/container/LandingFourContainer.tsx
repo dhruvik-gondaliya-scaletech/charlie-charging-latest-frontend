@@ -1,7 +1,6 @@
 import { NavbarSection } from '../components/NavbarSection';
 import { HeroSection } from '../components/HeroSection';
 import { SolutionsSection } from '../components/SolutionsSection';
-import { IndustrySolutionsSection } from '../components/IndustrySolutionsSection';
 import { TestimonialsSection } from '../components/TestimonialsSection';
 import { FAQSection } from '../components/FAQSection';
 import { CTASection } from '../components/CTASection';

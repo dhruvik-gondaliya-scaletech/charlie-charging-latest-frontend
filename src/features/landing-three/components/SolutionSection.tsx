@@ -10,7 +10,7 @@ const solutions = [
   {
     id: 'mobile-app',
     icon: Smartphone,
-    title: 'White-Labeled Mobile App',
+    title: 'White-Labeled Mobile Web App',
     sub: 'Custom driver experience under your brand.',
     points: [
       'Assets matching your brand',
@@ -20,7 +20,7 @@ const solutions = [
     mockup: {
       type: 'mobile',
       image: 'https://images.unsplash.com/photo-1563720223185-11003d516935?q=80&w=600&auto=format&fit=crop',
-      title: 'Scale EV Mobile App',
+      title: 'Scale EV Mobile Web App',
       badge: 'Brand App Active',
       data: {
         networkName: 'VoltCharge App',

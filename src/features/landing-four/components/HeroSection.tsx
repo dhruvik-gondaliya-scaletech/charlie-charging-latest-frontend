@@ -2,10 +2,10 @@
 
 import React from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { motion, Variants } from 'framer-motion';
-import { ArrowRight, Play, CheckCircle, Shield } from 'lucide-react';
+import { ArrowRight, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import BookADemo from './BookADemo';
 
 export function HeroSection() {
   const containerVariants: Variants = {
@@ -22,7 +22,7 @@ export function HeroSection() {
   };
 
   return (
-    <section className="relative min-h-screen pt-36 pb-20 flex items-center justify-center overflow-hidden bg-background">
+    <section id="home" className="relative min-h-screen pt-36 pb-20 flex items-center justify-center overflow-hidden bg-background">
       {/* Background Image & Legibility Overlays */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         <Image
@@ -79,32 +79,78 @@ export function HeroSection() {
           </motion.p>
 
           {/* CTAs */}
-          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 items-center justify-center w-full sm:w-auto">
-            <Link href="#demo" className="w-full sm:w-auto">
-              <Button className="w-full sm:w-auto bg-primary text-primary-foreground hover:scale-[1.03] active:scale-[0.98] transition-all rounded-full px-8 py-6 text-sm font-bold shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
-                Deploy Instantly <ArrowRight className="w-4 h-4" />
+          <motion.div variants={itemVariants} className="flex items-center justify-center w-full sm:w-auto">
+            <BookADemo className="w-full sm:w-auto">
+              <Button className="w-full sm:w-auto bg-primary text-primary-foreground hover:scale-[1.03] active:scale-[0.98] transition-all rounded-full px-8 py-6 text-sm font-bold shadow-lg shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer">
+                Book a Demo <ArrowRight className="w-4 h-4" />
               </Button>
-            </Link>
-            <Link href="#solutions" className="w-full sm:w-auto">
-              <Button variant="outline" className="w-full sm:w-auto border-border hover:bg-muted/50 bg-background/40 backdrop-blur-sm rounded-full px-8 py-6 text-sm font-bold flex items-center justify-center gap-2">
-                <Play className="w-3.5 h-3.5 fill-foreground text-foreground" /> Watch Demo
-              </Button>
-            </Link>
+            </BookADemo>
           </motion.div>
 
-          {/* Value props */}
+          {/* Value props (Compliance & Trust Certificates) */}
           <motion.div
             variants={itemVariants}
-            className="flex flex-wrap justify-center gap-x-6 gap-y-4 pt-8 border-t border-border/20 w-full max-w-2xl"
+            className="flex flex-wrap justify-center gap-4 pt-8 border-t border-border/20 w-full max-w-3xl"
           >
-            <div className="flex items-center gap-2 text-xs md:text-sm font-bold text-foreground/95 bg-background/80 backdrop-blur-sm px-4 py-2 rounded-full border border-border/50 shadow-md">
-              <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" /> OCPP 1.6-J & 2.0.1 Ready
+            {/* Badge 1: OCA Compliance */}
+            <div className="flex items-center gap-3 bg-background/80 backdrop-blur-sm px-4 py-2.5 rounded-2xl border border-border/50 shadow-md">
+              <Image
+                src="/assets/OCA_1.png"
+                alt="OCA OCPP Certified"
+                width={42}
+                height={36}
+                className="object-contain shrink-0"
+              />
+              <div className="flex flex-col text-left">
+                <span className="text-xs font-bold text-foreground leading-tight">OCPP Certified</span>
+                <span className="text-[10px] text-muted-foreground leading-tight">Open Charge Alliance</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-xs md:text-sm font-bold text-foreground/95 bg-background/80 backdrop-blur-sm px-4 py-2 rounded-full border border-border/50 shadow-md">
-              <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" /> Dynamic Load Balancing
+
+            {/* Badge 2: Security & Privacy */}
+            <div className="flex items-center gap-3 bg-background/80 backdrop-blur-sm px-4 py-2.5 rounded-2xl border border-border/50 shadow-md">
+              <div className="flex items-center gap-1.5 shrink-0">
+                <Image
+                  src="/assets/ISO_27001_2022 1.png"
+                  alt="ISO 27001"
+                  width={35}
+                  height={30}
+                  className="object-contain"
+                />
+                <Image
+                  src="/assets/ISO_27017_2015.png"
+                  alt="ISO 27017"
+                  width={35}
+                  height={30}
+                  className="object-contain"
+                />
+                <Image
+                  src="/assets/ISO_27018_2019.png"
+                  alt="ISO 27018"
+                  width={35}
+                  height={30}
+                  className="object-contain"
+                />
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="text-xs font-bold text-foreground leading-tight">Information Security</span>
+                <span className="text-[10px] text-muted-foreground leading-tight">ISO 27001 / 17 / 18</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-xs md:text-sm font-bold text-foreground/95 bg-background/80 backdrop-blur-sm px-4 py-2 rounded-full border border-border/50 shadow-md">
-              <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" /> White-Label Driver Apps
+
+            {/* Badge 3: Quality Management */}
+            <div className="flex items-center gap-3 bg-background/80 backdrop-blur-sm px-4 py-2.5 rounded-2xl border border-border/50 shadow-md">
+              <Image
+                src="/assets/ISO_9001_2015 1.png"
+                alt="ISO 9001:2015"
+                width={35}
+                height={30}
+                className="object-contain shrink-0"
+              />
+              <div className="flex flex-col text-left">
+                <span className="text-xs font-bold text-foreground leading-tight">Quality Management</span>
+                <span className="text-[10px] text-muted-foreground leading-tight">ISO 9001:2015 Certified</span>
+              </div>
             </div>
           </motion.div>
         </motion.div>

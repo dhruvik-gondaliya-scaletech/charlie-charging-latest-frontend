@@ -79,10 +79,7 @@ export interface FAQItem {
 export const navItems: NavItem[] = [
   { name: 'Home', href: '#home' },
   { name: 'Solution', href: '#solutions' },
-  { name: 'Co-Brand', href: '#workflow' },
-  { name: 'Global', href: '#global' },
-  { name: 'Blog', href: '#blog' },
-  { name: 'Team', href: '#partners' },
+  { name: 'Testimonials', href: '#testimonials' },
   { name: 'FAQs', href: '#faq' },
   { name: 'Install', href: '#cta' },
 ];
@@ -94,6 +91,7 @@ export const trustedBrands = [
   { name: 'Siemens', logoText: 'SIEMENS' },
   { name: 'ChargePoint', logoText: 'CHARGEPOINT' },
   { name: 'Tesla Supercharger', logoText: 'TESLA' },
+  { name: 'Collectron Energy', image: '/assets/collectron_energy.png' },
 ];
 
 export const solutionsData: Solution[] = [
@@ -103,7 +101,7 @@ export const solutionsData: Solution[] = [
     description: 'Brand our software with your logos, colors, and domain name to offer a cohesive experience. We handle the infrastructure while you build customer loyalty.',
     iconName: 'Smartphone',
     badge: 'Custom Branding',
-    features: ['Custom Logo & Styling', 'Dedicated Domain Name', 'White-labeled Mobile Apps'],
+    features: ['Custom Logo & Styling', 'Dedicated Domain Name', 'White-labeled Mobile Web Apps'],
   },
   {
     id: 'ocpp-gateway',
@@ -229,7 +227,7 @@ export const industriesData: IndustryItem[] = [
   },
   {
     title: 'EV Car Builders (OEMs)',
-    description: 'Provide car owners with a seamless charging experience using white-labeled mobile apps, RFID cards, and embedded dashboard controls.',
+    description: 'Provide car owners with a seamless charging experience using white-labeled mobile web apps, RFID cards, and embedded dashboard controls.',
     image: '/assets/ev_car_builders.png',
     badge: 'Automotive OEMs',
   },

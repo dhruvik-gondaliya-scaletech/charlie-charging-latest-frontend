@@ -20,7 +20,7 @@ export function TestimonialsSection() {
   };
 
   return (
-    <section className="py-24 bg-background relative overflow-hidden">
+    <section id="testimonials" className="py-24 bg-background relative overflow-hidden">
       {/* Background accents */}
       <div className="absolute bottom-10 left-10 w-96 h-96 bg-primary/5 rounded-full blur-[100px]" />
 

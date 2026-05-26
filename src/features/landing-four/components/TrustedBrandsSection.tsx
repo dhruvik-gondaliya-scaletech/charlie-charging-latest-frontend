@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import { trustedBrands } from '../data/evChargingData';
 
 export function TrustedBrandsSection() {
@@ -11,7 +12,7 @@ export function TrustedBrandsSection() {
         <p className="text-center text-[11px] font-bold tracking-widest text-muted-foreground uppercase mb-8">
           Trusted by Industry Leaders and Charge Point Operators
         </p>
-        
+
         <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6 md:gap-x-16">
           {trustedBrands.map((brand, idx) => (
             <motion.div
@@ -22,9 +23,21 @@ export function TrustedBrandsSection() {
               transition={{ duration: 0.5, delay: idx * 0.05 }}
               className="flex items-center justify-center filter grayscale contrast-125 opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-300 cursor-pointer"
             >
-              <span className="text-[13px] md:text-[15px] font-black tracking-[0.25em] text-foreground/60">
-                {brand.logoText}
-              </span>
+              {'image' in brand && brand.image ? (
+                <div className="relative w-28 h-8 md:w-32 md:h-10 flex items-center justify-center">
+                  <Image
+                    src={brand.image}
+                    alt={brand.name}
+                    width={120}
+                    height={35}
+                    className="object-contain max-h-full"
+                  />
+                </div>
+              ) : (
+                <span className="text-[13px] md:text-[15px] font-black tracking-[0.25em] text-foreground/60 uppercase">
+                  {'logoText' in brand ? brand.logoText : brand.name}
+                </span>
+              )}
             </motion.div>
           ))}
         </div>
