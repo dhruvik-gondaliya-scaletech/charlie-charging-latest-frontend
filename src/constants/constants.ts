@@ -245,3 +245,5 @@ export const CONNECTOR_OPTIONS = [
 ]
 
 export const DEFAULT_PAGE_SIZE = 10;
+
+export const IMAGE_DOMAIN_URL = "https://d39uw1u176mxxs.cloudfront.net"

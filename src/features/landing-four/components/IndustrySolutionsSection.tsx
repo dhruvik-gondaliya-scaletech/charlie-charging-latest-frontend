@@ -25,13 +25,13 @@ export function IndustrySolutionsSection() {
         
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-20 flex flex-col space-y-4">
-          <span className="text-[11px] font-bold tracking-widest text-primary uppercase">
+          <span className="text-xs font-bold tracking-widest text-primary uppercase">
             TAILORED SOLUTIONS
           </span>
           <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-foreground">
             EV Charging Network Solutions for Every Industry
           </h2>
-          <p className="text-muted-foreground text-sm font-medium leading-relaxed">
+          <p className="text-muted-foreground text-base font-medium leading-relaxed">
             ScaleEV offers customized software solutions to meet the specific requirements of various sectors, helping businesses manage charging networks efficiently.
           </p>
         </div>
@@ -66,7 +66,7 @@ export function IndustrySolutionsSection() {
               <div className="absolute inset-0 z-20 p-8 flex flex-col justify-between items-start">
                 
                 {/* Badge */}
-                <span className="text-[10px] font-bold text-primary bg-primary/10 border border-primary/20 backdrop-blur-md px-3 py-1 rounded-full uppercase tracking-wider">
+                <span className="text-xs font-bold text-primary bg-primary/10 border border-primary/20 backdrop-blur-md px-3 py-1 rounded-full uppercase tracking-wider">
                   {ind.badge}
                 </span>
 
@@ -80,7 +80,7 @@ export function IndustrySolutionsSection() {
                       <ArrowUpRight className="w-4 h-4" />
                     </div>
                   </div>
-                  <p className="text-muted-foreground text-xs leading-relaxed font-medium">
+                  <p className="text-muted-foreground text-sm leading-relaxed font-medium">
                     {ind.description}
                   </p>
                 </div>

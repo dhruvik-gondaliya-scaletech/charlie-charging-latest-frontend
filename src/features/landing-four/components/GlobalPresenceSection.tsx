@@ -72,13 +72,13 @@ export function GlobalPresenceSection() {
         
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-20 flex flex-col space-y-4">
-          <span className="text-[11px] font-bold tracking-widest text-primary uppercase">
+          <span className="text-xs font-bold tracking-widest text-primary uppercase">
             GLOBAL INFRASTRUCTURE
           </span>
           <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-foreground">
             Enterprise-Grade Reliability on a Global Scale
           </h2>
-          <p className="text-muted-foreground text-sm font-medium leading-relaxed">
+          <p className="text-muted-foreground text-base font-medium leading-relaxed">
             ScaleEV's cloud-native infrastructure is built for high availability and low latency, ensuring your charging stations remain online and accessible to drivers worldwide.
           </p>
         </div>
@@ -124,7 +124,7 @@ export function GlobalPresenceSection() {
               <span className="absolute -left-1 -top-1 w-3 h-3 rounded-full bg-primary border-2 border-background shadow-md cursor-pointer" />
               
               {/* Label details */}
-              <span className="absolute left-4 -top-3 scale-0 group-hover:scale-100 bg-background border border-border text-[9px] font-bold px-2 py-1 rounded shadow-md transition-all whitespace-nowrap z-20 pointer-events-none uppercase tracking-wider">
+              <span className="absolute left-4 -top-3 scale-0 group-hover:scale-100 bg-background border border-border text-[11px] font-bold px-2 py-1 rounded shadow-md transition-all whitespace-nowrap z-20 pointer-events-none uppercase tracking-wider">
                 {pin.name}
               </span>
             </div>
@@ -142,7 +142,7 @@ export function GlobalPresenceSection() {
               >
                 <div className="text-primary flex items-center space-x-2">
                   <Icon className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                     {stat.label}
                   </span>
                 </div>

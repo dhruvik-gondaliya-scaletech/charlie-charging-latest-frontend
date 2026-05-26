@@ -20,14 +20,14 @@ export function FooterSection() {
                 className="transition-transform duration-500 group-hover:scale-105"
               />
             </Link>
-            <p className="text-muted-foreground text-xs leading-relaxed font-medium max-w-md pt-2">
+            <p className="text-muted-foreground text-sm leading-relaxed font-medium max-w-md pt-2">
               The enterprise-grade OCPP backend and dynamic load management software that powers global electric vehicle charging networks.
             </p>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground font-semibold uppercase tracking-wider">
           <div>
             &copy; {currentYear} ScaleEV. All rights reserved.
           </div>

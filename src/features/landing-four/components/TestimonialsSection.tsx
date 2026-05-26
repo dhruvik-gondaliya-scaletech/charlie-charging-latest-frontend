@@ -28,13 +28,13 @@ export function TestimonialsSection() {
         
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-20 flex flex-col space-y-4">
-          <span className="text-[11px] font-bold tracking-widest text-primary uppercase">
+          <span className="text-xs font-bold tracking-widest text-primary uppercase">
             TESTIMONIALS
           </span>
           <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-foreground">
             Trusted by Leading EV Infrastructure Providers
           </h2>
-          <p className="text-muted-foreground text-sm font-medium leading-relaxed">
+          <p className="text-muted-foreground text-base font-medium leading-relaxed">
             Read stories from fleet managers, real estate operators, and charging service providers who use ScaleEV to build and scale their EV charging networks.
           </p>
         </div>
@@ -45,7 +45,7 @@ export function TestimonialsSection() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-100px' }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto"
+          className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto"
         >
           {testimonialsData.map((t) => (
             <motion.div
@@ -62,7 +62,7 @@ export function TestimonialsSection() {
                   ))}
                 </div>
 
-                <p className="text-foreground/90 font-medium text-sm leading-relaxed italic">
+                <p className="text-foreground/90 font-medium text-base leading-relaxed italic">
                   &ldquo;{t.quote}&rdquo;
                 </p>
               </div>
@@ -78,10 +78,10 @@ export function TestimonialsSection() {
                   />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold tracking-tight text-foreground">
+                  <h4 className="text-base font-bold tracking-tight text-foreground">
                     {t.name}
                   </h4>
-                  <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                     {t.role}, <span className="text-primary">{t.company}</span>
                   </p>
                 </div>

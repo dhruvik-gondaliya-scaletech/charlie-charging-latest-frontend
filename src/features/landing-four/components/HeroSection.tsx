@@ -8,6 +8,16 @@ import { Button } from '@/components/ui/button';
 import BookADemo from './BookADemo';
 
 export function HeroSection() {
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+
+  React.useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.play().catch((err) => {
+        console.log("Autoplay check:", err);
+      });
+    }
+  }, []);
+
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
@@ -23,26 +33,20 @@ export function HeroSection() {
 
   return (
     <section id="home" className="relative min-h-screen pt-36 pb-20 flex items-center justify-center overflow-hidden bg-background">
-      {/* Background Image & Legibility Overlays */}
+      {/* Background Video & Legibility Overlays */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        <Image
-          src="/assets/ev_network_owner.png"
-          alt="EV Network Owner Background"
-          fill
-          priority
-          className="object-cover object-center opacity-65 dark:opacity-20"
+        <video
+          ref={videoRef}
+          src="https://d39uw1u176mxxs.cloudfront.net/branding-videos/scale-ev-video.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover opacity-75 dark:opacity-40 brightness-[1.] dark:brightness-[1.0]"
         />
-        {/* Semi-transparent background mask for solid text contrast */}
-        <div className="absolute inset-0 bg-background/65 backdrop-blur-[3px]" />
-
-        {/* Soft radial and linear gradients to blend background image seamlessly */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/30 to-background" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,var(--background)_100%)]" />
       </div>
 
-      {/* Ambient background glow blurs for depth */}
-      <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-primary/10 blur-[130px] pointer-events-none z-0" />
-      <div className="absolute bottom-10 left-1/3 w-[500px] h-[500px] rounded-full bg-blue-500/5 blur-[150px] pointer-events-none z-0" />
+
 
       {/* Grid Pattern Overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none z-0" />
@@ -52,45 +56,41 @@ export function HeroSection() {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="flex flex-col items-center space-y-8 md:space-y-10 w-full"
+          className="flex flex-col items-center w-full"
         >
-          {/* Badge */}
-          <motion.div variants={itemVariants} className="inline-flex items-center space-x-2 bg-primary/15 border border-primary/35 rounded-full px-4 py-1.5 w-fit">
-            <Shield className="w-3.5 h-3.5 text-primary" />
-            <span className="text-[12px] font-bold text-primary tracking-wide uppercase">
-              Next-Gen CSMS Platform
-            </span>
-          </motion.div>
+          {/* Glassmorphic Panel for Hero Text & CTAs */}
+          <div className="flex flex-col items-center text-center space-y-8 md:space-y-10 w-full bg-black/40 border border-white/10 rounded-[2.5rem] p-8 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.03)] mb-10">
 
-          {/* Heading */}
-          <motion.h1
-            variants={itemVariants}
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-foreground leading-[1.08] max-w-3xl"
-          >
-            Scale Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-600">EV Charging</span> Network. Globally.
-          </motion.h1>
+            {/* Heading */}
+            <motion.h1
+              variants={itemVariants}
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-white leading-[1.08] max-w-3xl"
+            >
+              Scale Your EV Charging Network. Globally.
+            </motion.h1>
 
-          {/* Subheading */}
-          <motion.p
-            variants={itemVariants}
-            className="text-base sm:text-lg md:text-xl text-foreground/85 dark:text-foreground/75 max-w-2xl font-semibold leading-relaxed"
-          >
-            Hardware-agnostic OCPP management software built for global fleet operators, commercial properties, and public charging networks. Fully OCPP 2.0.1 compliant.
-          </motion.p>
+            {/* Subheading */}
+            <motion.p
+              variants={itemVariants}
+              className="text-base sm:text-lg md:text-xl text-white/90 max-w-2xl font-semibold leading-relaxed"
+            >
+              Hardware-agnostic OCPP management software built for global fleet operators, commercial properties, and public charging networks. Fully OCPP 2.0.1 compliant.
+            </motion.p>
 
-          {/* CTAs */}
-          <motion.div variants={itemVariants} className="flex items-center justify-center w-full sm:w-auto">
-            <BookADemo className="w-full sm:w-auto">
-              <Button className="w-full sm:w-auto bg-primary text-primary-foreground hover:scale-[1.03] active:scale-[0.98] transition-all rounded-full px-8 py-6 text-sm font-bold shadow-lg shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer">
-                Book a Demo <ArrowRight className="w-4 h-4" />
-              </Button>
-            </BookADemo>
-          </motion.div>
+            {/* CTAs */}
+            <motion.div variants={itemVariants} className="flex items-center justify-center w-full sm:w-auto">
+              <BookADemo className="w-full sm:w-auto">
+                <Button className="w-full sm:w-auto bg-primary text-primary-foreground hover:scale-[1.03] active:scale-[0.98] transition-all rounded-full px-8 py-6 text-base font-bold shadow-lg shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer">
+                  Book a Demo <ArrowRight className="w-4 h-4" />
+                </Button>
+              </BookADemo>
+            </motion.div>
+          </div>
 
           {/* Value props (Compliance & Trust Certificates) */}
           <motion.div
             variants={itemVariants}
-            className="flex flex-wrap justify-center gap-4 pt-8 border-t border-border/20 w-full max-w-3xl"
+            className="flex flex-wrap justify-center gap-4 w-full max-w-3xl"
           >
             {/* Badge 1: OCA Compliance */}
             <div className="flex items-center gap-3 bg-background/80 backdrop-blur-sm px-4 py-2.5 rounded-2xl border border-border/50 shadow-md">
@@ -102,8 +102,8 @@ export function HeroSection() {
                 className="object-contain shrink-0"
               />
               <div className="flex flex-col text-left">
-                <span className="text-xs font-bold text-foreground leading-tight">OCPP Certified</span>
-                <span className="text-[10px] text-muted-foreground leading-tight">Open Charge Alliance</span>
+                <span className="text-sm font-bold text-foreground leading-tight">OCPP Certified</span>
+                <span className="text-xs text-muted-foreground leading-tight">Open Charge Alliance</span>
               </div>
             </div>
 
@@ -133,8 +133,8 @@ export function HeroSection() {
                 />
               </div>
               <div className="flex flex-col text-left">
-                <span className="text-xs font-bold text-foreground leading-tight">Information Security</span>
-                <span className="text-[10px] text-muted-foreground leading-tight">ISO 27001 / 17 / 18</span>
+                <span className="text-sm font-bold text-foreground leading-tight">Information Security</span>
+                <span className="text-xs text-muted-foreground leading-tight">ISO 27001 / 17 / 18</span>
               </div>
             </div>
 
@@ -148,8 +148,8 @@ export function HeroSection() {
                 className="object-contain shrink-0"
               />
               <div className="flex flex-col text-left">
-                <span className="text-xs font-bold text-foreground leading-tight">Quality Management</span>
-                <span className="text-[10px] text-muted-foreground leading-tight">ISO 9001:2015 Certified</span>
+                <span className="text-sm font-bold text-foreground leading-tight">Quality Management</span>
+                <span className="text-xs text-muted-foreground leading-tight">ISO 9001:2015 Certified</span>
               </div>
             </div>
           </motion.div>

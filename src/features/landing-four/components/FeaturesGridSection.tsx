@@ -37,13 +37,13 @@ export function FeaturesGridSection() {
           
           {/* Left Column: Heading Content */}
           <div className="lg:col-span-4 flex flex-col space-y-4 lg:sticky lg:top-28">
-            <span className="text-[11px] font-bold tracking-widest text-primary uppercase">
+            <span className="text-xs font-bold tracking-widest text-primary uppercase">
               ADVANCED ENGINE
             </span>
             <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-foreground leading-[1.1]">
               Robust Features for Efficient EV Charging Management
             </h2>
-            <p className="text-muted-foreground text-sm font-medium leading-relaxed">
+            <p className="text-muted-foreground text-base font-medium leading-relaxed">
               ScaleEV provides the robust features needed to manage a growing charging network. Our tools help operators control pricing, balance load, and keep stations running smoothly.
             </p>
           </div>
@@ -70,10 +70,10 @@ export function FeaturesGridSection() {
                   </div>
                   {/* Copy */}
                   <div className="space-y-1">
-                    <h3 className="text-sm font-bold tracking-tight text-foreground group-hover:text-primary transition-colors duration-200">
+                    <h3 className="text-base font-bold tracking-tight text-foreground group-hover:text-primary transition-colors duration-200">
                       {feat.title}
                     </h3>
-                    <p className="text-muted-foreground text-xs leading-relaxed font-medium">
+                    <p className="text-muted-foreground text-sm leading-relaxed font-medium">
                       {feat.description}
                     </p>
                   </div>

@@ -13,7 +13,7 @@ export function TrustBar() {
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center text-[10px] font-black tracking-[0.4em] uppercase text-muted-foreground/60 mb-12"
+          className="text-center text-xs font-black tracking-[0.3em] uppercase text-muted-foreground/60 mb-12"
         >
           Powering the next generation of charging infrastructure
         </motion.p>

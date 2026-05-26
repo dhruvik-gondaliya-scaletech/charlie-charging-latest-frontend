@@ -35,13 +35,13 @@ export function SolutionsSection() {
       <div className="max-w-7xl mx-auto px-6">
         {/* Header content */}
         <div className="text-center max-w-2xl mx-auto mb-16 flex flex-col space-y-4">
-          <span className="text-[11px] font-bold tracking-widest text-primary uppercase">
+          <span className="text-xs font-bold tracking-widest text-primary uppercase">
             POWERFUL PLATFORM
           </span>
           <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-foreground">
             All-in-One EV Charging Management Software
           </h2>
-          <p className="text-muted-foreground text-sm font-medium leading-relaxed">
+          <p className="text-muted-foreground text-base font-medium leading-relaxed">
             ScaleEV delivers a comprehensive, enterprise-ready platform designed to simplify charging network operations. From real-time monitoring to automated billing and driver management, our suite of tools ensures your infrastructure is always optimized and generating revenue.
           </p>
         </div>
@@ -72,7 +72,7 @@ export function SolutionsSection() {
                       <Icon className="w-6 h-6" />
                     </div>
                     {solution.badge && (
-                      <span className="text-[10px] font-semibold text-primary bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                      <span className="text-xs font-semibold text-primary bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-full uppercase tracking-wider">
                         {solution.badge}
                       </span>
                     )}
@@ -82,7 +82,7 @@ export function SolutionsSection() {
                     {solution.title}
                   </h3>
                   
-                  <p className="text-muted-foreground text-xs font-medium leading-relaxed mb-6">
+                  <p className="text-muted-foreground text-base font-medium leading-relaxed mb-6">
                     {solution.description}
                   </p>
                 </div>
@@ -90,8 +90,8 @@ export function SolutionsSection() {
                 {/* Bullet Features */}
                 <ul className="space-y-2 border-t border-border/40 pt-5">
                   {solution.features.map((feat) => (
-                    <li key={feat} className="flex items-center space-x-2 text-[11px] font-semibold text-foreground/80">
-                      <Check className="w-3.5 h-3.5 text-primary shrink-0" />
+                    <li key={feat} className="flex items-center space-x-2 text-sm font-semibold text-foreground/80">
+                      <Check className="w-4 h-4 text-primary shrink-0" />
                       <span>{feat}</span>
                     </li>
                   ))}

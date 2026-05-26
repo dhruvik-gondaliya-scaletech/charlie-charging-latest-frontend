@@ -9,7 +9,7 @@ export function TrustedBrandsSection() {
   return (
     <section className="py-12 border-y border-border/40 bg-muted/20">
       <div className="max-w-7xl mx-auto px-6">
-        <p className="text-center text-[11px] font-bold tracking-widest text-muted-foreground uppercase mb-8">
+        <p className="text-center text-xs font-bold tracking-widest text-muted-foreground uppercase mb-8">
           Trusted by Industry Leaders and Charge Point Operators
         </p>
 
@@ -34,7 +34,7 @@ export function TrustedBrandsSection() {
                   />
                 </div>
               ) : (
-                <span className="text-[13px] md:text-[15px] font-black tracking-[0.25em] text-foreground/60 uppercase">
+                <span className="text-sm md:text-base font-black tracking-[0.25em] text-foreground/60 uppercase">
                   {'logoText' in brand ? brand.logoText : brand.name}
                 </span>
               )}

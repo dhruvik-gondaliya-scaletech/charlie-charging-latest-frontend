@@ -42,13 +42,13 @@ export function PartnersSection() {
         
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-16 flex flex-col space-y-4">
-          <span className="text-[11px] font-bold tracking-widest text-primary uppercase">
+          <span className="text-xs font-bold tracking-widest text-primary uppercase">
             Ecosystem Integrations
           </span>
           <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-foreground">
             Built for Complete Compatibility
           </h2>
-          <p className="text-muted-foreground text-sm font-medium leading-relaxed">
+          <p className="text-muted-foreground text-base font-medium leading-relaxed">
             Our CSMS connects with your existing hardware fleet, billing provider, roaming network, and local grid operator out-of-the-box.
           </p>
         </div>
@@ -59,7 +59,7 @@ export function PartnersSection() {
             <button
               key={cat.id}
               onClick={() => setActiveTab(cat.id as any)}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all border ${
+              className={`px-4 py-1.5 rounded-full text-sm font-bold transition-all border ${
                 activeTab === cat.id
                   ? 'bg-primary text-primary-foreground border-primary shadow-sm'
                   : 'bg-muted/50 text-muted-foreground border-border/60 hover:bg-muted hover:text-foreground'
@@ -88,20 +88,20 @@ export function PartnersSection() {
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-black tracking-tight text-foreground">
+                    <span className="text-base font-black tracking-tight text-foreground">
                       {partner.name}
                     </span>
                     <CheckCircle2 className="w-4.5 h-4.5 text-emerald-500 shrink-0" />
                   </div>
-                  <p className="text-muted-foreground text-[11px] leading-relaxed font-medium">
+                  <p className="text-muted-foreground text-sm leading-relaxed font-medium">
                     {partner.description}
                   </p>
                 </div>
                 <div className="mt-6 pt-4 border-t border-border/40 flex items-center justify-between">
-                  <span className="text-[9px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded uppercase tracking-wider">
+                  <span className="text-[11px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded uppercase tracking-wider">
                     {partner.category}
                   </span>
-                  <span className="text-[10px] text-muted-foreground font-semibold">
+                  <span className="text-xs text-muted-foreground font-semibold">
                     {partner.status}
                   </span>
                 </div>
