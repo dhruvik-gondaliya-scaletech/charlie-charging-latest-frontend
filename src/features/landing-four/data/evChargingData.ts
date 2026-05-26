@@ -128,8 +128,8 @@ export const solutionsData: Solution[] = [
     features: ['Webhooks & Event Streams', 'REST API Client', 'Third-Party Syncing'],
   },
   {
-    id: 'ev-charging-app',
-    title: 'EV Charging App',
+    id: 'ev-charging-web-app',
+    title: 'EV Charging Web App',
     description: 'Provide drivers with an intuitive mobile app to locate chargers, check availability, monitor sessions, and complete transactions.',
     iconName: 'Smartphone',
     badge: 'Driver App Included',
