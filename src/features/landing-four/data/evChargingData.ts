@@ -81,7 +81,7 @@ export const navItems: NavItem[] = [
   { name: 'Solution', href: '#solutions' },
   { name: 'Testimonials', href: '#testimonials' },
   { name: 'FAQs', href: '#faq' },
-  { name: 'Install', href: '#cta' },
+  { name: 'Contact', href: '#contact' },
 ];
 
 export const trustedBrands = [
