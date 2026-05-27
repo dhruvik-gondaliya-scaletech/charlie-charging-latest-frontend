@@ -25,8 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useSubmitContact } from '@/hooks/post/useContactMutation';
-import { ContactFormData } from '@/services/contact.service';
+import { useSlackWebhook } from '@/hooks/post/useSlackWebhook';
 
 const formSchema = z.object({
   firstName: z.string().min(2, { message: 'First name must be at least 2 characters.' }),
@@ -39,7 +38,7 @@ const formSchema = z.object({
 });
 
 export function ContactSection() {
-  const { mutate: submitContact, isPending: isSubmitting } = useSubmitContact();
+  const { mutate: submitContact, isPending: isSubmitting } = useSlackWebhook();
   const sectionRef = React.useRef<HTMLElement>(null);
   const videoRef = React.useRef<HTMLVideoElement>(null);
 
@@ -72,7 +71,7 @@ export function ContactSection() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    submitContact(values as ContactFormData, {
+    submitContact(values, {
       onSuccess: () => {
         form.reset();
       },
