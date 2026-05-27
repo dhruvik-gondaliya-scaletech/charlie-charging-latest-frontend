@@ -12,9 +12,11 @@ import BookADemo from './BookADemo';
 
 export function NavbarSection() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isBookDemoOpen, setIsBookDemoOpen] = useState(false);
 
   return (
     <>
+      <BookADemo isOpen={isBookDemoOpen} onClose={() => setIsBookDemoOpen(false)} />
       <motion.header
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -66,7 +68,7 @@ export function NavbarSection() {
             </BookADemo>
             <Link href={FRONTEND_ROUTES.LOGIN}>
               <Button className="font-bold text-sm tracking-wide px-5 py-2.5 rounded-full shadow-lg shadow-primary/10 hover:shadow-primary/25 hover:scale-[1.02] active:scale-[0.98] transition-all bg-primary text-primary-foreground">
-                Partner Login
+                Login
               </Button>
             </Link>
           </div>
@@ -109,11 +111,16 @@ export function NavbarSection() {
             </div>
 
             <div className="flex flex-col space-y-3 pt-6 border-t border-border/40">
-              <BookADemo onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="outline" className="w-full h-12 rounded-xl text-base font-semibold border-border hover:bg-muted">
-                  Book Demo
-                </Button>
-              </BookADemo>
+              <Button
+                variant="outline"
+                className="w-full h-12 rounded-xl text-base font-semibold border-border hover:bg-muted"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setIsBookDemoOpen(true);
+                }}
+              >
+                Book Demo
+              </Button>
               <Link href={FRONTEND_ROUTES.LOGIN} onClick={() => setMobileMenuOpen(false)}>
                 <Button className="w-full h-12 rounded-xl text-base font-bold shadow-lg shadow-primary/25 bg-primary text-primary-foreground flex items-center justify-center gap-2">
                   Partner Login <ArrowRight className="w-4 h-4" />

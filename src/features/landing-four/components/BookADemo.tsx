@@ -11,27 +11,34 @@ interface ICalendlyButton {
     className?: string;
     children?: React.ReactNode;
     onClick?: (e: React.MouseEvent) => void;
+    isOpen?: boolean;
+    onClose?: () => void;
 }
 
 export default function BookADemo(props: ICalendlyButton) {
-    const [isOpen, setIsOpen] = useState(false);
+    const [internalIsOpen, setInternalIsOpen] = useState(false);
     const [rootEl, setRootEl] = useState<HTMLElement | null>(null);
-    const { title = "Book a Demo", className, children, onClick } = props;
+    const { title = "Book a Demo", className, children, onClick, isOpen: externalIsOpen, onClose } = props;
 
     useEffect(() => {
         const el = document.getElementById("__next") || document.body;
         setRootEl(el);
     }, []);
 
+    const isControlled = externalIsOpen !== undefined;
+    const isOpen = isControlled ? externalIsOpen : internalIsOpen;
+
     const handleClick = (e: React.MouseEvent) => {
         e.preventDefault();
         if (onClick) {
             onClick(e);
         }
-        setIsOpen(true);
+        if (!isControlled) {
+            setInternalIsOpen(true);
+        }
     };
 
-    let triggerElement: React.ReactNode;
+    let triggerElement: React.ReactNode = null;
 
     if (children) {
         if (React.isValidElement(children)) {
@@ -51,7 +58,7 @@ export default function BookADemo(props: ICalendlyButton) {
                 </span>
             );
         }
-    } else {
+    } else if (!isControlled) {
         triggerElement = (
             <Button
                 title={title}
@@ -63,13 +70,21 @@ export default function BookADemo(props: ICalendlyButton) {
         );
     }
 
+    const handleClose = () => {
+        if (isControlled && onClose) {
+            onClose();
+        } else {
+            setInternalIsOpen(false);
+        }
+    };
+
     return (
         <>
             {triggerElement}
             {rootEl && (
                 <PopupModal
                     url={CALENDLY_URL}
-                    onModalClose={() => setIsOpen(false)}
+                    onModalClose={handleClose}
                     open={isOpen}
                     rootElement={rootEl}
                 />

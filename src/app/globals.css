@@ -189,6 +189,11 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  body[data-scroll-locked] {
+    overflow: visible !important;
+    margin-right: 0px !important;
+  }
 }
 
 @layer utilities {
