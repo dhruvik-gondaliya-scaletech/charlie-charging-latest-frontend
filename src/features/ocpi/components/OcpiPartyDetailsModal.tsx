@@ -34,7 +34,7 @@ export function OcpiPartyDetailsModal({ credential, isOpen, onClose }: OcpiParty
                                 <Globe className="h-4 w-4 text-primary" />
                                 <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Version URL</span>
                             </div>
-                            <code className="text-[11px] font-mono break-all">{credential.url}</code>
+                            <code className="text-[11px] font-mono break-all">{credential.partnerVersionsUrl}</code>
                         </CardContent>
                     </Card>
                     <Card className="bg-muted/30 border-none shadow-none">
@@ -46,15 +46,15 @@ export function OcpiPartyDetailsModal({ credential, isOpen, onClose }: OcpiParty
                             <div className="space-y-1">
                                 <div className="flex justify-between items-baseline">
                                     <span className="text-[10px] uppercase font-bold text-muted-foreground">Token A:</span>
-                                    <code className="text-[10px] font-mono">{credential.token_a || '-'}</code>
+                                    <code className="text-[10px] font-mono">{credential.tokenA || '-'}</code>
                                 </div>
                                 <div className="flex justify-between items-baseline">
                                     <span className="text-[10px] uppercase font-bold text-muted-foreground">Token B:</span>
-                                    <code className="text-[10px] font-mono">{credential.token_b ? '********' : '-'}</code>
+                                    <code className="text-[10px] font-mono">{credential.tokenB ? '********' : '-'}</code>
                                 </div>
                                 <div className="flex justify-between items-baseline">
                                     <span className="text-[10px] uppercase font-bold text-muted-foreground">Token C:</span>
-                                    <code className="text-[10px] font-mono">{credential.token_c ? '********' : '-'}</code>
+                                    <code className="text-[10px] font-mono">{credential.tokenC ? '********' : '-'}</code>
                                 </div>
                             </div>
                         </CardContent>

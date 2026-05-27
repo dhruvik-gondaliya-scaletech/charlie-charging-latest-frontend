@@ -69,19 +69,19 @@ export function OcpiCredentialsList() {
             cell: ({ row }) => row.original.countryCode || '-',
         },
         {
-            accessorKey: 'url',
+            accessorKey: 'partnerVersionsUrl',
             header: 'URL',
             cell: ({ row }) => (
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <span className="max-w-[200px] truncate font-mono text-xs text-muted-foreground block cursor-help">
-                                {row.original.url}
+                                {row.original.partnerVersionsUrl}
                             </span>
                         </TooltipTrigger>
                         <TooltipContent>
                             <p className="text-xs">
-                                {row.original.url}
+                                {row.original.partnerVersionsUrl}
                             </p>
                         </TooltipContent>
                     </Tooltip>
@@ -93,7 +93,7 @@ export function OcpiCredentialsList() {
             header: 'Status',
             size: 100,
             cell: ({ row }) => {
-                const hasHandshake = !!row.original.token_b && !!row.original.token_c;
+                const hasHandshake = !!row.original.tokenB && !!row.original.tokenC;
                 const colorClasses = hasHandshake
                     ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
                     : 'bg-blue-500/10 text-blue-500 border-blue-500/20';
@@ -109,7 +109,7 @@ export function OcpiCredentialsList() {
             },
         },
         {
-            accessorKey: 'token_a',
+            accessorKey: 'tokenA',
             header: 'Registration Token',
             size: 150,
             cell: ({ row }) => (
@@ -119,13 +119,13 @@ export function OcpiCredentialsList() {
                             <div className="flex flex-col gap-1 cursor-help">
                                 <span className="text-[10px] text-muted-foreground uppercase font-bold">Token A</span>
                                 <code className="text-[10px] bg-muted px-1.5 py-0.5 rounded truncate max-w-[120px] block">
-                                    {row.original.token_a}
+                                    {row.original.tokenA}
                                 </code>
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
                             <p className="text-xs">
-                                {row.original.token_a}
+                                {row.original.tokenA}
                             </p>
                         </TooltipContent>
                     </Tooltip>
@@ -165,6 +165,72 @@ export function OcpiCredentialsList() {
         },
     ];
 
+    const renderMobileCard = (item: OcpiCredential) => {
+        const hasHandshake = !!item.tokenB && !!item.tokenC;
+        const colorClasses = hasHandshake
+            ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+            : 'bg-blue-500/10 text-blue-500 border-blue-500/20';
+
+        return (
+            <div className="bg-card border border-border rounded-2xl p-5 shadow-xs space-y-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <span className="font-bold text-base text-foreground">
+                            {item.partyId || 'PENDING'}
+                        </span>
+                        {item.countryCode && (
+                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                                {item.countryCode}
+                            </Badge>
+                        )}
+                    </div>
+                    <Badge
+                        variant="outline"
+                        className={cn('capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm text-xs', colorClasses)}
+                    >
+                        {hasHandshake ? 'connected' : 'registered'}
+                    </Badge>
+                </div>
+
+                <div className="space-y-2">
+                    <div className="flex flex-col gap-1">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Versions URL</span>
+                        <span className="text-xs font-mono break-all text-muted-foreground bg-muted/30 p-2 rounded-lg border border-border/40">
+                            {item.partnerVersionsUrl}
+                        </span>
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Registration Token</span>
+                        <code className="text-[10px] font-mono bg-muted/60 px-2 py-1 rounded-lg border border-border/40 break-all">
+                            {item.tokenA}
+                        </code>
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-3 border-t border-border/40">
+                    <span className="text-[10px] text-muted-foreground font-medium">
+                        Updated: {item.updatedAt ? format(new Date(item.updatedAt), 'MMM d, p') : '-'}
+                    </span>
+                    <div className="flex items-center gap-2">
+                        <ActionIconButton
+                            tone="info"
+                            tooltip="View Details"
+                            icon={<Info className="h-4 w-4" />}
+                            onClick={() => handleViewDetails(item)}
+                        />
+                        <ActionIconButton
+                            tone="destructive"
+                            tooltip="Delete Connection"
+                            icon={<Trash2 className="h-4 w-4" />}
+                            onClick={() => onDelete(item.id)}
+                        />
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     if (isLoading) {
         return (
             <div className="space-y-3">
@@ -194,6 +260,7 @@ export function OcpiCredentialsList() {
                 pageSize={pageSize}
                 sortByKey="updatedAt"
                 sortOrder="desc"
+                renderMobileCard={renderMobileCard}
 
                 emptyState={
                     <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-xl bg-muted/30">

@@ -13,7 +13,7 @@ export function TrustBar() {
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center text-[10px] font-black tracking-[0.4em] uppercase text-muted-foreground/60 mb-12"
+          className="text-center text-xs font-black tracking-[0.3em] uppercase text-muted-foreground/60 mb-12"
         >
           Powering the next generation of charging infrastructure
         </motion.p>
@@ -23,15 +23,25 @@ export function TrustBar() {
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="flex justify-center items-center group"
+          className="flex flex-col sm:flex-row justify-center items-center gap-12 sm:gap-24 w-full max-w-4xl"
         >
-          <div className="relative p-6 sm:p-8 rounded-[2rem] bg-card/30 backdrop-blur-xl border border-white/5 shadow-2xl transition-all duration-700 group-hover:scale-105 group-hover:bg-card/50 w-full max-w-[280px] sm:max-w-[320px]">
+          <div className="relative p-4 w-full max-w-[240px] sm:max-w-[280px] flex justify-center">
             <Image
               src="/assets/charli_charging.svg"
               alt="Charli Charging"
-              width={320}
-              height={80}
-              className="h-16 sm:h-20 w-full object-contain transition-all duration-500 group-hover:brightness-110"
+              width={280}
+              height={70}
+              className="h-14 sm:h-16 w-auto object-contain"
+              priority
+            />
+          </div>
+          <div className="relative p-4 w-full max-w-[200px] flex justify-center">
+            <Image
+              src="/assets/collectron_energy.png"
+              alt="Collectron Energy"
+              width={160}
+              height={91}
+              className="h-14 sm:h-16 w-auto object-contain"
               priority
             />
           </div>

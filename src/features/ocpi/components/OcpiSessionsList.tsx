@@ -179,6 +179,62 @@ export function OcpiSessionsList() {
         search
     });
 
+    const renderMobileCard = (item: OcpiSession) => {
+        const colorMap: Record<string, string> = {
+            ACTIVE: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+            COMPLETED: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+            INVALID: 'bg-destructive/10 text-destructive border-destructive/20',
+            PENDING: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+        };
+
+        const status = item.status ?? 'PENDING';
+        const colorClasses = colorMap[status] ?? 'bg-muted text-muted-foreground border-border';
+
+        return (
+            <div className="bg-card border border-border rounded-2xl p-5 shadow-xs space-y-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex flex-col">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Session ID</span>
+                        <span className="font-mono font-bold text-xs text-foreground">{item.id.slice(0, 16)}…</span>
+                    </div>
+                    <Badge
+                        variant="outline"
+                        className={cn('capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm text-xs', colorClasses)}
+                    >
+                        {status.toLowerCase()}
+                    </Badge>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-0.5">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Party</span>
+                        <span className="text-xs font-semibold">{item.party_id || '—'} ({item.country_code || '—'})</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Energy</span>
+                        <div className="flex items-center gap-1 text-xs font-bold text-amber-500">
+                            <Zap className="h-3.5 w-3.5 fill-current" />
+                            <span>{(item.kwh ?? 0).toFixed(2)} kWh</span>
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-0.5 col-span-2">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Location / EVSE</span>
+                        <span className="text-xs font-medium text-muted-foreground truncate">{item.location_id || '—'} {item.evse_uid ? ` / ${item.evse_uid}` : ''}</span>
+                    </div>
+                </div>
+
+                <div className="pt-3 border-t border-border/40 flex justify-between items-center text-[10px] text-muted-foreground">
+                    <span>
+                        Start: {item.start_date_time ? format(new Date(item.start_date_time), 'MMM d, p') : '—'}
+                    </span>
+                    <span>
+                        End: {item.end_date_time ? format(new Date(item.end_date_time), 'MMM d, p') : 'Active'}
+                    </span>
+                </div>
+            </div>
+        );
+    };
+
     if (isError) {
         return (
             <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-xl bg-destructive/5 text-center">
@@ -213,6 +269,7 @@ export function OcpiSessionsList() {
             pageSize={pageSize}
             sortByKey="start_date_time"
             sortOrder="desc"
+            renderMobileCard={renderMobileCard}
             emptyState={
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                     <Activity className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />

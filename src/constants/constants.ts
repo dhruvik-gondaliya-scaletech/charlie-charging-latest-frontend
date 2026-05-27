@@ -174,6 +174,8 @@ export const FRONTEND_ROUTES = {
     RESET_PASSWORD: "/reset-password",
     LANDING_PAGE_ONE: "/landing-one",
     LANDING_PAGE_TWO: "/landing-two",
+    LANDING_PAGE_THREE: "/landing-three",
+    LANDING_PAGE_FOUR: "/landing-four",
     API_DOCS: "/docs",
 }
 
@@ -244,3 +246,5 @@ export const CONNECTOR_OPTIONS = [
 ]
 
 export const DEFAULT_PAGE_SIZE = 10;
+
+export const IMAGE_DOMAIN_URL = "https://d39uw1u176mxxs.cloudfront.net"
