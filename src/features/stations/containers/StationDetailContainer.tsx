@@ -20,6 +20,7 @@ import {
     Edit,
     ChevronDown,
     Settings,
+    Unlock,
 } from 'lucide-react';
 import {
     Drawer,
@@ -44,7 +45,7 @@ import { StationSessions } from '../components/StationSessions';
 import { StationLogs } from '../components/StationLogs';
 import { ConnectorCard } from '../components/ConnectorCard';
 import { StationSmartCharging } from '../components/StationSmartCharging';
-import { useRemoteStart, useRemoteStop, useResetStation, useChangeAvailability } from '@/hooks/delete/useStationMutations';
+import { useRemoteStart, useRemoteStop, useResetStation, useChangeAvailability, useUnlockConnector } from '@/hooks/delete/useStationMutations';
 import { useAuth } from '@/contexts/AuthContext';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import WebSocketUrlDisplay from '@/components/shared/WebSocketUrlDisplay';
@@ -201,6 +202,10 @@ export function StationDetailContainer() {
 
     const remoteStart = useRemoteStart();
     const remoteStop = useRemoteStop();
+    const unlockConnector = useUnlockConnector();
+
+    const [isUnlockModalOpen, setIsUnlockModalOpen] = useState(false);
+    const [unlockConnectorId, setUnlockConnectorId] = useState<number | null>(null);
 
     const handleStartConnector = (connectorId: number) => {
         setBusyConnectors(prev => new Set(prev).add(connectorId));
@@ -267,6 +272,47 @@ export function StationDetailContainer() {
                         return next;
                     });
                 }
+            },
+            onError: () => {
+                setBusyConnectors(prev => {
+                    const next = new Set(prev);
+                    next.delete(connectorId);
+                    return next;
+                });
+            }
+        });
+    };
+
+    const handleUnlockConnector = (connectorId: number) => {
+        setUnlockConnectorId(connectorId);
+        setIsUnlockModalOpen(true);
+    };
+
+    const confirmUnlock = () => {
+        if (unlockConnectorId === null) return;
+
+        const connectorId = unlockConnectorId;
+        setBusyConnectors(prev => new Set(prev).add(connectorId));
+
+        unlockConnector.mutate({
+            id: station?.id || '',
+            connectorId,
+        }, {
+            onSuccess: (response: any) => {
+                setIsUnlockModalOpen(false);
+                const status = response?.status || response;
+                if (status === 'Unlocked') {
+                    toast.success(`Connector #${connectorId} unlocked successfully`);
+                } else {
+                    toast.error(`Unlock failed: ${status || 'Unknown response'}`);
+                }
+
+                setBusyConnectors(prev => {
+                    const next = new Set(prev);
+                    next.delete(connectorId);
+                    return next;
+                });
+                queryClient.invalidateQueries({ queryKey: ['station', id] });
             },
             onError: () => {
                 setBusyConnectors(prev => {
@@ -521,8 +567,10 @@ export function StationDetailContainer() {
                                         connector={connector}
                                         onStart={handleStartConnector}
                                         onStop={handleStopConnector}
+                                        onUnlock={handleUnlockConnector}
                                         isStarting={remoteStart.isPending || busyConnectors.has(connector.connectorId)}
                                         isStopping={remoteStop.isPending || busyConnectors.has(connector.connectorId)}
+                                        isUnlocking={unlockConnector.isPending || busyConnectors.has(connector.connectorId)}
                                         disabled={station.status === ChargingStatus.OFFLINE}
                                     />
                                 ))}
@@ -793,6 +841,47 @@ export function StationDetailContainer() {
                     <div className="flex items-center gap-3 p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-500 dark:text-blue-400 text-sm font-medium">
                         <ShieldCheck className="h-5 w-5 shrink-0" />
                         <p>Changes the station's operational status. This command will be sent directly to the charge point.</p>
+                    </div>
+                </div>
+            </AnimatedModal>
+            {/* Unlock Cable Modal */}
+            <AnimatedModal
+                isOpen={isUnlockModalOpen}
+                onClose={() => setIsUnlockModalOpen(false)}
+                title="Unlock Connector Cable"
+                description={`Send a remote unlock command to ${station.name}.`}
+                size="md"
+                footer={
+                    <div className="flex gap-3 justify-end w-full">
+                        <Button variant="outline" onClick={() => setIsUnlockModalOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={confirmUnlock}
+                            disabled={unlockConnector.isPending}
+                            className="font-bold flex items-center gap-2"
+                        >
+                            {unlockConnector.isPending ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <Unlock className="h-4 w-4" />
+                            )}
+                            Confirm Unlock
+                        </Button>
+                    </div>
+                }
+            >
+                <div className="space-y-4">
+                    <div className="flex items-center gap-3 p-4 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-500 dark:text-orange-400 text-sm font-medium">
+                        <AlertCircle className="h-5 w-5 shrink-0" />
+                        <p>This will force the station to unlock the charging cable on Connector #{unlockConnectorId}.</p>
+                    </div>
+                    <div className="p-4 rounded-2xl bg-muted/30 border border-border/40 space-y-3">
+                        <div className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground font-medium">Connector</span>
+                            <span className="font-bold">Port #{unlockConnectorId}</span>
+                        </div>
                     </div>
                 </div>
             </AnimatedModal>

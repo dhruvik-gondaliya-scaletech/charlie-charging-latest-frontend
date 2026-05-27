@@ -4,7 +4,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Zap, Play, Square, Loader2 } from 'lucide-react';
+import { Zap, Play, Square, Loader2, Unlock } from 'lucide-react';
 import { ChargingStatus, Connector } from '@/types';
 import { cn } from '@/lib/utils';
 
@@ -12,8 +12,10 @@ interface ConnectorCardProps {
     connector: Connector;
     onStart: (connectorId: number) => void;
     onStop: (connectorId: number) => void;
+    onUnlock: (connectorId: number) => void;
     isStarting?: boolean;
     isStopping?: boolean;
+    isUnlocking?: boolean;
     disabled?: boolean;
 }
 
@@ -21,8 +23,10 @@ export function ConnectorCard({
     connector,
     onStart,
     onStop,
+    onUnlock,
     isStarting,
     isStopping,
+    isUnlocking,
     disabled
 }: ConnectorCardProps) {
     const isAvailable = connector.status === ChargingStatus.AVAILABLE;
@@ -75,7 +79,7 @@ export function ConnectorCard({
                     </div>
                 </div>
 
-                <div className="pt-4 border-t border-border/10">
+                <div className="pt-4 border-t border-border/10 flex flex-col gap-2">
                     {isCharging ? (
                         <Button
                             variant="destructive"
@@ -104,6 +108,20 @@ export function ConnectorCard({
                             Start Charging
                         </Button>
                     )}
+
+                    <Button
+                        variant="outline"
+                        onClick={() => onUnlock(connector.connectorId)}
+                        disabled={disabled || isUnlocking}
+                        className="w-full border-border/40 hover:bg-muted/40 font-bold rounded-xl h-11 transition-all active:scale-95 flex items-center justify-center gap-2"
+                    >
+                        {isUnlocking ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <Unlock className="h-4 w-4" />
+                        )}
+                        Unlock Cable
+                    </Button>
                 </div>
             </CardContent>
             <div className={cn(

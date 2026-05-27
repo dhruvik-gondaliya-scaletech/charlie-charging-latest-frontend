@@ -38,6 +38,7 @@ export const API_CONFIG = {
             remoteStop: (id: string) => `/stations/${id}/remote-stop`,
             reset: (id: string) => `/stations/${id}/reset`,
             availability: (id: string) => `/stations/${id}/availability`,
+            unlock: (id: string) => `/stations/${id}/unlock`,
             configuration: (id: string) => `/stations/${id}/configuration`,
             setConfiguration: (id: string) => `/stations/${id}/configuration`,
             ocppLogs: (id: string) => `/ocpp-logs?stationId=${id}`,
@@ -173,6 +174,8 @@ export const FRONTEND_ROUTES = {
     RESET_PASSWORD: "/reset-password",
     LANDING_PAGE_ONE: "/landing-one",
     LANDING_PAGE_TWO: "/landing-two",
+    LANDING_PAGE_THREE: "/landing-three",
+    LANDING_PAGE_FOUR: "/landing-four",
     API_DOCS: "/docs",
 }
 
@@ -243,3 +246,5 @@ export const CONNECTOR_OPTIONS = [
 ]
 
 export const DEFAULT_PAGE_SIZE = 10;
+
+export const IMAGE_DOMAIN_URL = "https://d39uw1u176mxxs.cloudfront.net"

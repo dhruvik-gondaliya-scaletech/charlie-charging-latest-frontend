@@ -98,6 +98,51 @@ export function OcpiTokensList() {
         );
     }
 
+    const renderMobileCard = (item: OcpiToken) => {
+        const allowed = !!item.allowed;
+        const allowedColor = allowed
+            ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+            : 'bg-destructive/10 text-destructive border-destructive/20';
+
+        return (
+            <div className="bg-card border border-border rounded-2xl p-5 shadow-xs space-y-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex flex-col">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Token UID</span>
+                        <span className="font-mono font-bold text-sm text-foreground">{item.uid}</span>
+                    </div>
+                    <Badge
+                        variant="outline"
+                        className={cn('capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm text-xs', allowedColor)}
+                    >
+                        {allowed ? 'Allowed' : 'Blocked'}
+                    </Badge>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-0.5">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Type</span>
+                        <span className="text-xs font-semibold">{item.type}</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Issuer (Party)</span>
+                        <span className="text-xs font-semibold">{item.issuer}</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5 col-span-2">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Whitelist Mode</span>
+                        <span className="text-xs font-medium text-muted-foreground">{item.whitelist}</span>
+                    </div>
+                </div>
+
+                <div className="pt-3 border-t border-border/40 flex justify-between items-center">
+                    <span className="text-[10px] text-muted-foreground">
+                        Updated: {item.lastUpdated ? format(new Date(item.lastUpdated), 'MMM d, p') : '-'}
+                    </span>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <Table<OcpiToken>
             data={tokens}
@@ -117,6 +162,7 @@ export function OcpiTokensList() {
             pageSize={pageSize}
             sortByKey="lastUpdated"
             sortOrder="desc"
+            renderMobileCard={renderMobileCard}
             emptyState={
                 <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-xl bg-muted/30">
                     <Tag className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
@@ -127,6 +173,5 @@ export function OcpiTokensList() {
                 </div>
             }
         />
-
     );
 }

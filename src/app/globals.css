@@ -181,13 +181,18 @@
   html {
     scroll-behavior: smooth;
   }
-  
+
   * {
     @apply border-border outline-ring/50;
   }
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  body[data-scroll-locked] {
+    overflow: visible !important;
+    margin-right: 0px !important;
   }
 }
 

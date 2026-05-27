@@ -117,6 +117,71 @@ export function OcpiTariffsList() {
         search
     });
 
+    const renderMobileCard = (item: OcpiTariff) => {
+        const type = item.type ?? 'REGULAR';
+        const colorClass = TARIFF_TYPE_COLOR[type] ?? TARIFF_TYPE_COLOR.REGULAR;
+        const altText = item.tariff_alt_text;
+        const description = altText?.find(t => t.language === 'en')?.text ?? altText?.[0]?.text;
+        const elements = item.elements || [];
+
+        return (
+            <div className="bg-card border border-border rounded-2xl p-5 shadow-xs space-y-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex flex-col">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Tariff ID</span>
+                        <span className="font-mono font-bold text-xs text-foreground">{item.id}</span>
+                    </div>
+                    <Badge
+                        variant="outline"
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shadow-sm ${colorClass}`}
+                    >
+                        {type.replace(/_/g, ' ').toLowerCase()}
+                    </Badge>
+                </div>
+
+                {description && (
+                    <div className="text-xs text-muted-foreground bg-muted/20 p-2 rounded-lg border border-border/40">
+                        {description}
+                    </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-0.5">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Party</span>
+                        <span className="text-xs font-semibold">{item.party_id || '—'} ({item.country_code || '—'})</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Currency</span>
+                        <Badge variant="secondary" className="w-fit text-[10px] px-2 py-0">
+                            {item.currency}
+                        </Badge>
+                    </div>
+                    <div className="flex flex-col gap-0.5 col-span-2">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Price Components</span>
+                        <div className="flex flex-col gap-1 mt-1">
+                            {elements.map((el, i) => (
+                                <div key={i} className="flex flex-wrap gap-1">
+                                    {el.price_components.map((pc, j) => (
+                                        <Badge key={j} variant="outline" className="text-[10px] bg-background">
+                                            {pc.type}: ₹{pc.price}/{pc.step_size}kWh
+                                            {pc.vat != null ? ` (+${pc.vat}% VAT)` : ''}
+                                        </Badge>
+                                    ))}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="pt-3 border-t border-border/40 flex justify-between items-center text-[10px] text-muted-foreground">
+                    <span>
+                        Updated: {item.last_updated ? format(new Date(item.last_updated), 'MMM d, p') : '—'}
+                    </span>
+                </div>
+            </div>
+        );
+    };
+
     if (isError) {
         return (
             <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-xl bg-destructive/5 text-center">
@@ -151,6 +216,7 @@ export function OcpiTariffsList() {
             pageSize={pageSize}
             sortByKey="id"
             sortOrder="asc"
+            renderMobileCard={renderMobileCard}
             emptyState={
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                     <Coins className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
