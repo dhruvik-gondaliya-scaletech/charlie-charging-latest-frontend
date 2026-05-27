@@ -32,7 +32,7 @@ class LocationService {
   }
 
   async updateLocation(id: string, data: UpdateLocationData) {
-    return httpService.put<Location>(API_CONFIG.endpoints.locations.byId(id), data);
+    return httpService.patch<Location>(API_CONFIG.endpoints.locations.byId(id), data);
   }
 
   async deleteLocation(id: string) {
