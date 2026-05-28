@@ -45,6 +45,9 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ExportReportModal } from '@/features/stations/components/ExportReportModal';
+import { Download } from 'lucide-react';
 
 export function StationsContainer() {
   const router = useRouter();
@@ -119,6 +122,10 @@ export function StationsContainer() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedStation, setSelectedStation] = useState<Station | null>(null);
 
+  // Selection and Export States
+  const [selectedStationIds, setSelectedStationIds] = useState<Set<string>>(new Set());
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+
   const handleClearFilters = () => {
     setSearch('');
     setStatus('ALL');
@@ -139,6 +146,42 @@ export function StationsContainer() {
 
   const columns: ColumnDef<Station>[] = useMemo(
     () => [
+      {
+        id: 'select',
+        header: () => (
+          <Checkbox
+            checked={stations && stations.length > 0 && selectedStationIds.size === stations.length}
+            onCheckedChange={(checked) => {
+              if (checked) {
+                setSelectedStationIds(new Set(stations?.map(s => s.id) || []));
+              } else {
+                setSelectedStationIds(new Set());
+              }
+            }}
+            aria-label="Select all stations"
+          />
+        ),
+        cell: ({ row }) => (
+          <Checkbox
+            checked={selectedStationIds.has(row.original.id)}
+            onCheckedChange={(checked) => {
+              setSelectedStationIds(prev => {
+                const next = new Set(prev);
+                if (checked) {
+                  next.add(row.original.id);
+                } else {
+                  next.delete(row.original.id);
+                }
+                return next;
+              });
+            }}
+            aria-label={`Select station ${row.original.name}`}
+          />
+        ),
+        enableSorting: false,
+        enableHiding: false,
+        size: 40,
+      },
       {
         accessorKey: 'name',
         header: 'Name',
@@ -245,7 +288,7 @@ export function StationsContainer() {
         ),
       },
     ],
-    [router]
+    [router, selectedStationIds, stations]
   );
 
 
@@ -403,6 +446,15 @@ export function StationsContainer() {
                 Reset
               </Button>
             )}
+            {selectedStationIds.size > 0 && (
+              <Button
+                onClick={() => setIsExportModalOpen(true)}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold h-10 px-6 rounded-xl shrink-0 flex items-center gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Export CALSTART ({selectedStationIds.size})
+              </Button>
+            )}
             <Button
               onClick={() => router.push(FRONTEND_ROUTES.STATIONS_REGISTER)}
               className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold h-10 px-6 rounded-xl shrink-0"
@@ -444,18 +496,37 @@ export function StationsContainer() {
               return (
                 <div className="bg-card border border-border rounded-[1.5rem] p-5 shadow-sm space-y-4">
                   <div className="flex justify-between items-start">
-                    <div className="space-y-1">
-                      <h3
-                        className="font-bold text-lg cursor-pointer hover:text-primary transition-colors leading-tight"
-                        onClick={() => router.push(`${FRONTEND_ROUTES.STATIONS_DETAILS(station.id)}?name=${encodeURIComponent(station.name)}`)}
-                      >
-                        {station.name}
-                      </h3>
+                    <div className="flex items-start gap-3">
+                      <div className="pt-1">
+                        <Checkbox
+                          checked={selectedStationIds.has(station.id)}
+                          onCheckedChange={(checked) => {
+                            setSelectedStationIds(prev => {
+                              const next = new Set(prev);
+                              if (checked) {
+                                next.add(station.id);
+                              } else {
+                                next.delete(station.id);
+                              }
+                              return next;
+                            });
+                          }}
+                          aria-label={`Select station ${station.name}`}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <h3
+                          className="font-bold text-lg cursor-pointer hover:text-primary transition-colors leading-tight"
+                          onClick={() => router.push(`${FRONTEND_ROUTES.STATIONS_DETAILS(station.id)}?name=${encodeURIComponent(station.name)}`)}
+                        >
+                          {station.name}
+                        </h3>
                       <code className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono text-muted-foreground block w-fit">
                         {station.chargePointId}
                       </code>
                     </div>
-                    <Badge
+                  </div>
+                  <Badge
                       variant="outline"
                       className={cn("capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm", colorClasses)}
                     >
@@ -574,6 +645,14 @@ export function StationsContainer() {
             <p className="text-sm font-medium">You are about to delete <strong>{selectedStation?.name}</strong> ({selectedStation?.chargePointId}).</p>
           </div>
         </AnimatedModal>
+
+        {/* Export CALSTART Report Modal */}
+        <ExportReportModal
+          isOpen={isExportModalOpen}
+          onClose={() => setIsExportModalOpen(false)}
+          selectedStationIds={Array.from(selectedStationIds)}
+          stationCount={selectedStationIds.size}
+        />
       </motion.div>
     </TooltipProvider>
   );
