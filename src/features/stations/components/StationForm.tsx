@@ -75,7 +75,7 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
             locationId: initialData?.locationId || '',
             type: initialData?.type || 'AC',
             visibility: initialData?.visibility || 'public',
-            connectorTypes: (initialData?.connectorTypes as ConnectorType[]) || [ConnectorType.MENNEKES],
+            connectorTypes: (initialData?.connectorTypes as ConnectorType[]) || [],
         },
     });
 
