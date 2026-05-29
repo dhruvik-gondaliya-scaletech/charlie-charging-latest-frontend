@@ -308,6 +308,7 @@ export function TariffContainer() {
       </motion.div>
 
       <TariffFormModal
+        key="create-tariff"
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
         onSubmit={onCreateSubmit}
@@ -315,6 +316,7 @@ export function TariffContainer() {
       />
 
       <TariffFormModal
+        key={selectedTariff ? `edit-${selectedTariff.id}` : 'edit-none'}
         isOpen={isEditOpen}
         onClose={() => {
           setIsEditOpen(false);

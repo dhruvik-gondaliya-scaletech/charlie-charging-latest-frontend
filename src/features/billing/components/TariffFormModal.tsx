@@ -69,7 +69,7 @@ export function TariffFormModal({
       isIdleFeeEnabled: initialData?.isIdleFeeEnabled ?? false,
       idleGracePeriodMinutes: initialData?.idleGracePeriodMinutes ?? 0,
       maxIdleFee: initialData?.maxIdleFee ?? 0,
-      currency: initialData?.currency ?? 'INR',
+      currency: (initialData?.currency?.toUpperCase() as 'USD' | 'INR') ?? 'INR',
     });
   }, [form, initialData, isOpen]);
 
@@ -128,7 +128,7 @@ export function TariffFormModal({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="font-bold">Currency</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select key={field.value} onValueChange={field.onChange} value={field.value?.toUpperCase() || 'INR'}>
                     <FormControl>
                       <SelectTrigger className="bg-muted/10 border-border/40 font-medium">
                         <SelectValue placeholder="Select currency" />
