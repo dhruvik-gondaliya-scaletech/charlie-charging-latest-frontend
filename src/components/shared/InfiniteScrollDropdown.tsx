@@ -64,7 +64,7 @@ export function InfiniteScrollDropdown<T>({
     }, [debouncedSearch, onSearchChange]);
 
     const selectedOption = options.find((opt) => getOptionValue(opt) === value);
-    const displayLabel = selectedOption ? getOptionLabel(selectedOption) : placeholder;
+    const displayLabel = selectedOption ? getOptionLabel(selectedOption) : (value || placeholder);
 
     return (
         <Popover open={open} onOpenChange={setOpen}>

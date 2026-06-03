@@ -46,6 +46,7 @@ import { useBrands } from '@/hooks/get/useBrands';
 import { useModels } from '@/hooks/get/useModels';
 import { useConnectorTypes } from '@/hooks/get/useConnectorTypes';
 import { useTariffs } from '@/hooks/get/useBilling';
+import { brandService } from '@/services/brand.service';
 import { Brand, ConnectorType } from '@/types';
 
 type WizardValues = z.infer<typeof stationSchema>;
@@ -101,6 +102,7 @@ export function StationWizard({
 
     const [selectedBrandId, setSelectedBrandId] = useState<number | undefined>(undefined);
     const hasInitialized = useRef(false);
+    const hasFetchedBrandRef = useRef(false);
     const [brandSearch, setBrandSearch] = useState('');
     const {
         data: brandData,
@@ -122,9 +124,25 @@ export function StationWizard({
 
     // Handle auto-filling brand ID if initialData has a vendor name
     useEffect(() => {
-        if (initialData?.vendor && brands.length > 0 && !selectedBrandId) {
+        if (initialData?.vendor && !selectedBrandId && !hasFetchedBrandRef.current) {
             const brand = brands.find(b => b.name === initialData.vendor);
-            if (brand) setSelectedBrandId(brand.id);
+            if (brand) {
+                setSelectedBrandId(brand.id);
+                hasFetchedBrandRef.current = true;
+            } else if (brands.length > 0) {
+                hasFetchedBrandRef.current = true;
+                brandService.getAllBrands({ search: initialData.vendor, limit: 1 })
+                    .then(response => {
+                        const foundBrand = response.items.find(b => b.name === initialData.vendor);
+                        if (foundBrand) {
+                            setSelectedBrandId(foundBrand.id);
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Failed to fetch brand by name:", err);
+                        hasFetchedBrandRef.current = false;
+                    });
+            }
         }
     }, [initialData?.vendor, brands, selectedBrandId]);
 
@@ -324,15 +342,6 @@ export function StationWizard({
                                                             value={field.value}
                                                             onValueChange={(val) => {
                                                                 field.onChange(val);
-                                                                // Auto-select connector types based on model
-                                                                const model = models.find((m: any) => m.name === val);
-                                                                if (model?.connectorTypes) {
-                                                                    const types = model.connectorTypes.map((ct: any) => {
-                                                                        const id = typeof ct === 'string' ? ct : ct.identifier;
-                                                                        return id;
-                                                                    }).filter(Boolean);
-                                                                    form.setValue('connectorTypes', types as string[]);
-                                                                }
                                                             }}
                                                             isLoading={isModelsLoading}
                                                             fetchNextPage={() => { }} // Multi-page models not yet supported by backend API
