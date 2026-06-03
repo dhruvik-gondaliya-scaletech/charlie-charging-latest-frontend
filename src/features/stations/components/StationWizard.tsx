@@ -46,6 +46,7 @@ import { useBrands } from '@/hooks/get/useBrands';
 import { useModels } from '@/hooks/get/useModels';
 import { useConnectorTypes } from '@/hooks/get/useConnectorTypes';
 import { useTariffs } from '@/hooks/get/useBilling';
+import { brandService } from '@/services/brand.service';
 import { Brand, ConnectorType } from '@/types';
 
 type WizardValues = z.infer<typeof stationSchema>;
@@ -95,11 +96,13 @@ export function StationWizard({
             type: initialData.type || 'AC',
             visibility: (initialData as any).visibility || 'public',
             connectorTypes: initialData.connectorTypes || [],
+            password: (initialData as any).password || '',
         },
     });
 
     const [selectedBrandId, setSelectedBrandId] = useState<number | undefined>(undefined);
     const hasInitialized = useRef(false);
+    const hasFetchedBrandRef = useRef(false);
     const [brandSearch, setBrandSearch] = useState('');
     const {
         data: brandData,
@@ -121,9 +124,25 @@ export function StationWizard({
 
     // Handle auto-filling brand ID if initialData has a vendor name
     useEffect(() => {
-        if (initialData?.vendor && brands.length > 0 && !selectedBrandId) {
+        if (initialData?.vendor && !selectedBrandId && !hasFetchedBrandRef.current) {
             const brand = brands.find(b => b.name === initialData.vendor);
-            if (brand) setSelectedBrandId(brand.id);
+            if (brand) {
+                setSelectedBrandId(brand.id);
+                hasFetchedBrandRef.current = true;
+            } else if (brands.length > 0) {
+                hasFetchedBrandRef.current = true;
+                brandService.getAllBrands({ search: initialData.vendor, limit: 1 })
+                    .then(response => {
+                        const foundBrand = response.items.find(b => b.name === initialData.vendor);
+                        if (foundBrand) {
+                            setSelectedBrandId(foundBrand.id);
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Failed to fetch brand by name:", err);
+                        hasFetchedBrandRef.current = false;
+                    });
+            }
         }
     }, [initialData?.vendor, brands, selectedBrandId]);
 
@@ -144,6 +163,7 @@ export function StationWizard({
                 type: initialData.type || 'AC',
                 visibility: (initialData as any).visibility || 'public',
                 connectorTypes: initialData.connectorTypes || [],
+                password: (initialData as any).password || '',
             }, {
                 keepDirtyValues: true, // Don't overwrite what user already typed if they started
             });
@@ -154,7 +174,7 @@ export function StationWizard({
     const nextStep = async () => {
         let fieldsToValidate: (keyof WizardValues)[] = [];
         if (step === 1) fieldsToValidate = ['name', 'vendor', 'model', 'maxPower'];
-        if (step === 2) fieldsToValidate = ['serialNumber', 'chargePointId', 'type', 'locationId', 'tariffId', 'visibility'];
+        if (step === 2) fieldsToValidate = ['serialNumber', 'chargePointId', 'type', 'locationId', 'tariffId', 'visibility', 'password'];
 
         const isValid = await form.trigger(fieldsToValidate);
         if (isValid) setStep(prev => Math.min(prev + 1, 4));
@@ -322,15 +342,6 @@ export function StationWizard({
                                                             value={field.value}
                                                             onValueChange={(val) => {
                                                                 field.onChange(val);
-                                                                // Auto-select connector types based on model
-                                                                const model = models.find((m: any) => m.name === val);
-                                                                if (model?.connectorTypes) {
-                                                                    const types = model.connectorTypes.map((ct: any) => {
-                                                                        const id = typeof ct === 'string' ? ct : ct.identifier;
-                                                                        return id;
-                                                                    }).filter(Boolean);
-                                                                    form.setValue('connectorTypes', types as string[]);
-                                                                }
                                                             }}
                                                             isLoading={isModelsLoading}
                                                             fetchNextPage={() => { }} // Multi-page models not yet supported by backend API
@@ -566,6 +577,31 @@ export function StationWizard({
                                                 </FormItem>
                                             )}
                                         />
+
+                                        <FormField
+                                            control={form.control as any}
+                                            name="password"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="font-bold flex items-center gap-1.5">
+                                                        <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                                                        Connection Password
+                                                    </FormLabel>
+                                                    <FormControl>
+                                                        <Input
+                                                            type="text"
+                                                            placeholder="Set connection password (optional)"
+                                                            className="bg-muted/30 py-6 font-medium border-border/60"
+                                                            {...field}
+                                                        />
+                                                    </FormControl>
+                                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1.5 opacity-70">
+                                                        Required for the station to connect if specified
+                                                    </p>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
                                     </div>
                                 </div>
                             )}
@@ -671,6 +707,7 @@ export function StationWizard({
                                         <WebSocketUrlDisplay
                                             chargePointId={form.watch('chargePointId')}
                                             tenantSlug={tenantSlug}
+                                            password={form.watch('password')}
                                         />
 
                                         <div className="p-4 bg-muted/20 border border-border/40 rounded-2xl">

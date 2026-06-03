@@ -75,7 +75,8 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
             locationId: initialData?.locationId || '',
             type: initialData?.type || 'AC',
             visibility: initialData?.visibility || 'public',
-            connectorTypes: (initialData?.connectorTypes as ConnectorType[]) || [ConnectorType.MENNEKES],
+            password: (initialData as any)?.password || '',
+            connectorTypes: (initialData?.connectorTypes as ConnectorType[]) || [],
         },
     });
 
@@ -96,6 +97,7 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
                 type: initialData.type || 'AC',
                 visibility: initialData.visibility || 'public',
                 connectorTypes: (initialData.connectorTypes as ConnectorType[]) || [],
+                password: (initialData as any).password || '',
             }, {
                 keepDirtyValues: true,
             });
@@ -336,6 +338,23 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
                                             </SelectContent>
                                         </Select>
                                         <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter mt-1 opacity-70">Public vs Private visibility</p>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control as any}
+                                name="password"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-70 flex items-center gap-1.5">
+                                            <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                                            Connection Password (Optional)
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input type="text" placeholder="Set connection password" className="bg-muted/10 border-border/40 font-medium h-12 w-full" {...field} />
+                                        </FormControl>
+                                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter mt-1 opacity-70">Required for the station to authenticate with the backend</p>
                                         <FormMessage />
                                     </FormItem>
                                 )}
