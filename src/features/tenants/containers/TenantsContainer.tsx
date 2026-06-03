@@ -11,6 +11,7 @@ import {
   useDeactivateTenant,
   useRegenerateApiSecret,
   useConnectStripe,
+  useResetTenantStripe,
 } from '@/hooks/post/useTenantMutations';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,6 +33,7 @@ import {
   CheckCircle,
   AlertTriangle,
   CreditCard,
+  RotateCcw,
 } from 'lucide-react';
 import {
   Tooltip,
@@ -55,6 +57,7 @@ export function TenantsContainer() {
   const deactivateTenant = useDeactivateTenant();
   const regenerateSecret = useRegenerateApiSecret();
   const connectStripe = useConnectStripe();
+  const resetStripe = useResetTenantStripe();
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -77,9 +80,20 @@ export function TenantsContainer() {
   const [isSecretOpen, setIsSecretOpen] = useState(false);
   const [isConfirmDeactivateOpen, setIsConfirmDeactivateOpen] = useState(false);
   const [isConfirmRegenerateOpen, setIsConfirmRegenerateOpen] = useState(false);
+  const [isConfirmResetStripeOpen, setIsConfirmResetStripeOpen] = useState(false);
+  const [confirmTenantNameInput, setConfirmTenantNameInput] = useState('');
+  const [acknowledgeDb, setAcknowledgeDb] = useState(false);
   const [generatedSecret, setGeneratedSecret] = useState('');
   const [selectedTenantName, setSelectedTenantName] = useState('');
   const [selectedTenantId, setSelectedTenantId] = useState('');
+
+  const handleOpenResetModal = useCallback((tenant: TenantListResponse) => {
+    setSelectedTenantId(tenant.id);
+    setSelectedTenantName(tenant.name);
+    setConfirmTenantNameInput('');
+    setAcknowledgeDb(false);
+    setIsConfirmResetStripeOpen(true);
+  }, []);
 
   const tenants = tenantsResponse || [];
 
@@ -121,6 +135,15 @@ export function TenantsContainer() {
       // toast handled in hook
     }
   }, [deactivateTenant]);
+
+  const handleResetStripe = useCallback(async (id: string) => {
+    try {
+      await resetStripe.mutateAsync(id);
+      setIsConfirmResetStripeOpen(false);
+    } catch {
+      // toast handled in hook
+    }
+  }, [resetStripe]);
 
   const handleActivate = useCallback(async (tenant: TenantListResponse) => {
     try {
@@ -242,6 +265,16 @@ export function TenantsContainer() {
                   className={row.original.stripeOnboarded ? 'text-indigo-500' : 'text-slate-400'}
                 />
 
+                {row.original.stripeAccountId && (
+                  <ActionIconButton
+                    tone="destructive"
+                    tooltip="Reset Stripe Settings"
+                    icon={<RotateCcw className="h-4 w-4" />}
+                    onClick={() => handleOpenResetModal(row.original)}
+                    disabled={resetStripe.isPending}
+                  />
+                )}
+
                 <ActionIconButton
                   tone="destructive"
                   tooltip="Deactivate Tenant"
@@ -268,7 +301,7 @@ export function TenantsContainer() {
         meta: { headerAlign: 'center' }
       },
     ],
-    [handleRegenerateSecret, handleActivate, deactivateTenant, activateTenant.isPending, connectStripe.isPending, connectStripe.mutate]
+    [handleRegenerateSecret, handleActivate, deactivateTenant, activateTenant.isPending, connectStripe.isPending, connectStripe.mutate, resetStripe.isPending, handleOpenResetModal]
   );
 
   return (
@@ -414,6 +447,122 @@ export function TenantsContainer() {
                 disabled={regenerateSecret.isPending}
               >
                 {regenerateSecret.isPending ? "Regenerating..." : "Yes, Regenerate"}
+              </Button>
+            </div>
+          </div>
+        </AnimatedModal>
+
+        <AnimatedModal
+          isOpen={isConfirmResetStripeOpen}
+          onClose={() => setIsConfirmResetStripeOpen(false)}
+          title="Reset Stripe Settings"
+          description=""
+          className="max-w-2xl"
+        >
+          <div className="flex flex-col gap-6 py-4 text-left">
+            {/* Alert Header */}
+            <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 flex gap-4 items-start">
+              <AlertTriangle className="h-6 w-6 text-destructive shrink-0 mt-0.5" />
+              <div>
+                <h3 className="font-extrabold text-destructive tracking-tight">Warning: Destructive Operation</h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  You are about to reset the Stripe integration for <strong>{selectedTenantName}</strong>. This action will break any active payment flows.
+                </p>
+              </div>
+            </div>
+
+            {/* Structured Info */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Database Section */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  <Database className="h-4 w-4 text-primary" />
+                  1. Automatic Database Reset
+                </h4>
+                <div className="p-4 rounded-xl bg-muted/50 border border-border/50 text-xs space-y-2">
+                  <p className="text-muted-foreground font-medium">The following database changes will occur:</p>
+                  <ul className="list-disc pl-4 space-y-1.5 text-muted-foreground font-medium">
+                    <li><code className="text-destructive font-bold">stripe_account_id</code> is set to <code className="text-primary font-bold">NULL</code> on the tenant record.</li>
+                    <li>Stripe onboarding flags are set to <code className="text-destructive font-bold">false</code>.</li>
+                    <li>All <code className="text-destructive font-bold">stripe_customer_id</code> values for drivers of this tenant schema will be set to <code className="text-primary font-bold">NULL</code>.</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Stripe Section */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  <CreditCard className="h-4 w-4 text-indigo-500" />
+                  2. Manual Actions Required on Stripe
+                </h4>
+                <div className="p-4 rounded-xl bg-muted/50 border border-border/50 text-xs space-y-2">
+                  <p className="text-muted-foreground font-medium">You must perform the following manually in your Stripe Dashboard:</p>
+                  <ul className="list-disc pl-4 space-y-1.5 text-muted-foreground font-medium">
+                    <li>Log in to your <strong>Stripe Dashboard</strong>.</li>
+                    <li>Deactivate or delete the Connected Account ID associated with this tenant if it is no longer needed.</li>
+                    <li>Clean up any customer objects under that account to avoid dangling resources.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Checkboxes */}
+            <div className="space-y-3 pt-2">
+              <label className="flex items-start gap-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={acknowledgeDb}
+                  onChange={(e) => setAcknowledgeDb(e.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-border text-primary focus:ring-primary bg-background"
+                />
+                <span className="text-xs text-muted-foreground font-medium">
+                  I acknowledge that all local database Stripe references and onboarding status flags will be permanently reset to NULL/false.
+                </span>
+              </label>
+            </div>
+
+            {/* Name input confirmation */}
+            <div className="space-y-2 pt-2 border-t border-border/50">
+              <label className="text-xs text-muted-foreground font-bold uppercase tracking-wider block">
+                Type the tenant name <span className="text-foreground font-extrabold">{selectedTenantName}</span> to confirm:
+              </label>
+              <input
+                type="text"
+                placeholder={selectedTenantName}
+                value={confirmTenantNameInput}
+                onChange={(e) => setConfirmTenantNameInput(e.target.value)}
+                className="w-full h-11 px-4 rounded-xl border border-border bg-background/50 focus:outline-hidden focus:border-primary text-sm font-semibold"
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 w-full mt-4">
+              <Button
+                variant="outline"
+                onClick={() => setIsConfirmResetStripeOpen(false)}
+                className="flex-1 h-12 rounded-xl font-bold"
+                disabled={resetStripe.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => handleResetStripe(selectedTenantId)}
+                className="flex-1 h-12 rounded-xl font-bold shadow-lg shadow-destructive/20 flex items-center justify-center gap-2"
+                disabled={
+                  resetStripe.isPending ||
+                  !acknowledgeDb ||
+                  confirmTenantNameInput !== selectedTenantName
+                }
+              >
+                {resetStripe.isPending ? (
+                  "Resetting..."
+                ) : (
+                  <>
+                    <RotateCcw className="h-4 w-4" />
+                    Reset Stripe Settings
+                  </>
+                )}
               </Button>
             </div>
           </div>

@@ -45,7 +45,11 @@ class TenantService {
   }
 
   async connectStripe(id: string) {
-    return httpService.post<{ url: string }>(API_CONFIG.endpoints.tenants.connectStripe(id));
+    return httpService.post<{ url: string; email: string }>(API_CONFIG.endpoints.tenants.connectStripe(id));
+  }
+
+  async resetTenantStripe(id: string) {
+    return httpService.post<{ message: string }>(API_CONFIG.endpoints.tenants.resetStripe(id));
   }
 }
 
