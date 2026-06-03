@@ -76,6 +76,7 @@ export const API_CONFIG = {
             deactivate: (id: string) => `/tenants/${id}/deactivate`,
             regenerateSecret: (id: string) => `/tenants/${id}/regenerate-api-secret`,
             connectStripe: (id: string) => `/tenants/${id}/stripe/connect`,
+            resetStripe: (id: string) => `/tenants/${id}/stripe/reset`,
         },
         aws: {
             uploadUrl: "/aws/upload-url",

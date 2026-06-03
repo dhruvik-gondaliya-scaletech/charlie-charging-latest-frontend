@@ -67,13 +67,29 @@ export const useConnectStripe = () => {
     mutationFn: (id: string) => tenantService.connectStripe(id),
     onSuccess: (response) => {
       if (response?.url) {
-        toast.success('Onboarding email has been sent to the tenant admin.');
+        toast.success(`Onboarding email has been sent to the tenant admin (${response.email}).`);
       } else {
          toast.error('Could not get Stripe URL');
       }
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || 'Failed to connect Stripe');
+    },
+  });
+};
+
+export const useResetTenantStripe = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => tenantService.resetTenantStripe(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ['tenants'] });
+      queryClient.invalidateQueries({ queryKey: ['tenant', id] });
+      toast.success('Stripe settings and driver Stripe customer IDs reset successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to reset Stripe settings');
     },
   });
 };
