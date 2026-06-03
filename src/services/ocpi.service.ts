@@ -65,6 +65,7 @@ export interface OcpiSession {
     start_date_time: string;
     end_date_time?: string;
     auth_id?: string;
+    currency?: string;
 }
 
 export interface OcpiCdr {
@@ -79,6 +80,7 @@ export interface OcpiCdr {
         incl_vat: number;
     };
     last_updated: string;
+    currency?: string;
 }
 
 export interface OcpiTariff {

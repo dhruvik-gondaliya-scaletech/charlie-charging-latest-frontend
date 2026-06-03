@@ -15,6 +15,18 @@ import { OcpiCdr } from '@/services/ocpi.service';
 import { useOcpiCdrs } from '@/hooks/get/useOcpi';
 import { Button } from '@/components/ui/button';
 
+const formatCurrency = (amount: number, currencyCode?: string) => {
+    const code = currencyCode?.toUpperCase() || 'INR';
+    try {
+        return new Intl.NumberFormat(undefined, {
+            style: 'currency',
+            currency: code,
+        }).format(amount);
+    } catch {
+        return `${code} ${amount.toFixed(2)}`;
+    }
+};
+
 const columns: ColumnDef<OcpiCdr>[] = [
     {
         accessorKey: 'id',
@@ -91,7 +103,7 @@ const columns: ColumnDef<OcpiCdr>[] = [
             const cost = row.original.total_cost?.incl_vat || 0;
             return (
                 <div className="font-bold text-foreground tabular-nums">
-                    ₹{cost.toFixed(2)}
+                    {formatCurrency(cost, row.original.currency)}
                 </div>
             );
         },
@@ -138,7 +150,7 @@ export function OcpiCdrsList() {
                         <span className="font-mono font-bold text-xs text-foreground">{item.id.slice(0, 16)}…</span>
                     </div>
                     <div className="font-bold text-foreground text-sm">
-                        ₹{cost.toFixed(2)}
+                        {formatCurrency(cost, item.currency)}
                     </div>
                 </div>
 
