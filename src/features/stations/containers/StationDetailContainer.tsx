@@ -660,6 +660,7 @@ export function StationDetailContainer() {
                                         <WebSocketUrlDisplay
                                             chargePointId={station.chargePointId}
                                             tenantSlug={tenant?.slug || tenant?.id || ''}
+                                            password={station.password}
                                         />
                                     </CardContent>
                                 </Card>

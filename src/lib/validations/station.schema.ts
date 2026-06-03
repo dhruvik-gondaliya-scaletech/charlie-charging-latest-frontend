@@ -14,6 +14,7 @@ export const stationSchema = z.object({
   type: z.enum(['AC', 'DC'], { message: 'Station type is required' }),
   visibility: z.enum(['public', 'private'], { message: 'Visibility is required' }),
   connectorTypes: z.array(z.string()).min(1, 'At least one connector type is required'),
+  password: z.string().optional(),
 });
 
 export const remoteStartSchema = z.object({

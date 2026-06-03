@@ -95,6 +95,7 @@ export function StationWizard({
             type: initialData.type || 'AC',
             visibility: (initialData as any).visibility || 'public',
             connectorTypes: initialData.connectorTypes || [],
+            password: (initialData as any).password || '',
         },
     });
 
@@ -144,6 +145,7 @@ export function StationWizard({
                 type: initialData.type || 'AC',
                 visibility: (initialData as any).visibility || 'public',
                 connectorTypes: initialData.connectorTypes || [],
+                password: (initialData as any).password || '',
             }, {
                 keepDirtyValues: true, // Don't overwrite what user already typed if they started
             });
@@ -154,7 +156,7 @@ export function StationWizard({
     const nextStep = async () => {
         let fieldsToValidate: (keyof WizardValues)[] = [];
         if (step === 1) fieldsToValidate = ['name', 'vendor', 'model', 'maxPower'];
-        if (step === 2) fieldsToValidate = ['serialNumber', 'chargePointId', 'type', 'locationId', 'tariffId', 'visibility'];
+        if (step === 2) fieldsToValidate = ['serialNumber', 'chargePointId', 'type', 'locationId', 'tariffId', 'visibility', 'password'];
 
         const isValid = await form.trigger(fieldsToValidate);
         if (isValid) setStep(prev => Math.min(prev + 1, 4));
@@ -566,6 +568,31 @@ export function StationWizard({
                                                 </FormItem>
                                             )}
                                         />
+
+                                        <FormField
+                                            control={form.control as any}
+                                            name="password"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="font-bold flex items-center gap-1.5">
+                                                        <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                                                        Connection Password
+                                                    </FormLabel>
+                                                    <FormControl>
+                                                        <Input
+                                                            type="text"
+                                                            placeholder="Set connection password (optional)"
+                                                            className="bg-muted/30 py-6 font-medium border-border/60"
+                                                            {...field}
+                                                        />
+                                                    </FormControl>
+                                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1.5 opacity-70">
+                                                        Required for the station to connect if specified
+                                                    </p>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
                                     </div>
                                 </div>
                             )}
@@ -671,6 +698,7 @@ export function StationWizard({
                                         <WebSocketUrlDisplay
                                             chargePointId={form.watch('chargePointId')}
                                             tenantSlug={tenantSlug}
+                                            password={form.watch('password')}
                                         />
 
                                         <div className="p-4 bg-muted/20 border border-border/40 rounded-2xl">

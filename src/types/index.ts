@@ -55,6 +55,7 @@ export interface Station {
   tariffId?: string;
   chargePointId: string;
   ocppVersion: string;
+  password?: string;
   type: 'AC' | 'DC';
   visibility: 'public' | 'private';
   connectorCount: number;
