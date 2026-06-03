@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { useOcpiCredentials } from '@/hooks/get/useOcpi';
 import { useDeleteOcpiCredential } from '@/hooks/post/useOcpiMutations';
 import { ActionIconButton } from '@/components/shared/ActionIconButton';
+import { CopyButton } from '@/components/shared/CopyButton';
 
 import {
     Tooltip,
@@ -111,25 +112,30 @@ export function OcpiCredentialsList() {
         {
             accessorKey: 'tokenA',
             header: 'Registration Token',
-            size: 150,
+            size: 180,
             cell: ({ row }) => (
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <div className="flex flex-col gap-1 cursor-help">
-                                <span className="text-[10px] text-muted-foreground uppercase font-bold">Token A</span>
-                                <code className="text-[10px] bg-muted px-1.5 py-0.5 rounded truncate max-w-[120px] block">
+                <div className="flex items-center gap-2">
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div className="flex flex-col gap-1 cursor-help">
+                                    <span className="text-[10px] text-muted-foreground uppercase font-bold">Token A</span>
+                                    <code className="text-[10px] bg-muted px-1.5 py-0.5 rounded truncate max-w-[110px] block">
+                                        {row.original.tokenA}
+                                    </code>
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p className="text-xs">
                                     {row.original.tokenA}
-                                </code>
-                            </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p className="text-xs">
-                                {row.original.tokenA}
-                            </p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
+                                </p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                    {row.original.tokenA && (
+                        <CopyButton value={row.original.tokenA} toastMessage="Registration Token copied" />
+                    )}
+                </div>
             ),
         },
         {
@@ -146,6 +152,7 @@ export function OcpiCredentialsList() {
             id: 'actions',
             header: 'Actions',
             size: 80,
+            meta: { headerAlign: 'right' },
             cell: ({ row }) => (
                 <div className="flex items-center justify-end gap-1">
                     <ActionIconButton
@@ -166,45 +173,46 @@ export function OcpiCredentialsList() {
     ];
 
     const renderMobileCard = (item: OcpiCredential) => {
-        const hasHandshake = !!item.tokenB && !!item.tokenC;
-        const colorClasses = hasHandshake
+        const hasHandshake = item.roles && item.roles.length > 0;
+        const statusColor = hasHandshake
             ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-            : 'bg-blue-500/10 text-blue-500 border-blue-500/20';
+            : 'bg-amber-500/10 text-amber-500 border-amber-500/20';
 
         return (
             <div className="bg-card border border-border rounded-2xl p-5 shadow-xs space-y-4">
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <span className="font-bold text-base text-foreground">
-                            {item.partyId || 'PENDING'}
+                    <div className="flex flex-col gap-1">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Party ID</span>
+                        <span className="font-bold text-sm text-foreground">
+                            {item.partyId || 'Pending'} ({item.countryCode || '-'})
                         </span>
-                        {item.countryCode && (
-                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                                {item.countryCode}
-                            </Badge>
-                        )}
                     </div>
                     <Badge
                         variant="outline"
-                        className={cn('capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm text-xs', colorClasses)}
+                        className={cn('capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm text-xs', statusColor)}
                     >
                         {hasHandshake ? 'connected' : 'registered'}
                     </Badge>
                 </div>
 
-                <div className="space-y-2">
-                    <div className="flex flex-col gap-1">
-                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Versions URL</span>
-                        <span className="text-xs font-mono break-all text-muted-foreground bg-muted/30 p-2 rounded-lg border border-border/40">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-0.5">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Version URL</span>
+                        <span className="text-xs font-mono truncate max-w-[250px]" title={item.partnerVersionsUrl}>
                             {item.partnerVersionsUrl}
                         </span>
                     </div>
 
                     <div className="flex flex-col gap-1">
                         <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Registration Token</span>
-                        <code className="text-[10px] font-mono bg-muted/60 px-2 py-1 rounded-lg border border-border/40 break-all">
-                            {item.tokenA}
-                        </code>
+                        <div className="flex items-center gap-2 bg-muted/60 px-2 py-1 rounded-lg border border-border/40 justify-between">
+                            <code className="text-[10px] font-mono break-all pr-2">
+                                {item.tokenA || '-'}
+                            </code>
+                            {item.tokenA && (
+                                <CopyButton value={item.tokenA} className="bg-background shadow-xs h-7 w-7" toastMessage="Registration Token copied" />
+                            )}
+                        </div>
                     </div>
                 </div>
 
@@ -261,6 +269,7 @@ export function OcpiCredentialsList() {
                 sortByKey="updatedAt"
                 sortOrder="desc"
                 renderMobileCard={renderMobileCard}
+                rightPinnedColumnIds={['actions']}
 
                 emptyState={
                     <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-xl bg-muted/30">

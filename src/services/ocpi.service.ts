@@ -45,9 +45,13 @@ export interface OcpiToken {
     authId: string;
     visualNumber?: string;
     issuer: string;
-    allowed: boolean;
-    whitelist: string;
-    lastUpdated: string;
+    valid: boolean;
+    groupId?: string | null;
+    createdAt: string;
+    updatedAt: string;
+    allowed?: boolean;
+    whitelist?: string;
+    lastUpdated?: string;
 }
 
 export interface OcpiSession {

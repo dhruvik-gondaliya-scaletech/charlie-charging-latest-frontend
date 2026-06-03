@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useOcpiTokens } from '@/hooks/get/useOcpi';
 import { useState } from 'react';
+import { CopyButton } from '@/components/shared/CopyButton';
 
 
 export function OcpiTokensList() {
@@ -31,7 +32,13 @@ export function OcpiTokensList() {
         {
             accessorKey: 'uid',
             header: 'UID',
-            cell: ({ row }) => <span className="font-mono text-xs">{row.original.uid}</span>,
+            size: 150,
+            cell: ({ row }) => (
+                <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs">{row.original.uid}</span>
+                    <CopyButton value={row.original.uid} toastMessage="Token UID copied" />
+                </div>
+            ),
         },
         {
             accessorKey: 'type',
@@ -39,16 +46,31 @@ export function OcpiTokensList() {
             cell: ({ row }) => <Badge variant="outline">{row.original.type}</Badge>,
         },
         {
+            accessorKey: 'authId',
+            header: 'Auth ID',
+            cell: ({ row }) => (
+                <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs">{row.original.authId}</span>
+                    <CopyButton value={row.original.authId} toastMessage="Auth ID copied" />
+                </div>
+            ),
+        },
+        {
+            accessorKey: 'visualNumber',
+            header: 'Visual Number',
+            cell: ({ row }) => row.original.visualNumber || '-',
+        },
+        {
             accessorKey: 'issuer',
-            header: 'Issuer (Party ID)',
+            header: 'Issuer',
             cell: ({ row }) => row.original.issuer,
         },
         {
-            accessorKey: 'allowed',
-            header: 'Allowed',
+            accessorKey: 'valid',
+            header: 'Status',
             cell: ({ row }) => {
-                const allowed = !!row.original.allowed;
-                const colorClasses = allowed
+                const isValid = row.original.valid ?? row.original.allowed ?? false;
+                const colorClasses = isValid
                     ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
                     : 'bg-destructive/10 text-destructive border-destructive/20';
 
@@ -57,25 +79,34 @@ export function OcpiTokensList() {
                         variant="outline"
                         className={cn('capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm', colorClasses)}
                     >
-                        {allowed ? 'yes' : 'no'}
+                        {isValid ? 'valid' : 'invalid'}
                     </Badge>
                 );
             },
         },
         {
-            accessorKey: 'whitelist',
-            header: 'Whitelist',
+            accessorKey: 'groupId',
+            header: 'Group ID',
+            cell: ({ row }) => row.original.groupId || '-',
+        },
+        {
+            accessorKey: 'createdAt',
+            header: 'Created At',
             cell: ({ row }) => (
-                <span className="text-xs text-muted-foreground">{row.original.whitelist}</span>
+                <span className="text-xs text-muted-foreground block">
+                    {row.original.createdAt
+                        ? format(new Date(row.original.createdAt), 'MMM d, p')
+                        : '-'}
+                </span>
             ),
         },
         {
-            accessorKey: 'lastUpdated',
+            accessorKey: 'updatedAt',
             header: 'Last Updated',
             cell: ({ row }) => (
                 <span className="text-xs text-muted-foreground block">
-                    {row.original.lastUpdated
-                        ? format(new Date(row.original.lastUpdated), 'MMM d, p')
+                    {row.original.updatedAt || row.original.lastUpdated
+                        ? format(new Date(row.original.updatedAt || row.original.lastUpdated || ''), 'MMM d, p')
                         : '-'}
                 </span>
             ),
@@ -99,23 +130,26 @@ export function OcpiTokensList() {
     }
 
     const renderMobileCard = (item: OcpiToken) => {
-        const allowed = !!item.allowed;
-        const allowedColor = allowed
+        const isValid = item.valid ?? item.allowed ?? false;
+        const statusColor = isValid
             ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
             : 'bg-destructive/10 text-destructive border-destructive/20';
 
         return (
             <div className="bg-card border border-border rounded-2xl p-5 shadow-xs space-y-4">
                 <div className="flex items-center justify-between">
-                    <div className="flex flex-col">
+                    <div className="flex flex-col gap-1">
                         <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Token UID</span>
-                        <span className="font-mono font-bold text-sm text-foreground">{item.uid}</span>
+                        <div className="flex items-center gap-2">
+                            <span className="font-mono font-bold text-sm text-foreground">{item.uid}</span>
+                            <CopyButton value={item.uid} className="bg-background shadow-xs h-7 w-7" toastMessage="Token UID copied" />
+                        </div>
                     </div>
                     <Badge
                         variant="outline"
-                        className={cn('capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm text-xs', allowedColor)}
+                        className={cn('capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm text-xs', statusColor)}
                     >
-                        {allowed ? 'Allowed' : 'Blocked'}
+                        {isValid ? 'Valid' : 'Invalid'}
                     </Badge>
                 </div>
 
@@ -125,18 +159,29 @@ export function OcpiTokensList() {
                         <span className="text-xs font-semibold">{item.type}</span>
                     </div>
                     <div className="flex flex-col gap-0.5">
-                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Issuer (Party)</span>
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Issuer</span>
                         <span className="text-xs font-semibold">{item.issuer}</span>
                     </div>
+                    <div className="flex flex-col gap-0.5">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Auth ID</span>
+                        <span className="text-xs font-mono font-semibold">{item.authId}</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Visual Number</span>
+                        <span className="text-xs font-semibold">{item.visualNumber || '-'}</span>
+                    </div>
                     <div className="flex flex-col gap-0.5 col-span-2">
-                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Whitelist Mode</span>
-                        <span className="text-xs font-medium text-muted-foreground">{item.whitelist}</span>
+                        <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Group ID</span>
+                        <span className="text-xs font-semibold">{item.groupId || '-'}</span>
                     </div>
                 </div>
 
-                <div className="pt-3 border-t border-border/40 flex justify-between items-center">
-                    <span className="text-[10px] text-muted-foreground">
-                        Updated: {item.lastUpdated ? format(new Date(item.lastUpdated), 'MMM d, p') : '-'}
+                <div className="pt-3 border-t border-border/40 flex justify-between items-center text-[10px] text-muted-foreground">
+                    <span>
+                        Created: {item.createdAt ? format(new Date(item.createdAt), 'MMM d, p') : '-'}
+                    </span>
+                    <span>
+                        Updated: {item.updatedAt || item.lastUpdated ? format(new Date(item.updatedAt || item.lastUpdated || ''), 'MMM d, p') : '-'}
                     </span>
                 </div>
             </div>
@@ -160,7 +205,7 @@ export function OcpiTokensList() {
             onPageSizeChange={setPageSize}
             showPagination
             pageSize={pageSize}
-            sortByKey="lastUpdated"
+            sortByKey="updatedAt"
             sortOrder="desc"
             renderMobileCard={renderMobileCard}
             emptyState={
