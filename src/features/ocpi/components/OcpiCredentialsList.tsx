@@ -152,9 +152,8 @@ export function OcpiCredentialsList() {
             id: 'actions',
             header: 'Actions',
             size: 80,
-            meta: { headerAlign: 'right' },
             cell: ({ row }) => (
-                <div className="flex items-center justify-end gap-1">
+                <div className="flex items-center justify-start gap-1">
                     <ActionIconButton
                         tone="info"
                         tooltip="View Details"
