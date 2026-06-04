@@ -90,7 +90,7 @@ export function OcpiLocalSettings() {
   }
 
   return (
-    <motion.div variants={staggerItem} className="max-w-[800px] mx-auto space-y-8 p-1">
+    <motion.div variants={staggerItem} className="w-full space-y-8 p-1">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <Card className="border-border/40 bg-card/10 backdrop-blur-sm overflow-hidden rounded-[2.5rem] shadow-none">
@@ -109,35 +109,35 @@ export function OcpiLocalSettings() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-5 sm:p-8 py-4 space-y-6">
-              {/* CPO Name */}
-              <FormField
-                control={form.control}
-                name="ocpiCpoName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 ml-1">
-                      CPO Name (Brand Name)
-                    </FormLabel>
-                    <div className="relative flex items-center">
-                      <Building2 className="absolute left-4 h-4 w-4 text-muted-foreground/50" />
-                      <FormControl>
-                        <Input
-                          placeholder="e.g. Scale EV CPO"
-                          {...field}
-                          className="h-12 pl-11 bg-background border-border/40 focus-visible:ring-primary/20 rounded-xl font-bold"
-                        />
-                      </FormControl>
-                    </div>
-                    <FormDescription className="text-[10px] ml-1">
-                      The official branding name of your CPO nodes exposed to roaming partners.
-                    </FormDescription>
-                    <FormMessage className="text-[10px] font-bold" />
-                  </FormItem>
-                )}
-              />
+            <CardContent className="p-5 sm:p-8 py-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* CPO Name */}
+                <FormField
+                  control={form.control}
+                  name="ocpiCpoName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground/70 ml-1">
+                        CPO Name (Brand Name)
+                      </FormLabel>
+                      <div className="relative flex items-center">
+                        <Building2 className="absolute left-4 h-4 w-4 text-muted-foreground/50" />
+                        <FormControl>
+                          <Input
+                            placeholder="e.g. Scale EV CPO"
+                            {...field}
+                            className="h-12 pl-11 bg-background border-border/40 focus-visible:ring-primary/20 rounded-xl font-bold"
+                          />
+                        </FormControl>
+                      </div>
+                      <FormDescription className="text-[10px] ml-1">
+                        The official branding name of your CPO nodes exposed to roaming partners.
+                      </FormDescription>
+                      <FormMessage className="text-[10px] font-bold" />
+                    </FormItem>
+                  )}
+                />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Country Code */}
                 <FormField
                   control={form.control}
@@ -196,29 +196,28 @@ export function OcpiLocalSettings() {
                   )}
                 />
               </div>
+              {/* Form Submit Button inside the Card */}
+              <div className="flex items-center justify-end pt-4 border-t border-border/40 mt-4">
+                <Button
+                  type="submit"
+                  disabled={updateConfig.isPending || !form.formState.isDirty}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 font-bold px-6 h-12 rounded-xl"
+                >
+                  {updateConfig.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving Settings...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Save CPO Configuration
+                    </>
+                  )}
+                </Button>
+              </div>
             </CardContent>
           </Card>
-
-          {/* Form Submit Footer */}
-          <div className="flex items-center justify-end gap-3 pt-2">
-            <Button
-              type="submit"
-              disabled={updateConfig.isPending || !form.formState.isDirty}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 font-bold px-6 h-12 rounded-xl"
-            >
-              {updateConfig.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving Settings...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Save CPO Configuration
-                </>
-              )}
-            </Button>
-          </div>
         </form>
       </Form>
     </motion.div>
