@@ -299,19 +299,19 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <FormField
                                 control={form.control as any}
                                 name="visibility"
                                 render={({ field }) => (
-                                    <FormItem>
+                                    <FormItem className="md:col-span-1">
                                         <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-70 flex items-center gap-1.5">
                                             <ShieldCheck className="h-3.5 w-3.5 text-primary" />
                                             Visibility*
                                         </FormLabel>
                                         <Select
                                             onValueChange={field.onChange}
-                                            defaultValue={field.value}
+                                            value={field.value}
                                         >
                                             <FormControl>
                                                 <SelectTrigger className="bg-muted/10 border-border/40 font-medium h-12 hover:bg-muted/20 transition-all">
@@ -342,11 +342,12 @@ export function StationForm({ initialData, onSubmit, isLoading, onCancel }: Stat
                                     </FormItem>
                                 )}
                             />
+
                             <FormField
                                 control={form.control as any}
                                 name="password"
                                 render={({ field }) => (
-                                    <FormItem>
+                                    <FormItem className="md:col-span-1">
                                         <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-70 flex items-center gap-1.5">
                                             <ShieldCheck className="h-3.5 w-3.5 text-primary" />
                                             Connection Password (Optional)

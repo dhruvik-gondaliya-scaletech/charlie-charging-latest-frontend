@@ -143,19 +143,34 @@ export function StationsContainer() {
         accessorKey: 'name',
         header: 'Name',
         cell: ({ row }) => (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div
-                className="font-semibold text-foreground cursor-pointer hover:text-primary transition-colors inline-block"
-                onClick={() => router.push(`${FRONTEND_ROUTES.STATIONS_DETAILS(row.original.id)}?name=${encodeURIComponent(row.original.name)}`)}
+          <div className="flex items-center gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div
+                  className="font-semibold text-foreground cursor-pointer hover:text-primary transition-colors inline-block"
+                  onClick={() => router.push(`${FRONTEND_ROUTES.STATIONS_DETAILS(row.original.id)}?name=${encodeURIComponent(row.original.name)}`)}
+                >
+                  {row.getValue('name')}
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-xs">View Details</p>
+              </TooltipContent>
+            </Tooltip>
+            {row.original.location?.locationEnv && (
+              <Badge
+                variant="outline"
+                className={cn(
+                  "text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md border tracking-wider",
+                  row.original.location?.locationEnv === 'PRODUCTION'
+                    ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                    : "bg-blue-500/10 text-blue-500 border-blue-500/20"
+                )}
               >
-                {row.getValue('name')}
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p className="text-xs">View Details</p>
-            </TooltipContent>
-          </Tooltip>
+                {row.original.location?.locationEnv === 'PRODUCTION' ? 'PROD' : 'DEV'}
+              </Badge>
+            )}
+          </div>
         ),
       },
       {
@@ -445,12 +460,27 @@ export function StationsContainer() {
                 <div className="bg-card border border-border rounded-[1.5rem] p-5 shadow-sm space-y-4">
                   <div className="flex justify-between items-start">
                     <div className="space-y-1">
-                      <h3
-                        className="font-bold text-lg cursor-pointer hover:text-primary transition-colors leading-tight"
-                        onClick={() => router.push(`${FRONTEND_ROUTES.STATIONS_DETAILS(station.id)}?name=${encodeURIComponent(station.name)}`)}
-                      >
-                        {station.name}
-                      </h3>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3
+                          className="font-bold text-lg cursor-pointer hover:text-primary transition-colors leading-tight"
+                          onClick={() => router.push(`${FRONTEND_ROUTES.STATIONS_DETAILS(station.id)}?name=${encodeURIComponent(station.name)}`)}
+                        >
+                          {station.name}
+                        </h3>
+                        {station.location?.locationEnv && (
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md border tracking-wider",
+                              station.location?.locationEnv === 'PRODUCTION'
+                                ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                                : "bg-blue-500/10 text-blue-500 border-blue-500/20"
+                            )}
+                          >
+                            {station.location?.locationEnv === 'PRODUCTION' ? 'PROD' : 'DEV'}
+                          </Badge>
+                        )}
+                      </div>
                       <code className="px-1.5 py-0.5 rounded bg-muted text-[10px] font-mono text-muted-foreground block w-fit">
                         {station.chargePointId}
                       </code>

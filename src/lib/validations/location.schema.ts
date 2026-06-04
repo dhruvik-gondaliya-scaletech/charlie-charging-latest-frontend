@@ -10,6 +10,7 @@ export const locationSchema = z.object({
   latitude: z.coerce.number().optional(),
   longitude: z.coerce.number().optional(),
   isActive: z.boolean(),
+  locationEnv: z.enum(['DEVELOPMENT', 'PRODUCTION']).optional(),
 });
 
 export type LocationFormData = z.infer<typeof locationSchema>;

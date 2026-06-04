@@ -78,6 +78,7 @@ export interface Location {
   stationCount?: number;
   lastUpdated?: string;
   isActive?: boolean;
+  locationEnv?: 'DEVELOPMENT' | 'PRODUCTION';
   createdAt?: string;
   updatedAt?: string;
 }

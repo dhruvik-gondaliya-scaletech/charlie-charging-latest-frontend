@@ -103,6 +103,19 @@ export function LocationDetailContainer() {
                         >
                             {location.isActive ? 'Active' : 'Offline'}
                         </Badge>
+                        {location.locationEnv && (
+                            <Badge
+                                variant="outline"
+                                className={cn(
+                                    "px-3 py-1 rounded-full border shadow-sm font-bold uppercase tracking-widest text-[10px]",
+                                    location.locationEnv === 'PRODUCTION'
+                                        ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/30"
+                                        : "bg-blue-500/10 text-blue-500 border-blue-500/30"
+                                )}
+                            >
+                                {location.locationEnv === 'PRODUCTION' ? 'PROD' : 'DEV'}
+                            </Badge>
+                        )}
                     </div>
                     <div className="flex items-center gap-3 text-muted-foreground mt-2">
                         <div className="flex items-center gap-1.5 text-sm font-medium">

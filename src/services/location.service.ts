@@ -12,6 +12,7 @@ export interface CreateLocationData {
   latitude?: number;
   longitude?: number;
   isActive: boolean;
+  locationEnv?: 'DEVELOPMENT' | 'PRODUCTION';
 }
 
 export interface UpdateLocationData extends Partial<CreateLocationData> {
