@@ -59,6 +59,7 @@ export interface OcpiSession {
     party_id: string;
     country_code: string;
     location_id: string;
+    location_name?: string;
     evse_uid?: string;
     kwh: number;
     status: string;
@@ -73,6 +74,7 @@ export interface OcpiCdr {
     party_id: string;
     country_code: string;
     location_id: string;
+    location_name?: string;
     total_energy: number;
     total_time: number;
     total_cost: {

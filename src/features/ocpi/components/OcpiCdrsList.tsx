@@ -64,9 +64,32 @@ const columns: ColumnDef<OcpiCdr>[] = [
         ),
     },
     {
-        accessorKey: 'location_id',
+        id: 'location',
         header: 'Location',
-        cell: ({ row }) => <span className="text-sm font-medium">{row.getValue('location_id')}</span>,
+        cell: ({ row }) => {
+            const locationId = row.original.location_id;
+            const locationName = row.original.location_name;
+            return (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <div className="flex flex-col max-w-[1600px] cursor-default">
+                                <span className="truncate text-sm font-medium">
+                                    {locationName || locationId || '—'}
+                                </span>
+                                {locationName && locationId && (
+                                    <span className="text-[10px] text-muted-foreground truncate">{locationId}</span>
+                                )}
+                            </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p className="text-xs font-semibold">{locationName || 'Unknown Location'}</p>
+                            <p className="text-[10px] font-mono text-muted-foreground mt-0.5">{locationId}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            );
+        },
     },
     {
         accessorKey: 'total_energy',
@@ -175,7 +198,7 @@ export function OcpiCdrsList() {
                     </div>
                     <div className="flex flex-col gap-0.5">
                         <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Location</span>
-                        <span className="text-xs font-medium text-muted-foreground truncate">{item.location_id || '—'}</span>
+                        <span className="text-xs font-medium text-muted-foreground truncate">{item.location_name || item.location_id || '—'}</span>
                     </div>
                 </div>
 
