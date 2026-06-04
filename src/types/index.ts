@@ -65,6 +65,11 @@ export interface Station {
   updatedAt?: string;
 }
 
+export enum LocationEnv {
+  DEVELOPMENT = 'DEVELOPMENT',
+  PRODUCTION = 'PRODUCTION',
+}
+
 export interface Location {
   id: string;
   name: string;
@@ -78,6 +83,7 @@ export interface Location {
   stationCount?: number;
   lastUpdated?: string;
   isActive?: boolean;
+  locationEnv?: LocationEnv;
   createdAt?: string;
   updatedAt?: string;
 }

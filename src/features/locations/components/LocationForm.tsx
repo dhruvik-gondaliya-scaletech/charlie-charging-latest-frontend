@@ -13,6 +13,13 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
     Building2,
     MapPin,
     Globe,
@@ -21,12 +28,14 @@ import {
     AlertCircle,
     ArrowRight,
     Info,
-    Loader2
+    Loader2,
+    Activity
 } from 'lucide-react';
 import AddressAutocomplete, { ParsedAddress } from '@/components/shared/AddressAutocomplete';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { LocationEnv } from '@/types';
 
 interface LocationFormProps {
     initialData?: Partial<LocationFormData>;
@@ -57,6 +66,7 @@ export function LocationForm({
             latitude: initialData?.latitude,
             longitude: initialData?.longitude,
             isActive: initialData?.isActive ?? true,
+            locationEnv: initialData?.locationEnv || LocationEnv.DEVELOPMENT,
         },
     });
 
@@ -129,6 +139,37 @@ export function LocationForm({
                                     </div>
                                 </FormControl>
                                 <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">Choose a globally unique name for this strategic site</p>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        control={form.control as any}
+                        name="locationEnv"
+                        render={({ field }) => (
+                            <FormItem className="space-y-2">
+                                <FormLabel className="font-bold flex items-center gap-1.5 ml-1">
+                                    <Activity className="h-3.5 w-3.5 text-primary" />
+                                    Environment Type*
+                                </FormLabel>
+                                <Select
+                                    onValueChange={field.onChange}
+                                    defaultValue={field.value || LocationEnv.DEVELOPMENT}
+                                    value={field.value}
+                                >
+                                    <FormControl>
+                                        <SelectTrigger className="bg-muted/30 border-border/60 focus:bg-background transition-all h-12 font-medium">
+                                            <SelectValue placeholder="Select location environment" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value={LocationEnv.DEVELOPMENT} className="font-medium">DEVELOPMENT (DEV)</SelectItem>
+                                        <SelectItem value={LocationEnv.PRODUCTION} className="font-medium">PRODUCTION (PROD)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">Determine if this location is used for development/testing or active production charging</p>
                                 <FormMessage />
                             </FormItem>
                         )}
