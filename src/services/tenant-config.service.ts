@@ -15,6 +15,9 @@ export interface DriverAppConfig {
   supportContact?: SupportContact;
   domain: string;
   isActive: boolean;
+  ocpiCpoName?: string;
+  ocpiCountryCode?: string;
+  ocpiPartyId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -25,6 +28,9 @@ export interface UpdateDriverAppConfigData {
   supportContact?: SupportContact;
   domain: string;
   isActive?: boolean;
+  ocpiCpoName?: string;
+  ocpiCountryCode?: string;
+  ocpiPartyId?: string;
 }
 
 class TenantConfigService {

@@ -12,6 +12,9 @@ export const DriverAppConfigSchema = z.object({
   domain: z.string().min(3, 'Domain is required').regex(/^[a-z0-9][a-z0-9-.]*[a-z0-9]$/, 'Invalid domain format'),
   supportContact: SupportContactSchema.optional(),
   isActive: z.boolean().default(true),
+  ocpiCpoName: z.string().optional().or(z.literal('')),
+  ocpiCountryCode: z.string().length(2, 'Country code must be exactly 2 characters').optional().or(z.literal('')),
+  ocpiPartyId: z.string().length(3, 'Party ID must be exactly 3 characters').optional().or(z.literal('')),
 });
 
 export type DriverAppConfigValues = z.infer<typeof DriverAppConfigSchema>;
