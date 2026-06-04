@@ -1,6 +1,6 @@
 import httpService from '@/lib/http-service';
 import { API_CONFIG } from '@/constants/constants';
-import { Location } from '@/types';
+import { Location, LocationEnv } from '@/types';
 
 export interface CreateLocationData {
   name: string;
@@ -12,6 +12,7 @@ export interface CreateLocationData {
   latitude?: number;
   longitude?: number;
   isActive: boolean;
+  locationEnv?: LocationEnv;
 }
 
 export interface UpdateLocationData extends Partial<CreateLocationData> {

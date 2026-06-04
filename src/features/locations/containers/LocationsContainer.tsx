@@ -12,7 +12,7 @@ import { ActionIconButton } from '@/components/shared/ActionIconButton';
 import { Plus, MapPin, Trash2, Pencil, Zap, AlertTriangle, Eye } from 'lucide-react';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Table } from '@/components/shared/Table';
-import { Location } from '@/types';
+import { Location, LocationEnv } from '@/types';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import { cn } from '@/lib/utils';
 import {
@@ -66,6 +66,19 @@ export function LocationsContainer() {
                 <span className="font-semibold text-foreground group-hover:text-primary transition-colors">
                   {row.getValue('name')}
                 </span>
+                {row.original.locationEnv && (
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md border tracking-wider",
+                      row.original.locationEnv === LocationEnv.PRODUCTION
+                        ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                        : "bg-blue-500/10 text-blue-500 border-blue-500/20"
+                    )}
+                  >
+                    {row.original.locationEnv === LocationEnv.PRODUCTION ? 'PROD' : 'DEV'}
+                  </Badge>
+                )}
               </div>
             </TooltipTrigger>
             <TooltipContent>
@@ -203,12 +216,27 @@ export function LocationsContainer() {
               <div className="bg-card border border-border rounded-[1.5rem] p-5 shadow-sm space-y-4">
                 <div className="flex justify-between items-start text-left">
                   <div className="space-y-1">
-                    <h3
-                      className="font-bold text-lg cursor-pointer hover:text-primary transition-colors leading-tight"
-                      onClick={() => handleViewDetails(location)}
-                    >
-                      {location.name}
-                    </h3>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3
+                        className="font-bold text-lg cursor-pointer hover:text-primary transition-colors leading-tight"
+                        onClick={() => handleViewDetails(location)}
+                      >
+                        {location.name}
+                      </h3>
+                      {location.locationEnv && (
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md border tracking-wider",
+                            location.locationEnv === LocationEnv.PRODUCTION
+                              ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                              : "bg-blue-500/10 text-blue-500 border-blue-500/20"
+                          )}
+                        >
+                          {location.locationEnv === LocationEnv.PRODUCTION ? 'PROD' : 'DEV'}
+                        </Badge>
+                      )}
+                    </div>
                     <div className="flex items-center gap-1.5 text-muted-foreground">
                       <MapPin className="h-3 w-3" />
                       <span className="text-xs font-medium truncate max-w-[200px]">{location.city}, {location.state}</span>
