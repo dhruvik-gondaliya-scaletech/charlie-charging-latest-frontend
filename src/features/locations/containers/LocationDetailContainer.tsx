@@ -24,6 +24,7 @@ import { LocationStations } from '../components/LocationStations';
 import { FRONTEND_ROUTES } from '@/constants/constants';
 import { BackButton } from '@/components/shared/BackButton';
 import { ApplyTariffModal } from '../components/ApplyTariffModal';
+import { LocationEnv } from '@/types';
 
 export function LocationDetailContainer() {
     const { id } = useParams();
@@ -108,12 +109,12 @@ export function LocationDetailContainer() {
                                 variant="outline"
                                 className={cn(
                                     "px-3 py-1 rounded-full border shadow-sm font-bold uppercase tracking-widest text-[10px]",
-                                    location.locationEnv === 'PRODUCTION'
+                                    location.locationEnv === LocationEnv.PRODUCTION
                                         ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/30"
                                         : "bg-blue-500/10 text-blue-500 border-blue-500/30"
                                 )}
                             >
-                                {location.locationEnv === 'PRODUCTION' ? 'PROD' : 'DEV'}
+                                {location.locationEnv === LocationEnv.PRODUCTION ? 'PROD' : 'DEV'}
                             </Badge>
                         )}
                     </div>

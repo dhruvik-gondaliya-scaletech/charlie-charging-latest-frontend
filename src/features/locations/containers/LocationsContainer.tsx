@@ -12,7 +12,7 @@ import { ActionIconButton } from '@/components/shared/ActionIconButton';
 import { Plus, MapPin, Trash2, Pencil, Zap, AlertTriangle, Eye } from 'lucide-react';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Table } from '@/components/shared/Table';
-import { Location } from '@/types';
+import { Location, LocationEnv } from '@/types';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import { cn } from '@/lib/utils';
 import {
@@ -71,12 +71,12 @@ export function LocationsContainer() {
                     variant="outline"
                     className={cn(
                       "text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md border tracking-wider",
-                      row.original.locationEnv === 'PRODUCTION'
+                      row.original.locationEnv === LocationEnv.PRODUCTION
                         ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
                         : "bg-blue-500/10 text-blue-500 border-blue-500/20"
                     )}
                   >
-                    {row.original.locationEnv === 'PRODUCTION' ? 'PROD' : 'DEV'}
+                    {row.original.locationEnv === LocationEnv.PRODUCTION ? 'PROD' : 'DEV'}
                   </Badge>
                 )}
               </div>
@@ -228,12 +228,12 @@ export function LocationsContainer() {
                           variant="outline"
                           className={cn(
                             "text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md border tracking-wider",
-                            location.locationEnv === 'PRODUCTION'
+                            location.locationEnv === LocationEnv.PRODUCTION
                               ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
                               : "bg-blue-500/10 text-blue-500 border-blue-500/20"
                           )}
                         >
-                          {location.locationEnv === 'PRODUCTION' ? 'PROD' : 'DEV'}
+                          {location.locationEnv === LocationEnv.PRODUCTION ? 'PROD' : 'DEV'}
                         </Badge>
                       )}
                     </div>

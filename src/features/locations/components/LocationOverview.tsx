@@ -13,7 +13,7 @@ import {
     Hash,
     Activity
 } from 'lucide-react';
-import { Location } from '@/types';
+import { Location, LocationEnv } from '@/types';
 import { formatDate } from '@/lib/date';
 
 import dynamic from 'next/dynamic';
@@ -37,7 +37,7 @@ interface LocationOverviewProps {
 export function LocationOverview({ location }: LocationOverviewProps) {
     const details = [
         { label: 'Display Name', value: location.name, icon: Info },
-        { label: 'Environment Type', value: location.locationEnv || 'DEVELOPMENT', icon: Activity },
+        { label: 'Environment Type', value: location.locationEnv || LocationEnv.DEVELOPMENT, icon: Activity },
         { label: 'Global Address', value: location.address, icon: MapPin },
         { label: 'City / Region', value: location.city, icon: Building2 },
         { label: 'State / Province', value: location.state || 'N/A', icon: Navigation },

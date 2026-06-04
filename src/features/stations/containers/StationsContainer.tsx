@@ -33,7 +33,7 @@ import {
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table } from '@/components/shared/Table';
-import { Station, ChargingStatus } from '@/types';
+import { Station, ChargingStatus, LocationEnv } from '@/types';
 import { formatDate } from '@/lib/date';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import { cn } from '@/lib/utils';
@@ -162,12 +162,12 @@ export function StationsContainer() {
                 variant="outline"
                 className={cn(
                   "text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md border tracking-wider",
-                  row.original.location?.locationEnv === 'PRODUCTION'
+                  row.original.location?.locationEnv === LocationEnv.PRODUCTION
                     ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
                     : "bg-blue-500/10 text-blue-500 border-blue-500/20"
                 )}
               >
-                {row.original.location?.locationEnv === 'PRODUCTION' ? 'PROD' : 'DEV'}
+                {row.original.location?.locationEnv === LocationEnv.PRODUCTION ? 'PROD' : 'DEV'}
               </Badge>
             )}
           </div>
@@ -472,12 +472,12 @@ export function StationsContainer() {
                             variant="outline"
                             className={cn(
                               "text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md border tracking-wider",
-                              station.location?.locationEnv === 'PRODUCTION'
+                              station.location?.locationEnv === LocationEnv.PRODUCTION
                                 ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
                                 : "bg-blue-500/10 text-blue-500 border-blue-500/20"
                             )}
                           >
-                            {station.location?.locationEnv === 'PRODUCTION' ? 'PROD' : 'DEV'}
+                            {station.location?.locationEnv === LocationEnv.PRODUCTION ? 'PROD' : 'DEV'}
                           </Badge>
                         )}
                       </div>

@@ -35,6 +35,7 @@ import AddressAutocomplete, { ParsedAddress } from '@/components/shared/AddressA
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { LocationEnv } from '@/types';
 
 interface LocationFormProps {
     initialData?: Partial<LocationFormData>;
@@ -65,7 +66,7 @@ export function LocationForm({
             latitude: initialData?.latitude,
             longitude: initialData?.longitude,
             isActive: initialData?.isActive ?? true,
-            locationEnv: initialData?.locationEnv || 'DEVELOPMENT',
+            locationEnv: initialData?.locationEnv || LocationEnv.DEVELOPMENT,
         },
     });
 
@@ -155,7 +156,7 @@ export function LocationForm({
                                 </FormLabel>
                                 <Select
                                     onValueChange={field.onChange}
-                                    defaultValue={field.value || 'DEVELOPMENT'}
+                                    defaultValue={field.value || LocationEnv.DEVELOPMENT}
                                     value={field.value}
                                 >
                                     <FormControl>
@@ -164,8 +165,8 @@ export function LocationForm({
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                        <SelectItem value="DEVELOPMENT" className="font-medium">DEVELOPMENT (DEV)</SelectItem>
-                                        <SelectItem value="PRODUCTION" className="font-medium">PRODUCTION (PROD)</SelectItem>
+                                        <SelectItem value={LocationEnv.DEVELOPMENT} className="font-medium">DEVELOPMENT (DEV)</SelectItem>
+                                        <SelectItem value={LocationEnv.PRODUCTION} className="font-medium">PRODUCTION (PROD)</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">Determine if this location is used for development/testing or active production charging</p>
