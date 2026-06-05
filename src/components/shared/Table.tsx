@@ -137,7 +137,6 @@ function getCommonPinningStyles<T>(
     position: isPinned ? "sticky" : "unset",
     width: column.getSize(),
     zIndex: isPinned ? 1 : 0,
-    backgroundColor: "hsl(var(--card))",
   };
 }
 

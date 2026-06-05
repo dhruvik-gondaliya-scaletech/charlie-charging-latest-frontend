@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
 import { Shield, AppWindow, Globe, Link as LinkIcon } from 'lucide-react';
+import { CopyButton } from '@/components/shared/CopyButton';
 
 interface OcpiPartyDetailsModalProps {
     credential: OcpiCredential | null;
@@ -30,11 +31,14 @@ export function OcpiPartyDetailsModal({ credential, isOpen, onClose }: OcpiParty
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Card className="bg-muted/30 border-none shadow-none">
                         <CardContent className="pt-6">
-                            <div className="flex items-center gap-2 mb-2">
-                                <Globe className="h-4 w-4 text-primary" />
-                                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Version URL</span>
+                            <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                    <Globe className="h-4 w-4 text-primary" />
+                                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Version URL</span>
+                                </div>
+                                <CopyButton value={credential.partnerVersionsUrl} className="h-5 w-5 bg-background shadow-xs" toastMessage="Version URL copied" />
                             </div>
-                            <code className="text-[11px] font-mono break-all">{credential.partnerVersionsUrl}</code>
+                            <code className="text-[11px] font-mono break-all block pr-6">{credential.partnerVersionsUrl}</code>
                         </CardContent>
                     </Card>
                     <Card className="bg-muted/30 border-none shadow-none">
@@ -44,17 +48,26 @@ export function OcpiPartyDetailsModal({ credential, isOpen, onClose }: OcpiParty
                                 <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Tokens</span>
                             </div>
                             <div className="space-y-1">
-                                <div className="flex justify-between items-baseline">
+                                <div className="flex justify-between items-center h-7">
                                     <span className="text-[10px] uppercase font-bold text-muted-foreground">Token A:</span>
-                                    <code className="text-[10px] font-mono">{credential.tokenA || '-'}</code>
+                                    <div className="flex items-center gap-1.5">
+                                        <code className="text-[10px] font-mono">{credential.tokenA || '-'}</code>
+                                        {credential.tokenA && <CopyButton value={credential.tokenA} className="h-5 w-5 bg-background shadow-xs" toastMessage="Token A copied" />}
+                                    </div>
                                 </div>
-                                <div className="flex justify-between items-baseline">
+                                <div className="flex justify-between items-center h-7">
                                     <span className="text-[10px] uppercase font-bold text-muted-foreground">Token B:</span>
-                                    <code className="text-[10px] font-mono">{credential.tokenB ? '********' : '-'}</code>
+                                    <div className="flex items-center gap-1.5">
+                                        <code className="text-[10px] font-mono">{credential.tokenB ? '********' : '-'}</code>
+                                        {credential.tokenB && <CopyButton value={credential.tokenB} className="h-5 w-5 bg-background shadow-xs" toastMessage="Token B copied" />}
+                                    </div>
                                 </div>
-                                <div className="flex justify-between items-baseline">
+                                <div className="flex justify-between items-center h-7">
                                     <span className="text-[10px] uppercase font-bold text-muted-foreground">Token C:</span>
-                                    <code className="text-[10px] font-mono">{credential.tokenC ? '********' : '-'}</code>
+                                    <div className="flex items-center gap-1.5">
+                                        <code className="text-[10px] font-mono">{credential.tokenC ? '********' : '-'}</code>
+                                        {credential.tokenC && <CopyButton value={credential.tokenC} className="h-5 w-5 bg-background shadow-xs" toastMessage="Token C copied" />}
+                                    </div>
                                 </div>
                             </div>
                         </CardContent>
@@ -107,9 +120,12 @@ export function OcpiPartyDetailsModal({ credential, isOpen, onClose }: OcpiParty
                                             <Badge variant="outline" className="text-[10px] font-mono border-primary/20 text-primary uppercase">{endpoint.identifier}</Badge>
                                             <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">({endpoint.role})</span>
                                         </div>
-                                        <code className="text-[10px] font-mono break-all text-muted-foreground opacity-70 truncate max-w-[300px]" title={endpoint.url}>
-                                            {endpoint.url}
-                                        </code>
+                                        <div className="flex items-center gap-2 max-w-full sm:max-w-[320px]">
+                                            <code className="text-[10px] font-mono break-all text-muted-foreground opacity-70 truncate" title={endpoint.url}>
+                                                {endpoint.url}
+                                            </code>
+                                            <CopyButton value={endpoint.url} className="h-5 w-5 bg-background shadow-xs shrink-0" toastMessage={`${endpoint.identifier} endpoint URL copied`} />
+                                        </div>
                                     </div>
                                 ))}
                             </div>
