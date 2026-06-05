@@ -66,19 +66,6 @@ export function LocationsContainer() {
                 <span className="font-semibold text-foreground group-hover:text-primary transition-colors">
                   {row.getValue('name')}
                 </span>
-                {row.original.locationEnv && (
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md border tracking-wider",
-                      row.original.locationEnv === LocationEnv.PRODUCTION
-                        ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                        : "bg-blue-500/10 text-blue-500 border-blue-500/20"
-                    )}
-                  >
-                    {row.original.locationEnv === LocationEnv.PRODUCTION ? 'PROD' : 'DEV'}
-                  </Badge>
-                )}
               </div>
             </TooltipTrigger>
             <TooltipContent>
@@ -86,6 +73,27 @@ export function LocationsContainer() {
             </TooltipContent>
           </Tooltip>
         ),
+      },
+      {
+        accessorKey: 'locationEnv',
+        header: 'Environment',
+        cell: ({ row }) => {
+          const env = row.original.locationEnv;
+          if (!env) return <span className="text-xs text-muted-foreground">-</span>;
+          return (
+            <Badge
+              variant="outline"
+              className={cn(
+                "text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-md border tracking-wider",
+                env === LocationEnv.PRODUCTION
+                  ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                  : "bg-blue-500/10 text-blue-500 border-blue-500/20"
+              )}
+            >
+              {env === LocationEnv.PRODUCTION ? 'Production' : 'Development'}
+            </Badge>
+          );
+        },
       },
       {
         accessorKey: 'address',

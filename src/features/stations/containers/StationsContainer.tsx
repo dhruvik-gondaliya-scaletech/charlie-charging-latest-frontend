@@ -143,35 +143,41 @@ export function StationsContainer() {
         accessorKey: 'name',
         header: 'Name',
         cell: ({ row }) => (
-          <div className="flex items-center gap-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div
-                  className="font-semibold text-foreground cursor-pointer hover:text-primary transition-colors inline-block"
-                  onClick={() => router.push(`${FRONTEND_ROUTES.STATIONS_DETAILS(row.original.id)}?name=${encodeURIComponent(row.original.name)}`)}
-                >
-                  {row.getValue('name')}
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="text-xs">View Details</p>
-              </TooltipContent>
-            </Tooltip>
-            {row.original.location?.locationEnv && (
-              <Badge
-                variant="outline"
-                className={cn(
-                  "text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md border tracking-wider",
-                  row.original.location?.locationEnv === LocationEnv.PRODUCTION
-                    ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                    : "bg-blue-500/10 text-blue-500 border-blue-500/20"
-                )}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div
+                className="font-semibold text-foreground cursor-pointer hover:text-primary transition-colors inline-block"
+                onClick={() => router.push(`${FRONTEND_ROUTES.STATIONS_DETAILS(row.original.id)}?name=${encodeURIComponent(row.original.name)}`)}
               >
-                {row.original.location?.locationEnv === LocationEnv.PRODUCTION ? 'PROD' : 'DEV'}
-              </Badge>
-            )}
-          </div>
+                {row.getValue('name')}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-xs">View Details</p>
+            </TooltipContent>
+          </Tooltip>
         ),
+      },
+      {
+        id: 'environment',
+        header: 'Environment',
+        cell: ({ row }) => {
+          const env = row.original.location?.locationEnv;
+          if (!env) return <span className="text-xs text-muted-foreground">-</span>;
+          return (
+            <Badge
+              variant="outline"
+              className={cn(
+                "text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-md border tracking-wider",
+                env === LocationEnv.PRODUCTION
+                  ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                  : "bg-blue-500/10 text-blue-500 border-blue-500/20"
+              )}
+            >
+              {env === LocationEnv.PRODUCTION ? 'Production' : 'Development'}
+            </Badge>
+          );
+        },
       },
       {
         accessorKey: 'chargePointId',
