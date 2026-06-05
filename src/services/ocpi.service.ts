@@ -45,9 +45,13 @@ export interface OcpiToken {
     authId: string;
     visualNumber?: string;
     issuer: string;
-    allowed: boolean;
-    whitelist: string;
-    lastUpdated: string;
+    valid: boolean;
+    groupId?: string | null;
+    createdAt: string;
+    updatedAt: string;
+    allowed?: boolean;
+    whitelist?: string;
+    lastUpdated?: string;
 }
 
 export interface OcpiSession {
@@ -55,12 +59,14 @@ export interface OcpiSession {
     party_id: string;
     country_code: string;
     location_id: string;
+    location_name?: string;
     evse_uid?: string;
     kwh: number;
     status: string;
     start_date_time: string;
     end_date_time?: string;
     auth_id?: string;
+    currency?: string;
 }
 
 export interface OcpiCdr {
@@ -68,6 +74,7 @@ export interface OcpiCdr {
     party_id: string;
     country_code: string;
     location_id: string;
+    location_name?: string;
     total_energy: number;
     total_time: number;
     total_cost: {
@@ -75,6 +82,7 @@ export interface OcpiCdr {
         incl_vat: number;
     };
     last_updated: string;
+    currency?: string;
 }
 
 export interface OcpiTariff {

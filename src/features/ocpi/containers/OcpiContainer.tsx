@@ -15,6 +15,7 @@ import { OcpiCdrsList } from '../components/OcpiCdrsList';
 import { OcpiTariffsList } from '../components/OcpiTariffsList';
 import { OcpiLocationsList } from '../components/OcpiLocationsList';
 import { OcpiCommandConsole } from '../components/OcpiCommandConsole';
+import { OcpiLocalSettings } from '../components/OcpiLocalSettings';
 import { ConnectPartyModal } from '../components/ConnectPartyModal';
 import { StatCard } from '@/features/dashboard/components/StatCard';
 import { cn } from '@/lib/utils';
@@ -171,6 +172,7 @@ export function OcpiContainer() {
                         <TabsTrigger value="cdrs" className="rounded-lg px-6 min-w-fit shrink-0">Billing (CDRs)</TabsTrigger>
                         <TabsTrigger value="tariffs" className="rounded-lg px-6 min-w-fit shrink-0">Tariffs</TabsTrigger>
                         <TabsTrigger value="locations" className="rounded-lg px-6 min-w-fit shrink-0">Locations</TabsTrigger>
+                        <TabsTrigger value="local-settings" className="rounded-lg px-6 min-w-fit shrink-0">CPO Settings</TabsTrigger>
                         <TabsTrigger value="commands" className="rounded-lg px-6 min-w-fit shrink-0 text-rose-500 font-bold">Command Console</TabsTrigger>
                     </TabsList>
 
@@ -196,6 +198,10 @@ export function OcpiContainer() {
 
                     <TabsContent value="locations" className="pt-2">
                         <OcpiLocationsList />
+                    </TabsContent>
+
+                    <TabsContent value="local-settings" className="pt-2">
+                        <OcpiLocalSettings />
                     </TabsContent>
 
                     <TabsContent value="commands" className="pt-2">

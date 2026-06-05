@@ -15,6 +15,18 @@ import { OcpiCdr } from '@/services/ocpi.service';
 import { useOcpiCdrs } from '@/hooks/get/useOcpi';
 import { Button } from '@/components/ui/button';
 
+const formatCurrency = (amount: number, currencyCode?: string) => {
+    const code = currencyCode?.toUpperCase() || 'INR';
+    try {
+        return new Intl.NumberFormat(undefined, {
+            style: 'currency',
+            currency: code,
+        }).format(amount);
+    } catch {
+        return `${code} ${amount.toFixed(2)}`;
+    }
+};
+
 const columns: ColumnDef<OcpiCdr>[] = [
     {
         accessorKey: 'id',
@@ -52,9 +64,32 @@ const columns: ColumnDef<OcpiCdr>[] = [
         ),
     },
     {
-        accessorKey: 'location_id',
+        id: 'location',
         header: 'Location',
-        cell: ({ row }) => <span className="text-sm font-medium">{row.getValue('location_id')}</span>,
+        cell: ({ row }) => {
+            const locationId = row.original.location_id;
+            const locationName = row.original.location_name;
+            return (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <div className="flex flex-col max-w-[1600px] cursor-default">
+                                <span className="truncate text-sm font-medium">
+                                    {locationName || locationId || '—'}
+                                </span>
+                                {locationName && locationId && (
+                                    <span className="text-[10px] text-muted-foreground truncate">{locationId}</span>
+                                )}
+                            </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p className="text-xs font-semibold">{locationName || 'Unknown Location'}</p>
+                            <p className="text-[10px] font-mono text-muted-foreground mt-0.5">{locationId}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            );
+        },
     },
     {
         accessorKey: 'total_energy',
@@ -91,7 +126,7 @@ const columns: ColumnDef<OcpiCdr>[] = [
             const cost = row.original.total_cost?.incl_vat || 0;
             return (
                 <div className="font-bold text-foreground tabular-nums">
-                    ₹{cost.toFixed(2)}
+                    {formatCurrency(cost, row.original.currency)}
                 </div>
             );
         },
@@ -138,7 +173,7 @@ export function OcpiCdrsList() {
                         <span className="font-mono font-bold text-xs text-foreground">{item.id.slice(0, 16)}…</span>
                     </div>
                     <div className="font-bold text-foreground text-sm">
-                        ₹{cost.toFixed(2)}
+                        {formatCurrency(cost, item.currency)}
                     </div>
                 </div>
 
@@ -163,7 +198,7 @@ export function OcpiCdrsList() {
                     </div>
                     <div className="flex flex-col gap-0.5">
                         <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Location</span>
-                        <span className="text-xs font-medium text-muted-foreground truncate">{item.location_id || '—'}</span>
+                        <span className="text-xs font-medium text-muted-foreground truncate">{item.location_name || item.location_id || '—'}</span>
                     </div>
                 </div>
 

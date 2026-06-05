@@ -19,6 +19,16 @@ const TARIFF_TYPE_COLOR: Record<string, string> = {
     REGULAR: 'bg-muted text-muted-foreground border-border',
 };
 
+const getCurrencySymbol = (currencyCode?: string): string => {
+    const symbolMap: Record<string, string> = {
+        INR: '₹',
+        EUR: '€',
+        USD: '$',
+        GBP: '£',
+    };
+    return symbolMap[currencyCode?.toUpperCase() || 'INR'] || (currencyCode || '₹');
+};
+
 const columns: ColumnDef<OcpiTariff>[] = [
     {
         accessorKey: 'id',
@@ -69,7 +79,7 @@ const columns: ColumnDef<OcpiTariff>[] = [
                         <div key={i} className="flex flex-wrap gap-1">
                             {el.price_components.map((pc, j) => (
                                 <Badge key={j} variant="outline" className="text-[10px] bg-background">
-                                    {pc.type}: ₹{pc.price}/{pc.step_size}kWh
+                                    {pc.type}: {getCurrencySymbol(row.original.currency)}{pc.price}/{pc.step_size}kWh
                                     {pc.vat != null ? ` (+${pc.vat}% VAT)` : ''}
                                 </Badge>
                             ))}
@@ -163,7 +173,7 @@ export function OcpiTariffsList() {
                                 <div key={i} className="flex flex-wrap gap-1">
                                     {el.price_components.map((pc, j) => (
                                         <Badge key={j} variant="outline" className="text-[10px] bg-background">
-                                            {pc.type}: ₹{pc.price}/{pc.step_size}kWh
+                                            {pc.type}: {getCurrencySymbol(item.currency)}{pc.price}/{pc.step_size}kWh
                                             {pc.vat != null ? ` (+${pc.vat}% VAT)` : ''}
                                         </Badge>
                                     ))}

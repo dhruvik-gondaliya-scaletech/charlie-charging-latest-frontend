@@ -56,20 +56,27 @@ const columns: ColumnDef<OcpiSession>[] = [
         header: 'Location / EVSE',
         cell: ({ row }) => {
             const locationId = row.original.location_id;
+            const locationName = row.original.location_name;
             const evseUid = row.original.evse_uid;
             return (
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <div className="flex flex-col max-w-[1600px] cursor-default">
-                                <span className="truncate text-sm">{locationId || '—'}</span>
+                                <span className="truncate text-sm font-medium">
+                                    {locationName || locationId || '—'}
+                                </span>
+                                {locationName && locationId && (
+                                    <span className="text-[10px] text-muted-foreground truncate">{locationId}</span>
+                                )}
                                 {evseUid && (
                                     <span className="text-[10px] uppercase text-muted-foreground">{evseUid}</span>
                                 )}
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p className="text-xs">{locationId || '—'}</p>
+                            <p className="text-xs font-semibold">{locationName || 'Unknown Location'}</p>
+                            <p className="text-[10px] font-mono text-muted-foreground mt-0.5">{locationId}</p>
                             {evseUid && (
                                 <p className="text-[10px] uppercase text-muted-foreground mt-0.5">EVSE: {evseUid}</p>
                             )}
@@ -219,7 +226,7 @@ export function OcpiSessionsList() {
                     </div>
                     <div className="flex flex-col gap-0.5 col-span-2">
                         <span className="text-[10px] font-black uppercase text-muted-foreground tracking-wider">Location / EVSE</span>
-                        <span className="text-xs font-medium text-muted-foreground truncate">{item.location_id || '—'} {item.evse_uid ? ` / ${item.evse_uid}` : ''}</span>
+                        <span className="text-xs font-medium text-muted-foreground truncate">{item.location_name || item.location_id || '—'} {item.evse_uid ? ` / ${item.evse_uid}` : ''}</span>
                     </div>
                 </div>
 
