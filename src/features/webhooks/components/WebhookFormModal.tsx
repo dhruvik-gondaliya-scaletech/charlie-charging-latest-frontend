@@ -8,8 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { WebhookEvent, WebhookConfiguration, AppEnvironment } from '@/types';
-import { useEnvironment } from '@/contexts/EnvironmentContext';
+import { WebhookEvent, WebhookConfiguration } from '@/types';
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Settings2, Globe, Bell } from 'lucide-react';
@@ -38,9 +37,6 @@ export function WebhookFormModal({
     initialData,
     isLoading,
 }: WebhookFormModalProps) {
-    const { environment: activeEnv } = useEnvironment();
-    const mappedActiveEnv = activeEnv === 'prod' ? AppEnvironment.PRODUCTION : AppEnvironment.DEVELOPMENT;
-
     const {
         register,
         handleSubmit,
@@ -58,7 +54,6 @@ export function WebhookFormModal({
             isActive: true,
             maxRetries: 3,
             timeoutSeconds: 10,
-            environment: mappedActiveEnv,
         },
     });
 
@@ -83,7 +78,6 @@ export function WebhookFormModal({
                 isActive: initialData.isActive,
                 maxRetries: initialData.maxRetries,
                 timeoutSeconds: initialData.timeoutSeconds,
-                environment: initialData.environment ?? mappedActiveEnv,
             });
         } else {
             reset({
@@ -93,10 +87,9 @@ export function WebhookFormModal({
                 isActive: true,
                 maxRetries: 3,
                 timeoutSeconds: 10,
-                environment: mappedActiveEnv,
             });
         }
-    }, [initialData, reset, isOpen, mappedActiveEnv]);
+    }, [initialData, reset, isOpen]);
 
 
 

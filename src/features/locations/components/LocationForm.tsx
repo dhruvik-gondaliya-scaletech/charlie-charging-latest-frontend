@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { locationSchema, LocationFormData } from '@/lib/validations/location.schema';
@@ -35,8 +35,6 @@ import AddressAutocomplete, { ParsedAddress } from '@/components/shared/AddressA
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { LocationEnv } from '@/types';
-import { useEnvironment } from '@/contexts/EnvironmentContext';
 
 interface LocationFormProps {
     initialData?: Partial<LocationFormData>;
@@ -51,9 +49,6 @@ export function LocationForm({
     isLoading = false,
     mode = 'create',
 }: LocationFormProps) {
-    const { environment: activeEnv } = useEnvironment();
-    const mappedActiveEnv = activeEnv === 'prod' ? LocationEnv.PRODUCTION : LocationEnv.DEVELOPMENT;
-
     const [useManualEntry, setUseManualEntry] = useState(mode === 'edit');
     const [isAddressFilled, setIsAddressFilled] = useState(mode === 'edit');
 
@@ -70,13 +65,8 @@ export function LocationForm({
             latitude: initialData?.latitude,
             longitude: initialData?.longitude,
             isActive: initialData?.isActive ?? true,
-            locationEnv: initialData?.locationEnv || mappedActiveEnv,
         },
     });
-
-    useEffect(() => {
-        form.setValue('locationEnv', initialData?.locationEnv || mappedActiveEnv);
-    }, [initialData?.locationEnv, mappedActiveEnv, form]);
 
     const handleAddressSelect = (address: ParsedAddress) => {
         form.setValue('address', address.address, { shouldValidate: true });
