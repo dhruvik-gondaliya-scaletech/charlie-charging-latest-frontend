@@ -5,6 +5,7 @@ import { sessionsEndpoints } from './endpoints/sessions';
 import { tariffsEndpoints } from './endpoints/tariffs';
 import { brandsEndpoints } from './endpoints/brands';
 import { usersEndpoints } from './endpoints/users';
+import { ocpiEndpoints } from './endpoints/ocpi';
 import { API_CONFIG } from '@/constants/constants';
 
 export interface ResponseField {
@@ -140,6 +141,11 @@ export const PORTAL_GROUPS: PortalGroup[] = [
     name: 'Brands & Hardware',
     categorySlug: 'brands',
     endpoints: brandsEndpoints
+  },
+  {
+    name: 'OCPI & Roaming',
+    categorySlug: 'ocpi',
+    endpoints: ocpiEndpoints
   },
   // {
   //   name: 'Drivers & Users',
