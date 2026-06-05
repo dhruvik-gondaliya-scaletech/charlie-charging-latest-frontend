@@ -20,28 +20,28 @@ export interface UpdateLocationData extends Partial<CreateLocationData> {
 }
 
 class LocationService {
-  async getAllLocations(params?: { name?: string }) {
-    return httpService.get<Location[]>(API_CONFIG.endpoints.locations.base, { params });
+  async getAllLocations(env: string, params?: { name?: string }) {
+    return httpService.get<Location[]>(API_CONFIG.endpoints.locations.base(env), { params });
   }
 
-  async getLocationById(id: string) {
-    return httpService.get<Location>(API_CONFIG.endpoints.locations.byId(id));
+  async getLocationById(env: string, id: string) {
+    return httpService.get<Location>(API_CONFIG.endpoints.locations.byId(env, id));
   }
 
-  async createLocation(data: CreateLocationData) {
-    return httpService.post<Location>(API_CONFIG.endpoints.locations.base, data);
+  async createLocation(env: string, data: CreateLocationData) {
+    return httpService.post<Location>(API_CONFIG.endpoints.locations.create(env), data);
   }
 
-  async updateLocation(id: string, data: UpdateLocationData) {
-    return httpService.patch<Location>(API_CONFIG.endpoints.locations.byId(id), data);
+  async updateLocation(env: string, id: string, data: UpdateLocationData) {
+    return httpService.patch<Location>(API_CONFIG.endpoints.locations.update(env, id), data);
   }
 
   async deleteLocation(id: string) {
-    return httpService.delete(API_CONFIG.endpoints.locations.byId(id));
+    return httpService.delete(API_CONFIG.endpoints.locations.delete(id));
   }
 
   async applyTariffToLocation(id: string, tariffId: string) {
-    return httpService.post(`${API_CONFIG.endpoints.locations.byId(id)}/apply-tariff`, { tariffId });
+    return httpService.post(`/locations/${id}/apply-tariff`, { tariffId });
   }
 }
 

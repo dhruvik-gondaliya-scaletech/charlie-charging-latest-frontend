@@ -29,6 +29,17 @@ export function WebhookCard({ webhook, onDelete }: WebhookCardProps) {
             variant="outline"
             className={cn(
               'capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm',
+              webhook.environment === 'PRODUCTION'
+                ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                : 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+            )}
+          >
+            {webhook.environment === 'PRODUCTION' ? 'PROD' : 'DEV'}
+          </Badge>
+          <Badge
+            variant="outline"
+            className={cn(
+              'capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm',
               webhook.isActive
                 ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
                 : 'bg-destructive/10 text-destructive border-destructive/20'

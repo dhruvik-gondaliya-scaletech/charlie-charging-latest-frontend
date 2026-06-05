@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Control, Resolver, useForm } from 'react-hook-form';
 import { tariffSchema, TariffFormData } from '@/lib/validations/billing.schema';
 import { Tariff } from '@/services/billing.service';
+import { AppEnvironment } from '@/types';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +27,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { useEnvironment } from '@/contexts/EnvironmentContext';
 
 interface TariffFormModalProps {
   isOpen: boolean;
@@ -42,6 +44,9 @@ export function TariffFormModal({
   initialData,
   isLoading = false,
 }: TariffFormModalProps) {
+  const { environment: activeEnv } = useEnvironment();
+  const mappedActiveEnv = activeEnv === 'prod' ? AppEnvironment.PRODUCTION : AppEnvironment.DEVELOPMENT;
+
   const form = useForm<TariffFormData>({
     resolver: zodResolver(tariffSchema) as unknown as Resolver<TariffFormData>,
     defaultValues: {
@@ -54,6 +59,7 @@ export function TariffFormModal({
       idleGracePeriodMinutes: 0,
       maxIdleFee: 0,
       currency: 'INR',
+      environment: mappedActiveEnv,
     },
   });
 
@@ -70,8 +76,9 @@ export function TariffFormModal({
       idleGracePeriodMinutes: initialData?.idleGracePeriodMinutes ?? 0,
       maxIdleFee: initialData?.maxIdleFee ?? 0,
       currency: (initialData?.currency?.toUpperCase() as 'USD' | 'INR') ?? 'INR',
+      environment: initialData?.environment ?? mappedActiveEnv,
     });
-  }, [form, initialData, isOpen]);
+  }, [form, initialData, isOpen, mappedActiveEnv]);
 
   const isEdit = !!initialData;
 

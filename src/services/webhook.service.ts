@@ -22,34 +22,34 @@ export interface GetWebhookDeliveriesParams {
 }
 
 class WebhookService {
-  async getAll(name?: string) {
-    return httpService.get<WebhookConfiguration[]>(API_CONFIG.endpoints.webhooks.base, {
+  async getAll(env: string, name?: string) {
+    return httpService.get<WebhookConfiguration[]>(API_CONFIG.endpoints.webhooks.base(env), {
       params: { name },
     });
   }
 
-  async getById(id: string) {
-    return httpService.get<WebhookConfiguration>(API_CONFIG.endpoints.webhooks.byId(id));
+  async getById(env: string, id: string) {
+    return httpService.get<WebhookConfiguration>(API_CONFIG.endpoints.webhooks.byId(env, id));
   }
 
-  async create(data: CreateWebhookData) {
-    return httpService.post<WebhookConfiguration>(API_CONFIG.endpoints.webhooks.base, data);
+  async create(env: string, data: CreateWebhookData) {
+    return httpService.post<WebhookConfiguration>(API_CONFIG.endpoints.webhooks.create(env), data);
   }
 
-  async update(id: string, data: UpdateWebhookData) {
-    return httpService.patch<WebhookConfiguration>(API_CONFIG.endpoints.webhooks.byId(id), data);
+  async update(env: string, id: string, data: UpdateWebhookData) {
+    return httpService.patch<WebhookConfiguration>(API_CONFIG.endpoints.webhooks.update(env, id), data);
   }
 
   async delete(id: string) {
-    return httpService.delete(API_CONFIG.endpoints.webhooks.byId(id));
+    return httpService.delete(API_CONFIG.endpoints.webhooks.delete(id));
   }
 
-  async getSecret(id: string) {
-    return httpService.get<{ secretKey: string }>(API_CONFIG.endpoints.webhooks.secret(id));
+  async getSecret(env: string, id: string) {
+    return httpService.get<{ secretKey: string }>(API_CONFIG.endpoints.webhooks.secret(env, id));
   }
 
-  async getDeliveries(params?: GetWebhookDeliveriesParams) {
-    return httpService.get<WebhookDelivery[]>(API_CONFIG.endpoints.webhooks.deliveries, { params });
+  async getDeliveries(env: string, params?: GetWebhookDeliveriesParams) {
+    return httpService.get<WebhookDelivery[]>(API_CONFIG.endpoints.webhooks.deliveries(env), { params });
   }
 
   async retryDelivery(deliveryId: string) {

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { AppEnvironment } from '@/types';
 
 export const tariffSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -10,6 +11,7 @@ export const tariffSchema = z.object({
   idleGracePeriodMinutes: z.coerce.number().min(0, 'Grace period must be 0 or greater').default(0),
   maxIdleFee: z.coerce.number().min(0, 'Max idle fee must be 0 or greater').default(0),
   currency: z.enum(['USD', 'INR'], { message: 'Currency is required' }),
+  environment: z.nativeEnum(AppEnvironment).default(AppEnvironment.DEVELOPMENT),
 });
 
 export type TariffFormData = z.infer<typeof tariffSchema>;

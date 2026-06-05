@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { WebhookEvent } from '@/types';
+import { WebhookEvent, AppEnvironment } from '@/types';
 
 export const webhookSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
@@ -9,6 +9,7 @@ export const webhookSchema = z.object({
   maxRetries: z.number().int().min(0).max(10),
   timeoutSeconds: z.number().int().min(1).max(60),
   headers: z.record(z.string(), z.string()).optional(),
+  environment: z.nativeEnum(AppEnvironment).default(AppEnvironment.DEVELOPMENT),
 });
 
 export type WebhookFormData = z.infer<typeof webhookSchema>;

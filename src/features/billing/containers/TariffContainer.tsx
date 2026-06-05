@@ -11,6 +11,7 @@ import { TariffFormData } from '@/lib/validations/billing.schema';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { formatDate } from '@/lib/date';
 import { cn } from '@/lib/utils';
+import { AppEnvironment } from '@/types';
 import { Table } from '@/components/shared/Table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -35,6 +36,27 @@ export function TariffContainer() {
         accessorKey: 'name',
         header: 'Name',
         cell: ({ row }) => <span className="font-semibold">{row.getValue('name')}</span>,
+      },
+      {
+        accessorKey: 'environment',
+        header: 'Environment',
+        cell: ({ row }) => {
+          const env = row.original.environment as AppEnvironment;
+          const colorClasses = env === AppEnvironment.PRODUCTION
+            ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+            : 'bg-blue-500/10 text-blue-500 border-blue-500/20';
+          return (
+            <Badge
+              variant="outline"
+              className={cn(
+                'capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm',
+                colorClasses
+              )}
+            >
+              {env === AppEnvironment.PRODUCTION ? 'PROD' : 'DEV'}
+            </Badge>
+          );
+        },
       },
       {
         accessorKey: 'pricePerKwh',
@@ -222,6 +244,17 @@ export function TariffContainer() {
                   <div className="flex items-center gap-2">
                     <Badge variant="outline" className="bg-primary/5 text-primary border-primary/10 font-bold px-2 py-0.5 rounded-lg shadow-sm text-xs">
                       {tariff.currency} {Number(tariff.pricePerKwh ?? 0).toFixed(2)} / kWh
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        'capitalize font-bold px-2 py-0.5 rounded-full border shadow-sm text-[9px] uppercase tracking-tighter',
+                        tariff.environment === AppEnvironment.PRODUCTION
+                          ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                          : 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                      )}
+                    >
+                      {tariff.environment === AppEnvironment.PRODUCTION ? 'PROD' : 'DEV'}
                     </Badge>
                   </div>
                 </div>
