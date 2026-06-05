@@ -62,16 +62,9 @@ export interface StationStats {
 
 class StationService {
   async getAllStations(env: string, params?: GetStationsParams) {
-    const queryParams = new URLSearchParams();
-    if (params?.name) queryParams.append('name', params.name);
-    if (params?.status) queryParams.append('status', params.status);
-    if (params?.locationId) queryParams.append('locationId', params.locationId);
-    if (params?.type) queryParams.append('type', params.type);
-    if (params?.visibility) queryParams.append('visibility', params.visibility);
-
-    const base = API_CONFIG.endpoints.stations.base(env);
-    const url = queryParams.toString() ? `${base}?${queryParams.toString()}` : base;
-    return httpService.get<Station[]>(url);
+    return httpService.get<Station[]>(API_CONFIG.endpoints.stations.base(env), {
+      params,
+    });
   }
 
   async getStationStats(env: string) {
