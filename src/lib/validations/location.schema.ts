@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { LocationEnv } from '@/types';
 
 export const locationSchema = z.object({
   name: z.string().min(2, 'Location name must be at least 2 characters'),
@@ -11,7 +10,6 @@ export const locationSchema = z.object({
   latitude: z.coerce.number().optional(),
   longitude: z.coerce.number().optional(),
   isActive: z.boolean(),
-  locationEnv: z.nativeEnum(LocationEnv).optional(),
 });
 
 export type LocationFormData = z.infer<typeof locationSchema>;

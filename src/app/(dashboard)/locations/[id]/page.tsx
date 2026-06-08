@@ -13,14 +13,19 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     
     // Ensure no double slashes when joining baseUrl and endpoint
     const baseUrl = API_CONFIG.baseUrl.endsWith('/') ? API_CONFIG.baseUrl.slice(0, -1) : API_CONFIG.baseUrl;
-    const endpoint = API_CONFIG.endpoints.locations.byId(id);
-    const url = `${baseUrl}${endpoint}`;
-    
-    const response = await fetch(url, {
+    let response = await fetch(`${baseUrl}${API_CONFIG.endpoints.locations.byId('prod', id)}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
     });
+
+    if (!response.ok) {
+      response = await fetch(`${baseUrl}${API_CONFIG.endpoints.locations.byId('dev', id)}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+    }
 
     if (response.ok) {
       const result = await response.json();

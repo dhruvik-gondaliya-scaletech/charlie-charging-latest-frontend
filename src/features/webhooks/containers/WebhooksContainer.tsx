@@ -14,7 +14,7 @@ import { useDeleteWebhook } from '@/hooks/delete/useWebhookMutations';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table } from '@/components/shared/Table';
-import { WebhookConfiguration, WebhookEvent } from '@/types';
+import { WebhookConfiguration, WebhookEvent, AppEnvironment } from '@/types';
 import { formatDate } from '@/lib/date';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import {
@@ -215,6 +215,27 @@ export function WebhooksContainer() {
         },
       },
       {
+        accessorKey: 'environment',
+        header: 'Environment',
+        cell: ({ row }) => {
+          const env = row.original.environment as AppEnvironment;
+          const colorClasses = env === AppEnvironment.PRODUCTION
+            ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+            : 'bg-blue-500/10 text-blue-500 border-blue-500/20';
+          return (
+            <Badge
+              variant="outline"
+              className={cn(
+                'capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm',
+                colorClasses
+              )}
+            >
+              {env === AppEnvironment.PRODUCTION ? 'PROD' : 'DEV'}
+            </Badge>
+          );
+        },
+      },
+      {
         accessorKey: 'isActive',
         header: 'Status',
         cell: ({ row }) => {
@@ -381,17 +402,30 @@ export function WebhooksContainer() {
                       {new URL(webhook.url).hostname}
                     </div>
                   </div>
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      'capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm text-[9px] uppercase tracking-tighter',
-                      webhook.isActive
-                        ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-                        : 'bg-muted text-muted-foreground border-border'
-                    )}
-                  >
-                    {webhook.isActive ? 'live' : 'paused'}
-                  </Badge>
+                  <div className="flex gap-1.5">
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        'capitalize font-bold px-2 py-0.5 rounded-full border shadow-sm text-[9px] uppercase tracking-tighter',
+                        webhook.environment === AppEnvironment.PRODUCTION
+                          ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                          : 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                      )}
+                    >
+                      {webhook.environment === AppEnvironment.PRODUCTION ? 'PROD' : 'DEV'}
+                    </Badge>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        'capitalize font-bold px-2 py-0.5 rounded-full border shadow-sm text-[9px] uppercase tracking-tighter',
+                        webhook.isActive
+                          ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                          : 'bg-muted text-muted-foreground border-border'
+                      )}
+                    >
+                      {webhook.isActive ? 'live' : 'paused'}
+                    </Badge>
+                  </div>
                 </div>
 
                 <div className="space-y-1">

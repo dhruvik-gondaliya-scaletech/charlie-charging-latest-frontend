@@ -1,5 +1,6 @@
 import httpService from '@/lib/http-service';
 import { API_CONFIG } from '@/constants/constants';
+import { AppEnvironment } from '@/types';
 
 export type Currency = 'USD' | 'INR';
 
@@ -14,6 +15,7 @@ export interface Tariff {
   idleGracePeriodMinutes: number;
   maxIdleFee: number;
   currency: Currency;
+  environment?: AppEnvironment;
   createdAt: string;
   updatedAt: string;
 }
@@ -28,6 +30,7 @@ export interface CreateTariffData {
   idleGracePeriodMinutes: number;
   maxIdleFee: number;
   currency: Currency;
+  environment?: AppEnvironment;
 }
 
 export type UpdateTariffData = Partial<CreateTariffData>;
@@ -51,24 +54,24 @@ export interface EstimateCostResponse {
 }
 
 class BillingService {
-  async getTariffs() {
-    return httpService.get<Tariff[]>(API_CONFIG.endpoints.billing.tariffs);
+  async getTariffs(env: string) {
+    return httpService.get<Tariff[]>(API_CONFIG.endpoints.billing.tariffs(env));
   }
 
-  async getTariffById(id: string) {
-    return httpService.get<Tariff>(API_CONFIG.endpoints.billing.tariffById(id));
+  async getTariffById(env: string, id: string) {
+    return httpService.get<Tariff>(API_CONFIG.endpoints.billing.tariffById(env, id));
   }
 
-  async createTariff(data: CreateTariffData) {
-    return httpService.post<Tariff>(API_CONFIG.endpoints.billing.tariffs, data);
+  async createTariff(env: string, data: CreateTariffData) {
+    return httpService.post<Tariff>(API_CONFIG.endpoints.billing.create(env), data);
   }
 
-  async updateTariff(id: string, data: UpdateTariffData) {
-    return httpService.patch<Tariff>(API_CONFIG.endpoints.billing.tariffById(id), data);
+  async updateTariff(env: string, id: string, data: UpdateTariffData) {
+    return httpService.patch<Tariff>(API_CONFIG.endpoints.billing.update(env, id), data);
   }
 
   async deleteTariff(id: string) {
-    return httpService.delete<void>(API_CONFIG.endpoints.billing.tariffById(id));
+    return httpService.delete<void>(API_CONFIG.endpoints.billing.delete(id));
   }
 
   async estimateCost(data: EstimateCostData) {

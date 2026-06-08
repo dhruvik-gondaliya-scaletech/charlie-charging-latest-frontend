@@ -1,12 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { stationService, CreateStationData } from '@/services/station.service';
+import { useEnvironment } from '@/contexts/EnvironmentContext';
 import { toast } from 'sonner';
 
 export const useCreateStation = () => {
   const queryClient = useQueryClient();
+  const { environment } = useEnvironment();
 
   return useMutation({
-    mutationFn: (data: CreateStationData) => stationService.createStation(data),
+    mutationFn: (data: CreateStationData) => stationService.createStation(environment, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stations'] });
       toast.success('Station created successfully');
