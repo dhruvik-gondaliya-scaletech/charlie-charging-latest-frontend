@@ -61,36 +61,30 @@ export interface StationStats {
 }
 
 class StationService {
-  async getAllStations(params?: GetStationsParams) {
-    const queryParams = new URLSearchParams();
-    if (params?.name) queryParams.append('name', params.name);
-    if (params?.status) queryParams.append('status', params.status);
-    if (params?.locationId) queryParams.append('locationId', params.locationId);
-    if (params?.type) queryParams.append('type', params.type);
-    if (params?.visibility) queryParams.append('visibility', params.visibility);
-
-    const url = queryParams.toString() ? `${API_CONFIG.endpoints.stations.base}?${queryParams.toString()}` : API_CONFIG.endpoints.stations.base;
-    return httpService.get<Station[]>(url);
+  async getAllStations(env: string, params?: GetStationsParams) {
+    return httpService.get<Station[]>(API_CONFIG.endpoints.stations.base(env), {
+      params,
+    });
   }
 
-  async getStationStats() {
-    return httpService.get<StationStats>(API_CONFIG.endpoints.stations.stats);
+  async getStationStats(env: string) {
+    return httpService.get<StationStats>(API_CONFIG.endpoints.stations.stats(env));
   }
 
-  async getStationById(id: string) {
-    return httpService.get<Station>(API_CONFIG.endpoints.stations.byId(id));
+  async getStationById(env: string, id: string) {
+    return httpService.get<Station>(API_CONFIG.endpoints.stations.byId(env, id));
   }
 
-  async createStation(stationData: CreateStationData) {
-    return httpService.post<Station>(API_CONFIG.endpoints.stations.base, stationData);
+  async createStation(env: string, stationData: CreateStationData) {
+    return httpService.post<Station>(API_CONFIG.endpoints.stations.create(env), stationData);
   }
 
-  async updateStation(id: string, stationData: UpdateStationData) {
-    return httpService.patch<Station>(API_CONFIG.endpoints.stations.byId(id), stationData);
+  async updateStation(env: string, id: string, stationData: UpdateStationData) {
+    return httpService.patch<Station>(API_CONFIG.endpoints.stations.update(env, id), stationData);
   }
 
   async deleteStation(id: string) {
-    return httpService.delete(API_CONFIG.endpoints.stations.byId(id));
+    return httpService.delete(API_CONFIG.endpoints.stations.delete(id));
   }
 
   async remoteStartTransaction(id: string, connectorId: number, idTag: string, userId: string) {
@@ -133,14 +127,14 @@ class StationService {
     return data || { logs: [], total: 0, limit: 100, offset: 0 };
   }
 
-  async getStationSessions(stationId: string, filters?: SessionFilterParams) {
-    return httpService.get<Session[]>(API_CONFIG.endpoints.stations.sessions(stationId), {
+  async getStationSessions(env: string, stationId: string, filters?: SessionFilterParams) {
+    return httpService.get<Session[]>(API_CONFIG.endpoints.stations.sessions(env, stationId), {
       params: filters,
     });
   }
 
-  async getConfiguration(stationId: string, keys?: string[], category?: string): Promise<GetConfigurationResponse> {
-    return httpService.get<GetConfigurationResponse>(API_CONFIG.endpoints.stations.configuration(stationId), {
+  async getConfiguration(env: string, stationId: string, keys?: string[], category?: string): Promise<GetConfigurationResponse> {
+    return httpService.get<GetConfigurationResponse>(API_CONFIG.endpoints.stations.configuration(env, stationId), {
       params: { keys, category },
     });
   }

@@ -1,12 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { webhookService, CreateWebhookData } from '@/services/webhook.service';
+import { useEnvironment } from '@/contexts/EnvironmentContext';
 import { toast } from 'sonner';
 
 export const useCreateWebhook = () => {
   const queryClient = useQueryClient();
+  const { environment } = useEnvironment();
 
   return useMutation({
-    mutationFn: (data: CreateWebhookData) => webhookService.create(data),
+    mutationFn: (data: CreateWebhookData) => webhookService.create(environment, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['webhooks'] });
       toast.success('Webhook created successfully');

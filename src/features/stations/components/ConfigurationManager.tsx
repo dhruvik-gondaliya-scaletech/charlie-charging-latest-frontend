@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { stationService } from '@/services/station.service';
+import { useStationConfiguration } from '@/hooks/get/useStations';
 import { useSetConfiguration } from '@/hooks/delete/useStationMutations';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,11 +29,7 @@ interface ConfigurationManagerProps {
 export function ConfigurationManager({ stationId }: ConfigurationManagerProps) {
     const [searchTerm, setSearchTerm] = useState('');
 
-    const { data, isLoading, isError, refetch } = useQuery({
-        queryKey: ['station-config', stationId],
-        queryFn: () => stationService.getConfiguration(stationId),
-        enabled: !!stationId,
-    });
+    const { data, isLoading, isError, refetch } = useStationConfiguration(stationId);
 
     const setConfig = useSetConfiguration();
     const [pendingChanges, setPendingChanges] = useState<Record<string, string>>({});

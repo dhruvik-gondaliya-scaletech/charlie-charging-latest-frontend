@@ -1,12 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { billingService, CreateTariffData, UpdateTariffData } from '@/services/billing.service';
+import { useEnvironment } from '@/contexts/EnvironmentContext';
 import { toast } from 'sonner';
 
 export const useCreateTariff = () => {
   const queryClient = useQueryClient();
+  const { environment } = useEnvironment();
 
   return useMutation({
-    mutationFn: (data: CreateTariffData) => billingService.createTariff(data),
+    mutationFn: (data: CreateTariffData) => billingService.createTariff(environment, data),
     onSuccess: () => {
       toast.success('Tariff created');
       queryClient.invalidateQueries({ queryKey: ['billing-tariffs'] });
@@ -19,9 +21,10 @@ export const useCreateTariff = () => {
 
 export const useUpdateTariff = () => {
   const queryClient = useQueryClient();
+  const { environment } = useEnvironment();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateTariffData }) => billingService.updateTariff(id, data),
+    mutationFn: ({ id, data }: { id: string; data: UpdateTariffData }) => billingService.updateTariff(environment, id, data),
     onSuccess: () => {
       toast.success('Tariff updated');
       queryClient.invalidateQueries({ queryKey: ['billing-tariffs'] });

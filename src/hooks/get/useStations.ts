@@ -1,38 +1,43 @@
 import { useQuery, useInfiniteQuery, keepPreviousData } from '@tanstack/react-query';
 import { stationService, GetStationsParams, GetOcppLogsParams } from '@/services/station.service';
 import { SessionFilterParams } from '@/types';
+import { useEnvironment } from '@/contexts/EnvironmentContext';
 
 export const useStations = (params?: GetStationsParams) => {
+  const { environment } = useEnvironment();
   return useQuery({
-    queryKey: ['stations', params],
-    queryFn: () => stationService.getAllStations(params),
+    queryKey: ['stations', environment, params],
+    queryFn: () => stationService.getAllStations(environment, params),
     staleTime: 30000,
     placeholderData: keepPreviousData,
   });
 };
 
 export const useStationStats = () => {
+  const { environment } = useEnvironment();
   return useQuery({
-    queryKey: ['station-stats'],
-    queryFn: () => stationService.getStationStats(),
+    queryKey: ['station-stats', environment],
+    queryFn: () => stationService.getStationStats(environment),
     staleTime: 30000,
     refetchInterval: 60000, // Refresh stats every minute
   });
 };
 
 export const useStation = (id: string, options: { enabled?: boolean } = {}) => {
+  const { environment } = useEnvironment();
   return useQuery({
-    queryKey: ['station', id],
-    queryFn: () => stationService.getStationById(id),
+    queryKey: ['station', environment, id],
+    queryFn: () => stationService.getStationById(environment, id),
     enabled: options.enabled !== undefined ? options.enabled && !!id : !!id,
     staleTime: 30000,
   });
 };
 
 export const useStationConfiguration = (stationId: string, keys?: string[], category?: string) => {
+  const { environment } = useEnvironment();
   return useQuery({
-    queryKey: ['station-configuration', stationId, keys, category],
-    queryFn: () => stationService.getConfiguration(stationId, keys, category),
+    queryKey: ['station-configuration', environment, stationId, keys, category],
+    queryFn: () => stationService.getConfiguration(environment, stationId, keys, category),
     enabled: !!stationId,
     staleTime: 60000,
   });
@@ -62,9 +67,10 @@ export const useInfiniteOcppLogs = (stationId: string, params?: GetOcppLogsParam
 };
 
 export const useStationSessions = (stationId: string, params?: SessionFilterParams) => {
+  const { environment } = useEnvironment();
   return useQuery({
-    queryKey: ['station-sessions', stationId, params],
-    queryFn: () => stationService.getStationSessions(stationId, params),
+    queryKey: ['station-sessions', environment, stationId, params],
+    queryFn: () => stationService.getStationSessions(environment, stationId, params),
     enabled: !!stationId,
     staleTime: 30000,
   });

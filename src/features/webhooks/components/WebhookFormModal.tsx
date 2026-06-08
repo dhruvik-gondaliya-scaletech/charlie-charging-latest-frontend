@@ -1,6 +1,6 @@
 'use client';
 
-import { useForm, SubmitHandler, useWatch, Controller } from 'react-hook-form';
+import { useForm, SubmitHandler, useWatch, Controller, Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { webhookSchema, WebhookFormData } from '@/lib/validations/webhook.schema';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
@@ -12,6 +12,13 @@ import { WebhookEvent, WebhookConfiguration } from '@/types';
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Settings2, Globe, Bell } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface WebhookFormModalProps {
     isOpen: boolean;
@@ -39,7 +46,7 @@ export function WebhookFormModal({
         control,
         formState: { errors },
     } = useForm<WebhookFormData>({
-        resolver: zodResolver(webhookSchema),
+        resolver: zodResolver(webhookSchema) as unknown as Resolver<WebhookFormData>,
         defaultValues: {
             name: '',
             url: '',
@@ -110,42 +117,40 @@ export function WebhookFormModal({
                         </h3>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div className="space-y-2">
-                            <Label htmlFor="name" className="text-sm font-medium">
-                                Friendly Name
-                            </Label>
-                            <Input
-                                id="name"
-                                placeholder="e.g., Production Monitoring"
-                                {...register('name')}
-                                className={errors.name ? 'border-destructive focus-visible:ring-destructive' : 'bg-muted/30'}
-                                aria-invalid={!!errors.name}
-                            />
-                            {errors.name && (
-                                <p className="text-xs text-destructive font-medium mt-1 animate-in fade-in slide-in-from-top-1">
-                                    {errors.name.message}
-                                </p>
-                            )}
-                        </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="name" className="text-sm font-medium">
+                            Friendly Name
+                        </Label>
+                        <Input
+                            id="name"
+                            placeholder="e.g., Production Monitoring"
+                            {...register('name')}
+                            className={errors.name ? 'border-destructive focus-visible:ring-destructive' : 'bg-muted/30'}
+                            aria-invalid={!!errors.name}
+                        />
+                        {errors.name && (
+                            <p className="text-xs text-destructive font-medium mt-1 animate-in fade-in slide-in-from-top-1">
+                                {errors.name.message}
+                            </p>
+                        )}
+                    </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="url" className="text-sm font-medium">
-                                Target URL
-                            </Label>
-                            <Input
-                                id="url"
-                                placeholder="https://api.yourdomain.com/webhook"
-                                {...register('url')}
-                                className={errors.url ? 'border-destructive focus-visible:ring-destructive' : 'bg-muted/30'}
-                                aria-invalid={!!errors.url}
-                            />
-                            {errors.url && (
-                                <p className="text-xs text-destructive font-medium mt-1 animate-in fade-in slide-in-from-top-1">
-                                    {errors.url.message}
-                                </p>
-                            )}
-                        </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="url" className="text-sm font-medium">
+                            Target URL
+                        </Label>
+                        <Input
+                            id="url"
+                            placeholder="https://api.yourdomain.com/webhook"
+                            {...register('url')}
+                            className={errors.url ? 'border-destructive focus-visible:ring-destructive' : 'bg-muted/30'}
+                            aria-invalid={!!errors.url}
+                        />
+                        {errors.url && (
+                            <p className="text-xs text-destructive font-medium mt-1 animate-in fade-in slide-in-from-top-1">
+                                {errors.url.message}
+                            </p>
+                        )}
                     </div>
                 </section>
 

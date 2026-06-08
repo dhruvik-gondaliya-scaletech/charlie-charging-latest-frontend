@@ -70,6 +70,11 @@ export enum LocationEnv {
   PRODUCTION = 'PRODUCTION',
 }
 
+export enum AppEnvironment {
+  DEVELOPMENT = 'DEVELOPMENT',
+  PRODUCTION = 'PRODUCTION',
+}
+
 export interface Location {
   id: string;
   name: string;
@@ -273,6 +278,7 @@ export interface WebhookConfiguration {
   headers?: Record<string, string>;
   maxRetries: number;
   timeoutSeconds: number;
+  environment: AppEnvironment;
   createdAt: string;
   updatedAt: string;
 }
