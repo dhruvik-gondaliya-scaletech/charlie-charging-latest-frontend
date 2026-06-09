@@ -171,7 +171,7 @@ export function DatePicker({ dateRange, onDateRangeChange, className }: DatePick
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent
-                    className="w-auto p-0 rounded-[2rem] border-border/40 bg-card/95 backdrop-blur-2xl shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] overflow-hidden"
+                    className="w-auto p-0 rounded-[2rem] border-border/40 bg-card/95 backdrop-blur-2xl shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] overflow-hidden z-[150]"
                     align="start"
                     sideOffset={8}
                 >

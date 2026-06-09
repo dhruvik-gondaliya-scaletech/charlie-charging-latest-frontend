@@ -1,22 +1,21 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useDashboardStats, useRecentActivity } from '@/hooks/get/useDashboard';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Battery, Zap, Activity, Users, RefreshCw, LayoutDashboard, Plus, MapPin, Bell } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Battery, Zap, Activity, Users, RefreshCw, Download } from 'lucide-react';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { StatCard } from '../components/StatCard';
 import { StatCardSkeleton } from '../components/StatCardSkeleton';
 import { ActivityList } from '../components/ActivityList';
 import { ActivityListSkeleton } from '../components/ActivityListSkeleton';
-import { EmptyActivity } from '../components/EmptyActivity';
 import { Button } from '@/components/ui/button';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import Link from 'next/link';
-import { cn } from '@/lib/utils';
-import { FRONTEND_ROUTES } from '@/constants/constants';
+import { DownloadReportsModal } from '../components/DownloadReportsModal';
 
 export function DashboardContainer() {
+  const [isReportsModalOpen, setIsReportsModalOpen] = useState(false);
   const {
     data: stats,
     isLoading: statsLoading,
@@ -38,13 +37,6 @@ export function DashboardContainer() {
   };
 
   const isRefreshing = isRefetchingStats || isRefetchingActivities;
-
-  const quickActions = [
-    { title: 'Add Station', icon: Plus, href: FRONTEND_ROUTES.STATIONS, color: 'bg-blue-500/10 text-blue-500' },
-    { title: 'New Location', icon: MapPin, href: FRONTEND_ROUTES.LOCATIONS, color: 'bg-emerald-500/10 text-emerald-500' },
-    { title: 'Manage Users', icon: Users, href: FRONTEND_ROUTES.USERS, color: 'bg-purple-500/10 text-purple-500' },
-    { title: 'Config Webhooks', icon: Bell, href: FRONTEND_ROUTES.WEBHOOKS, color: 'bg-orange-500/10 text-orange-500' },
-  ];
 
   const statCards = [
     {
@@ -119,10 +111,16 @@ export function DashboardContainer() {
               size="sm"
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="bg-card/40 backdrop-blur-md border-border/40 hover:bg-muted/50 transition-all ring-1 ring-border/5"
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
               {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => setIsReportsModalOpen(true)}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Download Reports
             </Button>
           </div>
         </div>
@@ -253,6 +251,7 @@ export function DashboardContainer() {
           </motion.div>
         </div>
       </motion.div>
+      <DownloadReportsModal isOpen={isReportsModalOpen} onClose={() => setIsReportsModalOpen(false)} />
     </TooltipProvider>
   );
 }

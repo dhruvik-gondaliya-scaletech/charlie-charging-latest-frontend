@@ -28,6 +28,20 @@ class SessionService {
       params: { connectorId },
     });
   }
+
+  async exportSessions(params?: { startFrom?: string; startTo?: string; columns?: string[]; env?: string }) {
+    const queryParams: any = {};
+    if (params) {
+      if (params.startFrom) queryParams.startFrom = params.startFrom;
+      if (params.startTo) queryParams.startTo = params.startTo;
+      if (params.env) queryParams.env = params.env;
+      if (params.columns) queryParams.columns = params.columns.join(',');
+    }
+    return httpService.get<Blob>(API_CONFIG.endpoints.sessions.export, {
+      params: queryParams,
+      responseType: 'blob',
+    });
+  }
 }
 
 export const sessionService = new SessionService();
