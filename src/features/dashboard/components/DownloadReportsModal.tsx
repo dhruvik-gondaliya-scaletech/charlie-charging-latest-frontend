@@ -20,6 +20,12 @@ interface DownloadReportsModalProps {
 type Step = 'select-type' | 'configure-sessions';
 
 const AVAILABLE_COLUMNS = [
+  { id: 'id', label: 'Session ID' },
+  { id: 'transactionId', label: 'Transaction ID' },
+  { id: 'stationId', label: 'Station ID' },
+  { id: 'stationName', label: 'Station Name' },
+  { id: 'locationId', label: 'Location ID' },
+  { id: 'locationName', label: 'Location Name' },
   { id: 'userFirstName', label: 'User First Name' },
   { id: 'userLastName', label: 'User Last Name' },
   { id: 'connectorId', label: 'Connector ID' },
@@ -38,6 +44,12 @@ const AVAILABLE_COLUMNS = [
 ];
 
 const DEFAULT_COLUMNS = [
+  'id',
+  'transactionId',
+  'stationId',
+  'stationName',
+  'locationId',
+  'locationName',
   'userFirstName',
   'userLastName',
   'connectorId',

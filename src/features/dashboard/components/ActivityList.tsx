@@ -115,7 +115,7 @@ export function ActivityList({ activities, isLoading = false }: ActivityListProp
       isLoading={isLoading}
       pageSize={10}
       showSearch={false}
-      showPagination={true}
+      showPagination={false}
       maxHeight="540px"
       className="border-none shadow-none bg-transparent"
       renderMobileCard={(activity) => {
