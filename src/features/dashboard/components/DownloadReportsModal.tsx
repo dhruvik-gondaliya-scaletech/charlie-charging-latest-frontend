@@ -11,6 +11,8 @@ import { sessionService } from '@/services/session.service';
 import { Calendar, Download, FileSpreadsheet, Hourglass, ArrowLeft, CheckCircle2, X } from 'lucide-react';
 import { DatePicker } from '@/components/shared/DatePicker';
 import { useEnvironment } from '@/contexts/EnvironmentContext';
+import { startOfDay, endOfDay } from 'date-fns';
+
 
 interface DownloadReportsModalProps {
   isOpen: boolean;
@@ -116,8 +118,8 @@ export function DownloadReportsModal({ isOpen, onClose }: DownloadReportsModalPr
 
       // Convert Date objects to ISO strings
       const params = {
-        startFrom: dateRange.from ? dateRange.from.toISOString() : undefined,
-        startTo: dateRange.to ? dateRange.to.toISOString() : undefined,
+        startFrom: dateRange.from ? startOfDay(dateRange.from).toISOString() : undefined,
+        startTo: dateRange.to ? endOfDay(dateRange.to).toISOString() : undefined,
         columns: selectedColumns,
         env: environment,
       };
