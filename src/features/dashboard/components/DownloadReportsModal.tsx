@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -8,11 +8,24 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { sessionService } from '@/services/session.service';
-import { Calendar, Download, FileSpreadsheet, Hourglass, ArrowLeft, CheckCircle2, X } from 'lucide-react';
+import { locationService } from '@/services/location.service';
+import { stationService } from '@/services/station.service';
+import {
+  Calendar,
+  Download,
+  FileSpreadsheet,
+  Hourglass,
+  ArrowLeft,
+  CheckCircle2,
+  X,
+  ChevronRight,
+  ChevronDown,
+  MapPin,
+  BatteryCharging,
+} from 'lucide-react';
 import { DatePicker } from '@/components/shared/DatePicker';
 import { useEnvironment } from '@/contexts/EnvironmentContext';
 import { startOfDay, endOfDay } from 'date-fns';
-
 
 interface DownloadReportsModalProps {
   isOpen: boolean;
@@ -72,6 +85,14 @@ export function DownloadReportsModal({ isOpen, onClose }: DownloadReportsModalPr
   // Configuration State
   const [selectedColumns, setSelectedColumns] = useState<string[]>(DEFAULT_COLUMNS);
 
+  // Hierarchical Filter State
+  const [locations, setLocations] = useState<any[]>([]);
+  const [stations, setStations] = useState<any[]>([]);
+  const [isLoadingTree, setIsLoadingTree] = useState(false);
+  const [expandedLocationIds, setExpandedLocationIds] = useState<Set<string>>(new Set());
+  const [selectedLocationIds, setSelectedLocationIds] = useState<Set<string>>(new Set());
+  const [selectedStationIds, setSelectedStationIds] = useState<Set<string>>(new Set());
+
   // Default date range: Last 7 days to now
   const getInitialDateRange = () => {
     const from = new Date();
@@ -83,10 +104,41 @@ export function DownloadReportsModal({ isOpen, onClose }: DownloadReportsModalPr
 
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>(getInitialDateRange());
 
+  // Fetch locations and stations when entering the configure step
+  useEffect(() => {
+    if (isOpen && step === 'configure-sessions') {
+      const fetchData = async () => {
+        try {
+          setIsLoadingTree(true);
+          const [locData, staData] = await Promise.all([
+            locationService.getAllLocations(environment),
+            stationService.getAllStations(environment),
+          ]);
+          setLocations(locData || []);
+          setStations(staData || []);
+
+          // Automatically expand all locations for convenient browsing
+          if (locData) {
+            setExpandedLocationIds(new Set(locData.map((l: any) => l.id)));
+          }
+        } catch (err) {
+          console.error('Failed to load locations/stations for CSV export:', err);
+          toast.error('Failed to load locations or stations.');
+        } finally {
+          setIsLoadingTree(false);
+        }
+      };
+      fetchData();
+    }
+  }, [isOpen, step, environment]);
+
   const handleClose = () => {
     setStep('select-type');
     setSelectedColumns(DEFAULT_COLUMNS);
     setDateRange(getInitialDateRange());
+    setSelectedLocationIds(new Set());
+    setSelectedStationIds(new Set());
+    setExpandedLocationIds(new Set());
     onClose();
   };
 
@@ -106,6 +158,71 @@ export function DownloadReportsModal({ isOpen, onClose }: DownloadReportsModalPr
     }
   };
 
+  const handleLocationCheck = (locationId: string, checked: boolean) => {
+    const stationIdsInLoc = stations.filter((s) => s.locationId === locationId).map((s) => s.id);
+
+    setSelectedLocationIds((prev) => {
+      const next = new Set(prev);
+      if (checked) {
+        next.add(locationId);
+      } else {
+        next.delete(locationId);
+      }
+      return next;
+    });
+
+    setSelectedStationIds((prev) => {
+      const next = new Set(prev);
+      stationIdsInLoc.forEach((id) => {
+        if (checked) {
+          next.add(id);
+        } else {
+          next.delete(id);
+        }
+      });
+      return next;
+    });
+  };
+
+  const handleStationCheck = (stationId: string, locationId: string, checked: boolean) => {
+    setSelectedStationIds((prev) => {
+      const next = new Set(prev);
+      if (checked) {
+        next.add(stationId);
+      } else {
+        next.delete(stationId);
+      }
+
+      // Check if all stations of this location are selected
+      const stationIdsInLoc = stations.filter((s) => s.locationId === locationId).map((s) => s.id);
+      const allChecked = stationIdsInLoc.length > 0 && stationIdsInLoc.every((id) => next.has(id));
+
+      setSelectedLocationIds((locPrev) => {
+        const locNext = new Set(locPrev);
+        if (allChecked) {
+          locNext.add(locationId);
+        } else {
+          locNext.delete(locationId);
+        }
+        return locNext;
+      });
+
+      return next;
+    });
+  };
+
+  const toggleLocationExpand = (locationId: string) => {
+    setExpandedLocationIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(locationId)) {
+        next.delete(locationId);
+      } else {
+        next.add(locationId);
+      }
+      return next;
+    });
+  };
+
   const handleExport = async () => {
     if (selectedColumns.length === 0) {
       toast.error('Please select at least one column to export.');
@@ -116,12 +233,17 @@ export function DownloadReportsModal({ isOpen, onClose }: DownloadReportsModalPr
       setIsExporting(true);
       toast.loading('Generating report and fetching data...', { id: 'export-csv' });
 
+      const locationIdsParam = Array.from(selectedLocationIds).join(',');
+      const stationIdsParam = Array.from(selectedStationIds).join(',');
+
       // Convert Date objects to ISO strings
       const params = {
         startFrom: dateRange.from ? startOfDay(dateRange.from).toISOString() : undefined,
         startTo: dateRange.to ? endOfDay(dateRange.to).toISOString() : undefined,
         columns: selectedColumns,
         env: environment,
+        locationIds: locationIdsParam || undefined,
+        stationIds: stationIdsParam || undefined,
       };
 
       const csvBlob = await sessionService.exportSessions(params);
@@ -151,7 +273,7 @@ export function DownloadReportsModal({ isOpen, onClose }: DownloadReportsModalPr
       isOpen={isOpen}
       onClose={handleClose}
       showCloseButton={false}
-      size="lg"
+      size="3xl"
     >
       <div className="flex items-start justify-between border-b border-border/60 pb-5 mb-5">
         <div className="flex items-center gap-3">
@@ -170,7 +292,7 @@ export function DownloadReportsModal({ isOpen, onClose }: DownloadReportsModalPr
             <p className="text-muted-foreground text-sm mt-1">
               {step === 'select-type'
                 ? 'Select a report type to begin your data export.'
-                : 'Configure date range and custom fields for your CSV export.'}
+                : 'Configure parameters, filters, and custom fields for your CSV export.'}
             </p>
           </div>
         </div>
@@ -256,61 +378,178 @@ export function DownloadReportsModal({ isOpen, onClose }: DownloadReportsModalPr
 
       {step === 'configure-sessions' && (
         <div className="space-y-5 py-4">
-          {/* Date Range Selection */}
-          <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-foreground/90">Date Range</h3>
-            <DatePicker
-              dateRange={dateRange}
-              onDateRangeChange={setDateRange}
-              className="w-full"
-            />
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 min-h-0">
+            {/* Left Column: Date range and Location Tree browser */}
+            <div className="space-y-5 flex flex-col min-h-0">
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
+                  <Calendar className="h-4 w-4 text-primary" /> Date Range
+                </Label>
+                <DatePicker
+                  dateRange={dateRange}
+                  onDateRangeChange={setDateRange}
+                  className="w-full"
+                />
+              </div>
 
-          {/* Column Selection */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-foreground/90">Export Fields</h3>
-              <div className="flex gap-2">
-                <button
-                  onClick={handleSelectAllColumns}
-                  className="text-xs text-primary hover:text-primary/80 font-medium transition-colors cursor-pointer"
-                >
-                  Select All
-                </button>
-                <span className="text-border text-xs">|</span>
-                <button
-                  onClick={handleDeselectAllColumns}
-                  className="text-xs text-muted-foreground hover:text-muted-foreground/80 font-medium transition-colors cursor-pointer"
-                >
-                  Deselect All
-                </button>
+              <div className="space-y-2 flex-1 flex flex-col min-h-0">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
+                    <MapPin className="h-4 w-4 text-primary" /> Locations & Stations
+                  </Label>
+                  {selectedStationIds.size > 0 && (
+                    <span className="text-[11px] bg-primary/10 text-primary font-semibold px-2 py-0.5 rounded-full">
+                      {selectedStationIds.size} stations
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex-1 min-h-[220px] max-h-[260px] overflow-y-auto custom-scrollbar border border-border rounded-xl bg-muted/10 p-3 space-y-1">
+                  {isLoadingTree ? (
+                    <div className="flex flex-col items-center justify-center h-full py-8 text-muted-foreground text-sm space-y-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent" />
+                      <span>Loading browser...</span>
+                    </div>
+                  ) : locations.length === 0 ? (
+                    <div className="flex items-center justify-center h-full py-8 text-muted-foreground text-sm">
+                      No locations or stations found.
+                    </div>
+                  ) : (
+                    locations.map((loc) => {
+                      const locStations = stations.filter((s) => s.locationId === loc.id);
+                      const isExpanded = expandedLocationIds.has(loc.id);
+                      const isLocChecked = selectedLocationIds.has(loc.id);
+                      const isSomeChecked = locStations.some((s) => selectedStationIds.has(s.id)) && !isLocChecked;
+
+                      return (
+                        <div key={loc.id} className="space-y-1">
+                          {/* Location Node */}
+                          <div className="flex items-center gap-1.5 py-1 px-1.5 rounded-lg hover:bg-muted/40 transition-colors group">
+                            {/* Chevron Toggle */}
+                            <button
+                              onClick={() => toggleLocationExpand(loc.id)}
+                              className="p-1 rounded-md text-muted-foreground/60 hover:text-foreground hover:bg-muted/85 transition-colors shrink-0 cursor-pointer"
+                            >
+                              {isExpanded ? (
+                                <ChevronDown className="h-3.5 w-3.5" />
+                              ) : (
+                                <ChevronRight className="h-3.5 w-3.5" />
+                              )}
+                            </button>
+
+                            {/* Location Checkbox */}
+                            <div className="flex items-center shrink-0">
+                              <Checkbox
+                                id={`loc-${loc.id}`}
+                                checked={isLocChecked ? true : isSomeChecked ? 'indeterminate' : false}
+                                onCheckedChange={(checked) => handleLocationCheck(loc.id, !!checked)}
+                              />
+                            </div>
+
+                            {/* Location Label */}
+                            <Label
+                              htmlFor={`loc-${loc.id}`}
+                              className="flex items-center gap-1.5 text-sm font-medium text-foreground/90 cursor-pointer select-none flex-1 truncate"
+                            >
+                              <MapPin className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
+                              <span className="truncate">{loc.name}</span>
+                              <span className="text-[10px] text-muted-foreground font-normal shrink-0">
+                                ({locStations.length})
+                              </span>
+                            </Label>
+                          </div>
+
+                          {/* Stations under Location */}
+                          {isExpanded && (
+                            <div className="pl-6 border-l border-border ml-3.5 space-y-1 pt-0.5 pb-1">
+                              {locStations.length === 0 ? (
+                                <div className="text-xs text-muted-foreground/50 py-1 pl-6">
+                                  No stations configuration
+                                </div>
+                              ) : (
+                                locStations.map((sta) => {
+                                  const isStaChecked = selectedStationIds.has(sta.id);
+                                  return (
+                                    <div
+                                      key={sta.id}
+                                      className="flex items-center gap-2 py-0.5 px-1.5 rounded-md hover:bg-muted/30 transition-colors group"
+                                    >
+                                      <Checkbox
+                                        id={`sta-${sta.id}`}
+                                        checked={isStaChecked}
+                                        onCheckedChange={(checked) =>
+                                          handleStationCheck(sta.id, loc.id, !!checked)
+                                        }
+                                      />
+                                      <Label
+                                        htmlFor={`sta-${sta.id}`}
+                                        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground cursor-pointer select-none flex-1 truncate"
+                                      >
+                                        <BatteryCharging className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0" />
+                                        <span className="truncate">{sta.name}</span>
+                                      </Label>
+                                    </div>
+                                  );
+                                })
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2.5 max-h-[240px] overflow-y-auto pr-2 custom-scrollbar border border-border rounded-xl bg-muted/10 p-3">
-              {AVAILABLE_COLUMNS.map((col) => {
-                const isChecked = selectedColumns.includes(col.id);
-                return (
-                  <div
-                    key={col.id}
-                    className="flex items-center space-x-2.5 p-1 rounded hover:bg-muted/30 transition-colors"
+            {/* Right Column: Column Fields Selector */}
+            <div className="space-y-3 flex flex-col min-h-0">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
+                  <FileSpreadsheet className="h-4 w-4 text-primary" /> Export Fields
+                </Label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleSelectAllColumns}
+                    className="text-xs text-primary hover:text-primary/80 font-medium transition-colors cursor-pointer"
                   >
-                    <Checkbox
-                      id={`col-${col.id}`}
-                      checked={isChecked}
-                      onCheckedChange={(checked) =>
-                        handleColumnToggle(col.id, !!checked)
-                      }
-                    />
-                    <Label
-                      htmlFor={`col-${col.id}`}
-                      className="text-sm text-foreground/80 font-normal cursor-pointer select-none"
+                    Select All
+                  </button>
+                  <span className="text-border text-xs">|</span>
+                  <button
+                    onClick={handleDeselectAllColumns}
+                    className="text-xs text-muted-foreground hover:text-muted-foreground/80 font-medium transition-colors cursor-pointer"
+                  >
+                    Deselect All
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex-1 min-h-[300px] max-h-[340px] overflow-y-auto pr-2 custom-scrollbar border border-border rounded-xl bg-muted/10 p-3 space-y-2.5">
+                {AVAILABLE_COLUMNS.map((col) => {
+                  const isChecked = selectedColumns.includes(col.id);
+                  return (
+                    <div
+                      key={col.id}
+                      className="flex items-center space-x-2.5 p-1 rounded hover:bg-muted/30 transition-colors"
                     >
-                      {col.label}
-                    </Label>
-                  </div>
-                );
-              })}
+                      <Checkbox
+                        id={`col-${col.id}`}
+                        checked={isChecked}
+                        onCheckedChange={(checked) =>
+                          handleColumnToggle(col.id, !!checked)
+                        }
+                      />
+                      <Label
+                        htmlFor={`col-${col.id}`}
+                        className="text-sm text-foreground/80 font-normal cursor-pointer select-none"
+                      >
+                        {col.label}
+                      </Label>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
