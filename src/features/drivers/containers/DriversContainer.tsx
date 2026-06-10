@@ -165,13 +165,19 @@ export function DriversContainer() {
         </motion.div>
 
         <Tabs defaultValue="config" className="w-full space-y-8">
-          <TabsList className="bg-card/10 backdrop-blur-sm p-1 rounded-xl border border-border/40 h-auto flex-wrap sm:flex-nowrap w-fit">
-            <TabsTrigger value="config" className="flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-0 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-black uppercase tracking-widest text-[9px] sm:text-[10px] transition-all flex items-center gap-2">
-              <Settings className="h-3 w-3" />
+          <TabsList className="bg-muted/40 p-1.5 border border-border/40 rounded-2xl backdrop-blur-md h-auto flex-wrap sm:flex-nowrap w-fit gap-1 shadow-inner">
+            <TabsTrigger
+              value="config"
+              className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md font-bold uppercase tracking-wider text-[11px] transition-all flex items-center gap-2 cursor-pointer hover:bg-muted/20 hover:text-foreground text-muted-foreground"
+            >
+              <Settings className="h-3.5 w-3.5" />
               App Configuration
             </TabsTrigger>
-            <TabsTrigger value="drivers" className="flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-0 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-black uppercase tracking-widest text-[9px] sm:text-[10px] transition-all flex items-center gap-2">
-              <UsersListIcon className="h-3 w-3" />
+            <TabsTrigger
+              value="drivers"
+              className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md font-bold uppercase tracking-wider text-[11px] transition-all flex items-center gap-2 cursor-pointer hover:bg-muted/20 hover:text-foreground text-muted-foreground"
+            >
+              <UsersListIcon className="h-3.5 w-3.5" />
               Drivers
             </TabsTrigger>
           </TabsList>
