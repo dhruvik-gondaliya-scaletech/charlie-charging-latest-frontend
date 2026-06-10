@@ -34,8 +34,6 @@ export function ConfigurationManager({ stationId }: ConfigurationManagerProps) {
     const setConfig = useSetConfiguration();
     const [pendingChanges, setPendingChanges] = useState<Record<string, string>>({});
 
-    console.log(setConfig)
-
     const handleValueChange = (key: string, value: string) => {
         setPendingChanges(prev => ({ ...prev, [key]: value }));
     };
