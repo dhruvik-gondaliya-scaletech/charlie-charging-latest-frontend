@@ -13,9 +13,40 @@ import { ActivityListSkeleton } from '../components/ActivityListSkeleton';
 import { Button } from '@/components/ui/button';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { DownloadReportsModal } from '../components/DownloadReportsModal';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEnvironment } from '@/contexts/EnvironmentContext';
+import { useWebSocketConnection, useRealTimeEvent } from '@/hooks/useRealTime';
+import { invalidateQueriesDebounced } from '@/lib/query-utils';
 
 export function DashboardContainer() {
   const [isReportsModalOpen, setIsReportsModalOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const { environment } = useEnvironment();
+
+  // Establish and track WebSocket connection
+  useWebSocketConnection();
+
+  // Subscribe to real-time events and trigger debounced cache invalidation
+  useRealTimeEvent('station-status-change', () => {
+    invalidateQueriesDebounced(queryClient, ['dashboard-stats', environment]);
+    invalidateQueriesDebounced(queryClient, ['recent-activity', environment]);
+  }, [environment]);
+
+  useRealTimeEvent('connector-status-change', () => {
+    invalidateQueriesDebounced(queryClient, ['dashboard-stats', environment]);
+    invalidateQueriesDebounced(queryClient, ['recent-activity', environment]);
+  }, [environment]);
+
+  useRealTimeEvent('transaction-start', () => {
+    invalidateQueriesDebounced(queryClient, ['dashboard-stats', environment]);
+    invalidateQueriesDebounced(queryClient, ['recent-activity', environment]);
+  }, [environment]);
+
+  useRealTimeEvent('transaction-stop', () => {
+    invalidateQueriesDebounced(queryClient, ['dashboard-stats', environment]);
+    invalidateQueriesDebounced(queryClient, ['recent-activity', environment]);
+  }, [environment]);
+
   const {
     data: stats,
     isLoading: statsLoading,

@@ -75,11 +75,13 @@ import {
     updateStationDetailCache
 } from '@/lib/query-utils';
 import { useQueryClient } from '@tanstack/react-query';
+import { useEnvironment } from '@/contexts/EnvironmentContext';
 
 export function StationDetailContainer() {
     const { id } = useParams();
     const router = useRouter();
     const queryClient = useQueryClient();
+    const { environment } = useEnvironment();
     const { user, tenant } = useAuth();
     const { data: station, isLoading, error } = useStation(id as string);
     const { data: tariffs } = useTariffs();
@@ -108,10 +110,10 @@ export function StationDetailContainer() {
                 updateStationDetailCache(queryClient, id as string, { status: data.status });
 
                 // 2. Debounce the background refresh
-                invalidateQueriesDebounced(queryClient, ['station', id]);
+                invalidateQueriesDebounced(queryClient, ['station', environment, id]);
             }
         },
-        [id]
+        [id, environment]
     );
 
     // Listen for connector status changes
@@ -121,8 +123,12 @@ export function StationDetailContainer() {
             if (data.stationId === id) {
                 console.log(`Connector ${data.connectorId} on station ${data.stationId} status updated to ${data.status}`);
 
-                // 1. Optimistically update the specific connector status in the station detail cache
-                queryClient.setQueryData(['station', id], (oldData: any) => {
+                // 1. Optimistically update the specific connector status in the station detail cache using a predicate to match environment-aware key
+                queryClient.setQueriesData({
+                    predicate: (query) => 
+                        query.queryKey[0] === 'station' && 
+                        (query.queryKey[2] === id || query.queryKey[1] === id)
+                }, (oldData: any) => {
                     if (!oldData || !oldData.connectors) return oldData;
 
                     const updatedConnectors = oldData.connectors.map((c: any) =>
@@ -145,11 +151,11 @@ export function StationDetailContainer() {
                 });
 
                 // 2. Debounce the background refresh for the station and sessions
-                invalidateQueriesDebounced(queryClient, ['station', id]);
-                invalidateQueriesDebounced(queryClient, ['station-sessions', id]);
+                invalidateQueriesDebounced(queryClient, ['station', environment, id]);
+                invalidateQueriesDebounced(queryClient, ['station-sessions', environment, id]);
             }
         },
-        [id]
+        [id, environment]
     );
 
     // Listen for meter values
@@ -160,10 +166,10 @@ export function StationDetailContainer() {
                 console.log(`Received meter values for station ${data.stationId}`);
                 // Debounce log and session updates as meter values can be very frequent
                 invalidateQueriesDebounced(queryClient, ['station-logs', id]);
-                invalidateQueriesDebounced(queryClient, ['station-sessions', id]);
+                invalidateQueriesDebounced(queryClient, ['station-sessions', environment, id]);
             }
         },
-        [id]
+        [id, environment]
     );
 
     // Listen for transaction events
@@ -172,13 +178,13 @@ export function StationDetailContainer() {
         (data) => {
             if (data.stationId === id) {
                 console.log(`Transaction started on station ${data.stationId}, connector ${data.connectorId}`);
-                invalidateQueriesDebounced(queryClient, ['station-sessions', id]);
+                invalidateQueriesDebounced(queryClient, ['station-sessions', environment, id]);
                 invalidateQueriesDebounced(queryClient, ['station-logs', id]);
                 // Also refresh station to get updated connector status
-                invalidateQueriesDebounced(queryClient, ['station', id]);
+                invalidateQueriesDebounced(queryClient, ['station', environment, id]);
             }
         },
-        [id]
+        [id, environment]
     );
 
     useRealTimeEvent<TransactionEvent>(
@@ -186,13 +192,13 @@ export function StationDetailContainer() {
         (data) => {
             if (data.stationId === id) {
                 console.log(`Transaction stopped on station ${data.stationId}, connector ${data.connectorId}`);
-                invalidateQueriesDebounced(queryClient, ['station-sessions', id]);
+                invalidateQueriesDebounced(queryClient, ['station-sessions', environment, id]);
                 invalidateQueriesDebounced(queryClient, ['station-logs', id]);
                 // Also refresh station to get updated connector status
-                invalidateQueriesDebounced(queryClient, ['station', id]);
+                invalidateQueriesDebounced(queryClient, ['station', environment, id]);
             }
         },
-        [id]
+        [id, environment]
     );
 
     const [isStopModalOpen, setIsStopModalOpen] = useState(false);
