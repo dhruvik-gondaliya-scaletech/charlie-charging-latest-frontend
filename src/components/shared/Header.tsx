@@ -27,25 +27,23 @@ export function Header() {
           <div className="md:hidden">
             <Breadcrumbs />
           </div>
-          
+
           <div className="relative flex items-center bg-muted rounded-full p-0.5 h-8 md:h-9 text-[10px] md:text-xs font-bold select-none border">
             <button
               onClick={() => setEnvironment('dev')}
-              className={`relative z-10 px-3 py-1 rounded-full transition-colors duration-200 ${
-                environment === 'dev'
+              className={`relative z-10 px-3 py-1 rounded-full transition-colors duration-200 cursor-pointer ${environment === 'dev'
                   ? 'text-white dark:text-black'
                   : 'text-muted-foreground hover:text-foreground'
-              }`}
+                }`}
             >
               DEV
             </button>
             <button
               onClick={() => setEnvironment('prod')}
-              className={`relative z-10 px-3 py-1 rounded-full transition-colors duration-200 ${
-                environment === 'prod'
+              className={`relative z-10 px-3 py-1 rounded-full transition-colors duration-200 cursor-pointer ${environment === 'prod'
                   ? 'text-white dark:text-black'
                   : 'text-muted-foreground hover:text-foreground'
-              }`}
+                }`}
             >
               PROD
             </button>

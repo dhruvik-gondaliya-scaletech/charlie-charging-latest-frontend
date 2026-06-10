@@ -71,6 +71,7 @@ export const API_CONFIG = {
             byId: (id: string) => `/sessions/${id}`,
             byStation: (stationId: string) => `/sessions/station/${stationId}`,
             active: (stationId: string) => `/sessions/station/${stationId}/active`,
+            export: "/sessions/export",
         },
         dashboard: {
             base: "/dashboard",
