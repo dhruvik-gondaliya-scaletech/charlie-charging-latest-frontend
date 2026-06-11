@@ -661,12 +661,21 @@ export function StationWizard({
                                                     {connectorTypesFromApi.map((connector: any) => {
                                                         const connectorId = connector.identifier;
                                                         const isSelected = field.value?.includes(connectorId);
+                                                        const selectedModelName = form.watch('model');
+                                                        const selectedModelObj = models.find((m: any) => m.name === selectedModelName);
+                                                        const isDefault = selectedModelObj?.ConnectorTypes?.some(
+                                                            (typeId: any) => String(typeId) === String(connector.id)
+                                                        );
                                                         return (
                                                             <Card
                                                                 key={connector.id}
                                                                 className={cn(
                                                                     "cursor-pointer transition-all border-border/40 hover:border-primary/40",
-                                                                    isSelected ? "bg-primary/5 border-primary/50 ring-1 ring-primary/20 shadow-lg shadow-primary/10" : "bg-card/40"
+                                                                    isSelected
+                                                                        ? "bg-primary/5 border-primary/50 ring-1 ring-primary/20 shadow-lg shadow-primary/10"
+                                                                        : isDefault
+                                                                            ? "bg-violet-500/5 border-violet-500/30 hover:border-violet-500/50 shadow-md shadow-violet-500/5"
+                                                                            : "bg-card/40"
                                                                 )}
                                                                 onClick={() => {
                                                                     const current = field.value || [];
@@ -679,7 +688,11 @@ export function StationWizard({
                                                                 <CardContent className="p-4 flex items-center gap-4">
                                                                     <div className={cn(
                                                                         "p-2.5 rounded-xl shrink-0 transition-colors",
-                                                                        isSelected ? "bg-primary/20 text-primary" : "bg-muted/30 text-muted-foreground"
+                                                                        isSelected
+                                                                            ? "bg-primary/20 text-primary"
+                                                                            : isDefault
+                                                                                ? "bg-violet-500/20 text-violet-500"
+                                                                                : "bg-muted/30 text-muted-foreground"
                                                                     )}>
                                                                         <Zap className="h-5 w-5" />
                                                                     </div>
@@ -689,11 +702,18 @@ export function StationWizard({
                                                                             {connector.identifier}
                                                                         </p>
                                                                     </div>
-                                                                    {isSelected && (
-                                                                        <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center">
-                                                                            <CheckCircle2 className="h-3 w-3 text-primary-foreground" />
-                                                                        </div>
-                                                                    )}
+                                                                    <div className="flex items-center gap-2">
+                                                                        {isDefault && (
+                                                                            <Badge className="bg-violet-500/10 text-violet-500 hover:bg-violet-500/20 border-violet-500/20 font-bold text-[9px] px-2 py-0.5 uppercase tracking-wider shrink-0">
+                                                                                Default
+                                                                            </Badge>
+                                                                        )}
+                                                                        {isSelected && (
+                                                                            <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center shrink-0">
+                                                                                <CheckCircle2 className="h-3 w-3 text-primary-foreground" />
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
                                                                 </CardContent>
                                                             </Card>
                                                         );
