@@ -92,7 +92,7 @@ export function StationWizard({
             vendor: initialData.vendor || '',
             maxPower: initialData.maxPower || 22,
             locationId: (initialData.location && typeof initialData.location === 'object' ? (initialData.location as any).id : initialData.locationId) || '',
-            tariffId: (initialData as any).tariffId || '',
+            tariffId: (initialData as any).tariffId || 'none',
             type: initialData.type || 'AC',
             visibility: (initialData as any).visibility || 'public',
             connectorTypes: initialData.connectorTypes || [],
@@ -159,7 +159,7 @@ export function StationWizard({
                 vendor: initialData.vendor || '',
                 maxPower: initialData.maxPower ?? 22,
                 locationId: (initialData.location && typeof initialData.location === 'object' ? (initialData.location as any).id : initialData.locationId) || '',
-                tariffId: (initialData as any).tariffId || '',
+                tariffId: (initialData as any).tariffId || 'none',
                 type: initialData.type || 'AC',
                 visibility: (initialData as any).visibility || 'public',
                 connectorTypes: initialData.connectorTypes || [],
@@ -251,7 +251,7 @@ export function StationWizard({
                             type="button"
                             onClick={() => handleStepJump(s.id)}
                             className={cn(
-                                "flex flex-col items-center gap-2 transition-all duration-300 focus:outline-none group",
+                                "flex flex-col items-center gap-2 transition-all duration-300 focus:outline-none group cursor-pointer",
                                 step === s.id ? "opacity-100 scale-105" : "opacity-40 hover:opacity-80 scale-95"
                             )}
                         >
@@ -540,7 +540,7 @@ export function StationWizard({
                                                 <FormItem>
                                                     <FormLabel className="font-bold flex items-center gap-1.5 focus:text-primary transition-colors">
                                                         <Save className="h-3.5 w-3.5 text-primary" />
-                                                        Tariff*
+                                                        Tariff (Optional)
                                                     </FormLabel>
                                                     <Select
                                                         onValueChange={field.onChange}
@@ -553,6 +553,7 @@ export function StationWizard({
                                                             </SelectTrigger>
                                                         </FormControl>
                                                         <SelectContent className="rounded-xl border-border/60 shadow-2xl">
+                                                            <SelectItem value="none" className="font-bold text-muted-foreground">No Tariff</SelectItem>
                                                             {(tariffs || []).map((tariff: any) => (
                                                                 <SelectItem key={tariff.id} value={tariff.id} className="font-bold">
                                                                     {tariff.name}

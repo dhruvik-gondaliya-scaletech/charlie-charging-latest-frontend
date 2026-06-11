@@ -79,7 +79,7 @@ export function StationWizardContainer({ stationId, mode }: StationWizardContain
                 isOccupied: isEdit ? station?.isOccupied : false,
                 isActive: isEdit ? station?.isActive : true,
                 locationId: values.locationId || undefined,
-                tariffId: values.tariffId || undefined,
+                tariffId: (values.tariffId && values.tariffId !== 'none') ? values.tariffId : undefined,
             };
 
             if (isEdit && stationId) {
