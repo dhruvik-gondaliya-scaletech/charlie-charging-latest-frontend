@@ -182,10 +182,37 @@ export function StationWizard({
 
     const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
 
+    const handleStepJump = async (targetStep: number) => {
+        if (targetStep === step) return;
+
+        // If targetStep is less than current step, we can jump back freely
+        if (targetStep < step) {
+            setStep(targetStep);
+            return;
+        }
+
+        // If jumping forward, we need to validate all steps before targetStep
+        const fieldsToValidate: (keyof WizardValues)[] = [];
+        if (targetStep > 1) {
+            fieldsToValidate.push('name', 'vendor', 'model', 'maxPower');
+        }
+        if (targetStep > 2) {
+            fieldsToValidate.push('serialNumber', 'chargePointId', 'type', 'locationId', 'tariffId', 'visibility', 'password');
+        }
+        if (targetStep > 3) {
+            fieldsToValidate.push('connectorTypes');
+        }
+
+        const isValid = await form.trigger(fieldsToValidate);
+        if (isValid) {
+            setStep(targetStep);
+        }
+    };
+
     const onFormSubmit = (data: WizardValues) => {
         // CRITICAL: Double guard to prevent early submission
-        // Only allow if we are on step 4 AND not already loading
-        if (step === 4 && !isLoading) {
+        // Only allow if we are on step 4 OR if it's edit mode, AND not already loading
+        if ((step === 4 || isEdit) && !isLoading) {
             console.log('Wizard submitting data:', data);
             onSubmit(data);
         }
@@ -219,21 +246,25 @@ export function StationWizard({
 
                 <div className="grid grid-cols-4 gap-2 sm:gap-4">
                     {STEPS.map((s) => (
-                        <div
+                        <button
                             key={s.id}
+                            type="button"
+                            onClick={() => handleStepJump(s.id)}
                             className={cn(
-                                "flex flex-col items-center gap-2 transition-all duration-300",
-                                step === s.id ? "opacity-100 scale-105" : "opacity-40 scale-95"
+                                "flex flex-col items-center gap-2 transition-all duration-300 focus:outline-none group",
+                                step === s.id ? "opacity-100 scale-105" : "opacity-40 hover:opacity-80 scale-95"
                             )}
                         >
                             <div className={cn(
-                                "p-2 rounded-xl border",
-                                step === s.id ? "bg-primary/10 border-primary/20 text-primary" : "bg-muted/10 border-border/40 text-muted-foreground"
+                                "p-2 rounded-xl border transition-colors",
+                                step === s.id
+                                    ? "bg-primary/10 border-primary/20 text-primary shadow-[0_0_10px_rgba(var(--primary),0.1)]"
+                                    : "bg-muted/10 border-border/40 text-muted-foreground group-hover:border-primary/20 group-hover:text-primary"
                             )}>
                                 <s.icon className="h-4 w-4" />
                             </div>
                             <span className="text-[10px] font-black uppercase tracking-widest hidden md:block">{s.title}</span>
-                        </div>
+                        </button>
                     ))}
                 </div>
             </div>
@@ -749,6 +780,28 @@ export function StationWizard({
                         </Button>
 
                         <div className="flex gap-4">
+                            {isEdit && step < 4 && (
+                                <Button
+                                    type="button"
+                                    disabled={isLoading}
+                                    onClick={() => {
+                                        console.log('Manual save trigger initiated (quick update)');
+                                        form.handleSubmit(onFormSubmit as any)();
+                                    }}
+                                    variant="outline"
+                                    className="font-bold border-primary/30 text-primary hover:bg-primary/5 hover:border-primary/50 transition-all px-6"
+                                >
+                                    {isLoading ? (
+                                        <>
+                                            <Activity className="h-4 w-4 mr-2 animate-spin" /> Saving...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Save className="h-4 w-4 mr-2" /> Save Changes
+                                        </>
+                                    )}
+                                </Button>
+                            )}
                             {step < 4 ? (
                                 <Button
                                     type="button"

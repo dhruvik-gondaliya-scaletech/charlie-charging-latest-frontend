@@ -324,7 +324,7 @@ export function StationDetailContainer() {
                     next.delete(connectorId);
                     return next;
                 });
-                queryClient.invalidateQueries({ queryKey: ['station', id] });
+                queryClient.invalidateQueries({ queryKey: ['station', environment, id] });
             },
             onError: () => {
                 setBusyConnectors(prev => {
