@@ -65,12 +65,12 @@ export function HeroSection() {
 
           {/* CTAs */}
           <motion.div variants={itemVariants} className="flex flex-wrap gap-4 items-center">
-            <Link href="#demo">
+            <Link href="#demo" prefetch={false}>
               <Button className="bg-blue-600 text-white hover:bg-blue-700 hover:scale-[1.03] active:scale-[0.98] transition-all rounded-full px-8 py-6 text-sm font-bold shadow-lg shadow-blue-500/20 flex items-center gap-2">
                 Deploy Instantly <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
-            <Link href="#solutions">
+            <Link href="#solutions" prefetch={false}>
               <Button variant="outline" className="border-gray-200 hover:bg-gray-50 rounded-full px-8 py-6 text-sm font-bold flex items-center gap-2">
                 <Play className="w-3.5 h-3.5 fill-gray-950 text-gray-950" /> Watch Demo
               </Button>

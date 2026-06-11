@@ -51,7 +51,7 @@ export function PublicHeader() {
           }
         `}
       >
-        <Link href="/" className="flex items-center group relative z-10">
+        <Link href="/" prefetch={false} className="flex items-center group relative z-10">
           <BrandLogo
             width={100}
             height={28}
@@ -65,6 +65,7 @@ export function PublicHeader() {
             <Link
               key={item.name}
               href={item.href}
+              prefetch={false}
               className="px-4 py-2 text-[13px] font-black tracking-widest uppercase text-foreground/60 hover:text-foreground transition-all relative group"
             >
               {item.name}
@@ -74,7 +75,7 @@ export function PublicHeader() {
         </nav>
 
         <div className="flex items-center gap-2 relative z-10">
-          <Link href={FRONTEND_ROUTES.LOGIN} className="hidden sm:block">
+          <Link href={FRONTEND_ROUTES.LOGIN} prefetch={false} className="hidden sm:block">
             <Button className="bg-primary text-primary-foreground font-black text-[11px] tracking-widest uppercase px-6 rounded-full h-10 shadow-lg shadow-primary/20 hover:scale-105 transition-all">
               Login
             </Button>
@@ -100,6 +101,7 @@ export function PublicHeader() {
                     <Link
                       key={item.name}
                       href={item.href}
+                      prefetch={false}
                       onClick={() => setIsOpen(false)}
                       className="text-4xl font-black text-foreground/40 hover:text-primary transition-all tracking-tighter"
                     >
@@ -108,7 +110,7 @@ export function PublicHeader() {
                   ))}
                 </div>
                 <div className="p-8 mt-auto border-t border-white/5 flex flex-col gap-4">
-                  <Link href={FRONTEND_ROUTES.LOGIN} className="w-full">
+                  <Link href={FRONTEND_ROUTES.LOGIN} prefetch={false} className="w-full">
                     <Button className="w-full h-14 rounded-2xl font-black text-sm tracking-widest uppercase shadow-xl shadow-primary/20">
                       Login
                     </Button>

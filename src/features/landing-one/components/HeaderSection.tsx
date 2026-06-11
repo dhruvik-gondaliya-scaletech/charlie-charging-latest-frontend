@@ -56,7 +56,7 @@ export function HeaderSection() {
           <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/5 via-transparent to-primary/5 pointer-events-none -z-10" />
         )}
 
-        <Link href="/" className="flex items-center group relative z-10">
+        <Link href="/" prefetch={false} className="flex items-center group relative z-10">
           <BrandLogo
             width={110}
             height={30}
@@ -70,6 +70,7 @@ export function HeaderSection() {
             <Link
               key={item.name}
               href={item.href}
+              prefetch={false}
               className="px-3.5 py-2 text-[12px] font-black tracking-widest uppercase text-muted-foreground hover:text-foreground transition-all relative group"
             >
               {item.name}
@@ -80,7 +81,7 @@ export function HeaderSection() {
 
         {/* CTA & Drawer Trigger */}
         <div className="flex items-center gap-3 relative z-10">
-          <Link href="#demo" className="hidden sm:block">
+          <Link href="#demo" prefetch={false} className="hidden sm:block">
             <Button
               variant="outline"
               className="border-primary/30 hover:border-primary/60 hover:bg-primary/5 text-primary font-bold text-xs rounded-full h-9 px-5 backdrop-blur-sm transition-all"
@@ -88,7 +89,7 @@ export function HeaderSection() {
               Book Demo
             </Button>
           </Link>
-          <Link href={FRONTEND_ROUTES.LOGIN} className="hidden sm:block">
+          <Link href={FRONTEND_ROUTES.LOGIN} prefetch={false} className="hidden sm:block">
             <Button className="bg-primary text-primary-foreground font-black text-[11px] tracking-widest uppercase px-6 rounded-full h-9 shadow-lg shadow-primary/20 hover:scale-105 transition-all">
               Login
             </Button>
@@ -115,6 +116,7 @@ export function HeaderSection() {
                     <Link
                       key={item.name}
                       href={item.href}
+                      prefetch={false}
                       onClick={() => setIsOpen(false)}
                       className="text-2xl font-bold text-muted-foreground hover:text-primary transition-all tracking-tight"
                     >
@@ -123,12 +125,12 @@ export function HeaderSection() {
                   ))}
                 </div>
                 <div className="p-6 border-t border-border/50 flex flex-col gap-3">
-                  <Link href="#demo" className="w-full" onClick={() => setIsOpen(false)}>
+                  <Link href="#demo" prefetch={false} className="w-full" onClick={() => setIsOpen(false)}>
                     <Button variant="outline" className="w-full h-12 rounded-xl font-bold border-primary/30 text-primary">
                       Book Demo
                     </Button>
                   </Link>
-                  <Link href={FRONTEND_ROUTES.LOGIN} className="w-full">
+                  <Link href={FRONTEND_ROUTES.LOGIN} prefetch={false} className="w-full">
                     <Button className="w-full h-12 rounded-xl font-black text-xs tracking-widest uppercase shadow-xl shadow-primary/20">
                       Login
                     </Button>

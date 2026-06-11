@@ -102,7 +102,7 @@ export function QrCodeTab({ station }: QrCodeTabProps) {
 
                         <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
                             <Button asChild size="lg" className="rounded-2xl px-8 h-14 font-black gap-2 shadow-lg shadow-primary/20 active:scale-95 transition-all">
-                                <Link href="/drivers">
+                                <Link href="/drivers" prefetch={false}>
                                     Configure Drivers
                                     <ArrowRight className="h-5 w-5" />
                                 </Link>

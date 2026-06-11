@@ -85,7 +85,7 @@ export function Hero() {
               transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
               className="flex flex-col sm:flex-row gap-4 mb-14"
             >
-              <Link href="#contact">
+              <Link href="#contact" prefetch={false}>
                 <Button
                   size="lg"
                   className="px-8 py-6 h-auto rounded-xl font-bold text-base shadow-2xl shadow-primary/25 hover:scale-[1.03] hover:shadow-primary/35 transition-all duration-300 bg-primary text-primary-foreground group"
@@ -94,7 +94,7 @@ export function Hero() {
                   <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
-              <Link href="#features">
+              <Link href="#features" prefetch={false}>
                 <Button
                   variant="outline"
                   size="lg"

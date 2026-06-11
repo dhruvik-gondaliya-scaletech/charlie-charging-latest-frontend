@@ -41,7 +41,7 @@ export function Breadcrumbs() {
             <BreadcrumbList>
                 <BreadcrumbItem>
                     <BreadcrumbLink asChild>
-                        <Link href={FRONTEND_ROUTES.DASHBOARD}>Dashboard</Link>
+                        <Link href={FRONTEND_ROUTES.DASHBOARD} prefetch={false}>Dashboard</Link>
                     </BreadcrumbLink>
                 </BreadcrumbItem>
 
@@ -71,7 +71,7 @@ export function Breadcrumbs() {
                                     </BreadcrumbPage>
                                 ) : (
                                     <BreadcrumbLink asChild>
-                                        <Link href={segmentPath}>{label}</Link>
+                                        <Link href={segmentPath} prefetch={false}>{label}</Link>
                                     </BreadcrumbLink>
                                 )}
                             </BreadcrumbItem>

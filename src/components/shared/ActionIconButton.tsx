@@ -62,7 +62,7 @@ export function ActionIconButton({
       asChild={!!href}
       {...props}
     >
-      {href ? <Link href={href}>{icon}</Link> : icon}
+      {href ? <Link href={href} prefetch={false}>{icon}</Link> : icon}
     </Button>
   );
 

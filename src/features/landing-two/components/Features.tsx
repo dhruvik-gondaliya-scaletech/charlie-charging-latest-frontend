@@ -66,7 +66,7 @@ export function Features() {
             <p className="text-muted-foreground text-lg leading-relaxed">
               Scale EV brings together every tool your EV charging operation needs — from hardware communication to driver billing — in one unified, OCPP-powered platform.
             </p>
-            <Link href="#contact">
+            <Link href="#contact" prefetch={false}>
               <Button className="w-fit px-6 py-5 h-auto rounded-xl font-bold text-sm group bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:scale-[1.02] transition-all">
                 Explore All Features
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />

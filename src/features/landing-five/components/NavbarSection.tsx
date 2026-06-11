@@ -34,7 +34,7 @@ export function NavbarSection() {
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-1.5 group">
+          <Link href="/" prefetch={false} className="flex items-center space-x-1.5 group">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
               <span className="text-white text-xs font-black">⚡</span>
             </div>
@@ -50,6 +50,7 @@ export function NavbarSection() {
               <Link
                 key={item.name}
                 href={item.href}
+                prefetch={false}
                 className="text-[13px] font-medium text-gray-600 hover:text-gray-900 transition-colors duration-200 relative py-1 group"
               >
                 {item.name}
@@ -60,12 +61,12 @@ export function NavbarSection() {
 
           {/* Actions */}
           <div className="hidden lg:flex items-center space-x-3">
-            <Link href="#demo">
+            <Link href="#demo" prefetch={false}>
               <Button variant="ghost" className="font-semibold text-[13px] text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all">
                 Book Demo
               </Button>
             </Link>
-            <Link href={FRONTEND_ROUTES.LOGIN}>
+            <Link href={FRONTEND_ROUTES.LOGIN} prefetch={false}>
               <Button className="font-bold text-[13px] px-5 py-2.5 rounded-full shadow-lg shadow-blue-500/15 hover:shadow-blue-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all bg-blue-600 text-white hover:bg-blue-700">
                 Partner Login
               </Button>
@@ -100,6 +101,7 @@ export function NavbarSection() {
                   <Link
                     key={item.name}
                     href={item.href}
+                    prefetch={false}
                     onClick={() => setMobileMenuOpen(false)}
                     className="text-2xl font-semibold tracking-tight text-gray-800 hover:text-blue-600 transition-colors"
                   >
@@ -110,12 +112,12 @@ export function NavbarSection() {
             </div>
 
             <div className="flex flex-col space-y-3 pt-6 border-t border-gray-200">
-              <Link href="#demo" onClick={() => setMobileMenuOpen(false)}>
+              <Link href="#demo" prefetch={false} onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="outline" className="w-full h-12 rounded-xl text-[14px] font-semibold border-gray-300 hover:bg-gray-50">
                   Book Demo
                 </Button>
               </Link>
-              <Link href={FRONTEND_ROUTES.LOGIN} onClick={() => setMobileMenuOpen(false)}>
+              <Link href={FRONTEND_ROUTES.LOGIN} prefetch={false} onClick={() => setMobileMenuOpen(false)}>
                 <Button className="w-full h-12 rounded-xl text-[14px] font-bold shadow-lg shadow-blue-500/20 bg-blue-600 text-white hover:bg-blue-700 flex items-center justify-center gap-2">
                   Partner Login <ArrowRight className="w-4 h-4" />
                 </Button>

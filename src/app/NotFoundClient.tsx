@@ -71,7 +71,7 @@ export default function NotFoundClient() {
             size="lg"
             className="rounded-full px-8 shadow-xs hover:shadow-md transition-all active:scale-95"
           >
-            <Link href="/">
+            <Link href="/" prefetch={false}>
               <Home className="mr-2 h-4 w-4" />
               Return Home
             </Link>

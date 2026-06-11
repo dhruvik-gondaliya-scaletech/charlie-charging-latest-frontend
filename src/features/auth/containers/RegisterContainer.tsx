@@ -5,6 +5,7 @@ import { useRegister } from '@/hooks/post/useAuthMutations';
 import { RegisterFormData } from '@/lib/validations/auth.schema';
 import { RegisterForm } from '../components/RegisterForm';
 import Link from 'next/link';
+import { FRONTEND_ROUTES } from '@/constants/constants';
 
 export function RegisterContainer() {
   const router = useRouter();
@@ -37,7 +38,7 @@ export function RegisterContainer() {
 
       <div className="mt-8 text-center text-sm">
         <span className="text-muted-foreground">Already have an account? </span>
-        <Link href="/login" className="text-primary hover:underline font-bold">
+        <Link href={FRONTEND_ROUTES.LOGIN} prefetch={false} className="text-primary hover:underline font-bold">
           Sign in
         </Link>
       </div>

@@ -37,7 +37,7 @@ export function NavbarSection() {
           <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/5 via-transparent to-primary/5 pointer-events-none -z-10" />
 
           {/* Logo */}
-          <Link href="/" className="flex items-center group relative z-10">
+          <Link href="/" prefetch={false} className="flex items-center group relative z-10">
             <BrandLogo
               width={110}
               height={30}
@@ -51,6 +51,7 @@ export function NavbarSection() {
               <Link
                 key={item.name}
                 href={item.href}
+                prefetch={false}
                 className="text-[15px] font-semibold tracking-wide text-foreground transition-colors duration-200 relative py-1 group"
               >
                 {item.name}
@@ -66,7 +67,7 @@ export function NavbarSection() {
                 Book Demo
               </Button>
             </BookADemo>
-            <Link href={FRONTEND_ROUTES.LOGIN}>
+            <Link href={FRONTEND_ROUTES.LOGIN} prefetch={false}>
               <Button className="font-bold text-sm tracking-wide px-5 py-2.5 rounded-full shadow-lg shadow-primary/10 hover:shadow-primary/25 hover:scale-[1.02] active:scale-[0.98] transition-all bg-primary text-primary-foreground">
                 Login
               </Button>
@@ -101,6 +102,7 @@ export function NavbarSection() {
                   <Link
                     key={item.name}
                     href={item.href}
+                    prefetch={false}
                     onClick={() => setMobileMenuOpen(false)}
                     className="text-2xl font-semibold tracking-tight text-foreground/90 hover:text-primary transition-colors"
                   >
@@ -121,7 +123,7 @@ export function NavbarSection() {
               >
                 Book Demo
               </Button>
-              <Link href={FRONTEND_ROUTES.LOGIN} onClick={() => setMobileMenuOpen(false)}>
+              <Link href={FRONTEND_ROUTES.LOGIN} prefetch={false} onClick={() => setMobileMenuOpen(false)}>
                 <Button className="w-full h-12 rounded-xl text-base font-bold shadow-lg shadow-primary/25 bg-primary text-primary-foreground flex items-center justify-center gap-2">
                   Partner Login <ArrowRight className="w-4 h-4" />
                 </Button>

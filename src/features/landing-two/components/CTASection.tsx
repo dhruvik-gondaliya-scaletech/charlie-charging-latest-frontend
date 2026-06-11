@@ -76,7 +76,7 @@ export function CTASection() {
           transition={{ delay: 0.3 }}
           className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
         >
-          <Link href="#contact">
+          <Link href="#contact" prefetch={false}>
             <Button
               size="lg"
               className="px-10 py-7 h-auto rounded-2xl font-bold text-lg shadow-2xl shadow-primary/30 hover:scale-[1.03] hover:shadow-primary/40 transition-all duration-300 bg-primary text-primary-foreground group"
@@ -86,7 +86,7 @@ export function CTASection() {
               <ArrowRight className="ml-2.5 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
           </Link>
-          <Link href="#contact">
+          <Link href="#contact" prefetch={false}>
             <Button
               size="lg"
               variant="outline"

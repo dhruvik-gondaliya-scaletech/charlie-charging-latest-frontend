@@ -192,7 +192,7 @@ export function DashboardContainer() {
                 </CardHeader>
                 <CardContent className="grid grid-cols-2 gap-4 pb-6">
                   {quickActions.map((action, idx) => (
-                    <Link key={idx} href={action.href} className="group">
+                    <Link key={idx} href={action.href} prefetch={false} className="group">
                       <div className="flex flex-col items-center justify-center p-5 rounded-2xl border border-border/10 bg-muted/20 hover:bg-muted/40 transition-all hover:scale-[1.03] hover:shadow-lg h-full group">
                         <div className={`p-3 rounded-xl bg-background/50 mb-3 group-hover:scale-110 transition-transform ring-1 ring-border/5`}>
                           <action.icon className={cn("h-5 w-5", action.color.split(' ').pop())} />

@@ -49,7 +49,7 @@ export function PublicFooter() {
       <div className="max-w-7xl mx-auto px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-16 mb-24">
           <div className="lg:col-span-2">
-            <Link href="/" className="inline-block mb-8 transition-transform hover:scale-105 duration-500">
+            <Link href="/" prefetch={false} className="inline-block mb-8 transition-transform hover:scale-105 duration-500">
               <BrandLogo width={120} height={32} />
             </Link>
             <p className="text-muted-foreground text-lg font-medium max-w-sm leading-relaxed mb-8">
@@ -60,6 +60,7 @@ export function PublicFooter() {
                 <Link
                   key={idx}
                   href={social.href}
+                  prefetch={false}
                   className="w-10 h-10 rounded-full bg-muted/50 border border-border/50 flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300"
                 >
                   <social.icon className="h-4 w-4" />
@@ -76,6 +77,7 @@ export function PublicFooter() {
                   <li key={link.name}>
                     <Link
                       href={link.href}
+                      prefetch={false}
                       className="text-muted-foreground text-sm font-medium hover:text-foreground transition-colors"
                     >
                       {link.name}
@@ -92,8 +94,8 @@ export function PublicFooter() {
             © {new Date().getFullYear()} Scale EV Platform. Built for the future of mobility.
           </div>
           <div className="flex gap-8 text-[11px] font-black tracking-widest uppercase text-muted-foreground/50">
-            <Link href="#" className="hover:text-primary transition-colors">System Status</Link>
-            <Link href="#" className="hover:text-primary transition-colors">Cookie Policy</Link>
+            <Link href="#" prefetch={false} className="hover:text-primary transition-colors">System Status</Link>
+            <Link href="#" prefetch={false} className="hover:text-primary transition-colors">Cookie Policy</Link>
           </div>
         </div>
       </div>
