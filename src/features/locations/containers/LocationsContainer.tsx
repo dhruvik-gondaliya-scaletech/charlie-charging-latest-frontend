@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { ColumnDef } from '@tanstack/react-table';
 import { useLocations } from '@/hooks/get/useLocations';
@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ActionIconButton } from '@/components/shared/ActionIconButton';
-import { Plus, MapPin, Trash2, Pencil, Zap, AlertTriangle, Eye } from 'lucide-react';
+import { Plus, MapPin, Trash2, Pencil, Zap, AlertTriangle } from 'lucide-react';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Table } from '@/components/shared/Table';
 import { Location, LocationEnv } from '@/types';
@@ -35,18 +35,18 @@ export function LocationsContainer() {
     router.push(FRONTEND_ROUTES.LOCATIONS_NEW);
   };
 
-  const handleEdit = (location: Location) => {
+  const handleEdit = useCallback((location: Location) => {
     router.push(`${FRONTEND_ROUTES.LOCATIONS_EDIT(location.id)}?name=${encodeURIComponent(location.name)}`);
-  };
+  }, [router]);
 
-  const handleViewDetails = (location: Location) => {
+  const handleViewDetails = useCallback((location: Location) => {
     router.push(`${FRONTEND_ROUTES.LOCATIONS_DETAILS(location.id)}?name=${encodeURIComponent(location.name)}`);
-  };
+  }, [router]);
 
-  const handleDelete = (location: Location) => {
+  const handleDelete = useCallback((location: Location) => {
     setSelectedLocation(location);
     setIsDeleteModalOpen(true);
-  };
+  }, []);
 
 
 
@@ -129,6 +129,26 @@ export function LocationsContainer() {
         ),
       },
       {
+        accessorKey: 'visibility',
+        header: 'Visibility',
+        cell: ({ row }) => {
+          const visibility = row.original.visibility || 'public';
+          return (
+            <Badge
+              variant="outline"
+              className={cn(
+                "capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm",
+                visibility === 'public'
+                  ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                  : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+              )}
+            >
+              {visibility}
+            </Badge>
+          );
+        },
+      },
+      {
         accessorKey: 'isActive',
         header: 'Status',
         cell: ({ row }) => {
@@ -170,7 +190,7 @@ export function LocationsContainer() {
         ),
       },
     ],
-    []
+    [handleEdit, handleViewDetails, handleDelete]
   );
 
   if (error) {
@@ -242,6 +262,19 @@ export function LocationsContainer() {
                           )}
                         >
                           {location.locationEnv === LocationEnv.PRODUCTION ? 'PROD' : 'DEV'}
+                        </Badge>
+                      )}
+                      {location.visibility && (
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md border tracking-wider",
+                            location.visibility === 'public'
+                              ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                              : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                          )}
+                        >
+                          {location.visibility}
                         </Badge>
                       )}
                     </div>

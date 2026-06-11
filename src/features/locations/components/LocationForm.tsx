@@ -29,7 +29,8 @@ import {
     ArrowRight,
     Info,
     Loader2,
-    Activity
+    Activity,
+    ShieldCheck
 } from 'lucide-react';
 import AddressAutocomplete, { ParsedAddress } from '@/components/shared/AddressAutocomplete';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -65,6 +66,7 @@ export function LocationForm({
             latitude: initialData?.latitude,
             longitude: initialData?.longitude,
             isActive: initialData?.isActive ?? true,
+            visibility: initialData?.visibility || 'public',
         },
     });
 
@@ -113,34 +115,85 @@ export function LocationForm({
                         </div>
                     </div>
 
-                    <FormField
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        control={form.control as any}
-                        name="name"
-                        render={({ field }) => (
-                            <FormItem className="space-y-2">
-                                <FormLabel className="font-bold flex items-center gap-1.5 ml-1">
-                                    <Globe className="h-3.5 w-3.5 text-primary" />
-                                    Location Name*
-                                </FormLabel>
-                                <FormControl>
-                                    <div className="relative group">
-                                        <Input
-                                            placeholder="e.g., Silicon Valley Hub"
-                                            className="bg-muted/30 border-border/60 focus:bg-background transition-all h-12 font-medium"
-                                            {...field}
-                                            value={typeof field.value === 'string' ? field.value : ''}
-                                        />
-                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/30 group-focus-within:text-primary transition-colors">
-                                            <Info className="h-4 w-4" />
-                                        </div>
-                                    </div>
-                                </FormControl>
-                                <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">Choose a globally unique name for this strategic site</p>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="md:col-span-2">
+                            <FormField
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                control={form.control as any}
+                                name="name"
+                                render={({ field }) => (
+                                    <FormItem className="space-y-2">
+                                        <FormLabel className="font-bold flex items-center gap-1.5 ml-1">
+                                            <Globe className="h-3.5 w-3.5 text-primary" />
+                                            Location Name*
+                                        </FormLabel>
+                                        <FormControl>
+                                            <div className="relative group">
+                                                <Input
+                                                    placeholder="e.g., Silicon Valley Hub"
+                                                    className="bg-muted/30 border-border/60 focus:bg-background transition-all h-12 font-medium"
+                                                    {...field}
+                                                    value={typeof field.value === 'string' ? field.value : ''}
+                                                />
+                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/30 group-focus-within:text-primary transition-colors">
+                                                    <Info className="h-4 w-4" />
+                                                </div>
+                                            </div>
+                                        </FormControl>
+                                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">Choose a globally unique name for this strategic site</p>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
+                        <div>
+                            <FormField
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                control={form.control as any}
+                                name="visibility"
+                                render={({ field }) => (
+                                    <FormItem className="space-y-2">
+                                        <FormLabel className="font-bold flex items-center gap-1.5 ml-1">
+                                            <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                                            Visibility*
+                                        </FormLabel>
+                                        <Select
+                                            onValueChange={field.onChange}
+                                            defaultValue={field.value || 'public'}
+                                            value={field.value}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger className="bg-muted/30 border-border/60 focus:bg-background transition-all h-12 font-medium">
+                                                    <SelectValue placeholder="Select visibility" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent className="rounded-xl border-border/60 shadow-2xl">
+                                                <SelectItem value="public" className="font-bold py-2.5">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="p-1 rounded-lg bg-emerald-500/10 text-emerald-500">
+                                                            <Activity className="h-3 w-3" />
+                                                        </div>
+                                                        <span>Public</span>
+                                                    </div>
+                                                </SelectItem>
+                                                <SelectItem value="private" className="font-bold py-2.5">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="p-1 rounded-lg bg-rose-500/10 text-rose-500">
+                                                            <ShieldCheck className="h-3 w-3" />
+                                                        </div>
+                                                        <span>Private</span>
+                                                    </div>
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">Public is visible to drivers, private is restricted</p>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                    </div>
 
                     {/* Geolocation section starts below */}
                 </div>

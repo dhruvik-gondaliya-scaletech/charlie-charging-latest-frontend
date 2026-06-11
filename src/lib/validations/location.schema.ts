@@ -10,6 +10,7 @@ export const locationSchema = z.object({
   latitude: z.coerce.number().optional(),
   longitude: z.coerce.number().optional(),
   isActive: z.boolean(),
+  visibility: z.enum(['public', 'private']).default('public'),
 });
 
 export type LocationFormData = z.infer<typeof locationSchema>;

@@ -89,6 +89,7 @@ export interface Location {
   lastUpdated?: string;
   isActive?: boolean;
   locationEnv?: LocationEnv;
+  visibility?: 'public' | 'private';
   createdAt?: string;
   updatedAt?: string;
 }

@@ -117,6 +117,19 @@ export function LocationDetailContainer() {
                                 {location.locationEnv === LocationEnv.PRODUCTION ? 'PROD' : 'DEV'}
                             </Badge>
                         )}
+                        {location.visibility && (
+                            <Badge
+                                variant="outline"
+                                className={cn(
+                                    "px-3 py-1 rounded-full border shadow-sm font-bold uppercase tracking-widest text-[10px]",
+                                    location.visibility === 'public'
+                                        ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/30"
+                                        : "bg-amber-500/10 text-amber-500 border-amber-500/30"
+                                )}
+                            >
+                                {location.visibility}
+                            </Badge>
+                        )}
                     </div>
                     <div className="flex items-center gap-3 text-muted-foreground mt-2">
                         <div className="flex items-center gap-1.5 text-sm font-medium">
