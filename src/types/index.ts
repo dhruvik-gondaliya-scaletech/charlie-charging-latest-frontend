@@ -412,3 +412,11 @@ export interface StationChargingProfile {
   syncStatus: 'synced' | 'pending' | 'failed';
   lastSyncedAt?: string;
 }
+
+export interface SessionStats {
+  totalSessions: number;
+  activeSessions: number;
+  completedSessions: number;
+  failedSessions: number;
+  totalEnergyDelivered: number;
+}

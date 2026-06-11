@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useStation, useStationSessions } from '@/hooks/get/useStations';
+import { useStation, useStationSessions, useStationSessionStats } from '@/hooks/get/useStations';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +21,8 @@ import {
     ChevronDown,
     Settings,
     Unlock,
+    CheckCircle2,
+    Play,
 } from 'lucide-react';
 import {
     Drawer,
@@ -63,14 +65,14 @@ import {
 } from '@/lib/realtime.service';
 import { useTenantConfig } from '@/hooks/get/useTenantConfig';
 import QRCode from 'react-qr-code';
-import { 
-    Download, 
-    Copy, 
-    ExternalLink, 
+import {
+    Download,
+    Copy,
+    ExternalLink,
     QrCode as QrCodeIcon,
     Check
 } from 'lucide-react';
-import { 
+import {
     invalidateQueriesDebounced,
     updateStationDetailCache
 } from '@/lib/query-utils';
@@ -86,6 +88,7 @@ export function StationDetailContainer() {
     const { data: station, isLoading, error } = useStation(id as string);
     const { data: tariffs } = useTariffs();
     const { data: sessions } = useStationSessions(id as string);
+    const { data: sessionStats, isLoading: isStatsLoading } = useStationSessionStats(id as string);
     const [activeTab, setActiveTab] = useState('connectors');
     const [filterSessionId, setFilterSessionId] = useState<string | undefined>(undefined);
 
@@ -125,8 +128,8 @@ export function StationDetailContainer() {
 
                 // 1. Optimistically update the specific connector status in the station detail cache using a predicate to match environment-aware key
                 queryClient.setQueriesData({
-                    predicate: (query) => 
-                        query.queryKey[0] === 'station' && 
+                    predicate: (query) =>
+                        query.queryKey[0] === 'station' &&
                         (query.queryKey[2] === id || query.queryKey[1] === id)
                 }, (oldData: any) => {
                     if (!oldData || !oldData.connectors) return oldData;
@@ -167,6 +170,7 @@ export function StationDetailContainer() {
                 // Debounce log and session updates as meter values can be very frequent
                 invalidateQueriesDebounced(queryClient, ['station-logs', id]);
                 invalidateQueriesDebounced(queryClient, ['station-sessions', environment, id]);
+                invalidateQueriesDebounced(queryClient, ['station-session-stats', environment, id]);
             }
         },
         [id, environment]
@@ -179,6 +183,7 @@ export function StationDetailContainer() {
             if (data.stationId === id) {
                 console.log(`Transaction started on station ${data.stationId}, connector ${data.connectorId}`);
                 invalidateQueriesDebounced(queryClient, ['station-sessions', environment, id]);
+                invalidateQueriesDebounced(queryClient, ['station-session-stats', environment, id]);
                 invalidateQueriesDebounced(queryClient, ['station-logs', id]);
                 // Also refresh station to get updated connector status
                 invalidateQueriesDebounced(queryClient, ['station', environment, id]);
@@ -193,6 +198,7 @@ export function StationDetailContainer() {
             if (data.stationId === id) {
                 console.log(`Transaction stopped on station ${data.stationId}, connector ${data.connectorId}`);
                 invalidateQueriesDebounced(queryClient, ['station-sessions', environment, id]);
+                invalidateQueriesDebounced(queryClient, ['station-session-stats', environment, id]);
                 invalidateQueriesDebounced(queryClient, ['station-logs', id]);
                 // Also refresh station to get updated connector status
                 invalidateQueriesDebounced(queryClient, ['station', environment, id]);
@@ -487,8 +493,8 @@ export function StationDetailContainer() {
                                     <DrawerDescription className="text-sm font-medium">Manage operational parameters for {station.name}</DrawerDescription>
                                 </DrawerHeader>
                                 <div className="px-4 py-6 grid gap-3">
-                                    <Button 
-                                        variant="outline" 
+                                    <Button
+                                        variant="outline"
                                         className="h-16 justify-start text-base font-bold rounded-2xl border-border/40 gap-4"
                                         onClick={() => setIsRebootModalOpen(true)}
                                     >
@@ -497,8 +503,8 @@ export function StationDetailContainer() {
                                         </div>
                                         Reboot System
                                     </Button>
-                                    <Button 
-                                        variant="outline" 
+                                    <Button
+                                        variant="outline"
                                         className="h-16 justify-start text-base font-bold rounded-2xl border-border/40 gap-4"
                                         onClick={() => setIsAvailabilityModalOpen(true)}
                                     >
@@ -520,11 +526,15 @@ export function StationDetailContainer() {
             </motion.div>
 
             {/* Stats Grid */}
-            <motion.div variants={fadeInUp} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <motion.div variants={fadeInUp} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
                 {[
-                    { label: 'Active Power', value: `${station.maxPower} kW`, icon: Activity, color: 'text-primary', bottomRightGlobe: "bg-primary", description: 'Current power throughput' },
-                    { label: 'Fleet Status', value: station.isActive ? 'Active' : 'Inactive', icon: ShieldCheck, color: 'text-emerald-500', bottomRightGlobe: "bg-emerald-500", description: 'System availability' },
-                    { label: 'Connectors', value: String(station.connectors?.length || station.connectorCount || 0), icon: Cpu, color: 'text-blue-500', bottomRightGlobe: "bg-blue-500", description: 'Available charging ports' },
+                    { label: 'Total Sessions', value: String(sessionStats?.totalSessions || 0), icon: History, color: 'text-violet-500', bottomRightGlobe: "bg-violet-500", description: 'Total charging sessions', loading: isStatsLoading },
+                    { label: 'Completed Sessions', value: String(sessionStats?.completedSessions || 0), icon: CheckCircle2, color: 'text-emerald-500', bottomRightGlobe: "bg-emerald-500", description: 'Successfully finished sessions', loading: isStatsLoading },
+                    { label: 'Active Sessions', value: String(sessionStats?.activeSessions || 0), icon: Play, color: 'text-primary', bottomRightGlobe: "bg-primary", description: 'Sessions currently in progress', loading: isStatsLoading },
+
+                    { label: 'Failed Sessions', value: String(sessionStats?.failedSessions || 0), icon: AlertCircle, color: 'text-rose-500', bottomRightGlobe: "bg-rose-500", description: 'Failed or interrupted sessions', loading: isStatsLoading },
+
+                    { label: 'Total Energy', value: `${(sessionStats?.totalEnergyDelivered || 0).toFixed(2)} kWh`, icon: Zap, color: 'text-amber-500', bottomRightGlobe: "bg-amber-500", description: 'Total energy delivered', loading: isStatsLoading },
                 ].map((stat, i) => (
                     <StatCard
                         key={i}
@@ -534,6 +544,7 @@ export function StationDetailContainer() {
                         color={stat.color}
                         description={stat.description}
                         bottomRightGlobe={stat.bottomRightGlobe}
+                        loading={stat.loading}
                     />
                 ))}
             </motion.div>
