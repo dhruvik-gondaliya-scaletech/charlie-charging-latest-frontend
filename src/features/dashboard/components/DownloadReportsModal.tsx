@@ -93,6 +93,10 @@ export function DownloadReportsModal({ isOpen, onClose }: DownloadReportsModalPr
   const [selectedLocationIds, setSelectedLocationIds] = useState<Set<string>>(new Set());
   const [selectedStationIds, setSelectedStationIds] = useState<Set<string>>(new Set());
 
+  const locationsWithStations = locations.filter((loc) =>
+    stations.some((s) => s.locationId === loc.id)
+  );
+
   // Default date range: Last 7 days to now
   const getInitialDateRange = () => {
     const from = new Date();
@@ -410,12 +414,12 @@ export function DownloadReportsModal({ isOpen, onClose }: DownloadReportsModalPr
                       <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent" />
                       <span>Loading browser...</span>
                     </div>
-                  ) : locations.length === 0 ? (
+                  ) : locationsWithStations.length === 0 ? (
                     <div className="flex items-center justify-center h-full py-8 text-muted-foreground text-sm">
                       No locations or stations found.
                     </div>
                   ) : (
-                    locations.map((loc) => {
+                    locationsWithStations.map((loc) => {
                       const locStations = stations.filter((s) => s.locationId === loc.id);
                       const isExpanded = expandedLocationIds.has(loc.id);
                       const isLocChecked = selectedLocationIds.has(loc.id);
