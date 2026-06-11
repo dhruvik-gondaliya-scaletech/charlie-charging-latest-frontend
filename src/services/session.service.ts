@@ -8,6 +8,14 @@ export interface GetSessionsParams {
   status?: string;
   startDate?: string;
   endDate?: string;
+  startFrom?: string;
+  startTo?: string;
+  locationId?: string;
+  locationIds?: string;
+  stationIds?: string;
+  env?: string;
+  sortBy?: string;
+  sortOrder?: string;
 }
 
 class SessionService {
@@ -38,7 +46,7 @@ class SessionService {
     locationIds?: string;
     stationIds?: string;
   }) {
-    const queryParams: any = {};
+    const queryParams: Record<string, string> = {};
     if (params) {
       if (params.startFrom) queryParams.startFrom = params.startFrom;
       if (params.startTo) queryParams.startTo = params.startTo;
