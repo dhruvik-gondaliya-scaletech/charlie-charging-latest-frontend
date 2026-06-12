@@ -59,7 +59,7 @@ export function DocsSidebar({ activeCategory, activeEndpoint }: DocsSidebarProps
     <aside className="w-full lg:w-72 border-r border-gray-800 bg-gray-950/60 backdrop-blur-xl shrink-0 flex flex-col h-full select-none">
       {/* Platform Branding Header */}
       <div className="p-4 border-b border-gray-800/60 flex flex-col items-center justify-center gap-3 shrink-0 text-center">
-        <Link href="/" className="inline-block cursor-pointer transition-opacity hover:opacity-90">
+        <Link href="/" prefetch={false} className="inline-block cursor-pointer transition-opacity hover:opacity-90">
           <BrandLogo width={140} height={35} />
         </Link>
         <div className="flex items-center justify-center gap-2">
@@ -116,9 +116,10 @@ export function DocsSidebar({ activeCategory, activeEndpoint }: DocsSidebarProps
                       <Link
                         key={guide.id}
                         href={`/docs/guides/${guide.id}`}
+                        prefetch={false}
                         className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150 cursor-pointer border ${isActive
-                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-sm shadow-emerald-500/5'
-                            : 'border-transparent text-gray-400 hover:text-gray-200 hover:bg-gray-900/50'
+                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-sm shadow-emerald-500/5'
+                          : 'border-transparent text-gray-400 hover:text-gray-200 hover:bg-gray-900/50'
                           }`}
                       >
                         <span className="truncate">{guide.title}</span>
@@ -144,9 +145,10 @@ export function DocsSidebar({ activeCategory, activeEndpoint }: DocsSidebarProps
                       <Link
                         key={endpoint.id}
                         href={`/docs/${group.categorySlug}/${endpoint.id}`}
+                        prefetch={false}
                         className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150 group cursor-pointer border ${isActive
-                            ? 'bg-gray-900/80 text-white border-gray-800 shadow-sm shadow-black/20'
-                            : 'border-transparent text-gray-400 hover:text-gray-200 hover:bg-gray-900/40'
+                          ? 'bg-gray-900/80 text-white border-gray-800 shadow-sm shadow-black/20'
+                          : 'border-transparent text-gray-400 hover:text-gray-200 hover:bg-gray-900/40'
                           }`}
                       >
                         <span

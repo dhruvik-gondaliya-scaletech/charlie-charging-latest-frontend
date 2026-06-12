@@ -8,6 +8,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle2, XCircle } from 'lucide-react';
 import Link from 'next/link';
+import { FRONTEND_ROUTES } from '@/constants/constants';
 
 function ResetPasswordContent() {
   const [isSuccess, setIsSuccess] = useState(false);
@@ -31,9 +32,9 @@ function ResetPasswordContent() {
             Please request a new password reset link.
           </AlertDescription>
         </Alert>
-        
+
         <div className="mt-8 text-center text-sm">
-          <Link href="/forgot-password" className="text-primary hover:underline font-bold">
+          <Link href={FRONTEND_ROUTES.FORGOT_PASSWORD} prefetch={false} className="text-primary hover:underline font-bold">
             Go to forgot password
           </Link>
         </div>
@@ -50,7 +51,7 @@ function ResetPasswordContent() {
       });
       setIsSuccess(true);
       setTimeout(() => {
-        router.push('/login');
+        router.push(FRONTEND_ROUTES.LOGIN);
       }, 3000);
     } catch (err: any) {
       console.error('Reset password failed:', err);

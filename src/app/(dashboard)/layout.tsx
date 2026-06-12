@@ -4,12 +4,15 @@ import { ProtectedRoute } from '@/components/shared/ProtectedRoute';
 import { Sidebar } from '@/components/shared/Sidebar';
 import { Header } from '@/components/shared/Header';
 import { BottomNav } from '@/components/shared/BottomNav';
+import { useWebSocketConnection } from '@/hooks/useRealTime';
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  useWebSocketConnection();
+
   return (
     <ProtectedRoute>
       <div className="flex h-screen overflow-hidden bg-background">

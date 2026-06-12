@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useLocation } from '@/hooks/get/useLocations';
 import { useStations } from '@/hooks/get/useStations';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StatCard } from '../../dashboard/components/StatCard';
 import { LocationOverview } from '../components/LocationOverview';
 import { LocationStations } from '../components/LocationStations';
+import { LocationSessions } from '../components/LocationSessions';
 import { FRONTEND_ROUTES } from '@/constants/constants';
 import { BackButton } from '@/components/shared/BackButton';
 import { ApplyTariffModal } from '../components/ApplyTariffModal';
@@ -28,7 +29,6 @@ import { LocationEnv } from '@/types';
 
 export function LocationDetailContainer() {
     const { id } = useParams();
-    const router = useRouter();
     const [activeTab, setActiveTab] = useState('overview');
     const [isTariffModalOpen, setIsTariffModalOpen] = useState(false);
 
@@ -68,7 +68,7 @@ export function LocationDetailContainer() {
                         <Building2 className="h-10 w-10" />
                     </div>
                     <h2 className="text-2xl font-bold">Location Not Found</h2>
-                    <p className="text-muted-foreground">The requested site could not be found or you don't have permission to access it.</p>
+                    <p className="text-muted-foreground">The requested site could not be found or you don&apos;t have permission to access it.</p>
                     <BackButton
                         href={FRONTEND_ROUTES.LOCATIONS}
                         label="Back to Sites"
@@ -115,6 +115,19 @@ export function LocationDetailContainer() {
                                 )}
                             >
                                 {location.locationEnv === LocationEnv.PRODUCTION ? 'PROD' : 'DEV'}
+                            </Badge>
+                        )}
+                        {location.visibility && (
+                            <Badge
+                                variant="outline"
+                                className={cn(
+                                    "px-3 py-1 rounded-full border shadow-sm font-bold uppercase tracking-widest text-[10px]",
+                                    location.visibility === 'public'
+                                        ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/30"
+                                        : "bg-amber-500/10 text-amber-500 border-amber-500/30"
+                                )}
+                            >
+                                {location.visibility}
                             </Badge>
                         )}
                     </div>
@@ -170,6 +183,7 @@ export function LocationDetailContainer() {
                     <TabsList className="bg-muted/40 p-1 border border-border/40 rounded-2xl backdrop-blur-md h-auto flex-wrap sm:flex-nowrap w-full sm:w-auto">
                         <TabsTrigger value="overview" className="flex-1 sm:flex-none rounded-xl font-black uppercase tracking-widest text-[11px] px-4 sm:px-8 py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">Overview</TabsTrigger>
                         <TabsTrigger value="stations" className="flex-1 sm:flex-none rounded-xl font-black uppercase tracking-widest text-[11px] px-4 sm:px-8 py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">Assigned Stations</TabsTrigger>
+                        <TabsTrigger value="sessions" className="flex-1 sm:flex-none rounded-xl font-black uppercase tracking-widest text-[11px] px-4 sm:px-8 py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">Sessions</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="overview">
@@ -178,6 +192,10 @@ export function LocationDetailContainer() {
 
                     <TabsContent value="stations">
                         <LocationStations stations={stations || []} isLoading={isStationsLoading} />
+                    </TabsContent>
+
+                    <TabsContent value="sessions">
+                        <LocationSessions locationId={id as string} env={location.locationEnv} />
                     </TabsContent>
                 </Tabs>
             </motion.div>

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
+import { FRONTEND_ROUTES } from '@/constants/constants';
 
 interface ForgotPasswordFormProps {
   onSubmit: (data: ForgotPasswordFormData) => Promise<void>;
@@ -42,7 +43,7 @@ export function ForgotPasswordForm({ onSubmit, isLoading }: ForgotPasswordFormPr
 
       <div className="mt-4 text-center text-sm">
         <span className="text-muted-foreground">Remembered your password? </span>
-        <Link href="/login" className="text-primary hover:underline">
+        <Link href={FRONTEND_ROUTES.LOGIN} prefetch={false} className="text-primary hover:underline">
           Sign in
         </Link>
       </div>

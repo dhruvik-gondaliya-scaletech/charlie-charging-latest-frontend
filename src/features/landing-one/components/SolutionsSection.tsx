@@ -223,7 +223,7 @@ export function SolutionsSection() {
               Select Framework Capability
             </p>
 
-            <div className="custom-scrollbar-dark max-h-[580px] overflow-y-auto space-y-2 pr-1">
+            <div className="custom-scrollbar max-h-[580px] overflow-y-auto space-y-2 pr-1">
               {features.map((f) => {
                 const isActive = activeTab === f.id;
                 return (

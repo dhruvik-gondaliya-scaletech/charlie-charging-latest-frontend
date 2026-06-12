@@ -35,14 +35,15 @@ export function invalidateQueriesDebounced(
 
 /**
  * Optimistically updates a station in the stations list cache.
+ * Uses prefix matching to handle environment-aware query keys like ['stations', env, params].
  */
 export function updateStationInListCache(
     queryClient: QueryClient,
     stationId: string,
     update: Partial<any>
 ): void {
-    queryClient.setQueriesData({ queryKey: ['stations'] }, (oldData: any) => {
-        if (!oldData) return oldData;
+    queryClient.setQueriesData({ queryKey: ['stations'], exact: false }, (oldData: any) => {
+        if (!oldData || !Array.isArray(oldData)) return oldData;
 
         return oldData.map((station: any) =>
             station.id === stationId ? { ...station, ...update } : station
@@ -52,13 +53,18 @@ export function updateStationInListCache(
 
 /**
  * Optimistically updates a specific station's detail cache.
+ * Uses prefix matching to handle environment-aware query keys like ['station', env, id].
  */
 export function updateStationDetailCache(
     queryClient: QueryClient,
     stationId: string,
     update: Partial<any>
 ): void {
-    queryClient.setQueryData(['station', stationId], (oldData: any) => {
+    queryClient.setQueriesData({
+        predicate: (query) => 
+            query.queryKey[0] === 'station' && 
+            (query.queryKey[2] === stationId || query.queryKey[1] === stationId)
+    }, (oldData: any) => {
         if (!oldData) return oldData;
         return { ...oldData, ...update };
     });

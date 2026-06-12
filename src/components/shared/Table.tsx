@@ -517,11 +517,11 @@ export function Table<T>({
 
       {/* Desktop Table View */}
       <div className="hidden md:block rounded-xl border border-border bg-card overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto custom-scrollbar">
           <div
             id="table-container"
             ref={tableContainerRef}
-            className="overflow-y-auto custom-scrollbar-dark"
+            className="overflow-y-auto custom-scrollbar"
             style={{ maxHeight }}
           >
             <div style={{ width: "100%" }}>

@@ -75,3 +75,13 @@ export const useStationSessions = (stationId: string, params?: SessionFilterPara
     staleTime: 30000,
   });
 };
+
+export const useStationSessionStats = (stationId: string) => {
+  const { environment } = useEnvironment();
+  return useQuery({
+    queryKey: ['station-session-stats', environment, stationId],
+    queryFn: () => stationService.getStationSessionStats(environment, stationId),
+    enabled: !!stationId,
+    staleTime: 30000,
+  });
+};

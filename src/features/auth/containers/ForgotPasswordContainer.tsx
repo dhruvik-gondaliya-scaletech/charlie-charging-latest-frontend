@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
+import { FRONTEND_ROUTES } from '@/constants/constants';
 
 export function ForgotPasswordContainer() {
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -37,7 +38,7 @@ export function ForgotPasswordContainer() {
         </Alert>
 
         <div className="mt-8 text-center text-sm">
-          <Link href="/login" className="text-primary hover:underline font-bold">
+          <Link href={FRONTEND_ROUTES.LOGIN} prefetch={false} className="text-primary hover:underline font-bold">
             Return to login
           </Link>
         </div>

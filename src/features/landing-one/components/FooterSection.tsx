@@ -67,7 +67,7 @@ export function FooterSection() {
           
           {/* Brand Identity / Status Intro Column */}
           <div className="col-span-2 space-y-6 pr-4 lg:pr-8">
-            <Link href="/" className="flex items-center gap-2.5 group inline-block">
+            <Link href="/" prefetch={false} className="flex items-center gap-2.5 group inline-block">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary to-cyan-500 flex items-center justify-center text-primary-foreground font-black shadow-md shadow-primary/20 group-hover:rotate-6 transition-transform">
                 <Zap className="h-5 w-5 fill-current" />
               </div>
@@ -106,6 +106,7 @@ export function FooterSection() {
                   <li key={lIdx}>
                     <Link
                       href={link.href}
+                      prefetch={false}
                       className="text-xs font-medium text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 group"
                     >
                       {link.label}

@@ -89,6 +89,7 @@ export interface Location {
   lastUpdated?: string;
   isActive?: boolean;
   locationEnv?: LocationEnv;
+  visibility?: 'public' | 'private';
   createdAt?: string;
   updatedAt?: string;
 }
@@ -410,4 +411,12 @@ export interface StationChargingProfile {
   limitValue: number;
   syncStatus: 'synced' | 'pending' | 'failed';
   lastSyncedAt?: string;
+}
+
+export interface SessionStats {
+  totalSessions: number;
+  activeSessions: number;
+  completedSessions: number;
+  failedSessions: number;
+  totalEnergyDelivered: number;
 }

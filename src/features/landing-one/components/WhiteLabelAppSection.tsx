@@ -130,7 +130,7 @@ export function WhiteLabelAppSection() {
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="#contact">
+              <Link href="#contact" prefetch={false}>
                 <Button className="px-8 py-6 h-auto rounded-xl font-bold bg-primary text-primary-foreground shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all group">
                   Preview Your App
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />

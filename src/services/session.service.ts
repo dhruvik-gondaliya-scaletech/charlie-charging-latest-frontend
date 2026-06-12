@@ -8,6 +8,14 @@ export interface GetSessionsParams {
   status?: string;
   startDate?: string;
   endDate?: string;
+  startFrom?: string;
+  startTo?: string;
+  locationId?: string;
+  locationIds?: string;
+  stationIds?: string;
+  env?: string;
+  sortBy?: string;
+  sortOrder?: string;
 }
 
 class SessionService {
@@ -29,19 +37,31 @@ class SessionService {
     });
   }
 
-  async exportSessions(params?: { startFrom?: string; startTo?: string; columns?: string[]; env?: string }) {
-    const queryParams: any = {};
+  async exportSessions(params?: {
+    startFrom?: string;
+    startTo?: string;
+    columns?: string[];
+    env?: string;
+    locationId?: string;
+    locationIds?: string;
+    stationIds?: string;
+  }) {
+    const queryParams: Record<string, string> = {};
     if (params) {
       if (params.startFrom) queryParams.startFrom = params.startFrom;
       if (params.startTo) queryParams.startTo = params.startTo;
       if (params.env) queryParams.env = params.env;
       if (params.columns) queryParams.columns = params.columns.join(',');
+      if (params.locationId) queryParams.locationId = params.locationId;
+      if (params.locationIds) queryParams.locationIds = params.locationIds;
+      if (params.stationIds) queryParams.stationIds = params.stationIds;
     }
     return httpService.get<Blob>(API_CONFIG.endpoints.sessions.export, {
       params: queryParams,
       responseType: 'blob',
     });
   }
+
 }
 
 export const sessionService = new SessionService();

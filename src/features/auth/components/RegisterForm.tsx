@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
+import { FRONTEND_ROUTES } from '@/constants/constants';
 
 interface RegisterFormProps {
   onSubmit: (data: RegisterFormData) => Promise<void>;
@@ -97,7 +98,7 @@ export function RegisterForm({ onSubmit, isLoading }: RegisterFormProps) {
 
       <div className="mt-4 text-center text-sm">
         <span className="text-muted-foreground">Already have an account? </span>
-        <Link href="/login" className="text-primary hover:underline">
+        <Link href={FRONTEND_ROUTES.LOGIN} prefetch={false} className="text-primary hover:underline">
           Sign in
         </Link>
       </div>
