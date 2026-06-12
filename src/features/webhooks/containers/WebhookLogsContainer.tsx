@@ -105,6 +105,19 @@ export function WebhookLogsContainer() {
                         <span className="capitalize font-bold text-[10px] tracking-tight">{status}</span>
                     </Badge>
                 );
+            case WebhookDeliveryStatus.SUPERSEDED:
+                return (
+                    <Badge
+                        variant="outline"
+                        className={cn(
+                            'capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm gap-1.5',
+                            'bg-violet-500/10 text-violet-500 border-violet-500/20'
+                        )}
+                    >
+                        <AlertCircle className="h-3.5 w-3.5" />
+                        <span className="capitalize font-bold text-[10px] tracking-tight">{status}</span>
+                    </Badge>
+                );
             default:
                 return (
                     <Badge

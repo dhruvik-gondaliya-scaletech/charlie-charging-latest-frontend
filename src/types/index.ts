@@ -267,6 +267,8 @@ export enum WebhookDeliveryStatus {
   SUCCESS = 'success',
   FAILED = 'failed',
   RETRYING = 'retrying',
+  /** Retry was skipped because a newer event for the same entity was already successfully delivered. */
+  SUPERSEDED = 'superseded',
 }
 
 export interface WebhookConfiguration {
