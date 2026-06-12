@@ -92,7 +92,7 @@ export function StationWizard({
             vendor: initialData.vendor || '',
             maxPower: initialData.maxPower || 22,
             locationId: (initialData.location && typeof initialData.location === 'object' ? (initialData.location as any).id : initialData.locationId) || '',
-            tariffId: (initialData as any).tariffId || '',
+            tariffId: (initialData as any).tariffId || 'none',
             type: initialData.type || 'AC',
             visibility: (initialData as any).visibility || 'public',
             connectorTypes: initialData.connectorTypes || [],
@@ -159,7 +159,7 @@ export function StationWizard({
                 vendor: initialData.vendor || '',
                 maxPower: initialData.maxPower ?? 22,
                 locationId: (initialData.location && typeof initialData.location === 'object' ? (initialData.location as any).id : initialData.locationId) || '',
-                tariffId: (initialData as any).tariffId || '',
+                tariffId: (initialData as any).tariffId || 'none',
                 type: initialData.type || 'AC',
                 visibility: (initialData as any).visibility || 'public',
                 connectorTypes: initialData.connectorTypes || [],
@@ -182,10 +182,37 @@ export function StationWizard({
 
     const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
 
+    const handleStepJump = async (targetStep: number) => {
+        if (targetStep === step) return;
+
+        // If targetStep is less than current step, we can jump back freely
+        if (targetStep < step) {
+            setStep(targetStep);
+            return;
+        }
+
+        // If jumping forward, we need to validate all steps before targetStep
+        const fieldsToValidate: (keyof WizardValues)[] = [];
+        if (targetStep > 1) {
+            fieldsToValidate.push('name', 'vendor', 'model', 'maxPower');
+        }
+        if (targetStep > 2) {
+            fieldsToValidate.push('serialNumber', 'chargePointId', 'type', 'locationId', 'tariffId', 'visibility', 'password');
+        }
+        if (targetStep > 3) {
+            fieldsToValidate.push('connectorTypes');
+        }
+
+        const isValid = await form.trigger(fieldsToValidate);
+        if (isValid) {
+            setStep(targetStep);
+        }
+    };
+
     const onFormSubmit = (data: WizardValues) => {
         // CRITICAL: Double guard to prevent early submission
-        // Only allow if we are on step 4 AND not already loading
-        if (step === 4 && !isLoading) {
+        // Only allow if we are on step 4 OR if it's edit mode, AND not already loading
+        if ((step === 4 || isEdit) && !isLoading) {
             console.log('Wizard submitting data:', data);
             onSubmit(data);
         }
@@ -219,21 +246,25 @@ export function StationWizard({
 
                 <div className="grid grid-cols-4 gap-2 sm:gap-4">
                     {STEPS.map((s) => (
-                        <div
+                        <button
                             key={s.id}
+                            type="button"
+                            onClick={() => handleStepJump(s.id)}
                             className={cn(
-                                "flex flex-col items-center gap-2 transition-all duration-300",
-                                step === s.id ? "opacity-100 scale-105" : "opacity-40 scale-95"
+                                "flex flex-col items-center gap-2 transition-all duration-300 focus:outline-none group cursor-pointer",
+                                step === s.id ? "opacity-100 scale-105" : "opacity-40 hover:opacity-80 scale-95"
                             )}
                         >
                             <div className={cn(
-                                "p-2 rounded-xl border",
-                                step === s.id ? "bg-primary/10 border-primary/20 text-primary" : "bg-muted/10 border-border/40 text-muted-foreground"
+                                "p-2 rounded-xl border transition-colors",
+                                step === s.id
+                                    ? "bg-primary/10 border-primary/20 text-primary shadow-[0_0_10px_rgba(var(--primary),0.1)]"
+                                    : "bg-muted/10 border-border/40 text-muted-foreground group-hover:border-primary/20 group-hover:text-primary"
                             )}>
                                 <s.icon className="h-4 w-4" />
                             </div>
                             <span className="text-[10px] font-black uppercase tracking-widest hidden md:block">{s.title}</span>
-                        </div>
+                        </button>
                     ))}
                 </div>
             </div>
@@ -509,7 +540,7 @@ export function StationWizard({
                                                 <FormItem>
                                                     <FormLabel className="font-bold flex items-center gap-1.5 focus:text-primary transition-colors">
                                                         <Save className="h-3.5 w-3.5 text-primary" />
-                                                        Tariff*
+                                                        Tariff (Optional)
                                                     </FormLabel>
                                                     <Select
                                                         onValueChange={field.onChange}
@@ -522,6 +553,7 @@ export function StationWizard({
                                                             </SelectTrigger>
                                                         </FormControl>
                                                         <SelectContent className="rounded-xl border-border/60 shadow-2xl">
+                                                            <SelectItem value="none" className="font-bold text-muted-foreground">No Tariff</SelectItem>
                                                             {(tariffs || []).map((tariff: any) => (
                                                                 <SelectItem key={tariff.id} value={tariff.id} className="font-bold">
                                                                     {tariff.name}
@@ -629,12 +661,21 @@ export function StationWizard({
                                                     {connectorTypesFromApi.map((connector: any) => {
                                                         const connectorId = connector.identifier;
                                                         const isSelected = field.value?.includes(connectorId);
+                                                        const selectedModelName = form.watch('model');
+                                                        const selectedModelObj = models.find((m: any) => m.name === selectedModelName);
+                                                        const isDefault = selectedModelObj?.ConnectorTypes?.some(
+                                                            (typeId: any) => String(typeId) === String(connector.id)
+                                                        );
                                                         return (
                                                             <Card
                                                                 key={connector.id}
                                                                 className={cn(
                                                                     "cursor-pointer transition-all border-border/40 hover:border-primary/40",
-                                                                    isSelected ? "bg-primary/5 border-primary/50 ring-1 ring-primary/20 shadow-lg shadow-primary/10" : "bg-card/40"
+                                                                    isSelected
+                                                                        ? "bg-primary/5 border-primary/50 ring-1 ring-primary/20 shadow-lg shadow-primary/10"
+                                                                        : isDefault
+                                                                            ? "bg-violet-500/5 border-violet-500/30 hover:border-violet-500/50 shadow-md shadow-violet-500/5"
+                                                                            : "bg-card/40"
                                                                 )}
                                                                 onClick={() => {
                                                                     const current = field.value || [];
@@ -647,7 +688,11 @@ export function StationWizard({
                                                                 <CardContent className="p-4 flex items-center gap-4">
                                                                     <div className={cn(
                                                                         "p-2.5 rounded-xl shrink-0 transition-colors",
-                                                                        isSelected ? "bg-primary/20 text-primary" : "bg-muted/30 text-muted-foreground"
+                                                                        isSelected
+                                                                            ? "bg-primary/20 text-primary"
+                                                                            : isDefault
+                                                                                ? "bg-violet-500/20 text-violet-500"
+                                                                                : "bg-muted/30 text-muted-foreground"
                                                                     )}>
                                                                         <Zap className="h-5 w-5" />
                                                                     </div>
@@ -657,11 +702,18 @@ export function StationWizard({
                                                                             {connector.identifier}
                                                                         </p>
                                                                     </div>
-                                                                    {isSelected && (
-                                                                        <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center">
-                                                                            <CheckCircle2 className="h-3 w-3 text-primary-foreground" />
-                                                                        </div>
-                                                                    )}
+                                                                    <div className="flex items-center gap-2">
+                                                                        {isDefault && (
+                                                                            <Badge className="bg-violet-500/10 text-violet-500 hover:bg-violet-500/20 border-violet-500/20 font-bold text-[9px] px-2 py-0.5 uppercase tracking-wider shrink-0">
+                                                                                Default
+                                                                            </Badge>
+                                                                        )}
+                                                                        {isSelected && (
+                                                                            <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center shrink-0">
+                                                                                <CheckCircle2 className="h-3 w-3 text-primary-foreground" />
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
                                                                 </CardContent>
                                                             </Card>
                                                         );
@@ -749,6 +801,28 @@ export function StationWizard({
                         </Button>
 
                         <div className="flex gap-4">
+                            {isEdit && step < 4 && (
+                                <Button
+                                    type="button"
+                                    disabled={isLoading}
+                                    onClick={() => {
+                                        console.log('Manual save trigger initiated (quick update)');
+                                        form.handleSubmit(onFormSubmit as any)();
+                                    }}
+                                    variant="outline"
+                                    className="font-bold border-primary/30 text-primary hover:bg-primary/5 hover:border-primary/50 transition-all px-6"
+                                >
+                                    {isLoading ? (
+                                        <>
+                                            <Activity className="h-4 w-4 mr-2 animate-spin" /> Saving...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Save className="h-4 w-4 mr-2" /> Save Changes
+                                        </>
+                                    )}
+                                </Button>
+                            )}
                             {step < 4 ? (
                                 <Button
                                     type="button"

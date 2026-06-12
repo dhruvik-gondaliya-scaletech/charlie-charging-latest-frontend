@@ -113,7 +113,7 @@ export function HeroSection() {
               transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
               className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-12"
             >
-              <Link href="#demo" className="flex-1 sm:flex-initial">
+              <Link href="#demo" prefetch={false} className="flex-1 sm:flex-initial">
                 <Button
                   size="lg"
                   className="w-full sm:w-auto px-8 py-6 h-auto rounded-xl font-bold text-base shadow-xl shadow-primary/20 dark:shadow-primary/30 hover:scale-[1.02] hover:shadow-primary/40 transition-all duration-300 bg-primary text-primary-foreground group"
@@ -122,7 +122,7 @@ export function HeroSection() {
                   <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
                 </Button>
               </Link>
-              <Link href="#solutions" className="flex-1 sm:flex-initial">
+              <Link href="#solutions" prefetch={false} className="flex-1 sm:flex-initial">
                 <Button
                   variant="outline"
                   size="lg"

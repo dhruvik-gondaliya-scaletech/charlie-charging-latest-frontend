@@ -21,12 +21,13 @@ export const useCreateStation = () => {
 
 export const useRemoteStartTransaction = () => {
   const queryClient = useQueryClient();
+  const { environment } = useEnvironment();
 
   return useMutation({
     mutationFn: ({ id, connectorId, idTag, userId }: { id: string; connectorId: number; idTag: string; userId: string }) =>
       stationService.remoteStartTransaction(id, connectorId, idTag, userId),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['station', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['station', environment, variables.id] });
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
       toast.success('Transaction started successfully');
     },
@@ -38,12 +39,13 @@ export const useRemoteStartTransaction = () => {
 
 export const useRemoteStopTransaction = () => {
   const queryClient = useQueryClient();
+  const { environment } = useEnvironment();
 
   return useMutation({
     mutationFn: ({ id, transactionId }: { id: string; transactionId: number }) =>
       stationService.remoteStopTransaction(id, transactionId),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['station', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['station', environment, variables.id] });
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
       toast.success('Transaction stopped successfully');
     },

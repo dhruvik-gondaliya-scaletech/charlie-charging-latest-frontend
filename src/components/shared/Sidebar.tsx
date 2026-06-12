@@ -103,7 +103,7 @@ export function Sidebar() {
                   {navContent}
                 </a>
               ) : (
-                <Link href={item.href}>
+                <Link href={item.href} prefetch={false}>
                   {navContent}
                 </Link>
               )}
@@ -135,7 +135,7 @@ export function Sidebar() {
           </PopoverTrigger>
           <PopoverContent className="w-64 p-2 rounded-2xl" side="right" align="end" sideOffset={12}>
             <div className="space-y-1">
-              <Link href={FRONTEND_ROUTES.PROFILE}>
+              <Link href={FRONTEND_ROUTES.PROFILE} prefetch={false}>
                 <button className="flex items-center gap-3 w-full px-3 py-2 rounded-lg hover:bg-accent transition-colors text-sm font-medium text-left cursor-pointer">
                   <User className="h-4 w-4" />
                   View Profile

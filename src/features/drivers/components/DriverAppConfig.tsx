@@ -101,6 +101,31 @@ export function DriverAppConfig() {
       <div className="space-y-8">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            {/* Top Header Bar with Save button on the right */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/40 pb-6">
+              <div>
+                <h2 className="text-xl font-bold tracking-tight text-foreground">App Configuration</h2>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mt-1">Configure your white-label branding, domains, and support details</p>
+              </div>
+              <Button
+                type="submit"
+                disabled={updateConfig.isPending}
+                className="w-full sm:w-auto min-w-[200px] h-12 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-black uppercase tracking-widest text-xs rounded-xl shrink-0"
+              >
+                {updateConfig.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Syncing...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Save Configuration
+                  </>
+                )}
+              </Button>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
               {/* General Branding Section */}
               <Card className="border-border/40 bg-card/10 backdrop-blur-sm overflow-hidden rounded-[2.5rem] shadow-none h-full">
@@ -174,16 +199,14 @@ export function DriverAppConfig() {
                               {...field}
                               className="h-10 sm:h-12 bg-background border-none focus-visible:ring-0 focus-visible:ring-offset-0 rounded-none font-bold text-sm sm:text-base flex-1"
                             />
-                            <div className="flex items-center h-10 sm:h-12 px-4 bg-muted/30 text-muted-foreground/60 text-[10px] sm:text-xs font-bold whitespace-nowrap group-focus-within:text-primary transition-all border-t sm:border-t-0 sm:border-l border-border/40 overflow-hidden">
+                            <div className="flex items-center h-10 sm:h-12 px-4 bg-muted/30 text-muted-foreground/60 text-[10px] sm:text-xs font-bold group-focus-within:text-primary transition-all border-t sm:border-t-0 sm:border-l border-border/40 gap-2 shrink-0">
                               <span className="truncate">.{BASE_DOMAIN}</span>
-                            </div>
-                            <div className="flex items-center pr-2 bg-muted/30 border-t sm:border-t-0 sm:border-l border-border/40 ml-2">
                               <ActionIconButton
                                 tooltip="Copy Domain"
                                 onClick={() => handleCopyDomain(field.value)}
                                 disabled={!field.value}
-                                icon={isCopied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
-                                className="h-8 w-8 bg-transparent border-none hover:bg-primary/10 transition-all duration-300"
+                                icon={isCopied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground/60" />}
+                                className="h-8 w-8 bg-transparent border-none hover:bg-primary/15 transition-all duration-300 text-muted-foreground hover:text-primary cursor-pointer"
                               />
                             </div>
                           </div>
@@ -297,26 +320,6 @@ export function DriverAppConfig() {
                   />
                 </CardContent>
               </Card>
-            </div>
-
-            <div className="flex justify-end pt-4">
-              <Button
-                type="submit"
-                disabled={updateConfig.isPending}
-                className="w-full md:w-fit min-w-[240px] h-14 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xl shadow-primary/20 transition-all font-black uppercase tracking-widest text-xs rounded-2xl"
-              >
-                {updateConfig.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Syncing...
-                  </>
-                ) : (
-                  <>
-                    <Save className="mr-2 h-5 w-5" />
-                    Save Configuration
-                  </>
-                )}
-              </Button>
             </div>
           </form>
         </Form>

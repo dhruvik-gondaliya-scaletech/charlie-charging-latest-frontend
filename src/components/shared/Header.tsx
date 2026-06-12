@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Breadcrumbs } from './Breadcrumbs';
 import { BrandLogo } from './BrandLogo';
 import { useEnvironment } from '@/contexts/EnvironmentContext';
+import { cn } from '@/lib/utils';
+import { Environment } from '@/constants/constants';
 
 export function Header() {
   const { theme, setTheme } = useTheme();
@@ -29,28 +31,32 @@ export function Header() {
           </div>
 
           <div className="relative flex items-center bg-muted rounded-full p-0.5 h-8 md:h-9 text-[10px] md:text-xs font-bold select-none border">
-            <button
-              onClick={() => setEnvironment('dev')}
-              className={`relative z-10 px-3 py-1 rounded-full transition-colors duration-200 cursor-pointer ${environment === 'dev'
-                  ? 'text-white dark:text-black'
-                  : 'text-muted-foreground hover:text-foreground'
-                }`}
+            <Button
+              variant={null}
+              size={null}
+              onClick={() => setEnvironment(Environment.DEV)}
+              className={cn('relative z-10 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold transition-colors duration-200 cursor-pointer', environment === Environment.DEV
+                ? 'text-white'
+                : 'text-muted-foreground hover:text-foreground'
+              )}
             >
               DEV
-            </button>
-            <button
-              onClick={() => setEnvironment('prod')}
-              className={`relative z-10 px-3 py-1 rounded-full transition-colors duration-200 cursor-pointer ${environment === 'prod'
-                  ? 'text-white dark:text-black'
-                  : 'text-muted-foreground hover:text-foreground'
-                }`}
+            </Button>
+            <Button
+              variant={null}
+              size={null}
+              onClick={() => setEnvironment(Environment.PROD)}
+              className={cn('relative z-10 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold transition-colors duration-200 cursor-pointer', environment === Environment.PROD
+                ? 'text-white'
+                : 'text-muted-foreground hover:text-foreground'
+              )}
             >
               PROD
-            </button>
+            </Button>
             <div
               className="absolute top-0.5 bottom-0.5 rounded-full bg-primary transition-all duration-200 ease-in-out"
               style={{
-                left: environment === 'dev' ? '2px' : '50%',
+                left: environment === Environment.DEV ? '2px' : '50%',
                 width: 'calc(50% - 2px)',
               }}
             />

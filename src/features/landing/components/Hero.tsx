@@ -43,13 +43,13 @@ export function Hero() {
             variants={staggerItem}
             className="flex flex-col sm:flex-row gap-4"
           >
-            <Link href="#demo">
+            <Link href="#demo" prefetch={false}>
               <Button size="lg" className="px-8 py-6 h-auto rounded-xl font-bold text-base shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all bg-primary text-primary-foreground group">
                 Book a Demo
                 <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
               </Button>
             </Link>
-            <Link href="#features">
+            <Link href="#features" prefetch={false}>
               <Button variant="outline" size="lg" className="px-8 py-6 h-auto rounded-xl border-border font-bold text-base hover:bg-accent/50 transition-all">
                 Contact Sales
               </Button>

@@ -12,7 +12,8 @@ export const useUpdateStation = () => {
       stationService.updateStation(environment, id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['stations'] });
-      queryClient.invalidateQueries({ queryKey: ['station', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['station', environment, variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['station-stats', environment] });
       toast.success('Station updated successfully');
     },
     onError: (error: any) => {

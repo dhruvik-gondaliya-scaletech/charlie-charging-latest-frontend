@@ -27,7 +27,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <Link href="/" className="flex items-center group">
+            <Link href="/" prefetch={false} className="flex items-center group">
               <BrandLogo width={180} height={48} />
             </Link>
           </motion.div>
@@ -66,7 +66,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
       {/* Form Side */}
       <div className="w-full lg:w-1/2 flex flex-col relative bg-background min-h-screen lg:min-h-0 transition-colors duration-500">
         <div className="absolute top-8 left-8 lg:left-24 z-20">
-          <Link href="/">
+          <Link href="/" prefetch={false}>
             <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">
               <ArrowLeft className="h-4 w-4" />
               Back to site

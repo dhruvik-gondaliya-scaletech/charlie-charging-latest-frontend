@@ -46,6 +46,7 @@ export const API_CONFIG = {
             setConfiguration: (id: string) => `/stations/${id}/configuration`,
             ocppLogs: (id: string) => `/ocpp-logs?stationId=${id}`,
             sessions: (env: string, id: string) => `/stations/${id}/sessions?env=${env}`,
+            sessionStats: (env: string, id: string) => `/stations/${id}/sessions/stats?env=${env}`,
             chargingProfile: (id: string) => `/stations/${id}/charging-profile`,
             liveChargingProfile: (id: string) => `/stations/${id}/live-profile`,
         },
@@ -262,3 +263,8 @@ export const CONNECTOR_OPTIONS = [
 export const DEFAULT_PAGE_SIZE = 10;
 
 export const IMAGE_DOMAIN_URL = "https://d39uw1u176mxxs.cloudfront.net"
+
+export enum Environment {
+    DEV = "dev",
+    PROD = "prod"
+}

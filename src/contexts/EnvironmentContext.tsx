@@ -1,8 +1,7 @@
 'use client';
 
+import { Environment } from '@/constants/constants';
 import React, { createContext, useContext, useState, useEffect } from 'react';
-
-type Environment = 'dev' | 'prod';
 
 interface EnvironmentContextType {
   environment: Environment;
@@ -12,13 +11,13 @@ interface EnvironmentContextType {
 const EnvironmentContext = createContext<EnvironmentContextType | undefined>(undefined);
 
 export const EnvironmentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [environment, setEnvironmentState] = useState<Environment>('dev');
+  const [environment, setEnvironmentState] = useState<Environment>(Environment.DEV);
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     // Safely access localStorage on the client side
     const savedEnv = localStorage.getItem('active_environment') as Environment;
-    if (savedEnv === 'dev' || savedEnv === 'prod') {
+    if (savedEnv === Environment.DEV || savedEnv === Environment.PROD) {
       setEnvironmentState(savedEnv);
     }
     setIsInitialized(true);

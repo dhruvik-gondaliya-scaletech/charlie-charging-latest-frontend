@@ -194,6 +194,31 @@
     overflow: visible !important;
     margin-right: 0px !important;
   }
+
+  /* Global scrollbar style using primary color */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--background);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(in oklch, var(--primary) 30%, transparent);
+    border-radius: 100px;
+    border: 2px solid var(--background);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+  }
+
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklch, var(--primary) 30%, transparent) var(--background);
+  }
 }
 
 @layer utilities {
@@ -227,5 +252,29 @@
   .custom-scrollbar-dark {
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.05) transparent;
+  }
+
+  /* Custom primary color scrollbar utility */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: color-mix(in oklch, var(--primary) 40%, transparent);
+    border-radius: 10px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+  }
+
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklch, var(--primary) 40%, transparent) transparent;
   }
 }

@@ -13,7 +13,7 @@ export function FooterSection() {
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-8 border-b border-border/40">
           <div className="flex flex-col space-y-2">
-            <Link href="/" className="flex items-center group">
+            <Link href="/" prefetch={false} className="flex items-center group">
               <BrandLogo
                 width={110}
                 height={30}
