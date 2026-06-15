@@ -24,6 +24,7 @@ export interface IntervalSlice {
   intervalLabel: string;
   sessionId: string;
   transactionId?: string;
+  evseId?: number;
   stationId: string;
   stationName: string;
   locationId?: string;
