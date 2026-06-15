@@ -92,6 +92,8 @@ function buildAggregatedCsv(rows: AggregatedInterval[]): string {
 // Service class
 // ──────────────────────────────────────────────────────────────
 
+import type { SessionStats } from '@/types';
+
 class ReportingService {
   /** GET /reporting/intervals — flat list of per-session interval slices */
   async getIntervalReport(params?: IntervalReportQuery): Promise<IntervalReportResponse> {
@@ -116,6 +118,39 @@ class ReportingService {
       API_CONFIG.endpoints.reporting.sessionIntervals(sessionId),
       { params: { intervalMinutes } },
     );
+  }
+
+  /** GET /reporting/sessions/stats — get session statistics */
+  async getSessionStats(stationId?: string): Promise<SessionStats> {
+    return httpService.get<SessionStats>(API_CONFIG.endpoints.reporting.sessionStats, {
+      params: { stationId },
+    });
+  }
+
+  /** GET /reporting/sessions/export — export charging sessions as CSV */
+  async exportSessions(params?: {
+    startFrom?: string;
+    startTo?: string;
+    columns?: string[];
+    env?: string;
+    locationId?: string;
+    locationIds?: string;
+    stationIds?: string;
+  }): Promise<Blob> {
+    const queryParams: Record<string, string> = {};
+    if (params) {
+      if (params.startFrom) queryParams.startFrom = params.startFrom;
+      if (params.startTo) queryParams.startTo = params.startTo;
+      if (params.env) queryParams.env = params.env;
+      if (params.columns) queryParams.columns = params.columns.join(',');
+      if (params.locationId) queryParams.locationId = params.locationId;
+      if (params.locationIds) queryParams.locationIds = params.locationIds;
+      if (params.stationIds) queryParams.stationIds = params.stationIds;
+    }
+    return httpService.get<Blob>(API_CONFIG.endpoints.reporting.sessionExport, {
+      params: queryParams,
+      responseType: 'blob',
+    });
   }
 
   // ── Client-side CSV export ─────────────────────────────────

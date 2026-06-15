@@ -13,6 +13,8 @@ export interface IntervalReportQuery {
   env?: string;
   /** Clock-aligned interval size in minutes. Default: 15. Range: 1–60. */
   intervalMinutes?: number;
+  /** Target timezone for boundary alignment and labeling (e.g. "Asia/Kolkata"). */
+  timezone?: string;
 }
 
 /** One clock-aligned block for a single charging session. */

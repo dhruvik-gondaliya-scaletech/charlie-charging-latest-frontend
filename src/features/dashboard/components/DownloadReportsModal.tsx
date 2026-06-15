@@ -172,6 +172,7 @@ export function DownloadReportsModal({ isOpen, onClose }: DownloadReportsModalPr
         env: environment,
         stationIds: stationIdsParam,
         locationIds: locationIdsParam,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
       };
 
       if (intervalExportType === 'flat') {
@@ -294,7 +295,7 @@ export function DownloadReportsModal({ isOpen, onClose }: DownloadReportsModalPr
         stationIds: stationIdsParam || undefined,
       };
 
-      const csvBlob = await sessionService.exportSessions(params);
+      const csvBlob = await reportingService.exportSessions(params);
 
       // Axios response handles returning the blob
       const url = window.URL.createObjectURL(new Blob([csvBlob], { type: 'text/csv' }));

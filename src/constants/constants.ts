@@ -115,6 +115,8 @@ export const API_CONFIG = {
             aggregated: '/reporting/intervals/aggregated',
             sessionIntervals: (id: string) => `/reporting/sessions/${id}/intervals`,
             sessionSummary: (id: string) => `/reporting/sessions/${id}/intervals/summary`,
+            sessionStats: '/reporting/sessions/stats',
+            sessionExport: '/reporting/sessions/export',
         },
         brands: {
             base: "/brands",
