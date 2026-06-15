@@ -110,6 +110,12 @@ export const API_CONFIG = {
             },
             stats: "/ocpi/mgmt/stats",
         },
+        reporting: {
+            intervals: '/reporting/intervals',
+            aggregated: '/reporting/intervals/aggregated',
+            sessionIntervals: (id: string) => `/reporting/sessions/${id}/intervals`,
+            sessionSummary: (id: string) => `/reporting/sessions/${id}/intervals/summary`,
+        },
         brands: {
             base: "/brands",
         },
