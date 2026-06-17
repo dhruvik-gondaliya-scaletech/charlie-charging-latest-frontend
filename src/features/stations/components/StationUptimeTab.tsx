@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Station } from '@/types';
 import { useConnectorUptime, useDowntimeIntervals, useComplianceReport } from '@/hooks/get/useCompliance';
 import { useOverrideDowntime } from '@/hooks/post/useComplianceMutations';
@@ -19,27 +19,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Table } from '@/components/shared/Table';
+import { ColumnDef } from '@tanstack/react-table';
+import { DatePicker } from '@/components/shared/DatePicker';
+import { StatCard } from '@/features/dashboard/components/StatCard';
 import {
   ShieldAlert,
   ShieldCheck,
   Clock,
-  Calendar,
-  AlertTriangle,
-  RefreshCw,
   FileSpreadsheet,
   Info,
   Layers,
   FileText,
-  HelpCircle,
+  Percent,
 } from 'lucide-react';
 import {
   ConnectorDowntimeInterval,
@@ -57,16 +49,45 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
   const defaultConnectorId = station.connectors?.[0]?.id || '';
   const [selectedConnectorId, setSelectedConnectorId] = useState<string>(defaultConnectorId);
 
-  // Find active connector model
-  const activeConnector = station.connectors?.find((c) => c.id === selectedConnectorId);
-
   // 2. Date Range Selection (Default to last 30 days)
+  const formatDateString = (d: Date) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const parseDateString = (dateStr: string) => {
+    if (!dateStr) return undefined;
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  };
+
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  const formatDateString = (d: Date) => d.toISOString().split('T')[0];
 
   const [startDate, setStartDate] = useState<string>(formatDateString(thirtyDaysAgo));
   const [endDate, setEndDate] = useState<string>(formatDateString(new Date()));
+
+  const dateRange = useMemo(() => {
+    return {
+      from: parseDateString(startDate),
+      to: parseDateString(endDate),
+    };
+  }, [startDate, endDate]);
+
+  const handleDateRangeChange = useCallback((range: { from: Date | undefined; to: Date | undefined }) => {
+    if (range.from) {
+      setStartDate(formatDateString(range.from));
+    } else {
+      setStartDate('');
+    }
+    if (range.to) {
+      setEndDate(formatDateString(range.to));
+    } else {
+      setEndDate('');
+    }
+  }, []);
 
   // 3. Report View Toggle ('logs' | 'daily' | 'monthly' | 'quarterly')
   const [activeReportTab, setActiveReportTab] = useState<'logs' | 'daily' | 'monthly' | 'quarterly'>(
@@ -139,7 +160,7 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
   };
 
   // Handle opening override modal
-  const handleOpenOverride = (interval: ConnectorDowntimeInterval) => {
+  const handleOpenOverride = useCallback((interval: ConnectorDowntimeInterval) => {
     setSelectedInterval(interval);
     setNewClassification(interval.classification === 'OUTAGE' ? 'EXCLUDED' : 'OUTAGE');
     setNewReason(interval.reasonCode);
@@ -147,7 +168,7 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
     setEvidence(interval.evidence || '');
     setOverrideNotes(interval.overrideNotes || '');
     setOverrideModalOpen(true);
-  };
+  }, []);
 
   // Handle submit override reclassification
   const handleSubmitOverride = (e: React.FormEvent) => {
@@ -182,6 +203,206 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
     );
   };
 
+  const downtimeColumns = useMemo<ColumnDef<ConnectorDowntimeInterval>[]>(() => [
+    {
+      id: 'classification',
+      header: 'Classification',
+      accessorKey: 'classification',
+      cell: ({ row }) => {
+        const interval = row.original;
+        return (
+          <Badge
+            variant="outline"
+            className={cn(
+              "rounded-full font-bold uppercase tracking-wider text-[9px] px-2.5 py-0.5",
+              interval.classification === 'OUTAGE'
+                ? "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                : "bg-indigo-500/10 text-indigo-500 border-indigo-500/20"
+            )}
+          >
+            {interval.classification}
+          </Badge>
+        );
+      }
+    },
+    {
+      id: 'reasonCode',
+      header: 'Reason',
+      accessorKey: 'reasonCode',
+      cell: ({ row }) => formatReasonCode(row.original.reasonCode)
+    },
+    {
+      id: 'startTime',
+      header: 'Start Time',
+      accessorKey: 'startTime',
+      cell: ({ row }) => (
+        <span className="text-muted-foreground font-mono text-xs whitespace-nowrap">
+          {formatDateTime(row.original.startTime)}
+        </span>
+      )
+    },
+    {
+      id: 'endTime',
+      header: 'End Time',
+      accessorKey: 'endTime',
+      cell: ({ row }) => {
+        const interval = row.original;
+        return interval.endTime ? (
+          <span className="text-muted-foreground font-mono text-xs whitespace-nowrap">
+            {formatDateTime(interval.endTime)}
+          </span>
+        ) : (
+          <Badge className="bg-amber-500/10 text-amber-500 border border-amber-500/25 rounded-full font-extrabold uppercase tracking-widest text-[8px] px-2 py-0.5 hover:bg-amber-500/10 animate-pulse">
+            Active Outage
+          </Badge>
+        );
+      }
+    },
+    {
+      id: 'duration',
+      header: 'Duration',
+      accessorKey: 'durationSeconds',
+      cell: ({ row }) => (
+        <span className="font-semibold text-sm whitespace-nowrap">
+          {formatDuration(row.original.durationSeconds)}
+        </span>
+      )
+    },
+    {
+      id: 'source',
+      header: 'Source',
+      accessorKey: 'autoGenerated',
+      cell: ({ row }) => (
+        <Badge variant="outline" className="rounded-full text-[10px] font-semibold border-border/60">
+          {row.original.autoGenerated ? 'Auto Logged' : 'Manual Override'}
+        </Badge>
+      )
+    },
+    {
+      id: 'audit',
+      header: 'Audit / Ticket',
+      cell: ({ row }) => {
+        const interval = row.original;
+        return (
+          <div className="max-w-[150px] truncate text-xs text-muted-foreground font-medium">
+            {interval.ticketNumber && (
+              <div className="font-mono text-foreground font-semibold">
+                Ticket: {interval.ticketNumber}
+              </div>
+            )}
+            {interval.overrideNotes && (
+              <div className="italic text-muted-foreground truncate" title={interval.overrideNotes}>
+                &ldquo;{interval.overrideNotes}&rdquo;
+              </div>
+            )}
+          </div>
+        );
+      }
+    },
+    {
+      id: 'actions',
+      header: '',
+      meta: { headerAlign: 'right' as const },
+      cell: ({ row }) => (
+        <div className="text-right">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="font-bold text-xs text-primary hover:text-primary hover:bg-primary/10 rounded-xl"
+            onClick={() => handleOpenOverride(row.original)}
+          >
+            Reclassify
+          </Button>
+        </div>
+      )
+    }
+  ], [handleOpenOverride]);
+
+  const reportColumns = useMemo<ColumnDef<any>[]>(() => [
+    {
+      id: 'period',
+      header: 'Period',
+      cell: ({ row }) => (
+        <span className="font-bold text-sm font-mono">
+          {row.original.date || row.original.month || row.original.quarter || 'N/A'}
+        </span>
+      )
+    },
+    {
+      id: 'evseId',
+      header: 'EVSE ID',
+      accessorKey: 'evseId',
+      cell: ({ row }) => (
+        <span className="font-semibold text-sm font-mono">
+          {row.original.evseId || 'N/A'}
+        </span>
+      )
+    },
+    {
+      id: 'port',
+      header: 'Port',
+      accessorKey: 'connectorPortId',
+      cell: ({ row }) => (
+        <span className="text-muted-foreground font-semibold text-sm">
+          Port {row.original.connectorPortId}
+        </span>
+      )
+    },
+    {
+      id: 'totalTime',
+      header: 'Total Time',
+      accessorKey: 'totalTimeSeconds',
+      cell: ({ row }) => (
+        <span className="text-muted-foreground font-medium text-xs font-mono">
+          {formatDuration(row.original.totalTimeSeconds)}
+        </span>
+      )
+    },
+    {
+      id: 'excludedTime',
+      header: 'Excluded Duration',
+      accessorKey: 'excludedTimeSeconds',
+      cell: ({ row }) => (
+        <span className="text-indigo-500 font-semibold text-xs font-mono">
+          {formatDuration(row.original.excludedTimeSeconds)}
+        </span>
+      )
+    },
+    {
+      id: 'outageTime',
+      header: 'Outage Duration',
+      accessorKey: 'outageTimeSeconds',
+      cell: ({ row }) => (
+        <span className="text-rose-500 font-semibold text-xs font-mono">
+          {formatDuration(row.original.outageTimeSeconds)}
+        </span>
+      )
+    },
+    {
+      id: 'uptime',
+      header: 'Uptime Compliance',
+      accessorKey: 'uptimePercentage',
+      meta: { headerAlign: 'right' as const },
+      cell: ({ row }) => {
+        const pct = row.original.uptimePercentage;
+        return (
+          <div className="text-right">
+            <span className={cn(
+              "font-black text-sm font-mono px-2 py-1 rounded-lg",
+              pct >= 97
+                ? "text-emerald-500 bg-emerald-500/10"
+                : pct >= 95
+                  ? "text-amber-500 bg-amber-500/10"
+                  : "text-rose-500 bg-rose-500/10"
+            )}>
+              {pct.toFixed(3)}%
+            </span>
+          </div>
+        );
+      }
+    }
+  ], []);
+
   return (
     <div className="space-y-6">
       {/* 1. Header controls */}
@@ -193,9 +414,9 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="flex flex-col sm:flex-row items-center gap-3">
           {/* Connector Select */}
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 w-full sm:w-48">
             <Label htmlFor="connector-select" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Connector Port</Label>
             <Select value={selectedConnectorId} onValueChange={setSelectedConnectorId}>
               <SelectTrigger id="connector-select" className="rounded-xl h-10 w-full bg-background/50 border-border/60">
@@ -211,34 +432,14 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
             </Select>
           </div>
 
-          {/* Start Date */}
-          <div className="space-y-1.5">
-            <Label htmlFor="start-date" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Start Date</Label>
-            <div className="relative">
-              <Input
-                type="date"
-                id="start-date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="rounded-xl h-10 bg-background/50 border-border/60 pl-9 font-medium"
-              />
-              <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground/50 pointer-events-none" />
-            </div>
-          </div>
-
-          {/* End Date */}
-          <div className="space-y-1.5">
-            <Label htmlFor="end-date" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">End Date</Label>
-            <div className="relative">
-              <Input
-                type="date"
-                id="end-date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="rounded-xl h-10 bg-background/50 border-border/60 pl-9 font-medium"
-              />
-              <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground/50 pointer-events-none" />
-            </div>
+          {/* Date Picker */}
+          <div className="space-y-1.5 w-full sm:w-auto">
+            <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Date Range</Label>
+            <DatePicker
+              dateRange={dateRange}
+              onDateRangeChange={handleDateRangeChange}
+              className="w-full sm:w-72"
+            />
           </div>
         </div>
       </div>
@@ -246,127 +447,56 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
       {/* 2. Stats Summary Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {/* Metric 1: Uptime Percentage */}
-        <Card className="relative overflow-hidden border-border/40 bg-card hover:shadow-lg transition-all duration-300 rounded-2xl group">
-          <div className={cn(
-            "absolute top-0 left-0 w-full h-[3px] transition-all",
+        <StatCard
+          title="Uptime Percentage"
+          value={uptimeData ? `${uptimeData.uptimePercentage.toFixed(2)}%` : '0.00%'}
+          icon={Percent}
+          color={
             uptimeData?.uptimePercentage !== undefined
               ? uptimeData.uptimePercentage >= 97
-                ? "bg-emerald-500"
+                ? "text-emerald-500"
                 : uptimeData.uptimePercentage >= 95
-                  ? "bg-amber-500"
-                  : "bg-rose-500"
-              : "bg-border"
-          )} />
-          <CardHeader className="pb-2">
-            <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center justify-between">
-              Uptime Percentage
-              <span title="Formula: (Total - Excluded - Outage) / (Total - Excluded)">
-                <HelpCircle className="h-3.5 w-3.5 opacity-60 cursor-help" />
-              </span>
-            </CardDescription>
-            <CardTitle className="text-4xl font-black tracking-tight text-foreground mt-1">
-              {isUptimeLoading ? (
-                <Skeleton className="h-10 w-24" />
-              ) : uptimeData ? (
-                `${uptimeData.uptimePercentage.toFixed(2)}%`
-              ) : (
-                '0.00%'
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pb-4">
-            {isUptimeLoading ? (
-              <Skeleton className="h-4 w-40" />
-            ) : uptimeData ? (
-              <div className="flex items-center gap-1.5 mt-1">
-                {uptimeData.uptimePercentage >= 97 ? (
-                  <Badge className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-full font-bold uppercase tracking-wider text-[9px] px-2 py-0.5 shadow-none hover:bg-emerald-500/10">
-                    Compliant (97%+)
-                  </Badge>
-                ) : uptimeData.uptimePercentage >= 95 ? (
-                  <Badge className="bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full font-bold uppercase tracking-wider text-[9px] px-2 py-0.5 shadow-none hover:bg-amber-500/10">
-                    Warning (95%-97%)
-                  </Badge>
-                ) : (
-                  <Badge className="bg-rose-500/10 text-rose-500 border border-rose-500/20 rounded-full font-bold uppercase tracking-wider text-[9px] px-2 py-0.5 shadow-none hover:bg-rose-500/10">
-                    Non-Compliant
-                  </Badge>
-                )}
-              </div>
-            ) : (
-              <span className="text-xs text-muted-foreground">Select connector range</span>
-            )}
-          </CardContent>
-        </Card>
+                  ? "text-amber-500"
+                  : "text-rose-500"
+              : "text-muted-foreground"
+          }
+          bottomRightGlobe='bg-gradient-to-br from-emerald-500 to-green-500/80'
+          description="NEVI Goal: >= 97.00%"
+          loading={isUptimeLoading}
+        />
 
-        {/* Metric 2: Total Inspected Time */}
-        <Card className="border-border/40 bg-card hover:shadow-lg transition-all duration-300 rounded-2xl">
-          <CardHeader className="pb-2">
-            <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1">
-              <Clock className="h-3 w-3" /> Total Checked Time
-            </CardDescription>
-            <CardTitle className="text-3xl font-black tracking-tight text-foreground mt-1">
-              {isUptimeLoading ? (
-                <Skeleton className="h-9 w-28" />
-              ) : uptimeData ? (
-                formatDuration(uptimeData.totalTimeSeconds)
-              ) : (
-                '0s'
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pb-4">
-            <p className="text-xs text-muted-foreground font-medium">
-              Total operational logging duration scoped.
-            </p>
-          </CardContent>
-        </Card>
+        {/* Metric 2: Total Checked Time */}
+        <StatCard
+          title="Total Checked Time"
+          value={uptimeData ? formatDuration(uptimeData.totalTimeSeconds) : '0s'}
+          icon={Clock}
+          color="text-blue-500"
+          bottomRightGlobe='bg-gradient-to-br from-blue-500 to-cyan-500/80'
+          description="Total operational logging duration scoped"
+          loading={isUptimeLoading}
+        />
 
-        {/* Metric 3: Active Outage Time */}
-        <Card className="border-border/40 bg-card hover:shadow-lg transition-all duration-300 rounded-2xl">
-          <CardHeader className="pb-2">
-            <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1">
-              <ShieldAlert className="h-3 w-3 text-rose-500" /> Outage Time
-            </CardDescription>
-            <CardTitle className="text-3xl font-black tracking-tight text-rose-500 mt-1">
-              {isUptimeLoading ? (
-                <Skeleton className="h-9 w-20" />
-              ) : uptimeData ? (
-                formatDuration(uptimeData.outageTimeSeconds)
-              ) : (
-                '0s'
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pb-4">
-            <p className="text-xs text-muted-foreground font-medium">
-              Unexcused downtime counts against uptime.
-            </p>
-          </CardContent>
-        </Card>
+        {/* Metric 3: Outage Time */}
+        <StatCard
+          title="Outage Time"
+          value={uptimeData ? formatDuration(uptimeData.outageTimeSeconds) : '0s'}
+          icon={ShieldAlert}
+          color="text-rose-500"
+          bottomRightGlobe='bg-gradient-to-br from-rose-500 to-pink-500/80'
+          description="Unexcused downtime counts against uptime"
+          loading={isUptimeLoading}
+        />
 
-        {/* Metric 4: Excluded Downtime */}
-        <Card className="border-border/40 bg-card hover:shadow-lg transition-all duration-300 rounded-2xl">
-          <CardHeader className="pb-2">
-            <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1">
-              <ShieldCheck className="h-3 w-3 text-indigo-500" /> Excluded Time
-            </CardDescription>
-            <CardTitle className="text-3xl font-black tracking-tight text-indigo-500 mt-1">
-              {isUptimeLoading ? (
-                <Skeleton className="h-9 w-20" />
-              ) : uptimeData ? (
-                formatDuration(uptimeData.excludedTimeSeconds)
-              ) : (
-                '0s'
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pb-4">
-            <p className="text-xs text-muted-foreground font-medium">
-              Excused delays excluded from uptime formula.
-            </p>
-          </CardContent>
-        </Card>
+        {/* Metric 4: Excluded Time */}
+        <StatCard
+          title="Excluded Time"
+          value={uptimeData ? formatDuration(uptimeData.excludedTimeSeconds) : '0s'}
+          icon={ShieldCheck}
+          color="text-indigo-500"
+          bottomRightGlobe='bg-gradient-to-br from-indigo-500 to-purple-500/80'
+          description="Excused delays excluded from uptime formula"
+          loading={isUptimeLoading}
+        />
       </div>
 
       {/* 3. Toggleable Report/Logs View */}
@@ -405,103 +535,25 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
                 </CardDescription>
               </div>
             </CardHeader>
-            <CardContent className="p-0">
-              {isIntervalsLoading ? (
-                <div className="p-6 space-y-3">
-                  <Skeleton className="h-10 w-full" />
-                  <Skeleton className="h-10 w-full" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
-              ) : downtimeIntervals && downtimeIntervals.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader className="bg-muted/10">
-                      <TableRow className="border-border/40 hover:bg-transparent">
-                        <TableHead className="font-bold text-xs uppercase tracking-wider">Classification</TableHead>
-                        <TableHead className="font-bold text-xs uppercase tracking-wider">Reason</TableHead>
-                        <TableHead className="font-bold text-xs uppercase tracking-wider">Start Time</TableHead>
-                        <TableHead className="font-bold text-xs uppercase tracking-wider">End Time</TableHead>
-                        <TableHead className="font-bold text-xs uppercase tracking-wider">Duration</TableHead>
-                        <TableHead className="font-bold text-xs uppercase tracking-wider">Source</TableHead>
-                        <TableHead className="font-bold text-xs uppercase tracking-wider">Audit / Ticket</TableHead>
-                        <TableHead className="font-bold text-xs uppercase tracking-wider text-right">Action</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {downtimeIntervals.map((interval) => (
-                        <TableRow key={interval.id} className="border-border/40 hover:bg-muted/10">
-                          <TableCell>
-                            <Badge
-                              variant="outline"
-                              className={cn(
-                                "rounded-full font-bold uppercase tracking-wider text-[9px] px-2.5 py-0.5",
-                                interval.classification === 'OUTAGE'
-                                  ? "bg-rose-500/10 text-rose-500 border-rose-500/20"
-                                  : "bg-indigo-500/10 text-indigo-500 border-indigo-500/20"
-                              )}
-                            >
-                              {interval.classification}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="font-bold text-sm">
-                            {formatReasonCode(interval.reasonCode)}
-                          </TableCell>
-                          <TableCell className="text-muted-foreground font-mono text-xs whitespace-nowrap">
-                            {formatDateTime(interval.startTime)}
-                          </TableCell>
-                          <TableCell className="text-muted-foreground font-mono text-xs whitespace-nowrap">
-                            {interval.endTime ? formatDateTime(interval.endTime) : (
-                              <Badge className="bg-amber-500/10 text-amber-500 border border-amber-500/25 rounded-full font-extrabold uppercase tracking-widest text-[8px] px-2 py-0.5 hover:bg-amber-500/10">
-                                Active Outage
-                              </Badge>
-                            )}
-                          </TableCell>
-                          <TableCell className="font-semibold text-sm whitespace-nowrap">
-                            {formatDuration(interval.durationSeconds)}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="rounded-full text-[10px] font-semibold border-border/60">
-                              {interval.autoGenerated ? 'Auto Logged' : 'Manual Override'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="max-w-[150px] truncate text-xs text-muted-foreground font-medium">
-                            {interval.ticketNumber && (
-                              <div className="font-mono text-foreground font-semibold">
-                                Ticket: {interval.ticketNumber}
-                              </div>
-                            )}
-                            {interval.overrideNotes && (
-                              <div className="italic text-muted-foreground truncate" title={interval.overrideNotes}>
-                                &ldquo;{interval.overrideNotes}&rdquo;
-                              </div>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="font-bold text-xs text-primary hover:text-primary hover:bg-primary/10 rounded-xl"
-                              onClick={() => handleOpenOverride(interval)}
-                            >
-                              Reclassify
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              ) : (
-                <div className="p-12 text-center flex flex-col items-center justify-center">
-                  <div className="p-4 bg-muted/20 text-muted-foreground/80 rounded-full mb-3">
-                    <ShieldCheck className="h-8 w-8 text-emerald-500" />
+            <CardContent className="p-6">
+              <Table
+                data={downtimeIntervals || []}
+                columns={downtimeColumns}
+                isLoading={isIntervalsLoading}
+                pageSize={10}
+                showPagination={true}
+                emptyState={
+                  <div className="py-12 text-center flex flex-col items-center justify-center">
+                    <div className="p-4 bg-muted/20 text-muted-foreground/80 rounded-full mb-3">
+                      <ShieldCheck className="h-8 w-8 text-emerald-500" />
+                    </div>
+                    <h4 className="font-bold text-sm">No Downtime Intervals Logged</h4>
+                    <p className="text-xs text-muted-foreground mt-1 max-w-[280px]">
+                      This connector port is fully compliant and has not experienced outages or excluded downtimes.
+                    </p>
                   </div>
-                  <h4 className="font-bold text-sm">No Downtime Intervals Logged</h4>
-                  <p className="text-xs text-muted-foreground mt-1 max-w-[280px]">
-                    This connector port is fully compliant and has not experienced outages or excluded downtimes.
-                  </p>
-                </div>
-              )}
+                }
+              />
             </CardContent>
           </Card>
         )}
@@ -517,76 +569,25 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
                 </CardDescription>
               </div>
             </CardHeader>
-            <CardContent className="p-0">
-              {isReportLoading ? (
-                <div className="p-6 space-y-3">
-                  <Skeleton className="h-10 w-full" />
-                  <Skeleton className="h-10 w-full" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
-              ) : complianceReport && complianceReport.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader className="bg-muted/10">
-                      <TableRow className="border-border/40 hover:bg-transparent">
-                        <TableHead className="font-bold text-xs uppercase tracking-wider">Period</TableHead>
-                        <TableHead className="font-bold text-xs uppercase tracking-wider">EVSE ID</TableHead>
-                        <TableHead className="font-bold text-xs uppercase tracking-wider">Port</TableHead>
-                        <TableHead className="font-bold text-xs uppercase tracking-wider">Total Time</TableHead>
-                        <TableHead className="font-bold text-xs uppercase tracking-wider">Excluded Duration</TableHead>
-                        <TableHead className="font-bold text-xs uppercase tracking-wider">Outage Duration</TableHead>
-                        <TableHead className="font-bold text-xs uppercase tracking-wider text-right">Uptime Compliance</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {complianceReport.map((item, idx) => (
-                        <TableRow key={idx} className="border-border/40 hover:bg-muted/10">
-                          <TableCell className="font-bold text-sm font-mono">
-                            {item.date || item.month || item.quarter || 'N/A'}
-                          </TableCell>
-                          <TableCell className="font-semibold text-sm font-mono">
-                            {item.evseId || 'N/A'}
-                          </TableCell>
-                          <TableCell className="text-muted-foreground font-semibold text-sm">
-                            Port {item.connectorPortId}
-                          </TableCell>
-                          <TableCell className="text-muted-foreground font-medium text-xs font-mono">
-                            {formatDuration(item.totalTimeSeconds)}
-                          </TableCell>
-                          <TableCell className="text-indigo-500 font-semibold text-xs font-mono">
-                            {formatDuration(item.excludedTimeSeconds)}
-                          </TableCell>
-                          <TableCell className="text-rose-500 font-semibold text-xs font-mono">
-                            {formatDuration(item.outageTimeSeconds)}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <span className={cn(
-                              "font-black text-sm",
-                              item.uptimePercentage >= 97
-                                ? "text-emerald-500"
-                                : item.uptimePercentage >= 95
-                                  ? "text-amber-500"
-                                  : "text-rose-500"
-                            )}>
-                              {item.uptimePercentage.toFixed(2)}%
-                            </span>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              ) : (
-                <div className="p-12 text-center flex flex-col items-center justify-center">
-                  <div className="p-4 bg-muted/20 text-muted-foreground/80 rounded-full mb-3">
-                    <FileText className="h-8 w-8 text-muted-foreground" />
+            <CardContent className="p-6">
+              <Table
+                data={complianceReport || []}
+                columns={reportColumns}
+                isLoading={isReportLoading}
+                pageSize={10}
+                showPagination={true}
+                emptyState={
+                  <div className="py-12 text-center flex flex-col items-center justify-center">
+                    <div className="p-4 bg-muted/20 text-muted-foreground/80 rounded-full mb-3">
+                      <FileText className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <h4 className="font-bold text-sm">No Report Data</h4>
+                    <p className="text-xs text-muted-foreground mt-1 max-w-[280px]">
+                      No report summaries found for the selected dates and connector.
+                    </p>
                   </div>
-                  <h4 className="font-bold text-sm">No Report Data</h4>
-                  <p className="text-xs text-muted-foreground mt-1 max-w-[280px]">
-                    No report summaries found for the selected dates and connector.
-                  </p>
-                </div>
-              )}
+                }
+              />
             </CardContent>
           </Card>
         )}
