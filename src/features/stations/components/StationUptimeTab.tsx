@@ -32,6 +32,16 @@ import {
   Layers,
   FileText,
   Percent,
+  Zap,
+  Wifi,
+  WifiOff,
+  Hammer,
+  CloudLightning,
+  Wrench,
+  Car,
+  HelpCircle,
+  Link,
+  Tag,
 } from 'lucide-react';
 import {
   ConnectorDowntimeInterval,
@@ -39,6 +49,18 @@ import {
   DowntimeReasonCode,
 } from '@/services/compliance.service';
 import { cn } from '@/lib/utils';
+
+interface ReportItem {
+  date?: string;
+  month?: string;
+  quarter?: string;
+  evseId: string;
+  connectorPortId: number;
+  totalTimeSeconds: number;
+  excludedTimeSeconds: number;
+  outageTimeSeconds: number;
+  uptimePercentage: number | null;
+}
 
 interface StationUptimeTabProps {
   station: Station;
@@ -97,8 +119,8 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
   // 4. Override Dialog Modal State
   const [overrideModalOpen, setOverrideModalOpen] = useState(false);
   const [selectedInterval, setSelectedInterval] = useState<ConnectorDowntimeInterval | null>(null);
-  const [newClassification, setNewClassification] = useState<DowntimeClassification>('EXCLUDED');
-  const [newReason, setNewReason] = useState<DowntimeReasonCode>('SCHEDULED_MAINTENANCE');
+  const [newClassification, setNewClassification] = useState<DowntimeClassification>(DowntimeClassification.EXCLUDED);
+  const [newReason, setNewReason] = useState<DowntimeReasonCode>(DowntimeReasonCode.SCHEDULED_MAINTENANCE);
   const [ticketNumber, setTicketNumber] = useState('');
   const [evidence, setEvidence] = useState('');
   const [overrideNotes, setOverrideNotes] = useState('');
@@ -159,11 +181,31 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
       .join(' ');
   };
 
+
   // Handle opening override modal
   const handleOpenOverride = useCallback((interval: ConnectorDowntimeInterval) => {
     setSelectedInterval(interval);
-    setNewClassification(interval.classification === 'OUTAGE' ? 'EXCLUDED' : 'OUTAGE');
-    setNewReason(interval.reasonCode);
+    setNewClassification(interval.classification === DowntimeClassification.OUTAGE ? DowntimeClassification.EXCLUDED : DowntimeClassification.OUTAGE);
+
+    // Map initial reasonCode if it's not one of the dropdown values
+    let initialReason: DowntimeReasonCode = DowntimeReasonCode.UNKNOWN;
+    if ((interval.reasonCode as string) === 'OFFLINE' || interval.reasonCode === DowntimeReasonCode.COMMUNICATION_LOSS) {
+      initialReason = DowntimeReasonCode.COMMUNICATION_LOSS;
+    } else if (interval.reasonCode === DowntimeReasonCode.UTILITY_OUTAGE) {
+      initialReason = DowntimeReasonCode.UTILITY_OUTAGE;
+    } else if (interval.reasonCode === DowntimeReasonCode.ISP_OUTAGE) {
+      initialReason = DowntimeReasonCode.ISP_OUTAGE;
+    } else if (interval.reasonCode === DowntimeReasonCode.VANDALISM) {
+      initialReason = DowntimeReasonCode.VANDALISM;
+    } else if (interval.reasonCode === DowntimeReasonCode.FORCE_MAJEURE) {
+      initialReason = DowntimeReasonCode.FORCE_MAJEURE;
+    } else if (interval.reasonCode === DowntimeReasonCode.SCHEDULED_MAINTENANCE) {
+      initialReason = DowntimeReasonCode.SCHEDULED_MAINTENANCE;
+    } else if (interval.reasonCode === DowntimeReasonCode.VEHICLE_ERROR) {
+      initialReason = DowntimeReasonCode.VEHICLE_ERROR;
+    }
+
+    setNewReason(initialReason);
     setTicketNumber(interval.ticketNumber || '');
     setEvidence(interval.evidence || '');
     setOverrideNotes(interval.overrideNotes || '');
@@ -215,7 +257,7 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
             variant="outline"
             className={cn(
               "rounded-full font-bold uppercase tracking-wider text-[9px] px-2.5 py-0.5",
-              interval.classification === 'OUTAGE'
+              interval.classification === DowntimeClassification.OUTAGE
                 ? "bg-rose-500/10 text-rose-500 border-rose-500/20"
                 : "bg-indigo-500/10 text-indigo-500 border-indigo-500/20"
             )}
@@ -252,7 +294,7 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
             {formatDateTime(interval.endTime)}
           </span>
         ) : (
-          <Badge className="bg-amber-500/10 text-amber-500 border border-amber-500/25 rounded-full font-extrabold uppercase tracking-widest text-[8px] px-2 py-0.5 hover:bg-amber-500/10 animate-pulse">
+          <Badge className="bg-amber-500/10 text-amber-500 border border-amber-500/25 rounded-full font-extrabold uppercase tracking-widest text-[8px] px-2 py-0.5">
             Active Outage
           </Badge>
         );
@@ -263,7 +305,7 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
       header: 'Duration',
       accessorKey: 'durationSeconds',
       cell: ({ row }) => (
-        <span className="font-semibold text-sm whitespace-nowrap">
+        <span className="font-semibold text-sm whitespace-nowrap flex">
           {formatDuration(row.original.durationSeconds)}
         </span>
       )
@@ -301,10 +343,9 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
     },
     {
       id: 'actions',
-      header: '',
-      meta: { headerAlign: 'right' as const },
+      header: 'Actions',
       cell: ({ row }) => (
-        <div className="text-right">
+        <div className="flex justify-start">
           <Button
             variant="ghost"
             size="sm"
@@ -318,7 +359,7 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
     }
   ], [handleOpenOverride]);
 
-  const reportColumns = useMemo<ColumnDef<any>[]>(() => [
+  const reportColumns = useMemo<ColumnDef<ReportItem>[]>(() => [
     {
       id: 'period',
       header: 'Period',
@@ -382,11 +423,19 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
       id: 'uptime',
       header: 'Uptime Compliance',
       accessorKey: 'uptimePercentage',
-      meta: { headerAlign: 'right' as const },
       cell: ({ row }) => {
         const pct = row.original.uptimePercentage;
+        if (pct === null || pct === undefined) {
+          return (
+            <div className="flex justify-end">
+              <span className="font-black text-sm font-mono px-2 py-1 rounded-lg text-muted-foreground bg-muted/20">
+                N/A
+              </span>
+            </div>
+          );
+        }
         return (
-          <div className="text-right">
+          <div className="flex justify-start">
             <span className={cn(
               "font-black text-sm font-mono px-2 py-1 rounded-lg",
               pct >= 97
@@ -395,7 +444,7 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
                   ? "text-amber-500 bg-amber-500/10"
                   : "text-rose-500 bg-rose-500/10"
             )}>
-              {pct.toFixed(3)}%
+              {pct.toFixed(2)}%
             </span>
           </div>
         );
@@ -446,13 +495,18 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
 
       {/* 2. Stats Summary Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {/* Metric 1: Uptime Percentage */}
         <StatCard
           title="Uptime Percentage"
-          value={uptimeData ? `${uptimeData.uptimePercentage.toFixed(2)}%` : '0.00%'}
+          value={
+            uptimeData
+              ? uptimeData.uptimePercentage !== null && uptimeData.uptimePercentage !== undefined
+                ? `${uptimeData.uptimePercentage.toFixed(2)}%`
+                : 'N/A'
+              : '0.00%'
+          }
           icon={Percent}
           color={
-            uptimeData?.uptimePercentage !== undefined
+            uptimeData?.uptimePercentage !== null && uptimeData?.uptimePercentage !== undefined
               ? uptimeData.uptimePercentage >= 97
                 ? "text-emerald-500"
                 : uptimeData.uptimePercentage >= 95
@@ -510,7 +564,7 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveReportTab(tab.id as any)}
+              onClick={() => setActiveReportTab(tab.id as 'logs' | 'daily' | 'monthly' | 'quarterly')}
               className={cn(
                 "px-5 py-3 border-b-2 font-bold text-sm flex items-center gap-2 transition-all whitespace-nowrap cursor-pointer",
                 activeReportTab === tab.id
@@ -600,44 +654,82 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
           onClose={() => setOverrideModalOpen(false)}
           title="Administrative Downtime Override"
           description={`Reclassify downtime interval starting ${formatDateTime(selectedInterval.startTime)}`}
-          size="lg"
+          size="2xl"
         >
-          <form onSubmit={handleSubmitOverride} className="space-y-5">
-            <div className="p-4 bg-muted/30 border border-border/40 rounded-xl space-y-2 text-xs">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground font-bold uppercase tracking-wider">Current Classification:</span>
+          <form onSubmit={handleSubmitOverride} className="space-y-4">
+            {/* Info Block - 3 column grid */}
+            <div className="grid grid-cols-3 gap-3 p-4 bg-muted/30 border border-border/40 rounded-2xl">
+              <div className="flex flex-col items-center justify-center p-3 bg-background/50 border border-border/20 rounded-xl text-center">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Current Type</span>
                 <Badge variant="outline" className={cn(
-                  "font-bold text-[10px]",
-                  selectedInterval.classification === 'OUTAGE' ? 'text-rose-500 border-rose-500/20 bg-rose-500/10' : 'text-indigo-500 border-indigo-500/20 bg-indigo-500/10'
+                  "font-bold text-[9px]",
+                  selectedInterval.classification === DowntimeClassification.OUTAGE ? 'text-rose-500 border-rose-500/20 bg-rose-500/10' : 'text-indigo-500 border-indigo-500/20 bg-indigo-500/10'
                 )}>
-                  {selectedInterval.classification} ({formatReasonCode(selectedInterval.reasonCode)})
+                  {selectedInterval.classification}
                 </Badge>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground font-bold uppercase tracking-wider">Event Start:</span>
-                <span className="font-mono text-foreground font-semibold">{formatDateTime(selectedInterval.startTime)}</span>
+
+              <div className="flex flex-col items-center justify-center p-3 bg-background/50 border border-border/20 rounded-xl text-center">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Start Time</span>
+                <span className="font-mono text-[10px] text-foreground font-semibold leading-none mt-1">
+                  {new Date(selectedInterval.startTime).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                </span>
+                <span className="font-mono text-[9px] text-muted-foreground mt-0.5">
+                  {new Date(selectedInterval.startTime).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground font-bold uppercase tracking-wider">Duration:</span>
-                <span className="font-bold text-foreground">{formatDuration(selectedInterval.durationSeconds)}</span>
+
+              <div className="flex flex-col items-center justify-center p-3 bg-background/50 border border-border/20 rounded-xl text-center">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Duration</span>
+                <div className="flex items-center gap-1 mt-1 text-foreground font-black text-xs leading-none">
+                  <Clock className="h-3 w-3 text-muted-foreground" />
+                  <span>{formatDuration(selectedInterval.durationSeconds)}</span>
+                </div>
               </div>
             </div>
 
-            {/* Target Classification */}
+            {/* Target Classification Selection Cards */}
             <div className="space-y-2">
               <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Target Classification</Label>
-              <Select
-                value={newClassification}
-                onValueChange={(val: DowntimeClassification) => setNewClassification(val)}
-              >
-                <SelectTrigger className="rounded-xl border-border bg-background">
-                  <SelectValue placeholder="Select target classification" />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl border-border bg-card">
-                  <SelectItem value="OUTAGE" className="rounded-lg">OUTAGE (Counts against Uptime)</SelectItem>
-                  <SelectItem value="EXCLUDED" className="rounded-lg">EXCLUDED (Excused downtime)</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => setNewClassification(DowntimeClassification.OUTAGE)}
+                  className={cn(
+                    "flex flex-col items-start p-4 rounded-2xl border text-left transition-all duration-200 cursor-pointer",
+                    newClassification === DowntimeClassification.OUTAGE
+                      ? "border-rose-500 bg-rose-500/10 ring-1 ring-rose-500"
+                      : "border-border bg-muted/10 hover:bg-muted/20"
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <ShieldAlert className={cn("h-4 w-4", newClassification === DowntimeClassification.OUTAGE ? "text-rose-500" : "text-muted-foreground")} />
+                    <span className={cn("text-xs font-bold uppercase tracking-wider", newClassification === DowntimeClassification.OUTAGE ? "text-rose-500" : "text-muted-foreground")}>Outage</span>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground mt-2 leading-relaxed font-medium">
+                    Downtime will count against the station&apos;s compliant uptime metrics.
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setNewClassification(DowntimeClassification.EXCLUDED)}
+                  className={cn(
+                    "flex flex-col items-start p-4 rounded-2xl border text-left transition-all duration-200 cursor-pointer",
+                    newClassification === DowntimeClassification.EXCLUDED
+                      ? "border-indigo-500 bg-indigo-500/10 ring-1 ring-indigo-500"
+                      : "border-border bg-muted/10 hover:bg-muted/20"
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className={cn("h-4 w-4", newClassification === DowntimeClassification.EXCLUDED ? "text-indigo-500" : "text-muted-foreground")} />
+                    <span className={cn("text-xs font-bold uppercase tracking-wider", newClassification === DowntimeClassification.EXCLUDED ? "text-indigo-500" : "text-muted-foreground")}>Excluded</span>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground mt-2 leading-relaxed font-medium">
+                    Excused downtime under NEVI / AB2061 regulatory guidelines.
+                  </span>
+                </button>
+              </div>
             </div>
 
             {/* Reclassification Reason */}
@@ -647,49 +739,96 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
                 value={newReason}
                 onValueChange={(val: DowntimeReasonCode) => setNewReason(val)}
               >
-                <SelectTrigger className="rounded-xl border-border bg-background">
+                <SelectTrigger className="rounded-xl border-border bg-background w-full h-11">
                   <SelectValue placeholder="Select reason code" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl border-border bg-card">
-                  <SelectItem value="UTILITY_OUTAGE" className="rounded-lg">Utility Grid Power Outage</SelectItem>
-                  <SelectItem value="ISP_OUTAGE" className="rounded-lg">ISP/Telecom Outage</SelectItem>
-                  <SelectItem value="COMMUNICATION_LOSS" className="rounded-lg">Station Offline / Comm Loss</SelectItem>
-                  <SelectItem value="VANDALISM" className="rounded-lg">Vandalism or Physical Damage</SelectItem>
-                  <SelectItem value="FORCE_MAJEURE" className="rounded-lg">Force Majeure (Extreme Weather / Disaster)</SelectItem>
-                  <SelectItem value="SCHEDULED_MAINTENANCE" className="rounded-lg">Scheduled Preventive Maintenance</SelectItem>
-                  <SelectItem value="VEHICLE_ERROR" className="rounded-lg">Vehicle-Side Error or Failure</SelectItem>
-                  <SelectItem value="UNKNOWN" className="rounded-lg">Unknown / Other</SelectItem>
+                  <SelectItem value={DowntimeReasonCode.UTILITY_OUTAGE} className="rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Zap className="h-3.5 w-3.5 text-amber-500" />
+                      <span>Utility Grid Power Outage</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value={DowntimeReasonCode.ISP_OUTAGE} className="rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Wifi className="h-3.5 w-3.5 text-blue-500" />
+                      <span>ISP/Telecom Outage</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value={DowntimeReasonCode.COMMUNICATION_LOSS} className="rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <WifiOff className="h-3.5 w-3.5 text-rose-500" />
+                      <span>Station Offline / Comm Loss</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value={DowntimeReasonCode.VANDALISM} className="rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Hammer className="h-3.5 w-3.5 text-orange-500" />
+                      <span>Vandalism or Physical Damage</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value={DowntimeReasonCode.FORCE_MAJEURE} className="rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <CloudLightning className="h-3.5 w-3.5 text-purple-500" />
+                      <span>Force Majeure (Extreme Weather / Disaster)</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value={DowntimeReasonCode.SCHEDULED_MAINTENANCE} className="rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Wrench className="h-3.5 w-3.5 text-emerald-500" />
+                      <span>Scheduled Preventive Maintenance</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value={DowntimeReasonCode.VEHICLE_ERROR} className="rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Car className="h-3.5 w-3.5 text-indigo-500" />
+                      <span>Vehicle-Side Error or Failure</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value={DowntimeReasonCode.UNKNOWN} className="rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span>Unknown / Other</span>
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Support Ticket */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Support Ticket & Evidence Reference */}
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="ticketNumber" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Support Ticket # (Optional)</Label>
-                <Input
-                  id="ticketNumber"
-                  placeholder="e.g. INC-40812"
-                  value={ticketNumber}
-                  onChange={(e) => setTicketNumber(e.target.value)}
-                  className="rounded-xl border-border bg-background"
-                />
+                <div className="relative">
+                  <Tag className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="ticketNumber"
+                    placeholder="e.g. INC-40812"
+                    value={ticketNumber}
+                    onChange={(e) => setTicketNumber(e.target.value)}
+                    className="rounded-xl border-border bg-background pl-10 h-11"
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="evidence" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Evidence URL/Reference (Optional)</Label>
-                <Input
-                  id="evidence"
-                  placeholder="e.g. https://status.utility.com/report/1"
-                  value={evidence}
-                  onChange={(e) => setEvidence(e.target.value)}
-                  className="rounded-xl border-border bg-background"
-                />
+                <div className="relative">
+                  <Link className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="evidence"
+                    placeholder="e.g. https://status.utility.com/report/1"
+                    value={evidence}
+                    onChange={(e) => setEvidence(e.target.value)}
+                    className="rounded-xl border-border bg-background pl-10 h-11"
+                  />
+                </div>
               </div>
             </div>
 
             {/* Justification Notes */}
             <div className="space-y-2">
-              <Label htmlFor="overrideNotes" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              <Label htmlFor="overrideNotes" className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                <FileText className="h-3.5 w-3.5" />
                 Audit justification Notes <span className="text-rose-500">*</span>
               </Label>
               <Textarea
@@ -697,13 +836,13 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
                 placeholder="Explain why this downtime qualifies for reclassification..."
                 value={overrideNotes}
                 onChange={(e) => setOverrideNotes(e.target.value)}
-                className="rounded-xl border-border bg-background h-24"
+                className="rounded-xl border-border bg-background h-24 p-3"
                 required
               />
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-border/40">
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-border/40">
               <Button
                 type="button"
                 variant="ghost"

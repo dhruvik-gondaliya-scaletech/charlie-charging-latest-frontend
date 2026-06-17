@@ -1,17 +1,21 @@
 import httpService from '@/lib/http-service';
 import { API_CONFIG } from '@/constants/constants';
 
-export type DowntimeClassification = 'OUTAGE' | 'EXCLUDED';
+export enum DowntimeClassification {
+  OUTAGE = 'OUTAGE',
+  EXCLUDED = 'EXCLUDED',
+}
 
-export type DowntimeReasonCode =
-  | 'COMMUNICATION_LOSS'
-  | 'UTILITY_OUTAGE'
-  | 'ISP_OUTAGE'
-  | 'VANDALISM'
-  | 'FORCE_MAJEURE'
-  | 'SCHEDULED_MAINTENANCE'
-  | 'VEHICLE_ERROR'
-  | 'UNKNOWN';
+export enum DowntimeReasonCode {
+  COMMUNICATION_LOSS = 'COMMUNICATION_LOSS',
+  UTILITY_OUTAGE = 'UTILITY_OUTAGE',
+  ISP_OUTAGE = 'ISP_OUTAGE',
+  VANDALISM = 'VANDALISM',
+  FORCE_MAJEURE = 'FORCE_MAJEURE',
+  SCHEDULED_MAINTENANCE = 'SCHEDULED_MAINTENANCE',
+  VEHICLE_ERROR = 'VEHICLE_ERROR',
+  UNKNOWN = 'UNKNOWN',
+}
 
 export interface ConnectorDowntimeInterval {
   id: string;
