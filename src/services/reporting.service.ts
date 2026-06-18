@@ -41,6 +41,10 @@ function buildIntervalSlicesCsv(slices: IntervalSlice[]): string {
     'Avg (kW)',
     'Overlap (min)',
     'Data Source',
+    'Total Time (sec)',
+    'Excluded Time (sec)',
+    'Outage Time (sec)',
+    'Uptime (%)',
   ];
   const rows = slices.map((s) =>
     rowToCsv([
@@ -59,6 +63,10 @@ function buildIntervalSlicesCsv(slices: IntervalSlice[]): string {
       s.avgKw,
       s.overlapMinutes,
       s.dataSource,
+      s.totalTimeSeconds,
+      s.excludedTimeSeconds,
+      s.outageTimeSeconds,
+      s.uptimePercentage !== null && s.uptimePercentage !== undefined ? s.uptimePercentage : '',
     ]),
   );
   return [rowToCsv(header), ...rows].join('\n');

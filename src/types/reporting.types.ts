@@ -34,6 +34,10 @@ export interface IntervalSlice {
   avgKw: number;
   overlapMinutes: number;
   dataSource: 'interpolated' | 'proportional';
+  totalTimeSeconds: number;
+  excludedTimeSeconds: number;
+  outageTimeSeconds: number;
+  uptimePercentage: number | null;
 }
 
 /** Aggregated interval across all sessions (one row per clock block). */
