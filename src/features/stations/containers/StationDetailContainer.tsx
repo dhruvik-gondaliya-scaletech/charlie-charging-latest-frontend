@@ -63,15 +63,6 @@ import {
     MeterValuesEvent,
     TransactionEvent
 } from '@/lib/realtime.service';
-import { useTenantConfig } from '@/hooks/get/useTenantConfig';
-import QRCode from 'react-qr-code';
-import {
-    Download,
-    Copy,
-    ExternalLink,
-    QrCode as QrCodeIcon,
-    Check
-} from 'lucide-react';
 import {
     invalidateQueriesDebounced,
     updateStationDetailCache
@@ -107,7 +98,6 @@ export function StationDetailContainer() {
         'station-status-change',
         (data) => {
             if (data.stationId === id) {
-                console.log(`Station ${data.stationId} status updated to ${data.status}`);
 
                 // 1. Optimistically update the detailed station status
                 updateStationDetailCache(queryClient, id as string, { status: data.status });
@@ -124,7 +114,6 @@ export function StationDetailContainer() {
         'connector-status-change',
         (data) => {
             if (data.stationId === id) {
-                console.log(`Connector ${data.connectorId} on station ${data.stationId} status updated to ${data.status}`);
 
                 // 1. Optimistically update the specific connector status in the station detail cache using a predicate to match environment-aware key
                 queryClient.setQueriesData({
@@ -166,7 +155,6 @@ export function StationDetailContainer() {
         'meter-values',
         (data) => {
             if (data.stationId === id) {
-                console.log(`Received meter values for station ${data.stationId}`);
                 // Debounce log and session updates as meter values can be very frequent
                 invalidateQueriesDebounced(queryClient, ['station-logs', id]);
                 invalidateQueriesDebounced(queryClient, ['station-sessions', environment, id]);
@@ -181,7 +169,6 @@ export function StationDetailContainer() {
         'transaction-start',
         (data) => {
             if (data.stationId === id) {
-                console.log(`Transaction started on station ${data.stationId}, connector ${data.connectorId}`);
                 invalidateQueriesDebounced(queryClient, ['station-sessions', environment, id]);
                 invalidateQueriesDebounced(queryClient, ['station-session-stats', environment, id]);
                 invalidateQueriesDebounced(queryClient, ['station-logs', id]);
@@ -196,7 +183,6 @@ export function StationDetailContainer() {
         'transaction-stop',
         (data) => {
             if (data.stationId === id) {
-                console.log(`Transaction stopped on station ${data.stationId}, connector ${data.connectorId}`);
                 invalidateQueriesDebounced(queryClient, ['station-sessions', environment, id]);
                 invalidateQueriesDebounced(queryClient, ['station-session-stats', environment, id]);
                 invalidateQueriesDebounced(queryClient, ['station-logs', id]);

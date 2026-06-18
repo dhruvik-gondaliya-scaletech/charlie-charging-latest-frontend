@@ -15,6 +15,15 @@ import {
   DowntimeReasonCode,
 } from '@/services/compliance.service';
 import { ConnectorUptime } from '../components/ConnectorUptime';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEnvironment } from '@/contexts/EnvironmentContext';
+import { useWebSocketConnection, useRealTimeEvent } from '@/hooks/useRealTime';
+import { invalidateQueriesDebounced } from '@/lib/query-utils';
+import {
+  StationStatusChangeEvent,
+  ConnectorStatusChangeEvent,
+  TransactionEvent,
+} from '@/lib/realtime.service';
 
 interface ConnectorUptimeContainerProps {
   stationId: string;
@@ -22,6 +31,64 @@ interface ConnectorUptimeContainerProps {
 }
 
 export function ConnectorUptimeContainer({ stationId, connectorId }: ConnectorUptimeContainerProps) {
+  const queryClient = useQueryClient();
+  const { environment } = useEnvironment();
+
+  // Establish WebSocket connection
+  useWebSocketConnection();
+
+  // Helper to invalidate all relevant uptime queries
+  const invalidateUptimeQueries = useCallback(() => {
+    invalidateQueriesDebounced(queryClient, ['station', environment, stationId]);
+    invalidateQueriesDebounced(queryClient, ['compliance-uptime', connectorId]);
+    invalidateQueriesDebounced(queryClient, ['compliance-downtime-intervals', connectorId]);
+    invalidateQueriesDebounced(queryClient, ['compliance-report']);
+  }, [queryClient, environment, stationId, connectorId]);
+
+  // Listen for station status changes
+  useRealTimeEvent<StationStatusChangeEvent>(
+    'station-status-change',
+    (data) => {
+      if (data.stationId === stationId) {
+        invalidateUptimeQueries();
+      }
+    },
+    [stationId, invalidateUptimeQueries]
+  );
+
+  // Listen for connector status changes
+  useRealTimeEvent<ConnectorStatusChangeEvent>(
+    'connector-status-change',
+    (data) => {
+      if (data.stationId === stationId) {
+        invalidateUptimeQueries();
+      }
+    },
+    [stationId, invalidateUptimeQueries]
+  );
+
+  // Listen for transaction start
+  useRealTimeEvent<TransactionEvent>(
+    'transaction-start',
+    (data) => {
+      if (data.stationId === stationId) {
+        invalidateUptimeQueries();
+      }
+    },
+    [stationId, invalidateUptimeQueries]
+  );
+
+  // Listen for transaction stop
+  useRealTimeEvent<TransactionEvent>(
+    'transaction-stop',
+    (data) => {
+      if (data.stationId === stationId) {
+        invalidateUptimeQueries();
+      }
+    },
+    [stationId, invalidateUptimeQueries]
+  );
+
   // Fetch Station Details
   const { data: station, isLoading: isStationLoading } = useStation(stationId);
 

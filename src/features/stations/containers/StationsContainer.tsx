@@ -89,7 +89,6 @@ export function StationsContainer() {
   useRealTimeEvent<StationStatusChangeEvent>(
     'station-status-change',
     (data) => {
-      console.log(`Station ${data.stationId} status updated to ${data.status}`);
 
       // 1. Optimistic update in list
       updateStationInListCache(queryClient, data.stationId, { status: data.status });
@@ -104,7 +103,6 @@ export function StationsContainer() {
   useRealTimeEvent<ConnectorStatusChangeEvent>(
     'connector-status-change',
     (data) => {
-      console.log(`Connector ${data.connectorId} on station ${data.stationId} status updated to ${data.status}`);
 
       // we'll just debounce the refresh for the list.
       invalidateQueriesDebounced(queryClient, ['stations']);
