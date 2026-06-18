@@ -5,7 +5,7 @@ import { useInfiniteOcppLogs } from '@/hooks/get/useStations';
 import { useInView } from 'react-intersection-observer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { formatDate } from '@/lib/date';
+import { formatDateTime } from '@/lib/date';
 import { cn } from '@/lib/utils';
 import {
     Terminal,
@@ -274,7 +274,7 @@ export function StationLogs({ stationId, sessionId, onClearSessionId }: StationL
                                             </p>
                                         </div>
                                         <p className="text-xs text-muted-foreground font-medium flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                                            {formatDate(log.createdAt)}
+                                            {formatDateTime(log.createdAt)}
                                             <span className="hidden sm:block h-1 w-1 rounded-full bg-muted-foreground/30" />
                                             <span className="font-mono text-[10px] sm:text-[11px] opacity-70 truncate">{log.messageId || 'NO-ID'}</span>
                                         </p>

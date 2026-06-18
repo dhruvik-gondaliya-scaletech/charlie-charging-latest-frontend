@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useStation, useStationSessions, useStationSessionStats } from '@/hooks/get/useStations';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,23 +17,10 @@ import {
     AlertCircle,
     LogOut,
     Loader2,
-    Edit,
-    ChevronDown,
-    Settings,
     Unlock,
     CheckCircle2,
     Play,
 } from 'lucide-react';
-import {
-    Drawer,
-    DrawerClose,
-    DrawerContent,
-    DrawerDescription,
-    DrawerFooter,
-    DrawerHeader,
-    DrawerTitle,
-    DrawerTrigger,
-} from "@/components/ui/drawer";
 import { motion } from 'framer-motion';
 import { fadeInUp, staggerContainer } from '@/lib/motion';
 import { ChargingStatus, LocationEnv } from '@/types';
@@ -72,7 +59,6 @@ import { useEnvironment } from '@/contexts/EnvironmentContext';
 
 export function StationDetailContainer() {
     const { id } = useParams();
-    const router = useRouter();
     const queryClient = useQueryClient();
     const { environment } = useEnvironment();
     const { user, tenant } = useAuth();
@@ -434,80 +420,21 @@ export function StationDetailContainer() {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                    {/* Desktop Actions */}
-                    <div className="hidden md:block relative group">
-                        <Button
-                            variant="default"
-                            className="bg-primary/90 hover:bg-primary font-bold shadow-md h-12 px-6 rounded-xl"
-                        >
-                            Manage Station
-                            <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
-                        </Button>
-                        <div className="absolute right-0 top-full mt-2 w-56 bg-card border border-border p-1.5 rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 backdrop-blur-xl bg-card/95">
-                            <button
-                                onClick={() => setIsRebootModalOpen(true)}
-                                className="w-full text-left px-4 py-3 text-sm font-bold hover:bg-muted transition-all flex items-center cursor-pointer rounded-xl"
-                            >
-                                <History className="mr-3 h-4 w-4 text-orange-500" /> Reboot System
-                            </button>
-                            <button
-                                onClick={() => setIsAvailabilityModalOpen(true)}
-                                className="w-full text-left px-4 py-3 text-sm font-bold hover:bg-muted transition-all flex items-center cursor-pointer rounded-xl"
-                            >
-                                <ShieldCheck className="mr-3 h-4 w-4 text-emerald-500" /> Availability Matrix
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Mobile Actions Drawer */}
-                    <div className="md:hidden w-full">
-                        <Drawer>
-                            <DrawerTrigger asChild>
-                                <Button
-                                    variant="default"
-                                    className="w-full bg-primary font-bold shadow-lg h-12 rounded-2xl"
-                                >
-                                    <Settings className="mr-2 h-4 w-4" />
-                                    Station Actions
-                                </Button>
-                            </DrawerTrigger>
-                            <DrawerContent className="bg-card border-none rounded-t-[2.5rem]">
-                                <div className="mx-auto w-12 h-1.5 rounded-full bg-muted/40 mt-4 mb-4" />
-                                <DrawerHeader className="text-left px-6">
-                                    <DrawerTitle className="text-2xl font-black">Control Panel</DrawerTitle>
-                                    <DrawerDescription className="text-sm font-medium">Manage operational parameters for {station.name}</DrawerDescription>
-                                </DrawerHeader>
-                                <div className="px-4 py-6 grid gap-3">
-                                    <Button
-                                        variant="outline"
-                                        className="h-16 justify-start text-base font-bold rounded-2xl border-border/40 gap-4"
-                                        onClick={() => setIsRebootModalOpen(true)}
-                                    >
-                                        <div className="p-2 rounded-xl bg-orange-500/10 text-orange-500">
-                                            <History className="h-5 w-5" />
-                                        </div>
-                                        Reboot System
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        className="h-16 justify-start text-base font-bold rounded-2xl border-border/40 gap-4"
-                                        onClick={() => setIsAvailabilityModalOpen(true)}
-                                    >
-                                        <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500">
-                                            <ShieldCheck className="h-5 w-5" />
-                                        </div>
-                                        Availability Matrix
-                                    </Button>
-                                </div>
-                                <DrawerFooter className="px-6 pb-8">
-                                    <DrawerClose asChild>
-                                        <Button variant="ghost" className="h-12 rounded-xl font-bold text-muted-foreground">Dismiss Panel</Button>
-                                    </DrawerClose>
-                                </DrawerFooter>
-                            </DrawerContent>
-                        </Drawer>
-                    </div>
+                <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                    <Button
+                        variant="outline"
+                        onClick={() => setIsRebootModalOpen(true)}
+                        className="font-bold border-orange-500/30 text-orange-500 hover:bg-orange-500/10 hover:text-orange-500 h-12 px-6 rounded-xl flex-1 sm:flex-initial"
+                    >
+                        <History className="mr-2.5 h-4.5 w-4.5 text-orange-500" /> Reboot System
+                    </Button>
+                    <Button
+                        variant="outline"
+                        onClick={() => setIsAvailabilityModalOpen(true)}
+                        className="font-bold border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10 hover:text-emerald-500 h-12 px-6 rounded-xl flex-1 sm:flex-initial"
+                    >
+                        <ShieldCheck className="mr-2.5 h-4.5 w-4.5 text-emerald-500" /> Availability Matrix
+                    </Button>
                 </div>
             </motion.div>
 
@@ -782,32 +709,52 @@ export function StationDetailContainer() {
                 size="md"
                 footer={
                     <div className="flex gap-3 justify-end w-full">
-                        <Button variant="outline" onClick={() => setIsRebootModalOpen(false)}>
+                        <Button variant="outline" className="rounded-xl font-bold" onClick={() => setIsRebootModalOpen(false)}>
                             Cancel
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            onClick={() => confirmReboot('Soft')}
-                            disabled={resetStation.isPending}
-                            className="font-bold"
-                        >
-                            Soft Reset
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            onClick={() => confirmReboot('Hard')}
-                            disabled={resetStation.isPending}
-                            className="font-bold"
-                        >
-                            Hard Reset
                         </Button>
                     </div>
                 }
             >
                 <div className="space-y-4">
-                    <div className="flex items-center gap-3 p-4 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-500 dark:text-orange-400 text-sm font-medium">
-                        <AlertCircle className="h-5 w-5 shrink-0" />
-                        <p>A soft reset will wait for active transactions to end. A hard reset is immediate and may interrupt charging.</p>
+                    {/* Soft Reset Banner */}
+                    <div className="p-5 rounded-2xl bg-amber-500/5 border border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="space-y-1 flex-1">
+                            <h4 className="text-sm font-bold text-amber-500 flex items-center gap-2">
+                                <History className="h-4 w-4" />
+                                Soft Reset
+                            </h4>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                                Gracefully restarts the station. It waits for active charging transactions to end before rebooting.
+                            </p>
+                        </div>
+                        <Button
+                            onClick={() => confirmReboot('Soft')}
+                            disabled={resetStation.isPending}
+                            className="font-bold border-amber-500/30 bg-amber-500 hover:bg-amber-500/80 text-white rounded-xl px-5 h-11 shrink-0 w-full sm:w-auto"
+                        >
+                            Soft Reset
+                        </Button>
+                    </div>
+
+                    {/* Hard Reset Banner */}
+                    <div className="p-5 rounded-2xl bg-destructive/5 border border-destructive/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="space-y-1 flex-1">
+                            <h4 className="text-sm font-bold text-destructive flex items-center gap-2">
+                                <AlertCircle className="h-4 w-4" />
+                                Hard Reset
+                            </h4>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                                Immediately restarts the station. This is a cold reboot and will abruptly interrupt active charging sessions.
+                            </p>
+                        </div>
+                        <Button
+                            variant="destructive"
+                            onClick={() => confirmReboot('Hard')}
+                            disabled={resetStation.isPending}
+                            className="font-bold rounded-xl px-5 h-11 shrink-0 w-full sm:w-auto"
+                        >
+                            Hard Reset
+                        </Button>
                     </div>
                 </div>
             </AnimatedModal>
@@ -821,32 +768,53 @@ export function StationDetailContainer() {
                 size="md"
                 footer={
                     <div className="flex gap-3 justify-end w-full">
-                        <Button variant="outline" onClick={() => setIsAvailabilityModalOpen(false)}>
+                        <Button variant="outline" className="rounded-xl font-bold" onClick={() => setIsAvailabilityModalOpen(false)}>
                             Cancel
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            onClick={() => confirmAvailability('Inoperative')}
-                            disabled={changeAvailability.isPending}
-                            className="font-bold"
-                        >
-                            {changeAvailability.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : 'Turn OFF'}
-                        </Button>
-                        <Button
-                            variant="default"
-                            onClick={() => confirmAvailability('Operative')}
-                            disabled={changeAvailability.isPending}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
-                        >
-                            {changeAvailability.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : 'Turn ON'}
                         </Button>
                     </div>
                 }
             >
                 <div className="space-y-4">
-                    <div className="flex items-center gap-3 p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-500 dark:text-blue-400 text-sm font-medium">
-                        <ShieldCheck className="h-5 w-5 shrink-0" />
-                        <p>Changes the station's operational status. This command will be sent directly to the charge point.</p>
+                    {/* Turn ON Banner */}
+                    <div className="p-5 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="space-y-1 flex-1">
+                            <h4 className="text-sm font-bold text-emerald-500 flex items-center gap-2">
+                                <CheckCircle2 className="h-4 w-4" />
+                                Turn ON (Operative)
+                            </h4>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                                Brings the station online. Drivers will be able to discover, connect, and initiate new charging sessions.
+                            </p>
+                        </div>
+                        <Button
+                            variant="default"
+                            onClick={() => confirmAvailability('Operative')}
+                            disabled={changeAvailability.isPending}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl px-5 h-11 shrink-0 w-full sm:w-auto"
+                        >
+                            {changeAvailability.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Turn ON'}
+                        </Button>
+                    </div>
+
+                    {/* Turn OFF Banner */}
+                    <div className="p-5 rounded-2xl bg-destructive/5 border border-destructive/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="space-y-1 flex-1">
+                            <h4 className="text-sm font-bold text-destructive flex items-center gap-2">
+                                <AlertCircle className="h-4 w-4" />
+                                Turn OFF (Inoperative)
+                            </h4>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                                Sets the station to inoperative. Active sessions can finish gracefully, but new charging requests will be blocked.
+                            </p>
+                        </div>
+                        <Button
+                            variant="destructive"
+                            onClick={() => confirmAvailability('Inoperative')}
+                            disabled={changeAvailability.isPending}
+                            className="font-bold rounded-xl px-5 h-11 shrink-0 w-full sm:w-auto"
+                        >
+                            {changeAvailability.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Turn OFF'}
+                        </Button>
                     </div>
                 </div>
             </AnimatedModal>
