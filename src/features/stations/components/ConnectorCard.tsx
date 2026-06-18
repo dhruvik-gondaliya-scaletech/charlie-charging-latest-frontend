@@ -31,6 +31,10 @@ export function ConnectorCard({
 }: ConnectorCardProps) {
     const isAvailable = connector.status === ChargingStatus.AVAILABLE;
     const isCharging = connector.status === ChargingStatus.CHARGING;
+    const isStartActionAllowed =
+        connector.status === ChargingStatus.AVAILABLE ||
+        connector.status === ChargingStatus.PREPARING ||
+        connector.status === ChargingStatus.FINISHING;
 
     return (
         <Card className="border-border/40 bg-card/10 backdrop-blur-md rounded-3xl border hover:bg-card/20 transition-all group overflow-hidden">
@@ -97,7 +101,7 @@ export function ConnectorCard({
                     ) : (
                         <Button
                             onClick={() => onStart(connector.connectorId)}
-                            disabled={disabled || isStarting}
+                            disabled={disabled || isStarting || !isStartActionAllowed}
                             className="w-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20 font-bold rounded-xl h-11 transition-all active:scale-95"
                         >
                             {isStarting ? (
