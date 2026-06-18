@@ -25,6 +25,7 @@ import { DatePicker } from '@/components/shared/DatePicker';
 import { StatCard } from '@/features/dashboard/components/StatCard';
 import { BackButton } from '@/components/shared/BackButton';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { fadeInUp, staggerContainer } from '@/lib/motion';
 import {
@@ -74,6 +75,16 @@ interface ConnectorUptimeContainerProps {
 export function ConnectorUptimeContainer({ stationId, connectorId }: ConnectorUptimeContainerProps) {
   // Fetch Station Details
   const { data: station, isLoading: isStationLoading } = useStation(stationId);
+
+  const searchParams = useSearchParams();
+  const stationNameParam = searchParams.get('name');
+
+  const backHref = useMemo(() => {
+    const name = stationNameParam || station?.name;
+    return name
+      ? `/stations/${stationId}?name=${encodeURIComponent(name)}`
+      : `/stations/${stationId}`;
+  }, [stationId, stationNameParam, station?.name]);
 
   // Find targeted connector port info
   const connector = useMemo(() => {
@@ -490,7 +501,7 @@ export function ConnectorUptimeContainer({ stationId, connectorId }: ConnectorUp
         <p className="text-muted-foreground max-w-md">
           The requested connector port does not exist or you don&apos;t have access permission.
         </p>
-        <BackButton href={`/stations/${stationId}`} label="Return to Station" />
+        <BackButton href={backHref} label="Return to Station" />
       </div>
     );
   }
@@ -504,7 +515,7 @@ export function ConnectorUptimeContainer({ stationId, connectorId }: ConnectorUp
     >
       {/* Header with Back Button */}
       <motion.div variants={fadeInUp} className="space-y-1">
-        <BackButton href={`/stations/${stationId}`} label={`Return to ${station.name}`} />
+        <BackButton href={backHref} label={`Return to ${station.name}`} />
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black tracking-tight text-foreground truncate">
             Connector Uptime Compliance
@@ -513,9 +524,6 @@ export function ConnectorUptimeContainer({ stationId, connectorId }: ConnectorUp
             Port #{connector.connectorId} ({connector.type})
           </Badge>
         </div>
-        <p className="text-xs md:text-sm text-muted-foreground font-medium">
-          Analyze port compliance status, downtime intervals, and NEVI/AB2061 specifications for Station: <span className="font-bold text-foreground">{station.name}</span>.
-        </p>
       </motion.div>
 
       {/* Date Picker (Top-level filter) */}

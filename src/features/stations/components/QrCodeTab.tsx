@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useBaseDomain } from '@/hooks/useBaseDomain';
 import Link from 'next/link';
 import QRCode from 'react-qr-code';
 import { useTenantConfig } from '@/hooks/get/useTenantConfig';
@@ -19,10 +20,11 @@ export function QrCodeTab({ station }: QrCodeTabProps) {
     const { data: config, isLoading } = useTenantConfig();
     const [copied, setCopied] = useState(false);
 
-    const BASE_DOMAIN = 'scaleev.scaletech.xyz';
+    const baseDomain = useBaseDomain();
+
     const domain = config?.domain;
     const hasDomain = domain && domain.trim() !== '';
-    const qrUrl = `https://${domain}.${BASE_DOMAIN}/stations/qr/${station.id}`;
+    const qrUrl = `https://${domain}.${baseDomain}/stations/qr/${station.id}`;
 
     const handleCopy = () => {
         if (!hasDomain) return;
