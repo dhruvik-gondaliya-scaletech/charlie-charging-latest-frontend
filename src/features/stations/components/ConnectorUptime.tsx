@@ -76,7 +76,7 @@ interface ConnectorUptimeProps {
   isIntervalsLoading: boolean;
   complianceReport: any;
   isReportLoading: boolean;
-  
+
   // Override Modal States & Callbacks
   overrideModalOpen: boolean;
   setOverrideModalOpen: (open: boolean) => void;
@@ -250,10 +250,10 @@ export function ConnectorUptime({
               </div>
             )}
             {interval.evidence && (
-              <a 
-                href={interval.evidence} 
-                target="_blank" 
-                rel="noreferrer" 
+              <a
+                href={interval.evidence}
+                target="_blank"
+                rel="noreferrer"
                 className="text-primary hover:underline flex items-center gap-1 font-semibold text-[10px] uppercase tracking-wider mt-0.5"
               >
                 <Link className="h-3 w-3" /> Proof Link
@@ -576,7 +576,7 @@ export function ConnectorUptime({
           onClose={() => setOverrideModalOpen(false)}
           title="Administrative Downtime Override"
           description={`Reclassify downtime interval starting ${formatDateTime(selectedInterval.startTime)}`}
-          size="2xl"
+          size="3xl"
         >
           <form onSubmit={handleSubmitOverride} className="space-y-4">
             {/* Info Block */}
@@ -593,11 +593,8 @@ export function ConnectorUptime({
 
               <div className="flex flex-col items-center justify-center p-3 bg-background/50 border border-border/20 rounded-xl text-center">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Start Time</span>
-                <span className="font-mono text-[10px] text-foreground font-semibold leading-none mt-1">
-                  {new Date(selectedInterval.startTime).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                </span>
-                <span className="font-mono text-[9px] text-muted-foreground mt-0.5">
-                  {new Date(selectedInterval.startTime).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                <span className="font-mono text-foreground font-semibold leading-none mt-1">
+                  {new Date(selectedInterval.startTime).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} -  {new Date(selectedInterval.startTime).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
 
