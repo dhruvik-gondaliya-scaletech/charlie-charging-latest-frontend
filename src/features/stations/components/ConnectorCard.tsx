@@ -1,10 +1,11 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Zap, Play, Square, Loader2, Unlock } from 'lucide-react';
+import { Zap, Play, Square, Loader2, Unlock, Activity } from 'lucide-react';
 import { ChargingStatus, Connector } from '@/types';
 import { cn } from '@/lib/utils';
 
@@ -17,6 +18,7 @@ interface ConnectorCardProps {
     isStopping?: boolean;
     isUnlocking?: boolean;
     disabled?: boolean;
+    stationName?: string;
 }
 
 export function ConnectorCard({
@@ -27,8 +29,10 @@ export function ConnectorCard({
     isStarting,
     isStopping,
     isUnlocking,
-    disabled
+    disabled,
+    stationName
 }: ConnectorCardProps) {
+    const router = useRouter();
     const isAvailable = connector.status === ChargingStatus.AVAILABLE;
     const isCharging = connector.status === ChargingStatus.CHARGING;
     const isStartActionAllowed =
@@ -113,19 +117,33 @@ export function ConnectorCard({
                         </Button>
                     )}
 
-                    <Button
-                        variant="outline"
-                        onClick={() => onUnlock(connector.connectorId)}
-                        disabled={disabled || isUnlocking}
-                        className="w-full border-border/40 hover:bg-muted/40 font-bold rounded-xl h-11 transition-all active:scale-95 flex items-center justify-center gap-2"
-                    >
-                        {isUnlocking ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                            <Unlock className="h-4 w-4" />
-                        )}
-                        Unlock Cable
-                    </Button>
+                    <div className="grid grid-cols-2 gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => onUnlock(connector.connectorId)}
+                            disabled={disabled || isUnlocking}
+                            className="w-full border-border/40 hover:bg-muted/40 font-bold rounded-xl h-11 transition-all active:scale-95 flex items-center justify-center gap-1.5 text-xs px-2"
+                        >
+                            {isUnlocking ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                                <Unlock className="h-3.5 w-3.5" />
+                            )}
+                            Unlock Cable
+                        </Button>
+
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                const nameParam = stationName ? `&name=${encodeURIComponent(stationName)}` : '';
+                                router.push(`/stations/${connector.stationId}/uptime?connectorId=${connector.id}${nameParam}`);
+                            }}
+                            className="w-full border-border/40 hover:bg-muted/40 font-bold rounded-xl h-11 transition-all active:scale-95 flex items-center justify-center gap-1.5 text-xs px-2"
+                        >
+                            <Activity className="h-3.5 w-3.5 text-primary" />
+                            Uptime
+                        </Button>
+                    </div>
                 </div>
             </CardContent>
             <div className={cn(

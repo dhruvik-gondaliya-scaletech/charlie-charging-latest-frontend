@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { Station } from '@/types';
+import { useStation } from '@/hooks/get/useStations';
 import { useConnectorUptime, useDowntimeIntervals, useComplianceReport } from '@/hooks/get/useCompliance';
 import { useOverrideDowntime } from '@/hooks/post/useComplianceMutations';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
@@ -23,6 +23,10 @@ import { Table } from '@/components/shared/Table';
 import { ColumnDef } from '@tanstack/react-table';
 import { DatePicker } from '@/components/shared/DatePicker';
 import { StatCard } from '@/features/dashboard/components/StatCard';
+import { BackButton } from '@/components/shared/BackButton';
+import { Skeleton } from '@/components/ui/skeleton';
+import { motion } from 'framer-motion';
+import { fadeInUp, staggerContainer } from '@/lib/motion';
 import {
   ShieldAlert,
   ShieldCheck,
@@ -62,16 +66,21 @@ interface ReportItem {
   uptimePercentage: number | null;
 }
 
-interface StationUptimeTabProps {
-  station: Station;
+interface ConnectorUptimeContainerProps {
+  stationId: string;
+  connectorId: string;
 }
 
-export function StationUptimeTab({ station }: StationUptimeTabProps) {
-  // 1. Connector Selection (Default to first connector or empty)
-  const defaultConnectorId = station.connectors?.[0]?.id || '';
-  const [selectedConnectorId, setSelectedConnectorId] = useState<string>(defaultConnectorId);
+export function ConnectorUptimeContainer({ stationId, connectorId }: ConnectorUptimeContainerProps) {
+  // Fetch Station Details
+  const { data: station, isLoading: isStationLoading } = useStation(stationId);
 
-  // 2. Date Range Selection (Default to last 30 days)
+  // Find targeted connector port info
+  const connector = useMemo(() => {
+    return station?.connectors?.find((c) => c.id === connectorId);
+  }, [station, connectorId]);
+
+  // Date Range Selection (Default to last 30 days)
   const formatDateString = (d: Date) => {
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -111,12 +120,12 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
     }
   }, []);
 
-  // 3. Report View Toggle ('logs' | 'daily' | 'monthly' | 'quarterly')
+  // Report View Toggle ('logs' | 'daily' | 'monthly' | 'quarterly')
   const [activeReportTab, setActiveReportTab] = useState<'logs' | 'daily' | 'monthly' | 'quarterly'>(
     'logs',
   );
 
-  // 4. Override Dialog Modal State
+  // Override Dialog Modal State
   const [overrideModalOpen, setOverrideModalOpen] = useState(false);
   const [selectedInterval, setSelectedInterval] = useState<ConnectorDowntimeInterval | null>(null);
   const [newClassification, setNewClassification] = useState<DowntimeClassification>(DowntimeClassification.EXCLUDED);
@@ -125,25 +134,25 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
   const [evidence, setEvidence] = useState('');
   const [overrideNotes, setOverrideNotes] = useState('');
 
-  // 5. Data Fetching Hooks
+  // Data Fetching Hooks
   const { data: uptimeData, isLoading: isUptimeLoading } = useConnectorUptime(
-    selectedConnectorId,
+    connectorId,
     startDate,
     endDate,
   );
 
   const { data: downtimeIntervals, isLoading: isIntervalsLoading } = useDowntimeIntervals(
-    selectedConnectorId || undefined,
+    connectorId || undefined,
   );
 
   const { data: complianceReport, isLoading: isReportLoading } = useComplianceReport(
     activeReportTab === 'logs' ? 'daily' : activeReportTab,
     startDate,
     endDate,
-    { connectorId: selectedConnectorId },
+    { connectorId },
   );
 
-  // 6. Mutations Hook
+  // Mutations Hook
   const overrideMutation = useOverrideDowntime();
 
   // Helper: Format duration in seconds to human readable form
@@ -180,7 +189,6 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
       .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
       .join(' ');
   };
-
 
   // Handle opening override modal
   const handleOpenOverride = useCallback((interval: ConnectorDowntimeInterval) => {
@@ -452,49 +460,84 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
     }
   ], []);
 
+  // Show Skeleton/Loading State
+  if (isStationLoading) {
+    return (
+      <div className="space-y-8 p-4 md:p-8 max-w-[1600px] mx-auto">
+        <div className="space-y-4">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-10 w-96" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+        <div className="h-12 w-full max-w-lg bg-muted/20 rounded-xl" />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {Array(4).fill(0).map((_, i) => (
+            <Skeleton key={i} className="h-32 rounded-3xl" />
+          ))}
+        </div>
+        <Skeleton className="h-[400px] w-full rounded-3xl" />
+      </div>
+    );
+  }
+
+  if (!station || !connector) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[600px] p-8 space-y-4 text-center">
+        <div className="p-4 rounded-full bg-destructive/10 text-destructive inline-block">
+          <ShieldAlert className="h-10 w-10" />
+        </div>
+        <h2 className="text-2xl font-bold">Connector Port Not Found</h2>
+        <p className="text-muted-foreground max-w-md">
+          The requested connector port does not exist or you don&apos;t have access permission.
+        </p>
+        <BackButton href={`/stations/${stationId}`} label="Return to Station" />
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
-      {/* 1. Header controls */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 bg-card border border-border/40 rounded-2xl">
+    <motion.div
+      variants={staggerContainer}
+      initial="initial"
+      animate="animate"
+      className="space-y-6 sm:space-y-8 p-4 sm:p-6 md:p-8 max-w-[1600px] mx-auto"
+    >
+      {/* Header with Back Button */}
+      <motion.div variants={fadeInUp} className="space-y-1">
+        <BackButton href={`/stations/${stationId}`} label={`Return to ${station.name}`} />
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black tracking-tight text-foreground truncate">
+            Connector Uptime Compliance
+          </h1>
+          <Badge variant="outline" className="w-fit bg-primary/5 text-primary border-primary/25 font-black uppercase tracking-widest text-[10px] px-3.5 py-1 rounded-full shadow-sm">
+            Port #{connector.connectorId} ({connector.type})
+          </Badge>
+        </div>
+        <p className="text-xs md:text-sm text-muted-foreground font-medium">
+          Analyze port compliance status, downtime intervals, and NEVI/AB2061 specifications for Station: <span className="font-bold text-foreground">{station.name}</span>.
+        </p>
+      </motion.div>
+
+      {/* Date Picker (Top-level filter) */}
+      <motion.div variants={fadeInUp} className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 bg-card border border-border/40 rounded-2xl shadow-sm">
         <div className="space-y-1">
-          <h3 className="text-lg font-black tracking-tight">Compliance & Uptime Reporting</h3>
+          <h3 className="text-base font-black tracking-tight">Compliance Duration Scope</h3>
           <p className="text-xs text-muted-foreground font-medium">
-            Analyze port uptime compliance matching NEVI & California AB-2061 specifications.
+            Select a custom date range to recalculate uptime averages and intervals.
           </p>
         </div>
-
-        <div className="flex flex-col sm:flex-row items-center gap-3">
-          {/* Connector Select */}
-          <div className="space-y-1.5 w-full sm:w-48">
-            <Label htmlFor="connector-select" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Connector Port</Label>
-            <Select value={selectedConnectorId} onValueChange={setSelectedConnectorId}>
-              <SelectTrigger id="connector-select" className="rounded-xl h-10 w-full bg-background/50 border-border/60">
-                <SelectValue placeholder="Select Connector" />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl border-border bg-card">
-                {station.connectors?.map((conn) => (
-                  <SelectItem key={conn.id} value={conn.id} className="rounded-lg">
-                    Port {conn.connectorId} ({conn.type})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Date Picker */}
-          <div className="space-y-1.5 w-full sm:w-auto">
-            <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Date Range</Label>
-            <DatePicker
-              dateRange={dateRange}
-              onDateRangeChange={handleDateRangeChange}
-              className="w-full sm:w-72"
-            />
-          </div>
+        <div className="space-y-1.5 w-full sm:w-auto">
+          <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Date Range</Label>
+          <DatePicker
+            dateRange={dateRange}
+            onDateRangeChange={handleDateRangeChange}
+            className="w-full sm:w-72"
+          />
         </div>
-      </div>
+      </motion.div>
 
-      {/* 2. Stats Summary Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {/* Stats Cards Section */}
+      <motion.div variants={fadeInUp} className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <StatCard
           title="Uptime Percentage"
           value={
@@ -519,7 +562,6 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
           loading={isUptimeLoading}
         />
 
-        {/* Metric 2: Total Checked Time */}
         <StatCard
           title="Total Checked Time"
           value={uptimeData ? formatDuration(uptimeData.totalTimeSeconds) : '0s'}
@@ -530,7 +572,6 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
           loading={isUptimeLoading}
         />
 
-        {/* Metric 3: Outage Time */}
         <StatCard
           title="Outage Time"
           value={uptimeData ? formatDuration(uptimeData.outageTimeSeconds) : '0s'}
@@ -541,7 +582,6 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
           loading={isUptimeLoading}
         />
 
-        {/* Metric 4: Excluded Time */}
         <StatCard
           title="Excluded Time"
           value={uptimeData ? formatDuration(uptimeData.excludedTimeSeconds) : '0s'}
@@ -551,10 +591,10 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
           description="Excused delays excluded from uptime formula"
           loading={isUptimeLoading}
         />
-      </div>
+      </motion.div>
 
-      {/* 3. Toggleable Report/Logs View */}
-      <div className="space-y-4">
+      {/* Tabs and Data Tables */}
+      <motion.div variants={fadeInUp} className="space-y-4">
         <div className="flex border-b border-border/40 pb-px overflow-x-auto no-scrollbar gap-2">
           {[
             { id: 'logs', label: 'Downtime Intervals Log', icon: Info },
@@ -578,9 +618,9 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
           ))}
         </div>
 
-        {/* TAB 1: Downtime Intervals Log */}
+        {/* Tab Content: Downtime Log */}
         {activeReportTab === 'logs' && (
-          <Card className="border-border/40 bg-card rounded-2xl">
+          <Card className="border-border/40 bg-card rounded-2xl shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <div>
                 <CardTitle className="text-base font-black">Connector Outages & Exclusions</CardTitle>
@@ -612,9 +652,9 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
           </Card>
         )}
 
-        {/* TAB 2, 3, 4: Compliance Reports (Daily, Monthly, Quarterly) */}
+        {/* Tab Content: Periodic Compliance Reports */}
         {activeReportTab !== 'logs' && (
-          <Card className="border-border/40 bg-card rounded-2xl">
+          <Card className="border-border/40 bg-card rounded-2xl shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <div>
                 <CardTitle className="text-base font-black capitalize">{activeReportTab} Compliance Summaries</CardTitle>
@@ -645,9 +685,9 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
             </CardContent>
           </Card>
         )}
-      </div>
+      </motion.div>
 
-      {/* 4. Reclassify / Override Dialog Modal */}
+      {/* Override Reclassification Dialog Modal */}
       {selectedInterval && (
         <AnimatedModal
           isOpen={overrideModalOpen}
@@ -657,7 +697,7 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
           size="2xl"
         >
           <form onSubmit={handleSubmitOverride} className="space-y-4">
-            {/* Info Block - 3 column grid */}
+            {/* Info Block */}
             <div className="grid grid-cols-3 gap-3 p-4 bg-muted/30 border border-border/40 rounded-2xl">
               <div className="flex flex-col items-center justify-center p-3 bg-background/50 border border-border/20 rounded-xl text-center">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Current Type</span>
@@ -688,7 +728,7 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
               </div>
             </div>
 
-            {/* Target Classification Selection Cards */}
+            {/* Target Classification Cards */}
             <div className="space-y-2">
               <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Target Classification</Label>
               <div className="grid grid-cols-2 gap-4">
@@ -862,6 +902,6 @@ export function StationUptimeTab({ station }: StationUptimeTabProps) {
           </form>
         </AnimatedModal>
       )}
-    </div>
+    </motion.div>
   );
 }

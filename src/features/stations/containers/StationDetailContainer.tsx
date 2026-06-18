@@ -47,7 +47,6 @@ import { StationSessions } from '../components/StationSessions';
 import { StationLogs } from '../components/StationLogs';
 import { ConnectorCard } from '../components/ConnectorCard';
 import { StationSmartCharging } from '../components/StationSmartCharging';
-import { StationUptimeTab } from '../components/StationUptimeTab';
 import { useRemoteStart, useRemoteStop, useResetStation, useChangeAvailability, useUnlockConnector } from '@/hooks/delete/useStationMutations';
 import { useAuth } from '@/contexts/AuthContext';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
@@ -561,7 +560,6 @@ export function StationDetailContainer() {
                         <TabsTrigger value="config" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Config</TabsTrigger>
                         <TabsTrigger value="smart-charging" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Smart Charging</TabsTrigger>
                         <TabsTrigger value="logs" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Live Logs</TabsTrigger>
-                        <TabsTrigger value="uptime" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Compliance Uptime</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="connectors">
@@ -591,6 +589,7 @@ export function StationDetailContainer() {
                                         isStopping={remoteStop.isPending || busyConnectors.has(connector.connectorId)}
                                         isUnlocking={unlockConnector.isPending || busyConnectors.has(connector.connectorId)}
                                         disabled={station.status === ChargingStatus.OFFLINE}
+                                        stationName={station.name}
                                     />
                                 ))}
 
@@ -725,10 +724,6 @@ export function StationDetailContainer() {
                                 />
                             </CardContent>
                         </Card>
-                    </TabsContent>
-
-                    <TabsContent value="uptime">
-                        <StationUptimeTab station={station} />
                     </TabsContent>
                 </Tabs>
             </motion.div>
