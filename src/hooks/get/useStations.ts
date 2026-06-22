@@ -63,6 +63,7 @@ export const useInfiniteOcppLogs = (stationId: string, params?: GetOcppLogsParam
     },
     initialPageParam: 0,
     staleTime: 5000,
+    placeholderData: keepPreviousData,
   });
 };
 
