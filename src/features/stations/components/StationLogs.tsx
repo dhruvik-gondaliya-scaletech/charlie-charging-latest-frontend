@@ -157,16 +157,23 @@ export function StationLogs({ stationId, sessionId, onClearSessionId }: StationL
         };
 
         const isRequestLog = (log: OcppLog) => {
-            // First, if message is standard raw OCPP array:
             if (Array.isArray(log.message)) {
                 return log.message[0] === 2;
             }
-            // Fallback to action and direction mapping
             const isCSMS = isCSMSInitiated(log.messageType);
             if (isCSMS) {
                 return log.direction === 'OUTGOING';
             } else {
                 return log.direction === 'INCOMING';
+            }
+        };
+
+        const getInitiatorForLog = (log: OcppLog) => {
+            const isReq = isRequestLog(log);
+            if (isReq) {
+                return log.direction === 'INCOMING' ? 'ChargePoint' : 'CentralSystem';
+            } else {
+                return log.direction === 'INCOMING' ? 'CentralSystem' : 'ChargePoint';
             }
         };
 
@@ -202,17 +209,28 @@ export function StationLogs({ stationId, sessionId, onClearSessionId }: StationL
             let responseLog: OcppLog | undefined;
 
             if (groupLogs.length === 2) {
-                // If both are present, sort by createdAt ASC to determine request vs response
-                const sorted = [...groupLogs].sort((a, b) => {
-                    const timeA = new Date(a.createdAt).getTime();
-                    const timeB = new Date(b.createdAt).getTime();
-                    if (timeA !== timeB) return timeA - timeB;
-                    return a.id.localeCompare(b.id);
-                });
-                requestLog = sorted[0];
-                responseLog = sorted[1];
+                const logA = groupLogs[0];
+                const logB = groupLogs[1];
+                const isReqA = isRequestLog(logA);
+                const isReqB = isRequestLog(logB);
+
+                if (isReqA && !isReqB) {
+                    requestLog = logA;
+                    responseLog = logB;
+                } else if (!isReqA && isReqB) {
+                    requestLog = logB;
+                    responseLog = logA;
+                } else {
+                    const sorted = [...groupLogs].sort((a, b) => {
+                        const timeA = new Date(a.createdAt).getTime();
+                        const timeB = new Date(b.createdAt).getTime();
+                        if (timeA !== timeB) return timeA - timeB;
+                        return a.id.localeCompare(b.id);
+                    });
+                    requestLog = sorted[0];
+                    responseLog = sorted[1];
+                }
             } else {
-                // If only one is present, use helper
                 const singleLog = groupLogs[0];
                 if (isRequestLog(singleLog)) {
                     requestLog = singleLog;
@@ -231,13 +249,7 @@ export function StationLogs({ stationId, sessionId, onClearSessionId }: StationL
                 duration = `${Math.abs(resTime - reqTime)}ms`;
             }
 
-            // Determine initiator: who sent the request?
-            let initiator = 'ChargePoint';
-            if (requestLog) {
-                initiator = requestLog.direction === 'INCOMING' ? 'ChargePoint' : 'CentralSystem';
-            } else if (responseLog) {
-                initiator = responseLog.direction === 'INCOMING' ? 'CentralSystem' : 'ChargePoint';
-            }
+            const initiator = getInitiatorForLog(primaryLog);
 
             rows.push({
                 id: messageId,
@@ -252,18 +264,78 @@ export function StationLogs({ stationId, sessionId, onClearSessionId }: StationL
             });
         });
 
-        noIdLogs.forEach((log) => {
-            rows.push({
+        // Fallback pairing for noIdLogs (using action and timestamp proximity)
+        const pairedNoIdRows: typeof rows = [];
+        const usedNoIdIndices = new Set<number>();
+        const sortedNoIdLogs = [...noIdLogs].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+        for (let i = 0; i < sortedNoIdLogs.length; i++) {
+            if (usedNoIdIndices.has(i)) continue;
+
+            const currentLog = sortedNoIdLogs[i];
+            const isReq = isRequestLog(currentLog);
+
+            if (isReq) {
+                let matchedIndex = -1;
+                const currentLogTime = new Date(currentLog.createdAt).getTime();
+
+                for (let j = i + 1; j < sortedNoIdLogs.length; j++) {
+                    if (usedNoIdIndices.has(j)) continue;
+
+                    const candidateLog = sortedNoIdLogs[j];
+                    if (!isRequestLog(candidateLog) && candidateLog.messageType === currentLog.messageType) {
+                        const candidateTime = new Date(candidateLog.createdAt).getTime();
+                        if (Math.abs(candidateTime - currentLogTime) <= 10000) { // 10 seconds window
+                            matchedIndex = j;
+                            break;
+                        }
+                    }
+                }
+
+                if (matchedIndex !== -1) {
+                    const responseLog = sortedNoIdLogs[matchedIndex];
+                    usedNoIdIndices.add(i);
+                    usedNoIdIndices.add(matchedIndex);
+
+                    const reqTime = new Date(currentLog.createdAt).getTime();
+                    const resTime = new Date(responseLog.createdAt).getTime();
+                    const duration = `${Math.abs(resTime - reqTime)}ms`;
+
+                    pairedNoIdRows.push({
+                        id: `paired-noid-${currentLog.id}`,
+                        timestamp: currentLog.createdAt,
+                        initiator: getInitiatorForLog(currentLog),
+                        action: currentLog.messageType,
+                        duration,
+                        request: currentLog.message,
+                        response: responseLog.message,
+                        rawRequestLog: currentLog,
+                        rawResponseLog: responseLog,
+                    });
+                }
+            }
+        }
+
+        // For any remaining unpaired noIdLogs
+        sortedNoIdLogs.forEach((log, index) => {
+            if (usedNoIdIndices.has(index)) return;
+
+            const isReq = isRequestLog(log);
+
+            pairedNoIdRows.push({
                 id: log.id,
                 timestamp: log.createdAt,
-                initiator: log.direction === 'INCOMING' ? 'ChargePoint' : 'CentralSystem',
+                initiator: getInitiatorForLog(log),
                 action: log.messageType,
                 duration: '0ms',
-                request: log.message,
-                response: null,
-                rawRequestLog: log,
+                request: isReq ? log.message : null,
+                response: isReq ? null : log.message,
+                rawRequestLog: isReq ? log : undefined,
+                rawResponseLog: isReq ? undefined : log,
             });
         });
+
+        rows.push(...pairedNoIdRows);
 
         return rows.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
     }, [logs]);
