@@ -56,6 +56,7 @@ export const API_CONFIG = {
             byId: (env: string, id: string) => `/locations/${id}?env=${env}`,
             update: (env: string, id: string) => `/locations/${id}?env=${env}`,
             delete: (id: string) => `/locations/${id}`,
+            transferEnv: (id: string) => `/locations/${id}/transfer-env`,
         },
         webhooks: {
             create: (env: string) => `/webhooks?env=${env}`,
