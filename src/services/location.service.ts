@@ -43,6 +43,10 @@ class LocationService {
   async applyTariffToLocation(id: string, tariffId: string) {
     return httpService.post(`/locations/${id}/apply-tariff`, { tariffId });
   }
+
+  async transferLocationEnv(id: string, targetEnv: LocationEnv) {
+    return httpService.post(API_CONFIG.endpoints.locations.transferEnv(id), { targetEnv });
+  }
 }
 
 export const locationService = new LocationService();
