@@ -62,21 +62,67 @@ export function DriverSessionsContainer() {
         ),
       },
       {
+        accessorKey: 'remoteStartTime',
+        header: 'Remote Start',
+        cell: ({ row }) => {
+          const val = row.original.remoteStartTime;
+          if (!val) return <span className="text-muted-foreground text-xs font-bold">-</span>;
+          return (
+            <div className="flex items-center gap-3 opacity-80">
+              <Clock className="h-3.5 w-3.5 text-indigo-500" />
+              <div className="flex flex-col">
+                <span className="text-[11px] font-black uppercase text-foreground tracking-tight">
+                  {formatDate(val, 'MMM dd, yyyy')}
+                </span>
+                <span className="text-[10px] font-bold text-muted-foreground opacity-60">
+                  {formatTime(val)}
+                </span>
+              </div>
+            </div>
+          );
+        },
+      },
+      {
         accessorKey: 'startTime',
         header: 'Time Horizon',
-        cell: ({ row }) => (
-          <div className="flex items-center gap-3">
-            <Calendar className="h-3.5 w-3.5" />
-            <div className="flex flex-col">
-              <span className="text-[11px] font-black uppercase text-foreground tracking-tight">
-                {formatDate(row.original.startTime, 'MMM dd, yyyy')}
-              </span>
-              <span className="text-[10px] font-bold text-muted-foreground opacity-60">
-                {formatTime(row.original.startTime)}
-              </span>
+        cell: ({ row }) => {
+          const val = row.original.startTime;
+          if (!val) return <span className="text-muted-foreground text-xs font-bold">-</span>;
+          return (
+            <div className="flex items-center gap-3">
+              <Calendar className="h-3.5 w-3.5" />
+              <div className="flex flex-col">
+                <span className="text-[11px] font-black uppercase text-foreground tracking-tight">
+                  {formatDate(val, 'MMM dd, yyyy')}
+                </span>
+                <span className="text-[10px] font-bold text-muted-foreground opacity-60">
+                  {formatTime(val)}
+                </span>
+              </div>
             </div>
-          </div>
-        ),
+          );
+        },
+      },
+      {
+        accessorKey: 'remoteStopTime',
+        header: 'Remote Stop',
+        cell: ({ row }) => {
+          const val = row.original.remoteStopTime;
+          if (!val) return <span className="text-muted-foreground text-xs font-bold">-</span>;
+          return (
+            <div className="flex items-center gap-3 opacity-80">
+              <Clock className="h-3.5 w-3.5 text-pink-500" />
+              <div className="flex flex-col">
+                <span className="text-[11px] font-black uppercase text-foreground tracking-tight">
+                  {formatDate(val, 'MMM dd, yyyy')}
+                </span>
+                <span className="text-[10px] font-bold text-muted-foreground opacity-60">
+                  {formatTime(val)}
+                </span>
+              </div>
+            </div>
+          );
+        },
       },
       {
         accessorKey: 'energyDeliveredKwh',
@@ -293,15 +339,43 @@ export function DriverSessionsContainer() {
               </div>
 
               <div className="grid grid-cols-2 gap-y-5 gap-x-4 pt-2 border-t border-border/10">
-                <div className="space-y-1">
+                {session.remoteStartTime && (
+                  <div className="space-y-1 col-span-2 sm:col-span-1">
+                    <span className="text-[9px] font-black uppercase text-indigo-500 tracking-widest flex items-center gap-1.5">
+                      <Clock className="h-3 w-3" /> Remote Start
+                    </span>
+                    <div className="flex flex-col">
+                      <span className="text-[11px] font-bold text-foreground">{formatDate(session.remoteStartTime, 'MMM dd, yyyy')}</span>
+                      <span className="text-[10px] font-medium text-muted-foreground/60">{formatTime(session.remoteStartTime)}</span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-1 col-span-2 sm:col-span-1">
                   <span className="text-[9px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-1.5">
                     <Calendar className="h-3 w-3" /> Time Horizon
                   </span>
-                  <div className="flex flex-col">
-                    <span className="text-[11px] font-bold text-foreground">{formatDate(session.startTime, 'MMM dd, yyyy')}</span>
-                    <span className="text-[10px] font-medium text-muted-foreground/60">{formatTime(session.startTime)}</span>
-                  </div>
+                  {session.startTime ? (
+                    <div className="flex flex-col">
+                      <span className="text-[11px] font-bold text-foreground">{formatDate(session.startTime, 'MMM dd, yyyy')}</span>
+                      <span className="text-[10px] font-medium text-muted-foreground/60">{formatTime(session.startTime)}</span>
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground text-xs font-bold">-</span>
+                  )}
                 </div>
+
+                {session.remoteStopTime && (
+                  <div className="space-y-1 col-span-2 sm:col-span-1">
+                    <span className="text-[9px] font-black uppercase text-pink-500 tracking-widest flex items-center gap-1.5">
+                      <Clock className="h-3 w-3" /> Remote Stop
+                    </span>
+                    <div className="flex flex-col">
+                      <span className="text-[11px] font-bold text-foreground">{formatDate(session.remoteStopTime, 'MMM dd, yyyy')}</span>
+                      <span className="text-[10px] font-medium text-muted-foreground/60">{formatTime(session.remoteStopTime)}</span>
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-1">
                   <span className="text-[9px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-1.5">
