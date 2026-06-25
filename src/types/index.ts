@@ -193,7 +193,9 @@ export interface DriverSession {
   connectorId: number;
   connectorType: string | null;
   pluggedAt: string | null;
-  startTime: string;
+  startTime?: string | null;
+  remoteStartTime?: string | null;
+  remoteStopTime?: string | null;
   endTime: string | null;
   unpluggedAt: string | null;
   durationMinutes: number;
@@ -361,7 +363,9 @@ export interface Session {
   transactionId: string | number;
   status: string;
   pluggedAt?: string;
-  startTime: string;
+  startTime?: string | null;
+  remoteStartTime?: string | null;
+  remoteStopTime?: string | null;
   endTime?: string;
   unpluggedAt?: string;
   meterStart?: number;
