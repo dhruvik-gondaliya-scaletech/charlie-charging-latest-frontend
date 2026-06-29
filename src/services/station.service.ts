@@ -128,7 +128,7 @@ class StationService {
   }
 
   async exportOcppLogs(filters?: GetOcppLogsParams) {
-    return httpService.get<Blob>(API_CONFIG.endpoints.stations.exportOcppLogs, {
+    return httpService.get<Blob>(API_CONFIG.endpoints.stations.exportOcppLogs(), {
       params: filters,
       responseType: 'blob',
     });

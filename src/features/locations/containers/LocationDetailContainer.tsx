@@ -35,10 +35,10 @@ export function LocationDetailContainer() {
     const [isTariffModalOpen, setIsTariffModalOpen] = useState(false);
 
     React.useEffect(() => {
-        if (tabParam) {
+        if (tabParam && tabParam !== activeTab) {
             setActiveTab(tabParam);
         }
-    }, [tabParam]);
+    }, [tabParam, activeTab]);
 
     const { data: location, isLoading: isLocationLoading, error: locationError } = useLocation(id as string);
     const { data: stations, isLoading: isStationsLoading } = useStations({ locationId: id as string });
