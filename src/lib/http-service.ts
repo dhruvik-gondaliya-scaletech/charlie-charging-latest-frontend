@@ -18,22 +18,22 @@ class HttpService {
       (config) => {
         if (typeof window !== 'undefined') {
           const url = config.url || '';
-          const isPublicAuthRoute = 
-            url.includes('/auth/login') || 
-            url.includes('/auth/register') || 
-            url.includes('/auth/forgot-password') || 
-            url.includes('/auth/reset-password') || 
+          const isPublicAuthRoute =
+            url.includes('/auth/login') ||
+            url.includes('/auth/register') ||
+            url.includes('/auth/forgot-password') ||
+            url.includes('/auth/reset-password') ||
             url.includes('/auth/verify-email');
 
           if (!isPublicAuthRoute) {
             const token = localStorage.getItem(AUTH_CONFIG.tokenKey);
-            
+
             if (token) {
               if (this.isTokenExpired(token)) {
                 this.handleExpiredToken();
                 return config;
               }
-              
+
               config.headers.Authorization = `Bearer ${token}`;
             }
           }
@@ -83,12 +83,12 @@ class HttpService {
       localStorage.removeItem(AUTH_CONFIG.tokenKey);
       localStorage.removeItem(AUTH_CONFIG.userKey);
       localStorage.removeItem(AUTH_CONFIG.tenantKey);
-      
+
       // Clear cookies
       document.cookie = `${AUTH_CONFIG.tokenKey}=; path=/; max-age=0`;
       document.cookie = `${AUTH_CONFIG.userKey}=; path=/; max-age=0`;
       document.cookie = `${AUTH_CONFIG.tenantKey}=; path=/; max-age=0`;
-      
+
       if (window.location.pathname !== '/login') {
         window.location.href = '/login?expired=true';
       }
@@ -101,12 +101,12 @@ class HttpService {
       localStorage.removeItem(AUTH_CONFIG.tokenKey);
       localStorage.removeItem(AUTH_CONFIG.userKey);
       localStorage.removeItem(AUTH_CONFIG.tenantKey);
-      
+
       // Clear cookies
       document.cookie = `${AUTH_CONFIG.tokenKey}=; path=/; max-age=0`;
       document.cookie = `${AUTH_CONFIG.userKey}=; path=/; max-age=0`;
       document.cookie = `${AUTH_CONFIG.tenantKey}=; path=/; max-age=0`;
-      
+
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';
       }

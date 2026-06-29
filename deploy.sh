@@ -15,7 +15,7 @@ docker rm $CONTAINER_NAME || true
 
 # Step 2: Pull latest code
 echo "📥 Pulling latest code..."
-git pull origin main
+git pull
 
 # Step 3: Load env + Build new Docker image
 echo "🏗️ Building Docker image with env..."

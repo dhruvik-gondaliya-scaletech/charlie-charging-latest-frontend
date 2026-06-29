@@ -22,9 +22,11 @@ import {
     Search,
     FileText,
     Maximize2,
-    Clock
+    Clock,
+    Download
 } from 'lucide-react';
 import { OcppLog } from '@/types';
+import { ExportLogsModal } from './ExportLogsModal';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
     Select,
@@ -83,6 +85,7 @@ const OCPP_MESSAGE_TYPES = [
 ];
 
 export function StationLogs({ stationId, sessionId, onClearSessionId }: StationLogsProps) {
+    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const [directionFilter, setDirectionFilter] = useState<string>('all');
     const [messageTypeFilter, setMessageTypeFilter] = useState<string[]>([]);
     const [searchQuery, setSearchQuery] = useState<string>('');
@@ -499,6 +502,16 @@ export function StationLogs({ stationId, sessionId, onClearSessionId }: StationL
                             </Button>
                         )}
 
+                        {/* Export Logs Button */}
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsExportModalOpen(true)}
+                            className="h-10 flex items-center gap-2 font-bold bg-background hover:bg-muted border-border/40 transition-all active:scale-95 rounded-xl shadow-sm px-4 flex-1 lg:flex-none justify-center"
+                        >
+                            <Download className="h-4 w-4 text-primary" />
+                            <span className="text-xs">Export Logs</span>
+                        </Button>
+
                         {/* Refresh Logs Button */}
                         <Button
                             variant="outline"
@@ -712,6 +725,13 @@ export function StationLogs({ stationId, sessionId, onClearSessionId }: StationL
                     </div>
                 </DialogContent>
             </Dialog>
+
+            <ExportLogsModal
+                isOpen={isExportModalOpen}
+                onClose={() => setIsExportModalOpen(false)}
+                stationId={stationId}
+                sessionId={sessionId}
+            />
         </div>
     );
 }

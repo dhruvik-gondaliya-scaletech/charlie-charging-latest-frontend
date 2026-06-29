@@ -69,17 +69,14 @@ export function LocationSessions({ locationId, env }: LocationSessionsProps) {
         () => [
             {
                 accessorKey: 'stationName',
-                header: 'Station',
+                header: 'Station Name',
                 cell: ({ row }) => (
                     <div
-                        className="flex flex-col cursor-pointer hover:text-primary transition-colors group"
+                        className="cursor-pointer hover:text-primary transition-colors group"
                         onClick={() => router.push(`${FRONTEND_ROUTES.STATIONS_DETAILS(row.original.stationId)}?name=${encodeURIComponent(row.original.stationName || '')}`)}
                     >
                         <span className="font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
                             {row.original.stationName || 'Unknown Station'}
-                        </span>
-                        <span className="text-[10px] font-mono text-muted-foreground group-hover:text-primary/70 transition-colors uppercase">
-                            ID: {row.original.stationId.substring(0, 8)}...
                         </span>
                     </div>
                 ),
