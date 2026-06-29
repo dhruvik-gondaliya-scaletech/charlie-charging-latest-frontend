@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { useLocation } from '@/hooks/get/useLocations';
 import { useStations } from '@/hooks/get/useStations';
 import { Badge } from '@/components/ui/badge';
@@ -29,8 +29,16 @@ import { LocationEnv } from '@/types';
 
 export function LocationDetailContainer() {
     const { id } = useParams();
+    const searchParams = useSearchParams();
+    const tabParam = searchParams ? searchParams.get('tab') : null;
     const [activeTab, setActiveTab] = useState('overview');
     const [isTariffModalOpen, setIsTariffModalOpen] = useState(false);
+
+    React.useEffect(() => {
+        if (tabParam && tabParam !== activeTab) {
+            setActiveTab(tabParam);
+        }
+    }, [tabParam, activeTab]);
 
     const { data: location, isLoading: isLocationLoading, error: locationError } = useLocation(id as string);
     const { data: stations, isLoading: isStationsLoading } = useStations({ locationId: id as string });
