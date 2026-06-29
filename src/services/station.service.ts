@@ -127,6 +127,13 @@ class StationService {
     return data || { logs: [], total: 0, limit: 100, offset: 0 };
   }
 
+  async exportOcppLogs(filters?: GetOcppLogsParams) {
+    return httpService.get<Blob>(API_CONFIG.endpoints.stations.exportOcppLogs, {
+      params: filters,
+      responseType: 'blob',
+    });
+  }
+
   async getStationSessions(env: string, stationId: string, filters?: SessionFilterParams) {
     return httpService.get<Session[]>(API_CONFIG.endpoints.stations.sessions(env, stationId), {
       params: filters,
