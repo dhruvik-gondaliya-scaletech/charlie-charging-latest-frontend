@@ -15,7 +15,7 @@ docker rm $CONTAINER_NAME || true
 
 # Step 2: Pull latest code
 echo "📥 Pulling latest code..."
-git pull origin main
+git pull
 
 # Step 3: Load env + Build new Docker image
 echo "🏗️ Building Docker image with env..."
@@ -38,6 +38,8 @@ docker build \
   --build-arg NEXT_PUBLIC_FRONTEND_PRIVATE_KEY="$NEXT_PUBLIC_FRONTEND_PRIVATE_KEY" \
   --build-arg NEXT_PUBLIC_STORAGE_SECRET=$NEXT_PUBLIC_STORAGE_SECRET \
   --build-arg NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL \
+  --build-arg NEXT_PUBLIC_CALENDLY_URL=$NEXT_PUBLIC_CALENDLY_URL \
+  --build-arg NEXT_PUBLIC_SLACK_WEBHOOK_URL=$NEXT_PUBLIC_SLACK_WEBHOOK_URL \
   -t $APP_NAME .
 
 # Step 4: Run new container

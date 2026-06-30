@@ -45,6 +45,7 @@ export const API_CONFIG = {
             configuration: (env: string, id: string) => `/stations/${id}/configuration?env=${env}`,
             setConfiguration: (id: string) => `/stations/${id}/configuration`,
             ocppLogs: (id: string) => `/ocpp-logs?stationId=${id}`,
+            exportOcppLogs: () => '/ocpp-logs/export',
             sessions: (env: string, id: string) => `/stations/${id}/sessions?env=${env}`,
             sessionStats: (env: string, id: string) => `/stations/${id}/sessions/stats?env=${env}`,
             chargingProfile: (id: string) => `/stations/${id}/charging-profile`,
@@ -56,6 +57,7 @@ export const API_CONFIG = {
             byId: (env: string, id: string) => `/locations/${id}?env=${env}`,
             update: (env: string, id: string) => `/locations/${id}?env=${env}`,
             delete: (id: string) => `/locations/${id}`,
+            transferEnv: (id: string) => `/locations/${id}/transfer-env`,
         },
         webhooks: {
             create: (env: string) => `/webhooks?env=${env}`,

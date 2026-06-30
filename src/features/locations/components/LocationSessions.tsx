@@ -69,17 +69,14 @@ export function LocationSessions({ locationId, env }: LocationSessionsProps) {
         () => [
             {
                 accessorKey: 'stationName',
-                header: 'Station',
+                header: 'Station Name',
                 cell: ({ row }) => (
                     <div
-                        className="flex flex-col cursor-pointer hover:text-primary transition-colors group"
+                        className="cursor-pointer hover:text-primary transition-colors group"
                         onClick={() => router.push(`${FRONTEND_ROUTES.STATIONS_DETAILS(row.original.stationId)}?name=${encodeURIComponent(row.original.stationName || '')}`)}
                     >
                         <span className="font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
                             {row.original.stationName || 'Unknown Station'}
-                        </span>
-                        <span className="text-[10px] font-mono text-muted-foreground group-hover:text-primary/70 transition-colors uppercase">
-                            ID: {row.original.stationId.substring(0, 8)}...
                         </span>
                     </div>
                 ),
@@ -120,19 +117,61 @@ export function LocationSessions({ locationId, env }: LocationSessionsProps) {
                 ),
             },
             {
+                accessorKey: 'remoteStartTime',
+                header: 'Remote Start',
+                cell: ({ row }) => {
+                    const val = row.original.remoteStartTime;
+                    if (!val) return <span className="text-muted-foreground text-xs font-bold ml-6">-</span>;
+                    return (
+                        <div className="flex items-center gap-2 opacity-80">
+                            <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-500">
+                                <Clock className="h-3.5 w-3.5" />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[11px] font-black uppercase text-foreground">{formatDate(val, 'MMM dd, yyyy')}</span>
+                                <span className="text-[10px] font-bold text-muted-foreground">{formatTime(val)}</span>
+                            </div>
+                        </div>
+                    );
+                },
+            },
+            {
                 accessorKey: 'startTime',
                 header: 'Start Time',
-                cell: ({ row }) => (
-                    <div className="flex items-center gap-2">
-                        <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-500">
-                            <Clock className="h-3.5 w-3.5" />
+                cell: ({ row }) => {
+                    const val = row.original.startTime;
+                    if (!val) return <span className="text-muted-foreground text-xs font-bold ml-6">-</span>;
+                    return (
+                        <div className="flex items-center gap-2">
+                            <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-500">
+                                <Clock className="h-3.5 w-3.5" />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[11px] font-black uppercase text-foreground">{formatDate(val, 'MMM dd, yyyy')}</span>
+                                <span className="text-[10px] font-bold text-muted-foreground">{formatTime(val)}</span>
+                            </div>
                         </div>
-                        <div className="flex flex-col">
-                            <span className="text-[11px] font-black uppercase text-foreground">{formatDate(row.original.startTime, 'MMM dd, yyyy')}</span>
-                            <span className="text-[10px] font-bold text-muted-foreground">{formatTime(row.original.startTime)}</span>
+                    );
+                },
+            },
+            {
+                accessorKey: 'remoteStopTime',
+                header: 'Remote Stop',
+                cell: ({ row }) => {
+                    const val = row.original.remoteStopTime;
+                    if (!val) return <span className="text-muted-foreground text-xs font-bold ml-6">-</span>;
+                    return (
+                        <div className="flex items-center gap-2 opacity-80">
+                            <div className="p-1.5 rounded-lg bg-pink-500/10 text-pink-500">
+                                <Clock className="h-3.5 w-3.5" />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[11px] font-black uppercase text-foreground">{formatDate(val, 'MMM dd, yyyy')}</span>
+                                <span className="text-[10px] font-bold text-muted-foreground">{formatTime(val)}</span>
+                            </div>
                         </div>
-                    </div>
-                ),
+                    );
+                },
             },
             {
                 accessorKey: 'endTime',
@@ -157,9 +196,12 @@ export function LocationSessions({ locationId, env }: LocationSessionsProps) {
                 id: 'duration',
                 header: 'Duration',
                 cell: ({ row }) => {
+                    if (!row.original.startTime) {
+                        return <span className="text-muted-foreground text-xs font-bold ml-6">-</span>;
+                    }
                     const durationText = formatDurationUtil(row.original.startTime, row.original.endTime);
                     const isLessThanMinute = durationText === '0m';
-
+ 
                     return (
                         <div className="flex items-center gap-2 font-bold text-xs text-muted-foreground">
                             <Clock className="h-3.5 w-3.5 opacity-40" />
@@ -368,12 +410,30 @@ export function LocationSessions({ locationId, env }: LocationSessionsProps) {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 py-2 border-y border-border/10">
+                                {session.remoteStartTime && (
+                                    <div className="space-y-1">
+                                        <p className="text-[9px] font-black uppercase text-indigo-500 tracking-widest flex items-center gap-1">
+                                            <Clock className="h-2.5 w-2.5" /> Remote Start
+                                        </p>
+                                        <p className="text-xs font-bold">{formatDate(session.remoteStartTime, 'MMM dd')} at {formatTime(session.remoteStartTime)}</p>
+                                    </div>
+                                )}
                                 <div className="space-y-1">
                                     <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-1">
                                         <Clock className="h-2.5 w-2.5" /> Start Time
                                     </p>
-                                    <p className="text-xs font-bold">{formatDate(session.startTime, 'MMM dd')} at {formatTime(session.startTime)}</p>
+                                    <p className="text-xs font-bold">
+                                        {session.startTime ? `${formatDate(session.startTime, 'MMM dd')} at ${formatTime(session.startTime)}` : '-'}
+                                    </p>
                                 </div>
+                                {session.remoteStopTime && (
+                                    <div className="space-y-1">
+                                        <p className="text-[9px] font-black uppercase text-pink-500 tracking-widest flex items-center gap-1">
+                                            <Clock className="h-2.5 w-2.5" /> Remote Stop
+                                        </p>
+                                        <p className="text-xs font-bold">{formatDate(session.remoteStopTime, 'MMM dd')} at {formatTime(session.remoteStopTime)}</p>
+                                    </div>
+                                )}
                                 <div className="space-y-1">
                                     <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-1">
                                         <Zap className="h-2.5 w-2.5" /> Energy
@@ -392,7 +452,7 @@ export function LocationSessions({ locationId, env }: LocationSessionsProps) {
                                 <div className="flex items-center gap-1.5">
                                     <Clock className="h-3.5 w-3.5 text-muted-foreground/40" />
                                     <span className="text-xs font-bold text-muted-foreground">
-                                        {formatDurationUtil(session.startTime, session.endTime)}
+                                        {session.startTime ? formatDurationUtil(session.startTime, session.endTime) : '-'}
                                     </span>
                                 </div>
                                 <Button

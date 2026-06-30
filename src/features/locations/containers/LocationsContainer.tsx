@@ -5,11 +5,12 @@ import { motion } from 'framer-motion';
 import { ColumnDef } from '@tanstack/react-table';
 import { useLocations } from '@/hooks/get/useLocations';
 import { useDeleteLocation } from '@/hooks/delete/useLocationMutations';
+import { useTransferLocation } from '@/hooks/post/useLocationMutations';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ActionIconButton } from '@/components/shared/ActionIconButton';
-import { Plus, MapPin, Trash2, Pencil, Zap, AlertTriangle } from 'lucide-react';
+import { Plus, MapPin, Trash2, Pencil, Zap, AlertTriangle, ArrowRightLeft } from 'lucide-react';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Table } from '@/components/shared/Table';
 import { Location, LocationEnv } from '@/types';
@@ -26,10 +27,12 @@ import { DEFAULT_PAGE_SIZE, FRONTEND_ROUTES } from '@/constants/constants';
 export function LocationsContainer() {
   const router = useRouter();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
 
   const { data: locations, isLoading, error } = useLocations();
   const deleteLocation = useDeleteLocation();
+  const transferLocation = useTransferLocation();
 
   const handleCreate = () => {
     router.push(FRONTEND_ROUTES.LOCATIONS_NEW);
@@ -173,6 +176,18 @@ export function LocationsContainer() {
         header: 'Actions',
         cell: ({ row }) => (
           <div className="flex justify-start gap-1">
+            {row.original.locationEnv === LocationEnv.DEVELOPMENT && (
+              <ActionIconButton
+                tone="primary"
+                tooltip="Transfer to Production"
+                icon={<ArrowRightLeft className="h-4 w-4" />}
+                onClick={() => {
+                  setSelectedLocation(row.original);
+                  setIsTransferModalOpen(true);
+                }}
+              />
+            )}
+
             <ActionIconButton
               tone="primary"
               tooltip="Edit Location"
@@ -310,6 +325,20 @@ export function LocationsContainer() {
 
                 {/* No Separator needed if using ghost/secondary buttons at bottom */}
                 <div className="flex items-center justify-end gap-2 pt-1 border-t border-border/50">
+                  {location.locationEnv === LocationEnv.DEVELOPMENT && (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="h-8 px-3 rounded-xl font-bold text-xs bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20"
+                      onClick={() => {
+                        setSelectedLocation(location);
+                        setIsTransferModalOpen(true);
+                      }}
+                    >
+                      <ArrowRightLeft className="h-3.5 w-3.5 mr-1.5" />
+                      To Prod
+                    </Button>
+                  )}
                   <Button
                     variant="secondary"
                     size="sm"
@@ -388,6 +417,42 @@ export function LocationsContainer() {
           <div className="flex items-center gap-4 p-4 rounded-2xl bg-destructive/5 border border-destructive/20 text-destructive">
             <AlertTriangle className="h-6 w-6 shrink-0" />
             <p className="text-sm font-medium">You are about to retire <strong>{selectedLocation?.name}</strong>. This action marks the site as inactive.</p>
+          </div>
+        </AnimatedModal>
+
+        {/* Transfer Confirmation Modal */}
+        <AnimatedModal
+          isOpen={isTransferModalOpen}
+          onClose={() => setIsTransferModalOpen(false)}
+          title="Transfer to Production"
+          description="Are you sure you want to transfer this location to Production? This will make the location active in the live environment."
+          size="md"
+          footer={
+            <div className="flex gap-3 justify-end w-full">
+              <Button variant="outline" onClick={() => setIsTransferModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="default"
+                onClick={() => {
+                  if (selectedLocation) {
+                    transferLocation.mutate(
+                      { id: selectedLocation.id, targetEnv: LocationEnv.PRODUCTION },
+                      { onSuccess: () => setIsTransferModalOpen(false) }
+                    );
+                  }
+                }}
+                disabled={transferLocation.isPending}
+                className="font-bold bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                {transferLocation.isPending ? 'Transferring...' : 'Confirm Transfer'}
+              </Button>
+            </div>
+          }
+        >
+          <div className="flex items-center gap-4 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600">
+            <AlertTriangle className="h-6 w-6 shrink-0" />
+            <p className="text-sm font-medium">You are about to transfer <strong>{selectedLocation?.name}</strong> to the Production environment. Ensure that all associated stations are moved to the Production Environment and are ready for live use.</p>
           </div>
         </AnimatedModal>
       </motion.div>

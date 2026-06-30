@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useStation, useStationSessions, useStationSessionStats } from '@/hooks/get/useStations';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -59,6 +59,8 @@ import { useEnvironment } from '@/contexts/EnvironmentContext';
 
 export function StationDetailContainer() {
     const { id } = useParams();
+    const router = useRouter();
+    const searchParams = useSearchParams();
     const queryClient = useQueryClient();
     const { environment } = useEnvironment();
     const { user, tenant } = useAuth();
@@ -68,6 +70,14 @@ export function StationDetailContainer() {
     const { data: sessionStats, isLoading: isStatsLoading } = useStationSessionStats(id as string);
     const [activeTab, setActiveTab] = useState('connectors');
     const [filterSessionId, setFilterSessionId] = useState<string | undefined>(undefined);
+
+    const fromLocationId = searchParams ? searchParams.get('fromLocation') : null;
+    const backHref = fromLocationId
+        ? `${FRONTEND_ROUTES.LOCATIONS_DETAILS(fromLocationId)}?tab=stations`
+        : FRONTEND_ROUTES.STATIONS;
+    const backLabel = fromLocationId
+        ? "Return to Location Stations"
+        : "Return to Stations";
 
     const stationTariff = tariffs?.find((t) => t.id === station?.tariffId);
 
@@ -390,8 +400,8 @@ export function StationDetailContainer() {
             <motion.div variants={fadeInUp} className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                 <div className="space-y-1">
                     <BackButton
-                        href={FRONTEND_ROUTES.STATIONS}
-                        label="Return to Stations"
+                        href={backHref}
+                        label={backLabel}
                     />
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                         <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black tracking-tight text-foreground truncate">{station.name}</h1>
@@ -410,7 +420,18 @@ export function StationDetailContainer() {
                     <div className="flex items-center gap-3 text-muted-foreground mt-2">
                         <div className="flex items-center gap-1.5 text-sm font-medium">
                             <MapPin className="h-3.5 w-3.5" />
-                            {station.location && typeof station.location === 'object' ? station.location.name : 'Unassigned Location'}
+                            {station.location && typeof station.location === 'object' ? (
+                                <span
+                                    className="cursor-pointer hover:text-primary hover:underline font-bold transition-colors"
+                                    onClick={() => {
+                                        if (station.location && typeof station.location === 'object') {
+                                            router.push(`${FRONTEND_ROUTES.LOCATIONS_DETAILS(station.location.id)}?tab=stations`);
+                                        }
+                                    }}
+                                >
+                                    {station.location.name}
+                                </span>
+                            ) : 'Unassigned Location'}
                         </div>
                         <span className="text-muted-foreground/30">•</span>
                         <div className="flex items-center gap-1.5 text-sm font-mono tracking-tighter">
