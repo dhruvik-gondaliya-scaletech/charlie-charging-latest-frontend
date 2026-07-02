@@ -368,66 +368,32 @@ export function DownloadReportsModal({ isOpen, onClose }: DownloadReportsModalPr
             />
           </div>
 
-          {/* Interval Size + Export Type */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
-                <Clock className="h-4 w-4 text-emerald-500" /> Interval Size
-              </Label>
-              <div className="flex gap-2">
-                {([15, 30, 60] as const).map((m) => (
-                  <button
-                    key={m}
-                    onClick={() => setIntervalMinutes(m)}
-                    className={cn(
-                      `flex-1 py-2 rounded-xl border text-sm font-semibold transition-all cursor-pointer`,
-                      intervalMinutes === m
-                        ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-600 dark:text-emerald-400'
-                        : 'border-border bg-muted/20 text-muted-foreground hover:bg-muted/40',
-                    )}
-                  >
-                    {m}min
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
-                <Zap className="h-4 w-4 text-emerald-500" /> Export Type
-              </Label>
-              <div className="flex gap-2">
+          {/* Interval Size */}
+          <div className="space-y-2">
+            <Label className="text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
+              <Clock className="h-4 w-4 text-emerald-500" /> Interval Size
+            </Label>
+            <div className="flex gap-2 max-w-md">
+              {([15, 30, 60] as const).map((m) => (
                 <button
-                  onClick={() => setIntervalExportType('flat')}
+                  key={m}
+                  onClick={() => setIntervalMinutes(m)}
                   className={cn(
                     `flex-1 py-2 rounded-xl border text-sm font-semibold transition-all cursor-pointer`,
-                    intervalExportType === 'flat'
+                    intervalMinutes === m
                       ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-600 dark:text-emerald-400'
                       : 'border-border bg-muted/20 text-muted-foreground hover:bg-muted/40',
                   )}
                 >
-                  Flat Slices
+                  {m}min
                 </button>
-                <button
-                  onClick={() => setIntervalExportType('aggregated')}
-                  className={cn(
-                    `flex-1 py-2 rounded-xl border text-sm font-semibold transition-all cursor-pointer`,
-                    intervalExportType === 'aggregated'
-                      ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-600 dark:text-emerald-400'
-                      : 'border-border bg-muted/20 text-muted-foreground hover:bg-muted/40',
-                  )}
-                >
-                  Aggregated
-                </button>
-              </div>
+              ))}
             </div>
           </div>
 
           {/* Description */}
           <p className="text-xs text-muted-foreground rounded-xl border border-border bg-muted/20 px-4 py-2.5 leading-relaxed">
-            {intervalExportType === 'flat'
-              ? '📊 Flat Slices — one row per session per interval block. Best for per-transaction compliance or billing verification.'
-              : '⚡ Aggregated Demand — one row per clock block with summed energy and peak demand across all sessions. Best for grid demand planning.'}
+            📊 Flat Slices — one row per session per interval block. Best for per-transaction compliance or billing verification.
           </p>
 
           {/* Location / Station filter */}
