@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useStation, useStationSessions, useStationSessionStats } from '@/hooks/get/useStations';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +20,7 @@ import {
     Unlock,
     CheckCircle2,
     Play,
+    Percent,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeInUp, staggerContainer } from '@/lib/motion';
@@ -54,8 +55,9 @@ import {
     invalidateQueriesDebounced,
     updateStationDetailCache
 } from '@/lib/query-utils';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQueries } from '@tanstack/react-query';
 import { useEnvironment } from '@/contexts/EnvironmentContext';
+import { complianceService } from '@/services/compliance.service';
 
 export function StationDetailContainer() {
     const { id } = useParams();
@@ -69,6 +71,68 @@ export function StationDetailContainer() {
     const { data: sessions } = useStationSessions(id as string);
     const { data: sessionStats, isLoading: isStatsLoading } = useStationSessionStats(id as string);
     const [activeTab, setActiveTab] = useState('connectors');
+
+    // Date range calculation for 30-day compliance scope
+    const formatDateString = (d: Date) => {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const startDate = formatDateString(thirtyDaysAgo);
+    const endDate = formatDateString(new Date());
+
+    // Fetch compliance uptime data for all connectors of this station
+    const connectors = station?.connectors || [];
+    const uptimeQueries = useQueries({
+        queries: connectors.map((c: any) => ({
+            queryKey: ['compliance-uptime', c.id, startDate, endDate],
+            queryFn: () => complianceService.calculateUptime(c.id, startDate, endDate),
+            enabled: !!c.id && !!startDate && !!endDate,
+            staleTime: 30000,
+        })),
+    });
+
+    const isUptimeLoading = uptimeQueries.some((q) => q.isLoading);
+
+    const averageUptime = useMemo(() => {
+        const validUptimes = uptimeQueries
+            .map((q) => q.data?.uptimePercentage)
+            .filter((val): val is number => val !== undefined && val !== null);
+        
+        if (validUptimes.length === 0) return null;
+        const sum = validUptimes.reduce((acc, val) => acc + val, 0);
+        return sum / validUptimes.length;
+    }, [uptimeQueries]);
+
+    const uptimeCardDescription = useMemo(() => {
+        if (!station || !station.connectors || station.connectors.length === 0) {
+            return "No connectors configured";
+        }
+        if (station.connectors.length === 1) {
+            return `Uptime of Connector #${station.connectors[0].connectorId}`;
+        }
+        return `Average uptime of ${station.connectors.length} connectors`;
+    }, [station]);
+
+    const uptimeColor = averageUptime !== null
+        ? averageUptime >= 97
+            ? 'text-emerald-500'
+            : averageUptime >= 95
+                ? 'text-amber-500'
+                : 'text-rose-500'
+        : 'text-muted-foreground';
+
+    const uptimeGlobeColor = averageUptime !== null
+        ? averageUptime >= 97
+            ? 'bg-emerald-500'
+            : averageUptime >= 95
+                ? 'bg-amber-500'
+                : 'bg-rose-500'
+        : 'bg-muted-foreground';
     const [filterSessionId, setFilterSessionId] = useState<string | undefined>(undefined);
 
     const fromLocationId = searchParams ? searchParams.get('fromLocation') : null;
@@ -100,6 +164,7 @@ export function StationDetailContainer() {
 
                 // 2. Debounce the background refresh
                 invalidateQueriesDebounced(queryClient, ['station', environment, id]);
+                invalidateQueriesDebounced(queryClient, ['compliance-uptime']);
             }
         },
         [id, environment]
@@ -141,6 +206,7 @@ export function StationDetailContainer() {
                 // 2. Debounce the background refresh for the station and sessions
                 invalidateQueriesDebounced(queryClient, ['station', environment, id]);
                 invalidateQueriesDebounced(queryClient, ['station-sessions', environment, id]);
+                invalidateQueriesDebounced(queryClient, ['compliance-uptime']);
             }
         },
         [id, environment]
@@ -170,6 +236,7 @@ export function StationDetailContainer() {
                 invalidateQueriesDebounced(queryClient, ['station-logs', id]);
                 // Also refresh station to get updated connector status
                 invalidateQueriesDebounced(queryClient, ['station', environment, id]);
+                invalidateQueriesDebounced(queryClient, ['compliance-uptime']);
             }
         },
         [id, environment]
@@ -184,6 +251,7 @@ export function StationDetailContainer() {
                 invalidateQueriesDebounced(queryClient, ['station-logs', id]);
                 // Also refresh station to get updated connector status
                 invalidateQueriesDebounced(queryClient, ['station', environment, id]);
+                invalidateQueriesDebounced(queryClient, ['compliance-uptime']);
             }
         },
         [id, environment]
@@ -460,15 +528,14 @@ export function StationDetailContainer() {
             </motion.div>
 
             {/* Stats Grid */}
-            <motion.div variants={fadeInUp} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+            <motion.div variants={fadeInUp} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
                 {[
+                    { label: 'Uptime', value: averageUptime !== null ? `${averageUptime.toFixed(2)}%` : 'N/A', icon: Percent, color: uptimeColor, bottomRightGlobe: uptimeGlobeColor, description: uptimeCardDescription, loading: isUptimeLoading },
+                    { label: 'Total Energy', value: `${(sessionStats?.totalEnergyDelivered || 0).toFixed(2)} kWh`, icon: Zap, color: 'text-amber-500', bottomRightGlobe: "bg-amber-500", description: 'Total energy delivered', loading: isStatsLoading },
                     { label: 'Total Sessions', value: String(sessionStats?.totalSessions || 0), icon: History, color: 'text-violet-500', bottomRightGlobe: "bg-violet-500", description: 'Total charging sessions', loading: isStatsLoading },
                     { label: 'Completed Sessions', value: String(sessionStats?.completedSessions || 0), icon: CheckCircle2, color: 'text-emerald-500', bottomRightGlobe: "bg-emerald-500", description: 'Successfully finished sessions', loading: isStatsLoading },
-                    { label: 'Active Sessions', value: String(sessionStats?.activeSessions || 0), icon: Play, color: 'text-primary', bottomRightGlobe: "bg-primary", description: 'Sessions currently in progress', loading: isStatsLoading },
-
                     { label: 'Failed Sessions', value: String(sessionStats?.failedSessions || 0), icon: AlertCircle, color: 'text-rose-500', bottomRightGlobe: "bg-rose-500", description: 'Failed or interrupted sessions', loading: isStatsLoading },
-
-                    { label: 'Total Energy', value: `${(sessionStats?.totalEnergyDelivered || 0).toFixed(2)} kWh`, icon: Zap, color: 'text-amber-500', bottomRightGlobe: "bg-amber-500", description: 'Total energy delivered', loading: isStatsLoading },
+                    { label: 'Active Sessions', value: String(sessionStats?.activeSessions || 0), icon: Play, color: 'text-primary', bottomRightGlobe: "bg-primary", description: 'Sessions currently in progress', loading: isStatsLoading },
                 ].map((stat, i) => (
                     <StatCard
                         key={i}

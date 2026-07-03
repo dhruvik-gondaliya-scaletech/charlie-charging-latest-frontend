@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useDashboardStats, useRecentActivity } from '@/hooks/get/useDashboard';
 import { Card } from '@/components/ui/card';
-import { Battery, Zap, Activity, Users, RefreshCw, Download } from 'lucide-react';
+import { Battery, Zap, Activity, History, RefreshCw, Download } from 'lucide-react';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { StatCard } from '../components/StatCard';
 import { StatCardSkeleton } from '../components/StatCardSkeleton';
@@ -91,12 +91,12 @@ export function DashboardContainer() {
       description: 'Currently charging',
     },
     {
-      title: 'Active Users',
-      value: stats?.activeUsers ?? 0,
-      icon: Users,
+      title: 'Total Sessions',
+      value: stats?.totalSessions ?? 0,
+      icon: History,
       color: 'text-purple-500',
       bottomRightGlobe: 'bg-purple-500',
-      description: 'Users today',
+      description: 'Across all chargers',
     },
     {
       title: 'Energy Delivered',

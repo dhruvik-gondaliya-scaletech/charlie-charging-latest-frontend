@@ -124,7 +124,7 @@ export interface DashboardStats {
   energyDelivered: number;
   activeSessions: number;
   capacityUtilization: number;
-  activeUsers: number;
+  totalSessions: number;
 }
 
 export interface RecentActivity {

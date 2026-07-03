@@ -147,12 +147,6 @@ export function ConnectorCard({
                     </div>
                 </div>
             </CardContent>
-            <div className={cn(
-                "h-1 w-full mt-auto opacity-40 transition-colors",
-                isAvailable ? "bg-emerald-500" :
-                    isCharging ? "bg-blue-500" :
-                        "bg-muted-foreground"
-            )} />
         </Card>
     );
 }
