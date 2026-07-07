@@ -154,6 +154,31 @@ export function ConnectorUptime({
     });
   };
 
+  // Helper: Format date and time vertically
+  const formatDateTimeVertical = (dateStr: string | null): React.ReactNode => {
+    if (!dateStr) return <span className="text-muted-foreground font-mono text-xs">N/A</span>;
+    const dateObj = new Date(dateStr);
+    if (isNaN(dateObj.getTime())) {
+      return <span className="text-muted-foreground font-mono text-xs">N/A</span>;
+    }
+    const date = dateObj.toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+    const time = dateObj.toLocaleTimeString(undefined, {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+    return (
+      <div className="flex flex-col font-mono text-xs leading-normal">
+        <span className="text-foreground font-medium whitespace-nowrap">{date}</span>
+        <span className="text-muted-foreground text-[11px] mt-0.5 whitespace-nowrap">{time}</span>
+      </div>
+    );
+  };
+
   // Helper: Clean up Reason Codes
   const formatReasonCode = (code: string): string => {
     return code
@@ -194,11 +219,7 @@ export function ConnectorUptime({
       id: 'startTime',
       header: 'Start Time',
       accessorKey: 'startTime',
-      cell: ({ row }) => (
-        <span className="text-muted-foreground font-mono text-xs whitespace-nowrap">
-          {formatDateTime(row.original.startTime)}
-        </span>
-      )
+      cell: ({ row }) => formatDateTimeVertical(row.original.startTime)
     },
     {
       id: 'endTime',
@@ -207,9 +228,7 @@ export function ConnectorUptime({
       cell: ({ row }) => {
         const interval = row.original;
         return interval.endTime ? (
-          <span className="text-muted-foreground font-mono text-xs whitespace-nowrap">
-            {formatDateTime(interval.endTime)}
-          </span>
+          formatDateTimeVertical(interval.endTime)
         ) : (
           <Badge className="bg-amber-500/10 text-amber-500 border border-amber-500/25 rounded-full font-extrabold uppercase tracking-widest text-[8px] px-2 py-0.5">
             Active Outage
