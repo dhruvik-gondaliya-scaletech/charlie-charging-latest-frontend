@@ -20,7 +20,7 @@ interface LocationStationTreeProps {
   onLocationCheck: (locationId: string, checked: boolean) => void;
   onStationCheck: (stationId: string, locationId: string, checked: boolean) => void;
   onToggleExpand: (locationId: string) => void;
-  accentColor?: 'primary' | 'emerald';
+  accentColor?: 'primary' | 'emerald' | 'rose';
 }
 
 export function LocationStationTree({
@@ -39,7 +39,12 @@ export function LocationStationTree({
     stations.some((s) => s.locationId === loc.id)
   );
 
-  const spinnerColor = accentColor === 'emerald' ? 'border-emerald-500' : 'border-primary';
+  const spinnerColor =
+    accentColor === 'emerald'
+      ? 'border-emerald-500'
+      : accentColor === 'rose'
+      ? 'border-rose-500'
+      : 'border-primary';
 
   if (isLoadingTree) {
     return (
