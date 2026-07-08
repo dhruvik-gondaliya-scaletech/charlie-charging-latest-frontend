@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useStation, useStationSessions, useStationSessionStats } from '@/hooks/get/useStations';
 import { Badge } from '@/components/ui/badge';
@@ -17,23 +17,11 @@ import {
     AlertCircle,
     LogOut,
     Loader2,
-    Edit,
-    ChevronDown,
-    Settings,
     Unlock,
     CheckCircle2,
     Play,
+    Percent,
 } from 'lucide-react';
-import {
-    Drawer,
-    DrawerClose,
-    DrawerContent,
-    DrawerDescription,
-    DrawerFooter,
-    DrawerHeader,
-    DrawerTitle,
-    DrawerTrigger,
-} from "@/components/ui/drawer";
 import { motion } from 'framer-motion';
 import { fadeInUp, staggerContainer } from '@/lib/motion';
 import { ChargingStatus, LocationEnv } from '@/types';
@@ -63,21 +51,13 @@ import {
     MeterValuesEvent,
     TransactionEvent
 } from '@/lib/realtime.service';
-import { useTenantConfig } from '@/hooks/get/useTenantConfig';
-import QRCode from 'react-qr-code';
-import {
-    Download,
-    Copy,
-    ExternalLink,
-    QrCode as QrCodeIcon,
-    Check
-} from 'lucide-react';
 import {
     invalidateQueriesDebounced,
     updateStationDetailCache
 } from '@/lib/query-utils';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQueries } from '@tanstack/react-query';
 import { useEnvironment } from '@/contexts/EnvironmentContext';
+import { complianceService } from '@/services/compliance.service';
 
 export function StationDetailContainer() {
     const { id } = useParams();
@@ -91,6 +71,68 @@ export function StationDetailContainer() {
     const { data: sessions } = useStationSessions(id as string);
     const { data: sessionStats, isLoading: isStatsLoading } = useStationSessionStats(id as string);
     const [activeTab, setActiveTab] = useState('connectors');
+
+    // Date range calculation for 30-day compliance scope
+    const formatDateString = (d: Date) => {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const startDate = formatDateString(thirtyDaysAgo);
+    const endDate = formatDateString(new Date());
+
+    // Fetch compliance uptime data for all connectors of this station
+    const connectors = station?.connectors || [];
+    const uptimeQueries = useQueries({
+        queries: connectors.map((c: any) => ({
+            queryKey: ['compliance-uptime', c.id, startDate, endDate],
+            queryFn: () => complianceService.calculateUptime(c.id, startDate, endDate),
+            enabled: !!c.id && !!startDate && !!endDate,
+            staleTime: 30000,
+        })),
+    });
+
+    const isUptimeLoading = uptimeQueries.some((q) => q.isLoading);
+
+    const averageUptime = useMemo(() => {
+        const validUptimes = uptimeQueries
+            .map((q) => q.data?.uptimePercentage)
+            .filter((val): val is number => val !== undefined && val !== null);
+        
+        if (validUptimes.length === 0) return null;
+        const sum = validUptimes.reduce((acc, val) => acc + val, 0);
+        return sum / validUptimes.length;
+    }, [uptimeQueries]);
+
+    const uptimeCardDescription = useMemo(() => {
+        if (!station || !station.connectors || station.connectors.length === 0) {
+            return "No connectors configured";
+        }
+        if (station.connectors.length === 1) {
+            return `Uptime of Connector #${station.connectors[0].connectorId}`;
+        }
+        return `Average uptime of ${station.connectors.length} connectors`;
+    }, [station]);
+
+    const uptimeColor = averageUptime !== null
+        ? averageUptime >= 97
+            ? 'text-emerald-500'
+            : averageUptime >= 95
+                ? 'text-amber-500'
+                : 'text-rose-500'
+        : 'text-muted-foreground';
+
+    const uptimeGlobeColor = averageUptime !== null
+        ? averageUptime >= 97
+            ? 'bg-emerald-500'
+            : averageUptime >= 95
+                ? 'bg-amber-500'
+                : 'bg-rose-500'
+        : 'bg-muted-foreground';
     const [filterSessionId, setFilterSessionId] = useState<string | undefined>(undefined);
 
     const fromLocationId = searchParams ? searchParams.get('fromLocation') : null;
@@ -116,13 +158,13 @@ export function StationDetailContainer() {
         'station-status-change',
         (data) => {
             if (data.stationId === id) {
-                console.log(`Station ${data.stationId} status updated to ${data.status}`);
 
                 // 1. Optimistically update the detailed station status
                 updateStationDetailCache(queryClient, id as string, { status: data.status });
 
                 // 2. Debounce the background refresh
                 invalidateQueriesDebounced(queryClient, ['station', environment, id]);
+                invalidateQueriesDebounced(queryClient, ['compliance-uptime']);
             }
         },
         [id, environment]
@@ -133,7 +175,6 @@ export function StationDetailContainer() {
         'connector-status-change',
         (data) => {
             if (data.stationId === id) {
-                console.log(`Connector ${data.connectorId} on station ${data.stationId} status updated to ${data.status}`);
 
                 // 1. Optimistically update the specific connector status in the station detail cache using a predicate to match environment-aware key
                 queryClient.setQueriesData({
@@ -165,6 +206,7 @@ export function StationDetailContainer() {
                 // 2. Debounce the background refresh for the station and sessions
                 invalidateQueriesDebounced(queryClient, ['station', environment, id]);
                 invalidateQueriesDebounced(queryClient, ['station-sessions', environment, id]);
+                invalidateQueriesDebounced(queryClient, ['compliance-uptime']);
             }
         },
         [id, environment]
@@ -175,7 +217,6 @@ export function StationDetailContainer() {
         'meter-values',
         (data) => {
             if (data.stationId === id) {
-                console.log(`Received meter values for station ${data.stationId}`);
                 // Debounce log and session updates as meter values can be very frequent
                 invalidateQueriesDebounced(queryClient, ['station-logs', id]);
                 invalidateQueriesDebounced(queryClient, ['station-sessions', environment, id]);
@@ -190,12 +231,12 @@ export function StationDetailContainer() {
         'transaction-start',
         (data) => {
             if (data.stationId === id) {
-                console.log(`Transaction started on station ${data.stationId}, connector ${data.connectorId}`);
                 invalidateQueriesDebounced(queryClient, ['station-sessions', environment, id]);
                 invalidateQueriesDebounced(queryClient, ['station-session-stats', environment, id]);
                 invalidateQueriesDebounced(queryClient, ['station-logs', id]);
                 // Also refresh station to get updated connector status
                 invalidateQueriesDebounced(queryClient, ['station', environment, id]);
+                invalidateQueriesDebounced(queryClient, ['compliance-uptime']);
             }
         },
         [id, environment]
@@ -205,12 +246,12 @@ export function StationDetailContainer() {
         'transaction-stop',
         (data) => {
             if (data.stationId === id) {
-                console.log(`Transaction stopped on station ${data.stationId}, connector ${data.connectorId}`);
                 invalidateQueriesDebounced(queryClient, ['station-sessions', environment, id]);
                 invalidateQueriesDebounced(queryClient, ['station-session-stats', environment, id]);
                 invalidateQueriesDebounced(queryClient, ['station-logs', id]);
                 // Also refresh station to get updated connector status
                 invalidateQueriesDebounced(queryClient, ['station', environment, id]);
+                invalidateQueriesDebounced(queryClient, ['compliance-uptime']);
             }
         },
         [id, environment]
@@ -468,93 +509,33 @@ export function StationDetailContainer() {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                    {/* Desktop Actions */}
-                    <div className="hidden md:block relative group">
-                        <Button
-                            variant="default"
-                            className="bg-primary/90 hover:bg-primary font-bold shadow-md h-12 px-6 rounded-xl"
-                        >
-                            Manage Station
-                            <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
-                        </Button>
-                        <div className="absolute right-0 top-full mt-2 w-56 bg-card border border-border p-1.5 rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 backdrop-blur-xl bg-card/95">
-                            <button
-                                onClick={() => setIsRebootModalOpen(true)}
-                                className="w-full text-left px-4 py-3 text-sm font-bold hover:bg-muted transition-all flex items-center cursor-pointer rounded-xl"
-                            >
-                                <History className="mr-3 h-4 w-4 text-orange-500" /> Reboot System
-                            </button>
-                            <button
-                                onClick={() => setIsAvailabilityModalOpen(true)}
-                                className="w-full text-left px-4 py-3 text-sm font-bold hover:bg-muted transition-all flex items-center cursor-pointer rounded-xl"
-                            >
-                                <ShieldCheck className="mr-3 h-4 w-4 text-emerald-500" /> Availability Matrix
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Mobile Actions Drawer */}
-                    <div className="md:hidden w-full">
-                        <Drawer>
-                            <DrawerTrigger asChild>
-                                <Button
-                                    variant="default"
-                                    className="w-full bg-primary font-bold shadow-lg h-12 rounded-2xl"
-                                >
-                                    <Settings className="mr-2 h-4 w-4" />
-                                    Station Actions
-                                </Button>
-                            </DrawerTrigger>
-                            <DrawerContent className="bg-card border-none rounded-t-[2.5rem]">
-                                <div className="mx-auto w-12 h-1.5 rounded-full bg-muted/40 mt-4 mb-4" />
-                                <DrawerHeader className="text-left px-6">
-                                    <DrawerTitle className="text-2xl font-black">Control Panel</DrawerTitle>
-                                    <DrawerDescription className="text-sm font-medium">Manage operational parameters for {station.name}</DrawerDescription>
-                                </DrawerHeader>
-                                <div className="px-4 py-6 grid gap-3">
-                                    <Button
-                                        variant="outline"
-                                        className="h-16 justify-start text-base font-bold rounded-2xl border-border/40 gap-4"
-                                        onClick={() => setIsRebootModalOpen(true)}
-                                    >
-                                        <div className="p-2 rounded-xl bg-orange-500/10 text-orange-500">
-                                            <History className="h-5 w-5" />
-                                        </div>
-                                        Reboot System
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        className="h-16 justify-start text-base font-bold rounded-2xl border-border/40 gap-4"
-                                        onClick={() => setIsAvailabilityModalOpen(true)}
-                                    >
-                                        <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500">
-                                            <ShieldCheck className="h-5 w-5" />
-                                        </div>
-                                        Availability Matrix
-                                    </Button>
-                                </div>
-                                <DrawerFooter className="px-6 pb-8">
-                                    <DrawerClose asChild>
-                                        <Button variant="ghost" className="h-12 rounded-xl font-bold text-muted-foreground">Dismiss Panel</Button>
-                                    </DrawerClose>
-                                </DrawerFooter>
-                            </DrawerContent>
-                        </Drawer>
-                    </div>
+                <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                    <Button
+                        variant="outline"
+                        onClick={() => setIsRebootModalOpen(true)}
+                        className="font-bold border-orange-500/30 text-orange-500 hover:bg-orange-500/10 hover:text-orange-500 h-12 px-6 rounded-xl flex-1 sm:flex-initial"
+                    >
+                        <History className="mr-2.5 h-4.5 w-4.5 text-orange-500" /> Reboot System
+                    </Button>
+                    <Button
+                        variant="outline"
+                        onClick={() => setIsAvailabilityModalOpen(true)}
+                        className="font-bold border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10 hover:text-emerald-500 h-12 px-6 rounded-xl flex-1 sm:flex-initial"
+                    >
+                        <ShieldCheck className="mr-2.5 h-4.5 w-4.5 text-emerald-500" /> Availability Matrix
+                    </Button>
                 </div>
             </motion.div>
 
             {/* Stats Grid */}
-            <motion.div variants={fadeInUp} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+            <motion.div variants={fadeInUp} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
                 {[
+                    { label: 'Uptime', value: averageUptime !== null ? `${averageUptime.toFixed(2)}%` : 'N/A', icon: Percent, color: uptimeColor, bottomRightGlobe: uptimeGlobeColor, description: uptimeCardDescription, loading: isUptimeLoading },
+                    { label: 'Total Energy', value: `${(sessionStats?.totalEnergyDelivered || 0).toFixed(2)} kWh`, icon: Zap, color: 'text-amber-500', bottomRightGlobe: "bg-amber-500", description: 'Total energy delivered', loading: isStatsLoading },
                     { label: 'Total Sessions', value: String(sessionStats?.totalSessions || 0), icon: History, color: 'text-violet-500', bottomRightGlobe: "bg-violet-500", description: 'Total charging sessions', loading: isStatsLoading },
                     { label: 'Completed Sessions', value: String(sessionStats?.completedSessions || 0), icon: CheckCircle2, color: 'text-emerald-500', bottomRightGlobe: "bg-emerald-500", description: 'Successfully finished sessions', loading: isStatsLoading },
-                    { label: 'Active Sessions', value: String(sessionStats?.activeSessions || 0), icon: Play, color: 'text-primary', bottomRightGlobe: "bg-primary", description: 'Sessions currently in progress', loading: isStatsLoading },
-
                     { label: 'Failed Sessions', value: String(sessionStats?.failedSessions || 0), icon: AlertCircle, color: 'text-rose-500', bottomRightGlobe: "bg-rose-500", description: 'Failed or interrupted sessions', loading: isStatsLoading },
-
-                    { label: 'Total Energy', value: `${(sessionStats?.totalEnergyDelivered || 0).toFixed(2)} kWh`, icon: Zap, color: 'text-amber-500', bottomRightGlobe: "bg-amber-500", description: 'Total energy delivered', loading: isStatsLoading },
+                    { label: 'Active Sessions', value: String(sessionStats?.activeSessions || 0), icon: Play, color: 'text-primary', bottomRightGlobe: "bg-primary", description: 'Sessions currently in progress', loading: isStatsLoading },
                 ].map((stat, i) => (
                     <StatCard
                         key={i}
@@ -609,6 +590,7 @@ export function StationDetailContainer() {
                                         isStopping={remoteStop.isPending || busyConnectors.has(connector.connectorId)}
                                         isUnlocking={unlockConnector.isPending || busyConnectors.has(connector.connectorId)}
                                         disabled={station.status === ChargingStatus.OFFLINE}
+                                        stationName={station.name}
                                     />
                                 ))}
 
@@ -815,32 +797,52 @@ export function StationDetailContainer() {
                 size="md"
                 footer={
                     <div className="flex gap-3 justify-end w-full">
-                        <Button variant="outline" onClick={() => setIsRebootModalOpen(false)}>
+                        <Button variant="outline" className="rounded-xl font-bold" onClick={() => setIsRebootModalOpen(false)}>
                             Cancel
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            onClick={() => confirmReboot('Soft')}
-                            disabled={resetStation.isPending}
-                            className="font-bold"
-                        >
-                            Soft Reset
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            onClick={() => confirmReboot('Hard')}
-                            disabled={resetStation.isPending}
-                            className="font-bold"
-                        >
-                            Hard Reset
                         </Button>
                     </div>
                 }
             >
                 <div className="space-y-4">
-                    <div className="flex items-center gap-3 p-4 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-500 dark:text-orange-400 text-sm font-medium">
-                        <AlertCircle className="h-5 w-5 shrink-0" />
-                        <p>A soft reset will wait for active transactions to end. A hard reset is immediate and may interrupt charging.</p>
+                    {/* Soft Reset Banner */}
+                    <div className="p-5 rounded-2xl bg-amber-500/5 border border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="space-y-1 flex-1">
+                            <h4 className="text-sm font-bold text-amber-500 flex items-center gap-2">
+                                <History className="h-4 w-4" />
+                                Soft Reset
+                            </h4>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                                Gracefully restarts the station. It waits for active charging transactions to end before rebooting.
+                            </p>
+                        </div>
+                        <Button
+                            onClick={() => confirmReboot('Soft')}
+                            disabled={resetStation.isPending}
+                            className="font-bold border-amber-500/30 bg-amber-500 hover:bg-amber-500/80 text-white rounded-xl px-5 h-11 shrink-0 w-full sm:w-auto"
+                        >
+                            Soft Reset
+                        </Button>
+                    </div>
+
+                    {/* Hard Reset Banner */}
+                    <div className="p-5 rounded-2xl bg-destructive/5 border border-destructive/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="space-y-1 flex-1">
+                            <h4 className="text-sm font-bold text-destructive flex items-center gap-2">
+                                <AlertCircle className="h-4 w-4" />
+                                Hard Reset
+                            </h4>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                                Immediately restarts the station. This is a cold reboot and will abruptly interrupt active charging sessions.
+                            </p>
+                        </div>
+                        <Button
+                            variant="destructive"
+                            onClick={() => confirmReboot('Hard')}
+                            disabled={resetStation.isPending}
+                            className="font-bold rounded-xl px-5 h-11 shrink-0 w-full sm:w-auto"
+                        >
+                            Hard Reset
+                        </Button>
                     </div>
                 </div>
             </AnimatedModal>
@@ -854,32 +856,53 @@ export function StationDetailContainer() {
                 size="md"
                 footer={
                     <div className="flex gap-3 justify-end w-full">
-                        <Button variant="outline" onClick={() => setIsAvailabilityModalOpen(false)}>
+                        <Button variant="outline" className="rounded-xl font-bold" onClick={() => setIsAvailabilityModalOpen(false)}>
                             Cancel
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            onClick={() => confirmAvailability('Inoperative')}
-                            disabled={changeAvailability.isPending}
-                            className="font-bold"
-                        >
-                            {changeAvailability.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : 'Turn OFF'}
-                        </Button>
-                        <Button
-                            variant="default"
-                            onClick={() => confirmAvailability('Operative')}
-                            disabled={changeAvailability.isPending}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
-                        >
-                            {changeAvailability.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : 'Turn ON'}
                         </Button>
                     </div>
                 }
             >
                 <div className="space-y-4">
-                    <div className="flex items-center gap-3 p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-500 dark:text-blue-400 text-sm font-medium">
-                        <ShieldCheck className="h-5 w-5 shrink-0" />
-                        <p>Changes the station's operational status. This command will be sent directly to the charge point.</p>
+                    {/* Turn ON Banner */}
+                    <div className="p-5 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="space-y-1 flex-1">
+                            <h4 className="text-sm font-bold text-emerald-500 flex items-center gap-2">
+                                <CheckCircle2 className="h-4 w-4" />
+                                Turn ON (Operative)
+                            </h4>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                                Brings the station online. Drivers will be able to discover, connect, and initiate new charging sessions.
+                            </p>
+                        </div>
+                        <Button
+                            variant="default"
+                            onClick={() => confirmAvailability('Operative')}
+                            disabled={changeAvailability.isPending}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl px-5 h-11 shrink-0 w-full sm:w-auto"
+                        >
+                            {changeAvailability.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Turn ON'}
+                        </Button>
+                    </div>
+
+                    {/* Turn OFF Banner */}
+                    <div className="p-5 rounded-2xl bg-destructive/5 border border-destructive/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="space-y-1 flex-1">
+                            <h4 className="text-sm font-bold text-destructive flex items-center gap-2">
+                                <AlertCircle className="h-4 w-4" />
+                                Turn OFF (Inoperative)
+                            </h4>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                                Sets the station to inoperative. Active sessions can finish gracefully, but new charging requests will be blocked.
+                            </p>
+                        </div>
+                        <Button
+                            variant="destructive"
+                            onClick={() => confirmAvailability('Inoperative')}
+                            disabled={changeAvailability.isPending}
+                            className="font-bold rounded-xl px-5 h-11 shrink-0 w-full sm:w-auto"
+                        >
+                            {changeAvailability.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Turn OFF'}
+                        </Button>
                     </div>
                 </div>
             </AnimatedModal>

@@ -112,6 +112,22 @@ export const API_CONFIG = {
             },
             stats: "/ocpi/mgmt/stats",
         },
+        reporting: {
+            intervals: '/reporting/intervals',
+            aggregated: '/reporting/intervals/aggregated',
+            sessionIntervals: (id: string) => `/reporting/sessions/${id}/intervals`,
+            sessionSummary: (id: string) => `/reporting/sessions/${id}/intervals/summary`,
+            sessionStats: '/reporting/sessions/stats',
+            sessionExport: '/reporting/sessions/export',
+        },
+        compliance: {
+            uptime: '/compliance/uptime',
+            downtimeIntervals: '/compliance/downtime/intervals',
+            override: (id: string) => `/compliance/downtime/${id}/override`,
+            dailyReport: '/reports/daily',
+            monthlyReport: '/reports/monthly',
+            quarterlyReport: '/reports/quarterly',
+        },
         brands: {
             base: "/brands",
         },

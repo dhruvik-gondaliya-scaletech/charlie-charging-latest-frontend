@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
+import { useBaseDomain } from '@/hooks/useBaseDomain';
 import { useForm, Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
@@ -37,16 +38,15 @@ import { useTenantConfig } from '@/hooks/get/useTenantConfig';
 import { useUpdateTenantConfig } from '@/hooks/put/useUpdateTenantConfig';
 import { staggerItem } from '@/lib/motion';
 
-const BASE_DOMAIN = 'scaleev.scaletech.xyz';
-
 export function DriverAppConfig() {
   const { data: config, isLoading } = useTenantConfig();
   const updateConfig = useUpdateTenantConfig();
   const [isCopied, setIsCopied] = React.useState(false);
+  const baseDomain = useBaseDomain();
 
   const handleCopyDomain = (domain: string) => {
     if (!domain) return;
-    const fullDomain = `https://${domain}.${BASE_DOMAIN}`;
+    const fullDomain = `https://${domain}.${baseDomain}`;
     navigator.clipboard.writeText(fullDomain);
     setIsCopied(true);
     toast.success('App domain copied to clipboard');
@@ -200,7 +200,7 @@ export function DriverAppConfig() {
                               className="h-10 sm:h-12 bg-background border-none focus-visible:ring-0 focus-visible:ring-offset-0 rounded-none font-bold text-sm sm:text-base flex-1"
                             />
                             <div className="flex items-center h-10 sm:h-12 px-4 bg-muted/30 text-muted-foreground/60 text-[10px] sm:text-xs font-bold group-focus-within:text-primary transition-all border-t sm:border-t-0 sm:border-l border-border/40 gap-2 shrink-0">
-                              <span className="truncate">.{BASE_DOMAIN}</span>
+                              <span className="truncate">.{baseDomain}</span>
                               <ActionIconButton
                                 tooltip="Copy Domain"
                                 onClick={() => handleCopyDomain(field.value)}

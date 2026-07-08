@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useCreateDriver } from '@/hooks/post/useCreateDriver';
-import { Mail, User, Phone, Lock, Loader2 } from 'lucide-react';
+import { Mail, User, Phone, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
 
 interface DriverFormModalProps {
   isOpen: boolean;
@@ -18,6 +18,7 @@ interface DriverFormModalProps {
 
 export function DriverFormModal({ isOpen, onClose }: DriverFormModalProps) {
   const createDriver = useCreateDriver();
+  const [showPassword, setShowPassword] = React.useState(false);
   const {
     register,
     handleSubmit,
@@ -41,6 +42,7 @@ export function DriverFormModal({ isOpen, onClose }: DriverFormModalProps) {
     }, {
       onSuccess: () => {
         reset();
+        setShowPassword(false);
         onClose();
       },
     });
@@ -51,6 +53,7 @@ export function DriverFormModal({ isOpen, onClose }: DriverFormModalProps) {
       isOpen={isOpen}
       onClose={() => {
         reset();
+        setShowPassword(false);
         onClose();
       }}
       title="Register New Driver"
@@ -67,6 +70,7 @@ export function DriverFormModal({ isOpen, onClose }: DriverFormModalProps) {
                 id="firstName"
                 placeholder="John"
                 className="pl-10 h-11 bg-muted/20 border-border/40 focus:ring-primary/20 rounded-xl font-bold"
+                autoComplete="given-name"
                 {...register('firstName')}
               />
             </div>
@@ -80,6 +84,7 @@ export function DriverFormModal({ isOpen, onClose }: DriverFormModalProps) {
                 id="lastName"
                 placeholder="Doe"
                 className="pl-10 h-11 bg-muted/20 border-border/40 focus:ring-primary/20 rounded-xl font-bold"
+                autoComplete="family-name"
                 {...register('lastName')}
               />
             </div>
@@ -96,6 +101,7 @@ export function DriverFormModal({ isOpen, onClose }: DriverFormModalProps) {
               type="email"
               placeholder="driver@enterprise.com"
               className="pl-10 h-11 bg-muted/20 border-border/40 focus:ring-primary/20 rounded-xl font-bold"
+              autoComplete="email"
               {...register('email')}
             />
           </div>
@@ -108,11 +114,23 @@ export function DriverFormModal({ isOpen, onClose }: DriverFormModalProps) {
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
             <Input
               id="password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               placeholder="••••••••"
-              className="pl-10 h-11 bg-muted/20 border-border/40 focus:ring-primary/20 rounded-xl font-bold"
+              className="pl-10 pr-10 h-11 bg-muted/20 border-border/40 focus:ring-primary/20 rounded-xl font-bold"
+              autoComplete="new-password"
               {...register('password')}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center text-muted-foreground/50 hover:text-muted-foreground focus:outline-none"
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4 cursor-pointer" />
+              ) : (
+                <Eye className="h-4 w-4 cursor-pointer" />
+              )}
+            </button>
           </div>
           {errors.password && <p className="text-[10px] font-bold text-destructive uppercase tracking-widest ml-1">{errors.password.message}</p>}
         </div>
@@ -125,6 +143,7 @@ export function DriverFormModal({ isOpen, onClose }: DriverFormModalProps) {
               id="phoneNumber"
               placeholder="+1 (555) 000-0000"
               className="pl-10 h-11 bg-muted/20 border-border/40 focus:ring-primary/20 rounded-xl font-bold"
+              autoComplete="tel"
               {...register('phoneNumber')}
             />
           </div>

@@ -5,7 +5,6 @@ import { useInfiniteOcppLogs } from '@/hooks/get/useStations';
 import { useInView } from 'react-intersection-observer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { formatDate } from '@/lib/date';
 import { cn } from '@/lib/utils';
 import {
     Terminal,
