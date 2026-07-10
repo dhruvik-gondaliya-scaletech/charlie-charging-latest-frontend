@@ -1,27 +1,41 @@
 import { RecentActivity } from '@/types';
-import { formatTimeAgo } from '@/lib/date';
+import { formatDateTime } from '@/lib/date';
 import { Table } from '@/components/shared/Table';
 import { ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@/components/ui/badge';
-import { Activity, Battery, User, Clock, Zap, Timer } from 'lucide-react';
+import { Battery, User, Clock, Zap, Timer, Terminal } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 interface ActivityListProps {
   activities: RecentActivity[];
   isLoading?: boolean;
+  onViewLogs?: (stationId: string, sessionId: string) => void;
+  limit?: number;
 }
 
-export function ActivityList({ activities, isLoading = false }: ActivityListProps) {
+export function ActivityList({ activities, isLoading = false, onViewLogs, limit = 10 }: ActivityListProps) {
   const columns: ColumnDef<RecentActivity>[] = [
     {
-      accessorKey: 'event',
-      header: 'Event',
-      cell: ({ row }) => (
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 border border-primary/20">
-            <Activity className="h-3.5 w-3.5 text-primary" />
+      accessorKey: 'startDate',
+      header: 'Start Date',
+      cell: ({ row }) => {
+        const val = row.original.startDate || row.original.eventTime;
+        return (
+          <div className="flex items-center gap-2 text-muted-foreground/80">
+            <Clock className="h-3.5 w-3.5 text-sky-500/70" />
+            <span className="text-xs font-semibold">{formatDateTime(val)}</span>
           </div>
-          <span className="font-semibold text-sm tracking-tight">{row.original.event}</span>
+        );
+      },
+    },
+    {
+      accessorKey: 'user',
+      header: 'Start By',
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2 text-muted-foreground group-hover:text-foreground transition-colors">
+          <User className="h-4 w-4 text-purple-500/70" />
+          <span className="text-sm font-semibold">{row.original.user}</span>
         </div>
       ),
     },
@@ -36,23 +50,15 @@ export function ActivityList({ activities, isLoading = false }: ActivityListProp
       ),
     },
     {
-      accessorKey: 'user',
-      header: 'User',
+      accessorKey: 'duration',
+      header: 'Duration',
       cell: ({ row }) => (
-        <div className="flex items-center gap-2 text-muted-foreground group-hover:text-foreground transition-colors">
-          <User className="h-4 w-4 text-purple-500/70" />
-          <span className="text-sm font-medium">{row.original.user}</span>
-        </div>
-      ),
-    },
-    {
-      accessorKey: 'eventTime',
-      header: 'Time',
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2 text-muted-foreground/60">
-          <Clock className="h-3.5 w-3.5" />
-          <span className="text-xs font-medium">{formatTimeAgo(row.original.eventTime)}</span>
-        </div>
+        row.original.duration !== undefined ? (
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-400">
+            <Timer className="h-3.5 w-3.5" />
+            <span>{row.original.duration}m</span>
+          </div>
+        ) : '-'
       ),
     },
     {
@@ -63,18 +69,6 @@ export function ActivityList({ activities, isLoading = false }: ActivityListProp
           <div className="flex items-center gap-1.5 font-mono text-xs font-bold text-amber-500/90">
             <Zap className="h-3 w-3" />
             <span>{row.original.energyDelivered.toFixed(2)} kWh</span>
-          </div>
-        ) : '-'
-      ),
-    },
-    {
-      accessorKey: 'duration',
-      header: 'Duration',
-      cell: ({ row }) => (
-        row.original.duration !== undefined ? (
-          <div className="flex items-center gap-1.5 text-xs font-medium text-blue-400">
-            <Timer className="h-3 w-3" />
-            <span>{row.original.duration}m</span>
           </div>
         ) : '-'
       ),
@@ -106,6 +100,25 @@ export function ActivityList({ activities, isLoading = false }: ActivityListProp
         );
       },
     },
+    {
+      id: 'actions',
+      header: 'View Logs',
+      cell: ({ row }) => {
+        const { stationId, eventId } = row.original;
+        if (!stationId || !eventId) return '-';
+        return (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onViewLogs?.(stationId, eventId)}
+            className="h-8 px-2 text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary/10"
+          >
+            <Terminal className="h-3.5 w-3.5 mr-1.5" />
+            View Logs
+          </Button>
+        );
+      },
+    },
   ];
 
   return (
@@ -113,7 +126,7 @@ export function ActivityList({ activities, isLoading = false }: ActivityListProp
       data={activities}
       columns={columns}
       isLoading={isLoading}
-      pageSize={10}
+      pageSize={limit}
       showSearch={false}
       showPagination={false}
       maxHeight="540px"
@@ -131,35 +144,39 @@ export function ActivityList({ activities, isLoading = false }: ActivityListProp
           colorClasses = "bg-muted text-muted-foreground border-border";
         }
 
+        const val = activity.startDate || activity.eventTime;
+
         return (
           <div className="bg-card/40 mx-4 border border-border/40 rounded-2xl p-4 space-y-3">
             <div className="flex justify-between items-start">
               <div className="flex items-center gap-2">
-                <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Activity className="h-3.5 w-3.5 text-primary" />
+                <div className="h-7 w-7 rounded-full bg-blue-500/10 flex items-center justify-center">
+                  <Battery className="h-4 w-4 text-blue-500" />
                 </div>
-                <span className="font-bold text-sm tracking-tight">{activity.event}</span>
+                <span className="font-bold text-sm tracking-tight">{activity.station}</span>
               </div>
               <Badge variant="outline" className={cn("capitalize font-bold px-2 py-0.5 rounded-full border text-[9px] uppercase tracking-tighter", colorClasses)}>
                 {activity.status}
               </Badge>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
-                <Battery className="h-3 w-3 text-blue-500/70" />
-                {activity.station}
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="flex items-center gap-1.5 text-muted-foreground font-medium">
+                <User className="h-3.5 w-3.5 text-purple-500/70" />
+                <span className="truncate">By: {activity.user}</span>
               </div>
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium justify-end">
-                <User className="h-3 w-3 text-purple-500/70" />
-                {activity.user}
-              </div>
+              {activity.duration !== undefined && (
+                <div className="flex items-center gap-1.5 text-muted-foreground font-medium justify-end">
+                  <Timer className="h-3.5 w-3.5 text-blue-400" />
+                  <span>{activity.duration}m</span>
+                </div>
+              )}
             </div>
 
-            <div className="flex items-center justify-between pt-1 border-t border-border/10">
+            <div className="flex items-center justify-between pt-2 border-t border-border/10">
               <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60">
                 <Clock className="h-3 w-3" />
-                {formatTimeAgo(activity.eventTime)}
+                {formatDateTime(val)}
               </div>
               {activity.energyDelivered !== undefined && (
                 <div className="flex items-center gap-1 text-[10px] font-bold text-amber-500/90 font-mono">
@@ -168,6 +185,20 @@ export function ActivityList({ activities, isLoading = false }: ActivityListProp
                 </div>
               )}
             </div>
+
+            {activity.stationId && activity.eventId && (
+              <div className="pt-2 border-t border-border/10 flex justify-end">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onViewLogs?.(activity.stationId!, activity.eventId!)}
+                  className="h-7 px-2 text-[9px] font-black uppercase tracking-widest text-primary hover:bg-primary/10"
+                >
+                  <Terminal className="h-3 w-3 mr-1" />
+                  View Logs
+                </Button>
+              </div>
+            )}
           </div>
         );
       }}

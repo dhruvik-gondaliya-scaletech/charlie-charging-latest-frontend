@@ -124,7 +124,7 @@ export function LocationStations({ stations, isLoading }: LocationStationsProps)
                     <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Real-time assets reporting at this location</p>
                 </div>
                 <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-bold px-4 py-1 rounded-full uppercase tracking-widest text-[10px]">
-                    {stations.length} Units Online
+                    {stations.filter(s => s.status === ChargingStatus.AVAILABLE).length} Units Online
                 </Badge>
             </div>
 

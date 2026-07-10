@@ -20,7 +20,8 @@ import {
     RefreshCw,
     RotateCcw,
     Leaf,
-    Building2
+    Building2,
+    Terminal
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,8 @@ import {
 import { DatePicker } from '@/components/shared/DatePicker';
 import { startOfDay, endOfDay, format } from 'date-fns';
 import { FRONTEND_ROUTES } from '@/constants/constants';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { StationLogs } from '@/features/stations/components/StationLogs';
 
 interface LocationSessionsProps {
     locationId: string;
@@ -42,6 +45,7 @@ interface LocationSessionsProps {
 
 export function LocationSessions({ locationId, env }: LocationSessionsProps) {
     const router = useRouter();
+    const [viewLogsSession, setViewLogsSession] = useState<{ stationId: string; sessionId: string } | null>(null);
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
         from: undefined,
@@ -68,8 +72,33 @@ export function LocationSessions({ locationId, env }: LocationSessionsProps) {
     const columns: ColumnDef<Session>[] = useMemo(
         () => [
             {
+                accessorKey: 'status',
+                header: 'Status',
+                cell: ({ row }) => {
+                    const status = row.getValue('status') as string;
+                    let colorClasses = "";
+
+                    if (status === 'completed' || status === 'COMPLETED' || status === SessionStatus.COMPLETED) {
+                        colorClasses = "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+                    } else if (status === 'in-progress' || status === 'IN_PROGRESS' || status === SessionStatus.IN_PROGRESS) {
+                        colorClasses = "bg-blue-500/10 text-blue-500 border-blue-500/20";
+                    } else {
+                        colorClasses = "bg-destructive/10 text-destructive border-destructive/20";
+                    }
+
+                    return (
+                        <Badge
+                            variant="outline"
+                            className={cn("capitalize font-black px-2.5 py-0.5 rounded-lg border text-[10px] uppercase tracking-widest", colorClasses)}
+                        >
+                            {status.replace('_', ' ')}
+                        </Badge>
+                    );
+                },
+            },
+            {
                 accessorKey: 'stationName',
-                header: 'Station Name',
+                header: 'Station',
                 cell: ({ row }) => (
                     <div
                         className="cursor-pointer hover:text-primary transition-colors group"
@@ -82,8 +111,17 @@ export function LocationSessions({ locationId, env }: LocationSessionsProps) {
                 ),
             },
             {
+                accessorKey: 'connectorId',
+                header: 'Connector',
+                cell: ({ row }) => (
+                    <div className="flex items-center gap-1.5 font-bold text-foreground">
+                        {row.original.connectorType || 'Unknown'}
+                    </div>
+                ),
+            },
+            {
                 accessorKey: 'user',
-                header: 'User',
+                header: 'Started By',
                 cell: ({ row }) => {
                     const firstName = row.original.userFirstName;
                     const lastName = row.original.userLastName;
@@ -98,23 +136,6 @@ export function LocationSessions({ locationId, env }: LocationSessionsProps) {
                         </div>
                     );
                 },
-            },
-            {
-                accessorKey: 'connectorId',
-                header: 'Connector',
-                cell: ({ row }) => (
-                    <div className="flex flex-col gap-0.5">
-                        <div className="flex items-center gap-1.5 font-black text-primary uppercase tracking-widest text-[10px]">
-                            <Zap className="h-3 w-3" />
-                            <span>Connector #{row.original.connectorId} ({row.original.connectorType || 'Unknown'})</span>
-                        </div>
-                        {row.original.connectorMaxPower && (
-                            <span className="text-[10px] font-bold text-muted-foreground ml-4">
-                                ({row.original.connectorMaxPower} kW)
-                            </span>
-                        )}
-                    </div>
-                ),
             },
             {
                 accessorKey: 'remoteStartTime',
@@ -201,7 +222,7 @@ export function LocationSessions({ locationId, env }: LocationSessionsProps) {
                     }
                     const durationText = formatDurationUtil(row.original.startTime, row.original.endTime);
                     const isLessThanMinute = durationText === '0m';
- 
+
                     return (
                         <div className="flex items-center gap-2 font-bold text-xs text-muted-foreground">
                             <Clock className="h-3.5 w-3.5 opacity-40" />
@@ -240,32 +261,29 @@ export function LocationSessions({ locationId, env }: LocationSessionsProps) {
                 },
             },
             {
-                accessorKey: 'status',
-                header: 'Status',
+                id: 'actions',
+                header: 'Actions',
                 cell: ({ row }) => {
-                    const status = row.getValue('status') as string;
-                    let colorClasses = "";
-
-                    if (status === 'completed' || status === 'COMPLETED' || status === SessionStatus.COMPLETED) {
-                        colorClasses = "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
-                    } else if (status === 'in-progress' || status === 'IN_PROGRESS' || status === SessionStatus.IN_PROGRESS) {
-                        colorClasses = "bg-blue-500/10 text-blue-500 border-blue-500/20";
-                    } else {
-                        colorClasses = "bg-destructive/10 text-destructive border-destructive/20";
-                    }
+                    const transactionId = row.original.transactionId;
+                    if (!transactionId) return null;
 
                     return (
-                        <Badge
-                            variant="outline"
-                            className={cn("capitalize font-black px-2.5 py-0.5 rounded-lg border text-[10px] uppercase tracking-widest", colorClasses)}
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                                setViewLogsSession({ stationId: row.original.stationId, sessionId: row.original.id });
+                            }}
+                            className="h-8 px-2 text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary/10"
                         >
-                            {status.replace('_', ' ')}
-                        </Badge>
+                            <Terminal className="h-3.5 w-3.5 mr-1.5" />
+                            View Logs
+                        </Button>
                     );
                 },
             },
         ],
-        [router]
+        [setViewLogsSession]
     );
 
     if (isLoading && !sessions) {
@@ -400,7 +418,7 @@ export function LocationSessions({ locationId, env }: LocationSessionsProps) {
                                     <div>
                                         <p className="font-bold text-foreground leading-tight">{fullName}</p>
                                         <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mt-0.5">
-                                            {session.stationName || 'Unknown Station'} • Connector #{session.connectorId}
+                                            {session.stationName || 'Unknown Station'} • {session.connectorType || 'Unknown'}
                                         </p>
                                     </div>
                                 </div>
@@ -455,15 +473,26 @@ export function LocationSessions({ locationId, env }: LocationSessionsProps) {
                                         {session.startTime ? formatDurationUtil(session.startTime, session.endTime) : '-'}
                                     </span>
                                 </div>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => router.push(`${FRONTEND_ROUTES.STATIONS_DETAILS(session.stationId)}?name=${encodeURIComponent(session.stationName || '')}`)}
-                                    className="h-9 rounded-xl text-[10px] font-black uppercase tracking-widest text-primary bg-primary/5 hover:bg-primary/10"
-                                >
-                                    <Building2 className="h-3.5 w-3.5 mr-1.5" />
-                                    View Station
-                                </Button>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => router.push(`${FRONTEND_ROUTES.STATIONS_DETAILS(session.stationId)}?name=${encodeURIComponent(session.stationName || '')}`)}
+                                        className="h-9 rounded-xl text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:bg-muted"
+                                    >
+                                        <Building2 className="h-3.5 w-3.5 mr-1.5" />
+                                        Station
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setViewLogsSession({ stationId: session.stationId, sessionId: session.id })}
+                                        className="h-9 rounded-xl text-[10px] font-black uppercase tracking-widest text-primary bg-primary/5 hover:bg-primary/10"
+                                    >
+                                        <Terminal className="h-3.5 w-3.5 mr-1.5" />
+                                        Logs
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     );
@@ -480,6 +509,27 @@ export function LocationSessions({ locationId, env }: LocationSessionsProps) {
                     </div>
                 }
             />
+
+            <Dialog open={viewLogsSession !== null} onOpenChange={(open) => !open && setViewLogsSession(null)}>
+                <DialogContent className="w-[calc(100vw-2rem)] md:w-[calc(100vw-256px-4rem)] max-w-[1550px] sm:max-w-none md:max-w-[1550px] md:left-[calc(50%+128px)] max-h-[96vh] h-[96vh] bg-card border-border/40 text-foreground p-4 md:p-6 rounded-3xl shadow-xl z-50 flex flex-col gap-4 overflow-hidden">
+                    <DialogHeader className="flex-none">
+                        <DialogTitle className="text-xl font-black flex items-center gap-2">
+                            <Terminal className="h-5 w-5 text-primary" />
+                            OCPP Session Diagnostic Logs
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="flex-1 min-h-0">
+                        {viewLogsSession && (
+                            <StationLogs
+                                stationId={viewLogsSession.stationId}
+                                sessionId={viewLogsSession.sessionId}
+                                onClearSessionId={() => setViewLogsSession(null)}
+                                className="h-full min-h-0 md:h-full"
+                            />
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

@@ -86,6 +86,7 @@ export interface Location {
   latitude?: number;
   longitude?: number;
   stationCount?: number;
+  offlineStationCount?: number;
   lastUpdated?: string;
   isActive?: boolean;
   locationEnv?: LocationEnv;
@@ -125,6 +126,8 @@ export interface DashboardStats {
   activeSessions: number;
   capacityUtilization: number;
   activeUsers: number;
+  completedSessions: number;
+  failedSessions: number;
 }
 
 export interface RecentActivity {
@@ -136,6 +139,8 @@ export interface RecentActivity {
   energyDelivered?: number;
   duration?: number;
   eventId?: string;
+  stationId?: string;
+  startDate?: string;
 }
 
 export interface DashboardData {

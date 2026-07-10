@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useStation, useStationSessions, useStationSessionStats } from '@/hooks/get/useStations';
 import { Badge } from '@/components/ui/badge';
@@ -92,6 +92,17 @@ export function StationDetailContainer() {
     const { data: sessionStats, isLoading: isStatsLoading } = useStationSessionStats(id as string);
     const [activeTab, setActiveTab] = useState('connectors');
     const [filterSessionId, setFilterSessionId] = useState<string | undefined>(undefined);
+
+    useEffect(() => {
+        const tabParam = searchParams ? searchParams.get('tab') : null;
+        const sessionIdParam = searchParams ? searchParams.get('sessionId') : null;
+        if (tabParam) {
+            setActiveTab(tabParam);
+        }
+        if (sessionIdParam) {
+            setFilterSessionId(sessionIdParam);
+        }
+    }, [searchParams]);
 
     const fromLocationId = searchParams ? searchParams.get('fromLocation') : null;
     const backHref = fromLocationId

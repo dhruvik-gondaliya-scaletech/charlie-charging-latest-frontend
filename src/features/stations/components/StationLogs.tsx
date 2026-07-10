@@ -57,6 +57,7 @@ interface StationLogsProps {
     stationId: string;
     sessionId?: string;
     onClearSessionId?: () => void;
+    className?: string;
 }
 
 const OCPP_MESSAGE_TYPES = [
@@ -84,7 +85,7 @@ const OCPP_MESSAGE_TYPES = [
     'AuthorizeRemoteTxStop',
 ];
 
-export function StationLogs({ stationId, sessionId, onClearSessionId }: StationLogsProps) {
+export function StationLogs({ stationId, sessionId, onClearSessionId, className }: StationLogsProps) {
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const [directionFilter, setDirectionFilter] = useState<string>('all');
     const [messageTypeFilter, setMessageTypeFilter] = useState<string[]>([]);
@@ -353,7 +354,7 @@ export function StationLogs({ stationId, sessionId, onClearSessionId }: StationL
     const isAnyFilterActive = directionFilter !== 'all' || messageTypeFilter.length > 0 || dateRange.from || dateRange.to;
 
     return (
-        <div className="flex flex-col gap-0 h-auto min-h-[600px] md:h-[800px]">
+        <div className={cn("flex flex-col gap-0 h-auto min-h-[600px] md:h-[800px]", className)}>
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2 mb-6">
                 <div>
