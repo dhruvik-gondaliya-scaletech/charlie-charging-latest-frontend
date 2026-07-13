@@ -11,11 +11,11 @@ export const useDashboardData = (params?: DashboardParams) => {
   });
 };
 
-export const useDashboardStats = () => {
+export const useDashboardStats = (params?: DashboardParams) => {
   const { environment } = useEnvironment();
   return useQuery({
-    queryKey: ['dashboard-stats', environment],
-    queryFn: () => dashboardService.getDashboardStats(environment),
+    queryKey: ['dashboard-stats', environment, params],
+    queryFn: () => dashboardService.getDashboardStats({ ...params, env: environment }),
     staleTime: 30000,
   });
 };

@@ -7,6 +7,8 @@ export interface DashboardParams {
   stationId?: string;
   startDate?: string;
   endDate?: string;
+  fromDate?: string;
+  toDate?: string;
   env?: string;
 }
 
@@ -15,9 +17,9 @@ class DashboardService {
     return httpService.get<DashboardData>(API_CONFIG.endpoints.dashboard.base, { params });
   }
 
-  async getDashboardStats(env?: string) {
+  async getDashboardStats(params?: DashboardParams) {
     return httpService.get<DashboardStats>(API_CONFIG.endpoints.dashboard.stats, {
-      params: { env },
+      params,
     });
   }
 
