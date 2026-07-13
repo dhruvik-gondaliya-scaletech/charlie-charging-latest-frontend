@@ -266,7 +266,7 @@ export function LocationsContainer() {
             columns={columns}
             isLoading={isLoading}
             showSearch
-            searchPosition="end"
+            searchPosition="start"
             appendWithSearch={
               <Button
                 onClick={handleCreate}

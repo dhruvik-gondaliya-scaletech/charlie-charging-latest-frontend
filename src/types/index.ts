@@ -141,6 +141,7 @@ export interface RecentActivity {
   eventId?: string;
   stationId?: string;
   startDate?: string;
+  useMode?: SessionUseMode | null;
 }
 
 export interface DashboardData {
@@ -354,6 +355,8 @@ export enum SessionStatus {
   FAILED = 'failed',
 }
 
+export type SessionUseMode = 'CSMS' | 'API';
+
 export interface Session {
   id: string;
   stationId: string;
@@ -380,6 +383,7 @@ export interface Session {
   durationMinutes?: number;
   currentSpeed?: number;
   peakKwh?: number;
+  useMode?: SessionUseMode | null;
   createdAt: string;
   updatedAt: string;
 }

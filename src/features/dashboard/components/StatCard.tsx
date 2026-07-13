@@ -45,7 +45,7 @@ export function StatCard({
     <motion.div
       // whileHover={{ y: -4, scale: 1.01 }}
       transition={{ duration: 0.2 }}
-      className={cn("h-full", className)}
+      className={cn("relative", className)}
     >
       <Card className="relative h-full overflow-hidden border-border/40 transition-all group bg-card/40 backdrop-blur-xl">
         <div className={cn(

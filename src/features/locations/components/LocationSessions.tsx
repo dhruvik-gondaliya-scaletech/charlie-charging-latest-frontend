@@ -126,13 +126,26 @@ export function LocationSessions({ locationId, env }: LocationSessionsProps) {
                     const firstName = row.original.userFirstName;
                     const lastName = row.original.userLastName;
                     const fullName = firstName && lastName ? `${firstName} ${lastName}` : 'Guest User';
+                    const useMode = row.original.useMode;
 
                     return (
                         <div className="flex items-center gap-3">
                             <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-sm">
                                 <UserIcon className="h-4 w-4" />
                             </div>
-                            <span className="font-bold text-foreground tracking-tight">{fullName}</span>
+                            <div className="flex flex-col gap-1">
+                                <span className="font-bold text-foreground tracking-tight leading-none">{fullName}</span>
+                                {useMode && (
+                                    <span className={cn(
+                                        "inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border w-fit",
+                                        useMode === 'CSMS'
+                                            ? "bg-violet-500/10 text-violet-500 border-violet-500/20"
+                                            : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                                    )}>
+                                        {useMode}
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     );
                 },
@@ -407,6 +420,7 @@ export function LocationSessions({ locationId, env }: LocationSessionsProps) {
                     else colorClasses = "bg-destructive/10 text-destructive border-destructive/20";
 
                     const fullName = session.userFirstName && session.userLastName ? `${session.userFirstName} ${session.userLastName}` : 'Guest User';
+                    const useMode = session.useMode;
 
                     return (
                         <div className="bg-card border border-border/50 rounded-3xl p-5 space-y-4 shadow-sm">
@@ -416,7 +430,19 @@ export function LocationSessions({ locationId, env }: LocationSessionsProps) {
                                         <UserIcon className="h-5 w-5" />
                                     </div>
                                     <div>
-                                        <p className="font-bold text-foreground leading-tight">{fullName}</p>
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <p className="font-bold text-foreground leading-tight">{fullName}</p>
+                                            {useMode && (
+                                                <span className={cn(
+                                                    "inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border",
+                                                    useMode === 'CSMS'
+                                                        ? "bg-violet-500/10 text-violet-500 border-violet-500/20"
+                                                        : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                                                )}>
+                                                    {useMode}
+                                                </span>
+                                            )}
+                                        </div>
                                         <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mt-0.5">
                                             {session.stationName || 'Unknown Station'} • {session.connectorType || 'Unknown'}
                                         </p>

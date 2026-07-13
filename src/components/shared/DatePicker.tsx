@@ -25,23 +25,49 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { fadeIn, scaleIn } from '@/lib/motion';
 
 interface DatePickerProps {
     dateRange: { from: Date | undefined; to: Date | undefined };
     onDateRangeChange: (range: { from: Date | undefined; to: Date | undefined }) => void;
     className?: string;
+    showTimeSelect?: boolean;
 }
 
-export function DatePicker({ dateRange, onDateRangeChange, className }: DatePickerProps) {
+export function DatePicker({ dateRange, onDateRangeChange, className, showTimeSelect = false }: DatePickerProps) {
     const [isOpen, setIsOpen] = React.useState(false);
     const [viewDate, setViewDate] = React.useState(new Date());
     const [tempRange, setTempRange] = React.useState(dateRange);
+    const [startTime, setStartTime] = React.useState({ hours: 0, minutes: 0 });
+    const [endTime, setEndTime] = React.useState({ hours: 23, minutes: 59 });
 
     // Sync tempRange when popover opens or dateRange changes externally
     React.useEffect(() => {
         if (isOpen) {
             setTempRange(dateRange);
+            if (dateRange.from) {
+                setStartTime({
+                    hours: dateRange.from.getHours(),
+                    minutes: dateRange.from.getMinutes(),
+                });
+            } else {
+                setStartTime({ hours: 0, minutes: 0 });
+            }
+            if (dateRange.to) {
+                setEndTime({
+                    hours: dateRange.to.getHours(),
+                    minutes: dateRange.to.getMinutes(),
+                });
+            } else {
+                setEndTime({ hours: 23, minutes: 59 });
+            }
         }
     }, [isOpen, dateRange]);
 
@@ -105,15 +131,43 @@ export function DatePicker({ dateRange, onDateRangeChange, className }: DatePick
         );
     };
 
+    const handleStartTimeChange = (hours: number, minutes: number) => {
+        setStartTime({ hours, minutes });
+        if (tempRange.from) {
+            const newFrom = new Date(tempRange.from);
+            newFrom.setHours(hours, minutes, 0, 0);
+            setTempRange(prev => ({ ...prev, from: newFrom }));
+        }
+    };
+
+    const handleEndTimeChange = (hours: number, minutes: number) => {
+        setEndTime({ hours, minutes });
+        if (tempRange.to) {
+            const newTo = new Date(tempRange.to);
+            newTo.setHours(hours, minutes, 59, 999);
+            setTempRange(prev => ({ ...prev, to: newTo }));
+        }
+    };
+
     const handleDayClick = (day: Date) => {
         const clickedDay = startOfDay(day);
         if (!tempRange.from || (tempRange.from && tempRange.to)) {
-            setTempRange({ from: clickedDay, to: undefined });
+            const newFrom = new Date(clickedDay);
+            newFrom.setHours(startTime.hours, startTime.minutes, 0, 0);
+            setTempRange({ from: newFrom, to: undefined });
         } else {
             if (isBefore(clickedDay, tempRange.from)) {
-                setTempRange({ from: clickedDay, to: tempRange.from });
+                const newFrom = new Date(clickedDay);
+                newFrom.setHours(startTime.hours, startTime.minutes, 0, 0);
+                const newTo = new Date(tempRange.from);
+                newTo.setHours(endTime.hours, endTime.minutes, 59, 999);
+                setTempRange({ from: newFrom, to: newTo });
             } else {
-                setTempRange({ from: tempRange.from, to: clickedDay });
+                const newFrom = new Date(tempRange.from);
+                newFrom.setHours(startTime.hours, startTime.minutes, 0, 0);
+                const newTo = new Date(clickedDay);
+                newTo.setHours(endTime.hours, endTime.minutes, 59, 999);
+                setTempRange({ from: newFrom, to: newTo });
             }
         }
     };
@@ -125,6 +179,8 @@ export function DatePicker({ dateRange, onDateRangeChange, className }: DatePick
 
     const handleReset = () => {
         setTempRange({ from: undefined, to: undefined });
+        setStartTime({ hours: 0, minutes: 0 });
+        setEndTime({ hours: 23, minutes: 59 });
     };
 
     return (
@@ -144,10 +200,10 @@ export function DatePicker({ dateRange, onDateRangeChange, className }: DatePick
                             {dateRange?.from ? (
                                 dateRange.to ? (
                                     <>
-                                        {format(dateRange.from, "LLL dd, y")} - {format(dateRange.to, "LLL dd, y")}
+                                        {format(dateRange.from, showTimeSelect ? "LLL dd, y HH:mm" : "LLL dd, y")} - {format(dateRange.to, showTimeSelect ? "LLL dd, y HH:mm" : "LLL dd, y")}
                                     </>
                                 ) : (
-                                    format(dateRange.from, "LLL dd, y")
+                                    format(dateRange.from, showTimeSelect ? "LLL dd, y HH:mm" : "LLL dd, y")
                                 )
                             ) : (
                                 <span className="uppercase tracking-[0.15em] text-[10px] opacity-70">Select Date Range</span>
@@ -204,6 +260,83 @@ export function DatePicker({ dateRange, onDateRangeChange, className }: DatePick
                                 {renderCalendar(addMonths(viewDate, 1))}
                             </div>
                         </div>
+
+                        {showTimeSelect && (
+                            <div className="flex flex-col sm:flex-row items-center gap-6 px-6 py-4 border-t border-border/20 bg-muted/10 justify-between">
+                                <div className="flex items-center gap-3">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Start Time:</span>
+                                    <div className="flex items-center gap-1">
+                                        <Select
+                                            value={startTime.hours.toString()}
+                                            onValueChange={(val) => handleStartTimeChange(Number(val), startTime.minutes)}
+                                        >
+                                            <SelectTrigger className="h-8 w-[65px] bg-background/50 border border-border/40 rounded-xl font-bold text-xs justify-between">
+                                                <SelectValue placeholder="00" />
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded-xl border border-border/40 bg-card/95 backdrop-blur-xl max-h-[200px] z-[200] overflow-y-auto">
+                                                {Array.from({ length: 24 }).map((_, h) => (
+                                                    <SelectItem key={h} value={h.toString()} className="text-xs font-semibold">
+                                                        {String(h).padStart(2, '0')}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <span className="text-xs font-bold text-muted-foreground">:</span>
+                                        <Select
+                                            value={startTime.minutes.toString()}
+                                            onValueChange={(val) => handleStartTimeChange(startTime.hours, Number(val))}
+                                        >
+                                            <SelectTrigger className="h-8 w-[65px] bg-background/50 border border-border/40 rounded-xl font-bold text-xs justify-between">
+                                                <SelectValue placeholder="00" />
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded-xl border border-border/40 bg-card/95 backdrop-blur-xl max-h-[200px] z-[200] overflow-y-auto">
+                                                {Array.from({ length: 60 }).map((_, m) => (
+                                                    <SelectItem key={m} value={m.toString()} className="text-xs font-semibold">
+                                                        {String(m).padStart(2, '0')}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">End Time:</span>
+                                    <div className="flex items-center gap-1">
+                                        <Select
+                                            value={endTime.hours.toString()}
+                                            onValueChange={(val) => handleEndTimeChange(Number(val), endTime.minutes)}
+                                        >
+                                            <SelectTrigger className="h-8 w-[65px] bg-background/50 border border-border/40 rounded-xl font-bold text-xs justify-between">
+                                                <SelectValue placeholder="00" />
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded-xl border border-border/40 bg-card/95 backdrop-blur-xl max-h-[200px] z-[200] overflow-y-auto">
+                                                {Array.from({ length: 24 }).map((_, h) => (
+                                                    <SelectItem key={h} value={h.toString()} className="text-xs font-semibold">
+                                                        {String(h).padStart(2, '0')}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <span className="text-xs font-bold text-muted-foreground">:</span>
+                                        <Select
+                                            value={endTime.minutes.toString()}
+                                            onValueChange={(val) => handleEndTimeChange(endTime.hours, Number(val))}
+                                        >
+                                            <SelectTrigger className="h-8 w-[65px] bg-background/50 border border-border/40 rounded-xl font-bold text-xs justify-between">
+                                                <SelectValue placeholder="00" />
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded-xl border border-border/40 bg-card/95 backdrop-blur-xl max-h-[200px] z-[200] overflow-y-auto">
+                                                {Array.from({ length: 60 }).map((_, m) => (
+                                                    <SelectItem key={m} value={m.toString()} className="text-xs font-semibold">
+                                                        {String(m).padStart(2, '0')}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Footer */}
                         <div className="flex items-center justify-between p-4 px-6 bg-muted/30 border-t border-border/20">

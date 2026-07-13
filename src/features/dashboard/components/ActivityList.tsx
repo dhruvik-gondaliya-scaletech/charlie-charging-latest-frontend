@@ -32,12 +32,27 @@ export function ActivityList({ activities, isLoading = false, onViewLogs, limit 
     {
       accessorKey: 'user',
       header: 'Start By',
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2 text-muted-foreground group-hover:text-foreground transition-colors">
-          <User className="h-4 w-4 text-purple-500/70" />
-          <span className="text-sm font-semibold">{row.original.user}</span>
-        </div>
-      ),
+      cell: ({ row }) => {
+        const useMode = row.original.useMode;
+        return (
+          <div className="flex items-center gap-2 text-muted-foreground group-hover:text-foreground transition-colors">
+            <User className="h-4 w-4 text-purple-500/70" />
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-semibold leading-none">{row.original.user}</span>
+              {useMode && (
+                <span className={cn(
+                  "inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border w-fit",
+                  useMode === 'CSMS'
+                    ? "bg-violet-500/10 text-violet-500 border-violet-500/20"
+                    : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                )}>
+                  {useMode}
+                </span>
+              )}
+            </div>
+          </div>
+        );
+      },
     },
     {
       accessorKey: 'station',
@@ -163,7 +178,19 @@ export function ActivityList({ activities, isLoading = false, onViewLogs, limit 
             <div className="grid grid-cols-2 gap-3 text-xs">
               <div className="flex items-center gap-1.5 text-muted-foreground font-medium">
                 <User className="h-3.5 w-3.5 text-purple-500/70" />
-                <span className="truncate">By: {activity.user}</span>
+                <div className="flex flex-col gap-0.5">
+                  <span className="truncate">By: {activity.user}</span>
+                  {activity.useMode && (
+                    <span className={cn(
+                      "inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border w-fit",
+                      activity.useMode === 'CSMS'
+                        ? "bg-violet-500/10 text-violet-500 border-violet-500/20"
+                        : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                    )}>
+                      {activity.useMode}
+                    </span>
+                  )}
+                </div>
               </div>
               {activity.duration !== undefined && (
                 <div className="flex items-center gap-1.5 text-muted-foreground font-medium justify-end">
