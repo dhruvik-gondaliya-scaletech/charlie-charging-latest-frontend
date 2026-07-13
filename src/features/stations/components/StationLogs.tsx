@@ -401,7 +401,7 @@ export function StationLogs({ stationId, sessionId, onClearSessionId, className 
 
                         {/* Message Type Filter */}
                         <div className="flex items-center gap-2 w-full sm:w-auto">
-                            <Popover>
+                            <Popover modal={true}>
                                 <PopoverTrigger asChild>
                                     <Button
                                         variant="outline"

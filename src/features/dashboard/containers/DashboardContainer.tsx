@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { DatePicker } from '@/components/shared/DatePicker';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { StationLogs } from '@/features/stations/components/StationLogs';
 
 export function DashboardContainer() {
@@ -387,12 +387,6 @@ export function DashboardContainer() {
 
       <Dialog open={viewLogsSession !== null} onOpenChange={(open) => !open && setViewLogsSession(null)}>
         <DialogContent className="w-[calc(100vw-2rem)] md:w-[calc(100vw-256px-4rem)] max-w-[1550px] sm:max-w-none md:max-w-[1550px] md:left-[calc(50%+128px)] max-h-[96vh] h-[96vh] bg-card border-border/40 text-foreground p-4 md:p-6 rounded-3xl shadow-xl z-50 flex flex-col gap-4 overflow-hidden">
-          <DialogHeader className="flex-none">
-            <DialogTitle className="text-xl font-black flex items-center gap-2">
-              <Terminal className="h-5 w-5 text-primary" />
-              OCPP Session Diagnostic Logs
-            </DialogTitle>
-          </DialogHeader>
           <div className="flex-1 min-h-0">
             {viewLogsSession && (
               <StationLogs

@@ -118,7 +118,7 @@ export function ConnectorCard({
                         </Button>
                     )}
 
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="w-full">
                         <Button
                             variant="outline"
                             onClick={() => onUnlock(connector.connectorId)}
@@ -133,7 +133,7 @@ export function ConnectorCard({
                             Unlock Cable
                         </Button>
 
-                        <Button
+                        {/* <Button
                             variant="outline"
                             onClick={() => {
                                 const nameParam = stationName ? `&name=${encodeURIComponent(stationName)}` : '';
@@ -143,7 +143,7 @@ export function ConnectorCard({
                         >
                             <Activity className="h-3.5 w-3.5 text-primary" />
                             Uptime
-                        </Button>
+                        </Button> */}
                     </div>
                 </div>
             </CardContent>

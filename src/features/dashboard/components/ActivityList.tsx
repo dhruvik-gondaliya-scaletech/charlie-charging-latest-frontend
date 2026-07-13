@@ -44,7 +44,7 @@ export function ActivityList({ activities, isLoading = false, onViewLogs, limit 
                   "inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border w-fit",
                   useMode === 'CSMS'
                     ? "bg-violet-500/10 text-violet-500 border-violet-500/20"
-                    : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                    : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
                 )}>
                   {useMode}
                 </span>
@@ -185,7 +185,7 @@ export function ActivityList({ activities, isLoading = false, onViewLogs, limit 
                       "inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border w-fit",
                       activity.useMode === 'CSMS'
                         ? "bg-violet-500/10 text-violet-500 border-violet-500/20"
-                        : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                        : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
                     )}>
                       {activity.useMode}
                     </span>
