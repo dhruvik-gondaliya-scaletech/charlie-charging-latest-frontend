@@ -1392,7 +1392,7 @@ export function ReportsContainer() {
                               variant="outline"
                               size="sm"
                               className="h-8 rounded-lg font-bold text-[11px] gap-1.5"
-                              onClick={() => handleCopyText(`curl -X GET "${API_CONFIG.baseUrl || window.location.origin}/calstart/charge-events?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&evseId=ABB001&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`, 'curl-charge')}
+                              onClick={() => handleCopyText(`curl -X GET "${API_CONFIG.baseUrl || window.location.origin}/calstart/charge-events?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`, 'curl-charge')}
                             >
                               {copiedEndpoint === 'curl-charge' ? (
                                 <>
@@ -1406,7 +1406,7 @@ export function ReportsContainer() {
                             </Button>
                           </div>
                           <pre className="p-4 rounded-xl bg-slate-950/80 border border-border/40 text-[11px] font-mono text-slate-300 overflow-x-auto leading-relaxed shadow-inner">
-                            {`curl -X GET "${API_CONFIG.baseUrl || 'https://api.example.com'}/calstart/charge-events?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&evseId=ABB001&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`}
+                            {`curl -X GET "${API_CONFIG.baseUrl || 'https://api.example.com'}/calstart/charge-events?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`}
                           </pre>
                         </div>
 
@@ -1513,7 +1513,7 @@ export function ReportsContainer() {
                               variant="outline"
                               size="sm"
                               className="h-8 rounded-lg font-bold text-[11px] gap-1.5"
-                              onClick={() => handleCopyText(`curl -X GET "${API_CONFIG.baseUrl || window.location.origin}/calstart/downtime-events?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&evseId=ABB001&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`, 'curl-downtime')}
+                              onClick={() => handleCopyText(`curl -X GET "${API_CONFIG.baseUrl || window.location.origin}/calstart/downtime-events?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`, 'curl-downtime')}
                             >
                               {copiedEndpoint === 'curl-downtime' ? (
                                 <>
@@ -1527,7 +1527,7 @@ export function ReportsContainer() {
                             </Button>
                           </div>
                           <pre className="p-4 rounded-xl bg-slate-950/80 border border-border/40 text-[11px] font-mono text-slate-300 overflow-x-auto leading-relaxed shadow-inner">
-                            {`curl -X GET "${API_CONFIG.baseUrl || 'https://api.example.com'}/calstart/downtime-events?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&evseId=ABB001&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`}
+                            {`curl -X GET "${API_CONFIG.baseUrl || 'https://api.example.com'}/calstart/downtime-events?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`}
                           </pre>
                         </div>
 
