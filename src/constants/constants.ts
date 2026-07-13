@@ -114,11 +114,17 @@ export const API_CONFIG = {
         },
         reporting: {
             intervals: '/reporting/intervals',
+            intervalsExport: '/reporting/intervals/export',
             aggregated: '/reporting/intervals/aggregated',
             sessionIntervals: (id: string) => `/reporting/sessions/${id}/intervals`,
             sessionSummary: (id: string) => `/reporting/sessions/${id}/intervals/summary`,
             sessionStats: '/reporting/sessions/stats',
             sessionExport: '/reporting/sessions/export',
+            downtimeExport: '/reporting/downtime/export',
+            getLocationGroups: '/reporting/locations-groups',
+            getLocationGroup: (groupName: string) => `/reporting/locations-group/${groupName}`,
+            updateLocationGroupLocations: (groupName: string) => `/reporting/locations-group/${groupName}/locations`,
+            getApiKey: '/reporting/api-key',
         },
         compliance: {
             uptime: '/compliance/uptime',
@@ -210,6 +216,7 @@ export const FRONTEND_ROUTES = {
     LANDING_PAGE_THREE: "/landing-three",
     LANDING_PAGE_FOUR: "/landing-four",
     API_DOCS: "/docs",
+    REPORTS: "/reports",
 }
 
 export const AUTH_CONFIG = {

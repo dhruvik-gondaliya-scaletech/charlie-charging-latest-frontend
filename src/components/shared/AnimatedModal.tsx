@@ -123,7 +123,7 @@ export function AnimatedModal({
     <AnimatePresence mode="wait">
       {isOpen && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 pointer-events-auto"
           role="dialog"
           aria-modal="true"
           aria-labelledby={title ? 'modal-title' : undefined}
@@ -135,7 +135,7 @@ export function AnimatedModal({
             animate="animate"
             exit="exit"
             className={cn(
-              'fixed inset-0 bg-background/80 backdrop-blur-sm',
+              'fixed inset-0 bg-background/80 backdrop-blur-sm pointer-events-auto',
               overlayClassName
             )}
             onClick={handleOverlayClick}
@@ -148,7 +148,7 @@ export function AnimatedModal({
             animate="animate"
             exit="exit"
             className={cn(
-              'relative z-[101] w-full rounded-3xl border bg-background shadow-2xl ring-1 ring-border/50',
+              'relative z-[101] w-full rounded-3xl border bg-background shadow-2xl ring-1 ring-border/50 pointer-events-auto',
               sizeClasses[size],
               className
             )}

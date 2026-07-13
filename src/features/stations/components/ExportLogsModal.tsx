@@ -50,9 +50,10 @@ interface ExportLogsModalProps {
   onClose: () => void;
   stationId: string;
   sessionId?: string;
+  defaultSelectedEvents?: string[];
 }
 
-export function ExportLogsModal({ isOpen, onClose, stationId, sessionId }: ExportLogsModalProps) {
+export function ExportLogsModal({ isOpen, onClose, stationId, sessionId, defaultSelectedEvents }: ExportLogsModalProps) {
   const [isExporting, setIsExporting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -67,6 +68,16 @@ export function ExportLogsModal({ isOpen, onClose, stationId, sessionId }: Expor
 
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>(getInitialDateRange());
   const [selectedEvents, setSelectedEvents] = useState<string[]>([...OCPP_MESSAGE_TYPES]);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      if (defaultSelectedEvents && defaultSelectedEvents.length > 0) {
+        setSelectedEvents(defaultSelectedEvents);
+      } else {
+        setSelectedEvents([...OCPP_MESSAGE_TYPES]);
+      }
+    }
+  }, [isOpen, defaultSelectedEvents]);
 
   const filteredTypes = useMemo(() => {
     return OCPP_MESSAGE_TYPES.filter(type =>
@@ -109,9 +120,11 @@ export function ExportLogsModal({ isOpen, onClose, stationId, sessionId }: Expor
       const params = {
         stationId,
         sessionId,
-        startDate: !sessionId && dateRange.from ? format(startOfDay(dateRange.from), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") : undefined,
-        endDate: !sessionId && dateRange.to ? format(endOfDay(dateRange.to), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") : undefined,
+        startDate: !sessionId && dateRange.from ? format(dateRange.from, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") : undefined,
+        endDate: !sessionId && dateRange.to ? format(dateRange.to, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") : undefined,
         messageType: selectedEvents.length < OCPP_MESSAGE_TYPES.length ? selectedEvents.join(',') : undefined,
+        timezoneOffset: new Date().getTimezoneOffset(),
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       };
 
       const csvBlob = await stationService.exportOcppLogs(params);
@@ -188,6 +201,7 @@ export function ExportLogsModal({ isOpen, onClose, stationId, sessionId }: Expor
                   dateRange={dateRange}
                   onDateRangeChange={setDateRange}
                   className="w-full h-10"
+                  showTimeSelect
                 />
               )}
             </div>

@@ -31,6 +31,10 @@ export function LocationsContainer() {
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
 
   const { data: locations, isLoading, error } = useLocations();
+  const sortedLocations = useMemo(() => {
+    if (!locations) return [];
+    return [...locations].sort((a, b) => a.name.localeCompare(b.name));
+  }, [locations]);
   const deleteLocation = useDeleteLocation();
   const transferLocation = useTransferLocation();
 
@@ -78,27 +82,6 @@ export function LocationsContainer() {
         ),
       },
       {
-        accessorKey: 'locationEnv',
-        header: 'Environment',
-        cell: ({ row }) => {
-          const env = row.original.locationEnv;
-          if (!env) return <span className="text-xs text-muted-foreground">-</span>;
-          return (
-            <Badge
-              variant="outline"
-              className={cn(
-                "text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-md border tracking-wider",
-                env === LocationEnv.PRODUCTION
-                  ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                  : "bg-blue-500/10 text-blue-500 border-blue-500/20"
-              )}
-            >
-              {env === LocationEnv.PRODUCTION ? 'Production' : 'Development'}
-            </Badge>
-          );
-        },
-      },
-      {
         accessorKey: 'address',
         header: 'Address',
         cell: ({ row }) => {
@@ -123,15 +106,6 @@ export function LocationsContainer() {
         cell: ({ row }) => <span className="text-xs font-semibold">{row.original.city}, {row.original.state}</span>
       },
       {
-        accessorKey: 'stationCount',
-        header: 'Stations',
-        cell: ({ row }) => (
-          <Badge variant="outline" className="bg-primary/5 text-primary border-primary/10 font-bold px-2.5 py-0.5 rounded-full shadow-sm">
-            {row.getValue('stationCount') || 0} units
-          </Badge>
-        ),
-      },
-      {
         accessorKey: 'visibility',
         header: 'Visibility',
         cell: ({ row }) => {
@@ -153,7 +127,7 @@ export function LocationsContainer() {
       },
       {
         accessorKey: 'isActive',
-        header: 'Status',
+        header: 'Active/Inactive',
         cell: ({ row }) => {
           const isActive = row.getValue('isActive') as boolean;
           return (
@@ -166,7 +140,36 @@ export function LocationsContainer() {
                   : "bg-muted text-muted-foreground border-border"
               )}
             >
-              {isActive ? 'Live' : 'Inactive'}
+              {isActive ? 'Active' : 'Inactive'}
+            </Badge>
+          );
+        },
+      },
+      {
+        accessorKey: 'stationCount',
+        header: 'Total Stations',
+        cell: ({ row }) => (
+          <Badge variant="outline" className="bg-primary/5 text-primary border-primary/10 font-bold px-2.5 py-0.5 rounded-full shadow-sm">
+            {row.getValue('stationCount') || 0} units
+          </Badge>
+        ),
+      },
+      {
+        accessorKey: 'offlineStationCount',
+        header: 'Offline Stations',
+        cell: ({ row }) => {
+          const offlineCount = row.original.offlineStationCount || 0;
+          return (
+            <Badge
+              variant="outline"
+              className={cn(
+                "font-bold px-2.5 py-0.5 rounded-full border shadow-sm",
+                offlineCount > 0
+                  ? "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                  : "bg-muted text-muted-foreground border-border"
+              )}
+            >
+              {offlineCount} units
             </Badge>
           );
         },
@@ -204,6 +207,27 @@ export function LocationsContainer() {
           </div>
         ),
       },
+      {
+        accessorKey: 'locationEnv',
+        header: 'Environment',
+        cell: ({ row }) => {
+          const env = row.original.locationEnv;
+          if (!env) return <span className="text-xs text-muted-foreground">-</span>;
+          return (
+            <Badge
+              variant="outline"
+              className={cn(
+                "text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-md border tracking-wider",
+                env === LocationEnv.PRODUCTION
+                  ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                  : "bg-blue-500/10 text-blue-500 border-blue-500/20"
+              )}
+            >
+              {env === LocationEnv.PRODUCTION ? 'Production' : 'Development'}
+            </Badge>
+          );
+        },
+      },
     ],
     [handleEdit, handleViewDetails, handleDelete]
   );
@@ -238,11 +262,11 @@ export function LocationsContainer() {
 
         <motion.div variants={staggerItem} className="relative">
           <Table<Location>
-            data={locations || []}
+            data={sortedLocations}
             columns={columns}
             isLoading={isLoading}
             showSearch
-            searchPosition="end"
+            searchPosition="start"
             appendWithSearch={
               <Button
                 onClick={handleCreate}
@@ -307,7 +331,7 @@ export function LocationsContainer() {
                         : "bg-muted text-muted-foreground border-border"
                     )}
                   >
-                    {location.isActive ? 'Live' : 'Inactive'}
+                    {location.isActive ? 'Active' : 'Inactive'}
                   </Badge>
                 </div>
 
@@ -316,10 +340,22 @@ export function LocationsContainer() {
                   <p className="text-sm font-medium leading-normal">{location.address}</p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <Badge variant="outline" className="bg-primary/5 text-primary border-primary/10 font-bold px-2.5 py-1 rounded-xl shadow-sm text-xs">
                     <Zap className="h-3 w-3 mr-1" />
-                    {location.stationCount || 0} Stations
+                    {location.stationCount || 0} Total Stations
+                  </Badge>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "font-bold px-2.5 py-1 rounded-xl shadow-sm text-xs",
+                      (location.offlineStationCount || 0) > 0
+                        ? "bg-rose-500/5 text-rose-500 border-rose-500/10"
+                        : "bg-muted text-muted-foreground border-border"
+                    )}
+                  >
+                    <AlertTriangle className="h-3 w-3 mr-1" />
+                    {location.offlineStationCount || 0} Offline
                   </Badge>
                 </div>
 

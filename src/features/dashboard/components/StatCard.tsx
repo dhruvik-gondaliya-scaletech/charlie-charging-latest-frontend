@@ -18,6 +18,8 @@ interface StatCardProps {
   secondary?: SecondaryStat;
   loading?: boolean;
   className?: string;
+  primaryLabel?: string;
+  hideProgress?: boolean;
 }
 
 export function StatCard({
@@ -30,9 +32,11 @@ export function StatCard({
   secondary,
   loading = false,
   className,
+  primaryLabel,
+  hideProgress = false,
 }: StatCardProps) {
   // Calculate percentage if both primary and secondary are numbers
-  const showProgress = typeof value === 'number' && typeof secondary?.value === 'number';
+  const showProgress = !hideProgress && typeof value === 'number' && typeof secondary?.value === 'number';
   const progressPercent = showProgress
     ? Math.min(100, Math.max(0, (Number(secondary.value) / Number(value)) * 100))
     : 0;
@@ -41,7 +45,7 @@ export function StatCard({
     <motion.div
       // whileHover={{ y: -4, scale: 1.01 }}
       transition={{ duration: 0.2 }}
-      className={cn("h-full", className)}
+      className={cn("relative", className)}
     >
       <Card className="relative h-full overflow-hidden border-border/40 transition-all group bg-card/40 backdrop-blur-xl">
         <div className={cn(
@@ -84,7 +88,7 @@ export function StatCard({
                   </div>
                   {secondary && !loading && (
                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-50">
-                      Total
+                      {primaryLabel || 'Total'}
                     </p>
                   )}
                 </div>

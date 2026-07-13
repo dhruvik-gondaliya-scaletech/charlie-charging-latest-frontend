@@ -19,12 +19,13 @@ export interface IntervalReportQuery {
 
 /** One clock-aligned block for a single charging session. */
 export interface IntervalSlice {
+  intervalId: number;
   intervalStart: string;
   intervalEnd: string;
   intervalLabel: string;
   sessionId: string;
   transactionId?: string;
-  evseId?: number;
+  evseId?: string;
   stationId: string;
   stationName: string;
   locationId?: string;
@@ -38,6 +39,7 @@ export interface IntervalSlice {
   excludedTimeSeconds: number;
   outageTimeSeconds: number;
   uptimePercentage: number | null;
+  idleDurationSeconds: number;
 }
 
 /** Aggregated interval across all sessions (one row per clock block). */

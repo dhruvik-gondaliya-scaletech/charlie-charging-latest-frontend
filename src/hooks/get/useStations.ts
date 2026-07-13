@@ -49,6 +49,7 @@ export const useOcppLogs = (stationId: string, params?: GetOcppLogsParams) => {
     queryFn: () => stationService.getOcppLogs(stationId, params),
     staleTime: 5000,
     refetchInterval: 10000,
+    placeholderData: keepPreviousData,
   });
 };
 

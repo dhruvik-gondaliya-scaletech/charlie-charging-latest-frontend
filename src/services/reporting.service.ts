@@ -24,12 +24,37 @@ function rowToCsv(fields: unknown[]): string {
   return fields.map(escapeCsvCell).join(',');
 }
 
+function formatDateTimeForCsv(value: unknown): string {
+  if (!value) return '';
+  const str = String(value);
+  // If it's in the ISO format with offset/Z: e.g. "2024-07-08T12:00:00+05:30"
+  if (str.includes('T') && (str.includes('+') || str.slice(10).includes('-') || str.endsWith('Z'))) {
+    const match = str.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/);
+    if (match) {
+      const [, year, month, day, hours, minutes, seconds] = match;
+      return `${month}/${day}/${year} ${hours}:${minutes}:${seconds}`;
+    }
+  }
+  const date = value instanceof Date ? value : new Date(str);
+  if (isNaN(date.getTime())) return str;
+
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const month = pad(date.getUTCMonth() + 1);
+  const day = pad(date.getUTCDate());
+  const year = date.getUTCFullYear();
+  const hours = pad(date.getUTCHours());
+  const minutes = pad(date.getUTCMinutes());
+  const seconds = pad(date.getUTCSeconds());
+  return `${month}/${day}/${year} ${hours}:${minutes}:${seconds}`;
+}
+
 function buildIntervalSlicesCsv(slices: IntervalSlice[]): string {
   const header = [
-    'Interval Start',
-    'Interval End',
+    'Interval ID',
+    'Interval start datetime',
+    'Interval end datetime',
     'Interval Label',
-    'Session ID',
+    'Charge event ID',
     'Transaction ID',
     'EVSE ID',
     'Station ID',
@@ -37,19 +62,21 @@ function buildIntervalSlicesCsv(slices: IntervalSlice[]): string {
     'Location ID',
     'Location Name',
     'Energy (kWh)',
-    'Peak (kW)',
-    'Avg (kW)',
+    'Interval peak demand',
+    'Interval average demand',
     'Overlap (min)',
     'Data Source',
     'Total Time (sec)',
     'Excluded Time (sec)',
     'Outage Time (sec)',
     'Uptime (%)',
+    'Idle Duration',
   ];
   const rows = slices.map((s) =>
     rowToCsv([
-      s.intervalStart,
-      s.intervalEnd,
+      s.intervalId,
+      formatDateTimeForCsv(s.intervalStart),
+      formatDateTimeForCsv(s.intervalEnd),
       s.intervalLabel,
       s.sessionId,
       s.transactionId ?? '',
@@ -67,6 +94,7 @@ function buildIntervalSlicesCsv(slices: IntervalSlice[]): string {
       s.excludedTimeSeconds,
       s.outageTimeSeconds,
       s.uptimePercentage !== null && s.uptimePercentage !== undefined ? s.uptimePercentage : '',
+      s.idleDurationSeconds,
     ]),
   );
   return [rowToCsv(header), ...rows].join('\n');
@@ -74,19 +102,19 @@ function buildIntervalSlicesCsv(slices: IntervalSlice[]): string {
 
 function buildAggregatedCsv(rows: AggregatedInterval[]): string {
   const header = [
-    'Interval Start',
-    'Interval End',
+    'Interval start datetime',
+    'Interval end datetime',
     'Interval Label',
     'Total Energy (kWh)',
-    'Peak (kW)',
-    'Avg (kW)',
+    'Interval peak demand',
+    'Interval average demand',
     'Session Count',
     'Total Overlap (min)',
   ];
   const csvRows = rows.map((r) =>
     rowToCsv([
-      r.intervalStart,
-      r.intervalEnd,
+      formatDateTimeForCsv(r.intervalStart),
+      formatDateTimeForCsv(r.intervalEnd),
       r.intervalLabel,
       r.totalEnergyKwh,
       r.peakKw,
@@ -137,6 +165,18 @@ class ReportingService {
     });
   }
 
+  /** GET /reporting/intervals/export — export interval slices as CSV with user-selected columns */
+  async exportIntervalsCsv(params?: IntervalReportQuery & { columns?: string[] }): Promise<Blob> {
+    const queryParams: Record<string, unknown> = { ...params };
+    if (params?.columns) {
+      queryParams.columns = params.columns.join(',');
+    }
+    return httpService.get<Blob>(API_CONFIG.endpoints.reporting.intervalsExport, {
+      params: queryParams,
+      responseType: 'blob',
+    });
+  }
+
   /** GET /reporting/sessions/export — export charging sessions as CSV */
   async exportSessions(params?: {
     startFrom?: string;
@@ -158,6 +198,31 @@ class ReportingService {
       if (params.stationIds) queryParams.stationIds = params.stationIds;
     }
     return httpService.get<Blob>(API_CONFIG.endpoints.reporting.sessionExport, {
+      params: queryParams,
+      responseType: 'blob',
+    });
+  }
+
+  /** GET /reporting/downtime/export — export downtime intervals as CSV */
+  async exportDowntime(params?: {
+    startFrom?: string;
+    startTo?: string;
+    env?: string;
+    locationId?: string;
+    locationIds?: string;
+    stationIds?: string;
+  }): Promise<Blob> {
+    const queryParams: Record<string, string> = {};
+    if (params) {
+      if (params.startFrom) queryParams.startFrom = params.startFrom;
+      if (params.startTo) queryParams.startTo = params.startTo;
+      if (params.env) queryParams.env = params.env;
+      if (params.locationId) queryParams.locationId = params.locationId;
+      if (params.locationIds) queryParams.locationIds = params.locationIds;
+      if (params.stationIds) queryParams.stationIds = params.stationIds;
+      queryParams.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    }
+    return httpService.get<Blob>(API_CONFIG.endpoints.reporting.downtimeExport, {
       params: queryParams,
       responseType: 'blob',
     });
@@ -187,6 +252,24 @@ class ReportingService {
     const filename = `interval-demand-${new Date().toISOString().slice(0, 10)}.csv`;
     triggerCsvDownload(csv, filename);
     return filename;
+  }
+
+  async getLocationGroups(): Promise<Array<{ id: string; name: string; locations: Array<{ id: string; name: string }> }>> {
+    return httpService.get(API_CONFIG.endpoints.reporting.getLocationGroups);
+  }
+
+  async getLocationGroup(groupName: string): Promise<{ id: string; name: string; locations: Array<{ id: string; name: string }> }> {
+    return httpService.get(API_CONFIG.endpoints.reporting.getLocationGroup(groupName));
+  }
+
+  async updateLocationGroupLocations(groupName: string, locationIds: string[]): Promise<Array<{ id: string; name: string }>> {
+    return httpService.put(API_CONFIG.endpoints.reporting.updateLocationGroupLocations(groupName), {
+      locationIds,
+    });
+  }
+
+  async getApiKey(): Promise<{ apiKey: string }> {
+    return httpService.get(API_CONFIG.endpoints.reporting.getApiKey);
   }
 }
 

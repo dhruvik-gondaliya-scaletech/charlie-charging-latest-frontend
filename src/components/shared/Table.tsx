@@ -451,8 +451,11 @@ export function Table<T>({
   return (
     <div className={`space-y-6 ${className}`}>
       {showSearch && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 px-1">
-          {title || <div />}
+        <div className={cn(
+          "flex flex-col sm:flex-row sm:items-center gap-4 mb-6 px-1",
+          searchPosition === 'end' ? 'justify-between' : searchPosition === 'center' ? 'justify-center' : 'justify-start'
+        )}>
+          {searchPosition !== 'start' && (title || <div />)}
           <div className={cn(
             "flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto",
             searchPosition === 'end' ? 'sm:justify-end' : searchPosition === 'center' ? 'sm:justify-center' : 'sm:justify-start'

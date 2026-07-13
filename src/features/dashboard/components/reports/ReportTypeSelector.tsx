@@ -7,9 +7,10 @@ import {
   BarChart2,
   CheckCircle2,
   Hourglass,
+  AlertCircle,
 } from 'lucide-react';
 
-export type Step = 'select-type' | 'configure-sessions' | 'configure-intervals';
+export type Step = 'select-type' | 'configure-sessions' | 'configure-intervals' | 'configure-downtime';
 
 interface ReportTypeSelectorProps {
   onSelectStep: (step: Step) => void;
@@ -59,6 +60,29 @@ export function ReportTypeSelector({ onSelectStep }: ReportTypeSelectorProps) {
             </div>
             <p className="text-muted-foreground text-sm mt-1 leading-relaxed">
               Export clock-aligned interval blocks with energy, peak demand, and compliance data. Choose flat per-session slices or aggregated grid demand rows.
+            </p>
+          </div>
+        </div>
+      </Card>
+
+      {/* Downtime Option */}
+      <Card
+        onClick={() => onSelectStep('configure-downtime')}
+        className="group relative cursor-pointer overflow-hidden rounded-xl border border-rose-500/20 bg-rose-500/5 p-5 hover:bg-rose-500/10 hover:border-rose-500/40 transition-all duration-300 shadow-sm"
+      >
+        <div className="flex items-start gap-4">
+          <div className="p-3 rounded-lg bg-rose-500/20 text-rose-500 group-hover:scale-110 transition-transform duration-300">
+            <AlertCircle className="h-6 w-6" />
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-lg text-rose-600 dark:text-rose-400 group-hover:text-rose-500 transition-colors">
+                Station Downtime
+              </h3>
+              <CheckCircle2 className="h-5 w-5 text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+            <p className="text-muted-foreground text-sm mt-1 leading-relaxed">
+              Export downtime events across all stations, including event start/end timestamps and reason codes.
             </p>
           </div>
         </div>
