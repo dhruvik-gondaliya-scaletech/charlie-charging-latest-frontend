@@ -31,6 +31,16 @@ export function LocationStations({ stations, isLoading }: LocationStationsProps)
         }, {});
     }, [tariffs]);
 
+    const onlineCount = useMemo(() => {
+        return stations.filter(
+            (s) =>
+                s.status !== ChargingStatus.OFFLINE &&
+                s.status !== ChargingStatus.FAULTED &&
+                s.status !== ChargingStatus.UNAVAILABLE &&
+                s.status !== ChargingStatus.MAINTENANCE
+        ).length;
+    }, [stations]);
+
     const columns: ColumnDef<Station>[] = useMemo(
         () => [
             {
@@ -124,7 +134,7 @@ export function LocationStations({ stations, isLoading }: LocationStationsProps)
                     <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Real-time assets reporting at this location</p>
                 </div>
                 <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-bold px-4 py-1 rounded-full uppercase tracking-widest text-[10px]">
-                    {stations.length} Units Online
+                    {onlineCount} Units Online
                 </Badge>
             </div>
 

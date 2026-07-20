@@ -280,7 +280,7 @@ export function DriverSessionsContainer() {
         />
         <StatCard
           title="Time Engaged"
-          value={`${stats.totalDuration} Min`}
+          value={`${stats.totalDuration.toFixed(2)} Min`}
           icon={Clock}
           color="text-blue-500"
           bottomRightGlobe="bg-blue-500"

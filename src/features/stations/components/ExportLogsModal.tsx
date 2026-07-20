@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { AnimatedModal } from '@/components/shared/AnimatedModal';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -50,9 +50,10 @@ interface ExportLogsModalProps {
   onClose: () => void;
   stationId: string;
   sessionId?: string;
+  defaultSelectedEvents?: string[];
 }
 
-export function ExportLogsModal({ isOpen, onClose, stationId, sessionId }: ExportLogsModalProps) {
+export function ExportLogsModal({ isOpen, onClose, stationId, sessionId, defaultSelectedEvents }: ExportLogsModalProps) {
   const [isExporting, setIsExporting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -67,6 +68,16 @@ export function ExportLogsModal({ isOpen, onClose, stationId, sessionId }: Expor
 
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>(getInitialDateRange());
   const [selectedEvents, setSelectedEvents] = useState<string[]>([...OCPP_MESSAGE_TYPES]);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      if (defaultSelectedEvents && defaultSelectedEvents.length > 0) {
+        setSelectedEvents(defaultSelectedEvents);
+      } else {
+        setSelectedEvents([...OCPP_MESSAGE_TYPES]);
+      }
+    }
+  }, [isOpen, defaultSelectedEvents]);
 
   const filteredTypes = useMemo(() => {
     return OCPP_MESSAGE_TYPES.filter(type =>
@@ -109,9 +120,11 @@ export function ExportLogsModal({ isOpen, onClose, stationId, sessionId }: Expor
       const params = {
         stationId,
         sessionId,
-        startDate: !sessionId && dateRange.from ? format(startOfDay(dateRange.from), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") : undefined,
-        endDate: !sessionId && dateRange.to ? format(endOfDay(dateRange.to), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") : undefined,
+        startDate: !sessionId && dateRange.from ? format(dateRange.from, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") : undefined,
+        endDate: !sessionId && dateRange.to ? format(dateRange.to, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") : undefined,
         messageType: selectedEvents.length < OCPP_MESSAGE_TYPES.length ? selectedEvents.join(',') : undefined,
+        timezoneOffset: new Date().getTimezoneOffset(),
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       };
 
       const csvBlob = await stationService.exportOcppLogs(params);
@@ -119,10 +132,10 @@ export function ExportLogsModal({ isOpen, onClose, stationId, sessionId }: Expor
       const url = window.URL.createObjectURL(new Blob([csvBlob], { type: 'text/csv' }));
       const link = document.createElement('a');
       link.href = url;
-      const filename = sessionId 
+      const filename = sessionId
         ? `ocpp-logs-session-${sessionId.slice(0, 8)}-${new Date().toISOString().slice(0, 10)}.csv`
         : `ocpp-logs-station-${stationId.slice(0, 8)}-${new Date().toISOString().slice(0, 10)}.csv`;
-      
+
       link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
@@ -140,13 +153,9 @@ export function ExportLogsModal({ isOpen, onClose, stationId, sessionId }: Expor
   };
 
   return (
-    <AnimatedModal
-      isOpen={isOpen}
-      onClose={onClose}
-      showCloseButton={false}
-      size="2xl"
-    >
-      <div className="flex items-start justify-between border-b border-border/60 pb-5 mb-5">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-2xl bg-card border-border/40 text-foreground p-6 rounded-3xl shadow-xl z-50 overflow-hidden" showCloseButton={false}>
+        <div className="flex items-start justify-between border-b border-border/60 pb-5 mb-5">
         <div className="flex items-center gap-3">
           <div className="p-3 rounded-lg bg-primary/20 text-primary">
             <Terminal className="h-6 w-6" />
@@ -156,8 +165,8 @@ export function ExportLogsModal({ isOpen, onClose, stationId, sessionId }: Expor
               Export OCPP logs (CSV)
             </h2>
             <p className="text-muted-foreground text-sm mt-1">
-              {sessionId 
-                ? 'Export logs for the selected charging session.' 
+              {sessionId
+                ? 'Export logs for the selected charging session.'
                 : 'Select a date range and message type filters to export station logs.'}
             </p>
           </div>
@@ -188,6 +197,7 @@ export function ExportLogsModal({ isOpen, onClose, stationId, sessionId }: Expor
                   dateRange={dateRange}
                   onDateRangeChange={setDateRange}
                   className="w-full h-10"
+                  showTimeSelect
                 />
               )}
             </div>
@@ -290,6 +300,7 @@ export function ExportLogsModal({ isOpen, onClose, stationId, sessionId }: Expor
           </Button>
         </div>
       </div>
-    </AnimatedModal>
+      </DialogContent>
+    </Dialog>
   );
 }

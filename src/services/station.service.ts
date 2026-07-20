@@ -51,6 +51,8 @@ export interface GetOcppLogsParams {
   sessionId?: string;
   limit?: number;
   offset?: number;
+  timezoneOffset?: number;
+  timezone?: string;
 }
 
 export interface StationStats {

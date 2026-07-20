@@ -154,9 +154,6 @@ export function ConfigurationManager({ stationId }: ConfigurationManagerProps) {
                                         </Badge>
                                     )}
                                 </div>
-                                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                                    {ck.description || "No description provided for this core configuration key."}
-                                </p>
                             </div>
 
                             <div className="flex items-center gap-2 w-full md:w-80">

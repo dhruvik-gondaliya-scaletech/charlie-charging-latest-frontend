@@ -11,9 +11,12 @@ interface ImageUploadProps {
   value?: string;
   onChange: (url: string) => void;
   className?: string;
+  label?: string;
+  description?: string;
+  uploadingText?: string;
 }
 
-export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
+export function ImageUpload({ value, onChange, className, label, description, uploadingText }: ImageUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadMutation = useUploadImage();
 
@@ -79,7 +82,7 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
       {uploadMutation.isPending && (
         <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center gap-2 rounded-2xl z-20 border border-border/40">
           <Loader2 className="h-7 w-7 animate-spin text-primary" />
-          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Uploading Logo...</span>
+          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{uploadingText || 'Uploading Logo...'}</span>
         </div>
       )}
 
@@ -92,13 +95,13 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
               <div className="absolute inset-0 bg-[linear-gradient(45deg,#161618_25%,transparent_25%),linear-gradient(-45deg,#161618_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#161618_75%),linear-gradient(-45deg,transparent_75%,#161618_75%)] bg-[size:8px_8px] bg-[position:0_0,0_0,4px_4px,4px_4px] opacity-35 rounded-xl" />
               <img
                 src={value}
-                alt="Uploaded logo"
+                alt="Uploaded asset"
                 className="relative max-h-full max-w-full object-contain z-10"
               />
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Active Logo</span>
-              <span className="text-xs font-bold text-muted-foreground truncate">White-Label Branding Asset</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">{label || 'Active Logo'}</span>
+              <span className="text-xs font-bold text-muted-foreground truncate">{description || 'White-Label Branding Asset'}</span>
             </div>
           </div>
           <div className="flex gap-2">
@@ -133,7 +136,7 @@ export function ImageUpload({ value, onChange, className }: ImageUploadProps) {
               <Upload className="h-5 w-5" />
             </div>
             <div className="text-center">
-              <p className="text-sm font-bold tracking-tight">Click to upload logo</p>
+              <p className="text-sm font-bold tracking-tight">Click to upload {label ? label.toLowerCase() : 'logo'}</p>
               <p className="text-[10px] font-bold uppercase tracking-widest opacity-60 mt-1">PNG, JPG or WebP (Max 5MB)</p>
             </div>
           </div>

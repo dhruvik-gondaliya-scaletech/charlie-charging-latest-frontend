@@ -16,7 +16,8 @@ import {
   Webhook,
   LogOut,
   UserCircle,
-  Globe
+  Globe,
+  FileText
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { FRONTEND_ROUTES } from '@/constants/constants';
@@ -42,6 +43,7 @@ const mainNavItems = [
 ];
 
 const moreNavItems = [
+  { href: FRONTEND_ROUTES.REPORTS, label: 'Reports', icon: FileText, roles: ['admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.USERS, label: 'Operators', icon: Users, roles: ['admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.DRIVERS, label: 'Drivers', icon: User, roles: ['admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.ID_TAGS, label: 'ID Tags', icon: CreditCard, roles: ['admin', 'super_admin'] },

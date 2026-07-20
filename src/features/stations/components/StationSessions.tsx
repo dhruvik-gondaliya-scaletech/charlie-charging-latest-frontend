@@ -73,13 +73,26 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
                     const firstName = row.original.userFirstName;
                     const lastName = row.original.userLastName;
                     const fullName = firstName && lastName ? `${firstName} ${lastName}` : 'Guest User';
+                    const useMode = row.original.useMode;
 
                     return (
                         <div className="flex items-center gap-3">
                             <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-sm">
                                 <UserIcon className="h-4 w-4" />
                             </div>
-                            <span className="font-bold text-foreground tracking-tight">{fullName}</span>
+                            <div className="flex flex-col gap-1">
+                                <span className="font-bold text-foreground tracking-tight leading-none">{fullName}</span>
+                                {useMode && (
+                                    <span className={cn(
+                                        "inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border w-fit",
+                                        useMode === 'CSMS'
+                                            ? "bg-violet-500/10 text-violet-500 border-violet-500/20"
+                                            : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                                    )}>
+                                        {useMode}
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     );
                 },

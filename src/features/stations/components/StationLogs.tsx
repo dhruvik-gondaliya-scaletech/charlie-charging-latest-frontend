@@ -1,11 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useInfiniteOcppLogs } from '@/hooks/get/useStations';
-import { useInView } from 'react-intersection-observer';
+import { useOcppLogs } from '@/hooks/get/useStations';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { formatDate } from '@/lib/date';
 import { cn } from '@/lib/utils';
 import {
     Terminal,
@@ -23,10 +21,19 @@ import {
     FileText,
     Maximize2,
     Clock,
-    Download
+    Download,
+    ChevronsLeft,
+    ChevronsRight
 } from 'lucide-react';
 import { OcppLog } from '@/types';
 import { ExportLogsModal } from './ExportLogsModal';
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination";
 import { Skeleton } from '@/components/ui/skeleton';
 import {
     Select,
@@ -57,6 +64,7 @@ interface StationLogsProps {
     stationId: string;
     sessionId?: string;
     onClearSessionId?: () => void;
+    className?: string;
 }
 
 const OCPP_MESSAGE_TYPES = [
@@ -84,7 +92,7 @@ const OCPP_MESSAGE_TYPES = [
     'AuthorizeRemoteTxStop',
 ];
 
-export function StationLogs({ stationId, sessionId, onClearSessionId }: StationLogsProps) {
+export function StationLogs({ stationId, sessionId, onClearSessionId, className }: StationLogsProps) {
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const [directionFilter, setDirectionFilter] = useState<string>('all');
     const [messageTypeFilter, setMessageTypeFilter] = useState<string[]>([]);
@@ -93,6 +101,13 @@ export function StationLogs({ stationId, sessionId, onClearSessionId }: StationL
         from: undefined,
         to: undefined,
     });
+    const [pageIndex, setPageIndex] = useState<number>(0);
+    const [pageSize, setPageSize] = useState<number>(10);
+
+    // Reset page index when filters change
+    useEffect(() => {
+        setPageIndex(0);
+    }, [sessionId, directionFilter, messageTypeFilter, dateRange]);
 
     const filteredTypes = useMemo(() => {
         return OCPP_MESSAGE_TYPES.filter(type =>
@@ -101,38 +116,29 @@ export function StationLogs({ stationId, sessionId, onClearSessionId }: StationL
     }, [searchQuery]);
 
     const filters = useMemo(() => ({
-        limit: 15,
+        limit: pageSize * 2,
+        offset: pageIndex * (pageSize * 2),
         sessionId,
         direction: directionFilter === 'all' ? undefined : (directionFilter as 'INCOMING' | 'OUTGOING'),
         messageType: (messageTypeFilter.length > 0 && messageTypeFilter.length < OCPP_MESSAGE_TYPES.length)
             ? messageTypeFilter.join(',')
             : undefined,
-        startDate: dateRange.from ? format(startOfDay(dateRange.from), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") : undefined,
-        endDate: dateRange.to ? format(endOfDay(dateRange.to), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") : undefined,
-    }), [sessionId, directionFilter, messageTypeFilter, dateRange]);
+        startDate: dateRange.from ? format(dateRange.from, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") : undefined,
+        endDate: dateRange.to ? format(dateRange.to, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") : undefined,
+    }), [pageSize, pageIndex, sessionId, directionFilter, messageTypeFilter, dateRange]);
 
     const {
         data,
         isLoading,
         isError,
-        fetchNextPage,
-        hasNextPage,
-        isFetchingNextPage,
         refetch
-    } = useInfiniteOcppLogs(stationId, filters);
-
-    const { ref, inView } = useInView();
-
-    useEffect(() => {
-        if (inView && hasNextPage) {
-            fetchNextPage();
-        }
-    }, [inView, hasNextPage, fetchNextPage]);
+    } = useOcppLogs(stationId, filters);
 
     const [selectedMessage, setSelectedMessage] = useState<{ title: string; json: any } | null>(null);
 
-    // Flatten pages into a single logs array
-    const logs = data?.pages.flatMap(page => page.logs) || [];
+    const logs = data?.logs || [];
+    const totalCount = data?.total || 0;
+    const totalPages = Math.ceil(totalCount / (pageSize * 2)) || 1;
 
     const groupedLogs = useMemo(() => {
         const CSMS_INITIATED_ACTIONS = [
@@ -343,6 +349,10 @@ export function StationLogs({ stationId, sessionId, onClearSessionId }: StationL
         return rows.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
     }, [logs]);
 
+    const displayFrom = totalCount > 0 ? pageIndex * pageSize + 1 : 0;
+    const displayTo = totalCount > 0 ? pageIndex * pageSize + groupedLogs.length : 0;
+    const displayTotal = totalCount > 0 ? Math.max(displayTo, Math.ceil(totalCount / 2)) : 0;
+
     const handleResetFilters = () => {
         setDirectionFilter('all');
         setMessageTypeFilter([]);
@@ -353,7 +363,7 @@ export function StationLogs({ stationId, sessionId, onClearSessionId }: StationL
     const isAnyFilterActive = directionFilter !== 'all' || messageTypeFilter.length > 0 || dateRange.from || dateRange.to;
 
     return (
-        <div className="flex flex-col gap-0 h-auto min-h-[600px] md:h-[800px]">
+        <div className={cn("flex flex-col gap-0 h-auto min-h-[600px] md:h-[800px]", className)}>
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-2 mb-6">
                 <div>
@@ -391,7 +401,7 @@ export function StationLogs({ stationId, sessionId, onClearSessionId }: StationL
 
                         {/* Message Type Filter */}
                         <div className="flex items-center gap-2 w-full sm:w-auto">
-                            <Popover>
+                            <Popover modal={true}>
                                 <PopoverTrigger asChild>
                                     <Button
                                         variant="outline"
@@ -484,6 +494,7 @@ export function StationLogs({ stationId, sessionId, onClearSessionId }: StationL
                                 dateRange={dateRange}
                                 onDateRangeChange={setDateRange}
                                 className="h-10 w-full sm:w-auto"
+                                showTimeSelect
                             />
                         </div>
                     </div>
@@ -676,28 +687,102 @@ export function StationLogs({ stationId, sessionId, onClearSessionId }: StationL
                                 <p className="text-xs text-muted-foreground/60 mt-1 font-medium">Try adjusting your filters or search terms</p>
                             </div>
                         )}
-                    </div>
-                </div>
-
-                {/* Observer element for infinite scroll */}
-                <div ref={ref} className="h-20 flex items-center justify-center border-t border-border/5 mt-4">
-                    {isFetchingNextPage ? (
-                        <div className="flex items-center gap-3 text-primary p-3 rounded-full bg-primary/5 px-6 border border-primary/10 shadow-sm animate-pulse">
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            <span className="text-[10px] uppercase tracking-black font-black tracking-widest">Streaming events...</span>
-                        </div>
-                    ) : (
-                        !hasNextPage && groupedLogs.length > 0 && (
-                            <div className="flex flex-col items-center gap-2 opacity-40 py-4">
-                                <div className="h-px w-20 bg-border/40" />
-                                <span className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.2em]">
-                                    End of diagnostic stream
-                                </span>
-                            </div>
-                        )
-                    )}
                 </div>
             </div>
+        </div>
+
+        {/* Pagination Controls */}
+            {totalCount > 0 && (
+                <div className="flex flex-col lg:flex-row items-center justify-between gap-6 w-full mt-4 bg-card/40 border border-border/40 p-4 rounded-2xl shadow-sm">
+                    <div className="flex flex-col sm:flex-row items-center gap-x-8 gap-y-4 text-sm text-muted-foreground w-full lg:w-auto justify-center lg:justify-start">
+                        <div className="flex items-center gap-3">
+                            <span className="whitespace-nowrap font-medium text-xs">Rows per page:</span>
+                            <Select
+                                value={pageSize.toString()}
+                                onValueChange={(value) => {
+                                    setPageSize(Number(value));
+                                    setPageIndex(0);
+                                }}
+                            >
+                                <SelectTrigger className="h-9 w-[80px] bg-muted/20 border-border/40 rounded-xl font-bold text-xs">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl border-border/40 bg-card/95 backdrop-blur-xl">
+                                    <SelectItem value="10" className="text-xs font-semibold">10</SelectItem>
+                                    <SelectItem value="25" className="text-xs font-semibold">25</SelectItem>
+                                    <SelectItem value="50" className="text-xs font-semibold">50</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <span className="whitespace-nowrap font-medium text-xs bg-muted/10 px-3 py-1 rounded-full border border-border/10">
+                            Showing <span className="text-foreground font-bold">{displayFrom}</span> to{" "}
+                            <span className="text-foreground font-bold">{displayTo}</span> of{" "}
+                            <span className="text-foreground font-bold">{displayTotal}</span> results
+                        </span>
+                    </div>
+                    
+                    <div className="w-full lg:w-auto flex justify-center lg:justify-end border-t lg:border-t-0 pt-4 lg:pt-0 border-border/10">
+                        <Pagination>
+                            <PaginationContent className="gap-1 sm:gap-2">
+                                {/* First Page Button */}
+                                <PaginationItem>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => setPageIndex(0)}
+                                        disabled={pageIndex === 0}
+                                        className="h-9 w-9 rounded-xl border border-border/40 hover:bg-muted font-bold transition-all disabled:opacity-50"
+                                        aria-label="First page"
+                                    >
+                                        <ChevronsLeft className="h-4 w-4" />
+                                    </Button>
+                                </PaginationItem>
+
+                                {/* Previous Page Button */}
+                                <PaginationItem>
+                                    <PaginationPrevious
+                                        onClick={() => pageIndex > 0 && setPageIndex(pageIndex - 1)}
+                                        className={cn(
+                                            "h-9 px-3 sm:px-4 rounded-xl border-border/40 hover:bg-muted font-bold transition-all",
+                                            pageIndex === 0 ? "pointer-events-none opacity-50" : "cursor-pointer"
+                                        )}
+                                    />
+                                </PaginationItem>
+
+                                {/* Page Info */}
+                                <PaginationItem className="px-2 text-xs font-bold text-muted-foreground whitespace-nowrap">
+                                    Page {pageIndex + 1} of {totalPages}
+                                </PaginationItem>
+
+                                {/* Next Page Button */}
+                                <PaginationItem>
+                                    <PaginationNext
+                                        onClick={() => pageIndex < totalPages - 1 && setPageIndex(pageIndex + 1)}
+                                        className={cn(
+                                            "h-9 px-3 sm:px-4 rounded-xl border-border/40 hover:bg-muted font-bold transition-all",
+                                            pageIndex === totalPages - 1 ? "pointer-events-none opacity-50" : "cursor-pointer"
+                                        )}
+                                    />
+                                </PaginationItem>
+
+                                {/* Last Page Button */}
+                                <PaginationItem>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => setPageIndex(totalPages - 1)}
+                                        disabled={pageIndex === totalPages - 1}
+                                        className="h-9 w-9 rounded-xl border border-border/40 hover:bg-muted font-bold transition-all disabled:opacity-50"
+                                        aria-label="Last page"
+                                    >
+                                        <ChevronsRight className="h-4 w-4" />
+                                    </Button>
+                                </PaginationItem>
+                            </PaginationContent>
+                        </Pagination>
+                    </div>
+                </div>
+            )}
 
             {/* Inspect Payload Modal */}
             <Dialog open={selectedMessage !== null} onOpenChange={(open) => !open && setSelectedMessage(null)}>
@@ -731,6 +816,7 @@ export function StationLogs({ stationId, sessionId, onClearSessionId }: StationL
                 onClose={() => setIsExportModalOpen(false)}
                 stationId={stationId}
                 sessionId={sessionId}
+                defaultSelectedEvents={messageTypeFilter}
             />
         </div>
     );

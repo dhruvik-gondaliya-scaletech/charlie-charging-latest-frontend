@@ -158,7 +158,7 @@ export function LocationDetailContainer() {
             </motion.div>
 
             {/* Stats Grid */}
-            <motion.div variants={fadeInUp} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <motion.div variants={fadeInUp} className="relative z-0 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <StatCard
                     title="Active Terminals"
                     value={stations?.length || 0}
@@ -186,7 +186,7 @@ export function LocationDetailContainer() {
             </motion.div>
 
             {/* Main Content Tabs */}
-            <motion.div variants={fadeInUp}>
+            <motion.div variants={fadeInUp} className="relative z-10">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
                     <TabsList className="bg-muted/40 p-1 border border-border/40 rounded-2xl backdrop-blur-md h-auto flex-wrap sm:flex-nowrap w-full sm:w-auto">
                         <TabsTrigger value="overview" className="flex-1 sm:flex-none rounded-xl font-black uppercase tracking-widest text-[11px] px-4 sm:px-8 py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">Overview</TabsTrigger>

@@ -86,6 +86,7 @@ export interface Location {
   latitude?: number;
   longitude?: number;
   stationCount?: number;
+  offlineStationCount?: number;
   lastUpdated?: string;
   isActive?: boolean;
   locationEnv?: LocationEnv;
@@ -125,6 +126,8 @@ export interface DashboardStats {
   activeSessions: number;
   capacityUtilization: number;
   activeUsers: number;
+  completedSessions: number;
+  failedSessions: number;
 }
 
 export interface RecentActivity {
@@ -136,6 +139,9 @@ export interface RecentActivity {
   energyDelivered?: number;
   duration?: number;
   eventId?: string;
+  stationId?: string;
+  startDate?: string;
+  useMode?: SessionUseMode | null;
 }
 
 export interface DashboardData {
@@ -349,6 +355,8 @@ export enum SessionStatus {
   FAILED = 'failed',
 }
 
+export type SessionUseMode = 'CSMS' | 'API';
+
 export interface Session {
   id: string;
   stationId: string;
@@ -375,6 +383,7 @@ export interface Session {
   durationMinutes?: number;
   currentSpeed?: number;
   peakKwh?: number;
+  useMode?: SessionUseMode | null;
   createdAt: string;
   updatedAt: string;
 }
