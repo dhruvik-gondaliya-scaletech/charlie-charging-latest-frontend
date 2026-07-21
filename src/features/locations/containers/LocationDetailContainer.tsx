@@ -195,7 +195,7 @@ export function LocationDetailContainer() {
                     </TabsList>
 
                     <TabsContent value="overview">
-                        <LocationOverview location={location} />
+                        <LocationOverview location={location} locationId={id as string} />
                     </TabsContent>
 
                     <TabsContent value="stations">

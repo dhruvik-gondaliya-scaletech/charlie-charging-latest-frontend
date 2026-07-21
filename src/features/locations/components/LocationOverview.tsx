@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Location, LocationEnv } from '@/types';
 import { formatDate } from '@/lib/date';
+import { LocationStatistics } from './LocationStatistics';
 
 import dynamic from 'next/dynamic';
 
@@ -32,9 +33,10 @@ const LeafletMap = dynamic(() => import('@/components/shared/LeafletMap'), {
 
 interface LocationOverviewProps {
     location: Location;
+    locationId: string;
 }
 
-export function LocationOverview({ location }: LocationOverviewProps) {
+export function LocationOverview({ location, locationId }: LocationOverviewProps) {
     const details = [
         { label: 'Display Name', value: location.name, icon: Info },
         { label: 'Environment Type', value: location.locationEnv || LocationEnv.DEVELOPMENT, icon: Activity },
@@ -51,6 +53,10 @@ export function LocationOverview({ location }: LocationOverviewProps) {
     ];
 
     return (
+        <div className="space-y-6">
+        {/* Statistics panel */}
+        <LocationStatistics locationId={locationId} />
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
                 <Card className="border-border/40 bg-card/20 backdrop-blur-sm rounded-3xl overflow-hidden border shadow-sm">
@@ -111,6 +117,7 @@ export function LocationOverview({ location }: LocationOverviewProps) {
                     </div>
                 </CardContent>
             </Card>
+        </div>
         </div>
     );
 }

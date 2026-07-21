@@ -1,6 +1,6 @@
 import httpService from '@/lib/http-service';
 import { API_CONFIG } from '@/constants/constants';
-import { Location, LocationEnv } from '@/types';
+import { Location, LocationEnv, LocationStatistics } from '@/types';
 
 export interface CreateLocationData {
   name: string;
@@ -46,6 +46,10 @@ class LocationService {
 
   async transferLocationEnv(id: string, targetEnv: LocationEnv) {
     return httpService.post(API_CONFIG.endpoints.locations.transferEnv(id), { targetEnv });
+  }
+
+  async getLocationStatistics(id: string, params: { period?: string; timezone?: string }) {
+    return httpService.get<LocationStatistics>(`/locations/${id}/statistics`, { params });
   }
 }
 
