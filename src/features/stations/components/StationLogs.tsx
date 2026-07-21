@@ -102,7 +102,7 @@ export function StationLogs({ stationId, sessionId, onClearSessionId, className 
         to: undefined,
     });
     const [pageIndex, setPageIndex] = useState<number>(0);
-    const [pageSize, setPageSize] = useState<number>(10);
+    const [pageSize, setPageSize] = useState<number>(25);
 
     // Reset page index when filters change
     useEffect(() => {
@@ -568,7 +568,7 @@ export function StationLogs({ stationId, sessionId, onClearSessionId, className 
                 <div className="w-full overflow-x-auto rounded-2xl border border-border/40 bg-zinc-950/20 shadow-sm custom-scrollbar">
                     <div className="min-w-[1200px]">
                         {/* Table Header */}
-                        <div className="grid grid-cols-[180px_120px_140px_90px_1fr_1fr] items-center gap-4 bg-muted/40 p-4 border-b border-border/40 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                        <div className="grid grid-cols-[180px_120px_140px_90px_2fr_1fr] items-center gap-4 bg-muted/40 p-4 border-b border-border/40 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
                             <div>Timestamp</div>
                             <div>Initiator</div>
                             <div>OCPP Action</div>
@@ -589,7 +589,7 @@ export function StationLogs({ stationId, sessionId, onClearSessionId, className 
                                 {groupedLogs.map((row) => (
                                     <div
                                         key={row.id}
-                                        className="grid grid-cols-[180px_120px_140px_90px_1fr_1fr] items-start gap-4 p-4 hover:bg-muted/10 transition-colors"
+                                        className="grid grid-cols-[180px_120px_140px_90px_2fr_1fr] items-start gap-4 p-4 hover:bg-muted/10 transition-colors"
                                     >
                                         {/* Timestamp Column */}
                                         <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium py-2">
