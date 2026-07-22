@@ -9,11 +9,14 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, XCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { signInWithPopup } from 'firebase/auth';
+import { auth, googleProvider } from '@/lib/firebase';
 
 export function LoginContainer() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [alertMessage, setAlertMessage] = useState<{ type: 'error' | 'warning' | 'info'; message: string } | null>(null);
-  const { login } = useAuth();
+  const { login, googleLogin } = useAuth();
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -61,6 +64,30 @@ export function LoginContainer() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true);
+    setAlertMessage(null);
+    try {
+      const userCredential = await signInWithPopup(auth, googleProvider);
+      const idToken = await userCredential.user.getIdToken();
+      await googleLogin(idToken);
+    } catch (error: any) {
+      console.error('Google Sign-In failed:', error);
+      // Handle closed popups cleanly without showing red error alert if user canceled
+      if (error.code === 'auth/popup-closed-by-user') {
+        setIsGoogleLoading(false);
+        return;
+      }
+      let message = error.response?.data?.message || error.message || 'Failed to authenticate with Google.';
+      setAlertMessage({
+        type: 'error',
+        message,
+      });
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
+
   return (
     <>
       <div className="mb-12 text-center lg:text-left">
@@ -95,7 +122,12 @@ export function LoginContainer() {
       )}
 
       <div className="bg-card/30 backdrop-blur-xl border border-border p-8 rounded-[2rem] shadow-2xl shadow-primary/5">
-        <LoginForm onSubmit={handleSubmit} isLoading={isLoading} />
+        <LoginForm
+          onSubmit={handleSubmit}
+          onGoogleClick={handleGoogleSignIn}
+          isLoading={isLoading}
+          isGoogleLoading={isGoogleLoading}
+        />
       </div>
     </>
   );

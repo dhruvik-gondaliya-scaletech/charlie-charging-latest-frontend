@@ -4,6 +4,7 @@ export const API_CONFIG = {
     endpoints: {
         auth: {
             login: "/auth/login",
+            googleLogin: "/auth/google-login",
             register: "/auth/register",
             verifyEmail: "/auth/verify-email",
             resendVerification: "/auth/resend-verification",
