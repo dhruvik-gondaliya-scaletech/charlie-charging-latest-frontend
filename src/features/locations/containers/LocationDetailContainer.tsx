@@ -157,8 +157,8 @@ export function LocationDetailContainer() {
                 </div>
             </motion.div>
 
-            {/* Stats Grid */}
-            <motion.div variants={fadeInUp} className="relative z-0 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Stats Grid - Commented out */}
+            {/* <motion.div variants={fadeInUp} className="relative z-0 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <StatCard
                     title="Active Terminals"
                     value={stations?.length || 0}
@@ -183,7 +183,7 @@ export function LocationDetailContainer() {
                     bottomRightGlobe={location.isActive ? "bg-blue-500" : "bg-destructive"}
                     description="Global system state"
                 />
-            </motion.div>
+            </motion.div> */}
 
             {/* Main Content Tabs */}
             <motion.div variants={fadeInUp} className="relative z-10">
