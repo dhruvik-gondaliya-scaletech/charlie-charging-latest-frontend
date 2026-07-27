@@ -5,7 +5,7 @@ Disallow: /admin/
 Disallow: /api/
 
 # Host
-Host: https://scale-ev.vercel.app
+Host: https://example.com
 
 # Sitemaps
-Sitemap: https://scale-ev.vercel.app/sitemap.xml
+Sitemap: https://example.com/sitemap.xml
