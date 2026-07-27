@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { AUTH_CONFIG } from '@/constants/constants';
+import { AUTH_CONFIG, FRONTEND_ROUTES } from '@/constants/constants';
 import { User, Tenant } from '@/types';
 import { authService } from '@/services/auth.service';
 import { toast } from 'sonner';
@@ -92,7 +92,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(user);
       setTenant(tenant);
       toast.success('Login successful!');
-      router.push('/dashboard');
+      router.push(FRONTEND_ROUTES.DASHBOARD);
     } catch (error) {
       throw error;
     }
@@ -115,7 +115,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(user);
       setTenant(tenant);
       toast.success('Google Login successful!');
-      router.push('/dashboard');
+      router.push(FRONTEND_ROUTES.DASHBOARD);
     } catch (error) {
       throw error;
     }
@@ -135,7 +135,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setTenant(null);
     toast.info('You have been logged out.');
-    router.push('/login');
+    router.push(FRONTEND_ROUTES.LOGIN);
   };
 
   return (
