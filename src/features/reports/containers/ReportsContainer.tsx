@@ -597,32 +597,42 @@ export function ReportsContainer() {
                     <ArrowLeft className="h-5 w-5" />
                   </button>
                   <div>
-                    <h2
-                      className={cn(
-                        "text-lg sm:text-xl font-bold flex items-center gap-2",
-                        downloadStep === 'configure-downtime'
-                          ? 'text-amber-500'
-                          : downloadStep === 'configure-intervals'
-                          ? 'text-emerald-500'
-                          : 'text-primary'
-                      )}
-                    >
-                      {downloadStep === 'configure-downtime' ? (
-                        <Clock className="h-5 w-5 text-amber-500 shrink-0" />
-                      ) : downloadStep === 'configure-intervals' ? (
-                        <BarChart2 className="h-5 w-5 text-emerald-500 shrink-0" />
-                      ) : (
-                        <FileSpreadsheet className="h-5 w-5 text-primary shrink-0" />
-                      )}
-                      Configure Export
-                    </h2>
-                    <p className="text-muted-foreground text-xs sm:text-sm mt-1">
-                      {downloadStep === 'configure-intervals'
-                        ? 'Configure interval size, type, and date range for your interval export.'
-                        : downloadStep === 'configure-downtime'
-                          ? 'Configure date range and filters for station downtime CSV export.'
-                          : 'Configure parameters, filters, and custom fields for your CSV export.'}
-                    </p>
+                    {(() => {
+                      let headerTextColor = 'text-primary';
+                      let HeaderIcon = FileSpreadsheet;
+                      let headerDescription = 'Configure parameters, filters, and custom fields for your CSV export.';
+
+                      switch (downloadStep) {
+                        case 'configure-downtime':
+                          headerTextColor = 'text-amber-500';
+                          HeaderIcon = Clock;
+                          headerDescription = 'Configure date range and filters for station downtime CSV export.';
+                          break;
+                        case 'configure-intervals':
+                          headerTextColor = 'text-emerald-500';
+                          HeaderIcon = BarChart2;
+                          headerDescription = 'Configure interval size, type, and date range for your interval export.';
+                          break;
+                        case 'configure-sessions':
+                        default:
+                          headerTextColor = 'text-primary';
+                          HeaderIcon = FileSpreadsheet;
+                          headerDescription = 'Configure parameters, filters, and custom fields for your CSV export.';
+                          break;
+                      }
+
+                      return (
+                        <>
+                          <h2 className={cn("text-lg sm:text-xl font-bold flex items-center gap-2", headerTextColor)}>
+                            <HeaderIcon className={cn("h-5 w-5 shrink-0", headerTextColor)} />
+                            Configure Export
+                          </h2>
+                          <p className="text-muted-foreground text-xs sm:text-sm mt-1">
+                            {headerDescription}
+                          </p>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               )}

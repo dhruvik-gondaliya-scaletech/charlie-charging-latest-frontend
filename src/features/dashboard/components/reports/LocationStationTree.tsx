@@ -39,23 +39,30 @@ export function LocationStationTree({
     stations.some((s) => s.locationId === loc.id)
   );
 
-  const spinnerColor =
-    accentColor === 'emerald'
-      ? 'border-emerald-500'
-      : accentColor === 'rose'
-      ? 'border-rose-500'
-      : accentColor === 'amber'
-      ? 'border-amber-500'
-      : 'border-primary';
+  const getSpinnerColor = () => {
+    switch (accentColor) {
+      case 'emerald': return 'border-emerald-500';
+      case 'rose': return 'border-rose-500';
+      case 'amber': return 'border-amber-500';
+      default: return 'border-primary';
+    }
+  };
 
-  const checkboxColor =
-    accentColor === 'emerald'
-      ? 'data-[state=checked]:bg-emerald-500 dark:data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500 dark:data-[state=checked]:border-emerald-500'
-      : accentColor === 'rose'
-      ? 'data-[state=checked]:bg-rose-500 dark:data-[state=checked]:bg-rose-500 data-[state=checked]:border-rose-500 dark:data-[state=checked]:border-rose-500'
-      : accentColor === 'amber'
-      ? 'data-[state=checked]:bg-amber-500 dark:data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500 dark:data-[state=checked]:border-amber-500'
-      : 'data-[state=checked]:bg-primary dark:data-[state=checked]:bg-primary data-[state=checked]:border-primary dark:data-[state=checked]:border-primary';
+  const getCheckboxColor = () => {
+    switch (accentColor) {
+      case 'emerald':
+        return 'data-[state=checked]:bg-emerald-500 dark:data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500 dark:data-[state=checked]:border-emerald-500';
+      case 'rose':
+        return 'data-[state=checked]:bg-rose-500 dark:data-[state=checked]:bg-rose-500 data-[state=checked]:border-rose-500 dark:data-[state=checked]:border-rose-500';
+      case 'amber':
+        return 'data-[state=checked]:bg-amber-500 dark:data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500 dark:data-[state=checked]:border-amber-500';
+      default:
+        return 'data-[state=checked]:bg-primary dark:data-[state=checked]:bg-primary data-[state=checked]:border-primary dark:data-[state=checked]:border-primary';
+    }
+  };
+
+  const spinnerColor = getSpinnerColor();
+  const checkboxColor = getCheckboxColor();
 
   if (isLoadingTree) {
     return (

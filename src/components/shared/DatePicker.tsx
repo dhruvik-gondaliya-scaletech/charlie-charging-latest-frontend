@@ -55,41 +55,46 @@ export function DatePicker({
     const [startTime, setStartTime] = React.useState({ hours: 0, minutes: 0 });
     const [endTime, setEndTime] = React.useState({ hours: 23, minutes: 59 });
 
-    const iconColor =
-        accentColor === 'emerald'
-            ? 'text-emerald-500'
-            : accentColor === 'amber'
-            ? 'text-amber-500'
-            : accentColor === 'rose'
-            ? 'text-rose-500'
-            : 'text-primary';
+    const getIconColor = () => {
+        switch (accentColor) {
+            case 'emerald': return 'text-emerald-500';
+            case 'amber': return 'text-amber-500';
+            case 'rose': return 'text-rose-500';
+            default: return 'text-primary';
+        }
+    };
 
-    const selectedDayBg =
-        accentColor === 'emerald'
-            ? 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-lg shadow-emerald-500/20'
-            : accentColor === 'amber'
-            ? 'bg-amber-500 text-white hover:bg-amber-600 shadow-lg shadow-amber-500/20'
-            : accentColor === 'rose'
-            ? 'bg-rose-500 text-white hover:bg-rose-600 shadow-lg shadow-rose-500/20'
-            : 'bg-primary text-primary-foreground hover:bg-primary shadow-lg shadow-primary/20';
+    const getSelectedDayBg = () => {
+        switch (accentColor) {
+            case 'emerald': return 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-lg shadow-emerald-500/20';
+            case 'amber': return 'bg-amber-500 text-white hover:bg-amber-600 shadow-lg shadow-amber-500/20';
+            case 'rose': return 'bg-rose-500 text-white hover:bg-rose-600 shadow-lg shadow-rose-500/20';
+            default: return 'bg-primary text-primary-foreground hover:bg-primary shadow-lg shadow-primary/20';
+        }
+    };
 
-    const rangeDayBg =
-        accentColor === 'emerald'
-            ? 'bg-emerald-500/10 text-emerald-500'
-            : accentColor === 'amber'
-            ? 'bg-amber-500/10 text-amber-500'
-            : accentColor === 'rose'
-            ? 'bg-rose-500/10 text-rose-500'
-            : 'bg-primary/10 text-primary';
+    const getRangeDayBg = () => {
+        switch (accentColor) {
+            case 'emerald': return 'bg-emerald-500/10 text-emerald-500';
+            case 'amber': return 'bg-amber-500/10 text-amber-500';
+            case 'rose': return 'bg-rose-500/10 text-rose-500';
+            default: return 'bg-primary/10 text-primary';
+        }
+    };
 
-    const applyBtnBg =
-        accentColor === 'emerald'
-            ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20 hover:shadow-emerald-500/30'
-            : accentColor === 'amber'
-            ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-amber-500/20 hover:shadow-amber-500/30'
-            : accentColor === 'rose'
-            ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-500/20 hover:shadow-rose-500/30'
-            : 'bg-primary text-primary-foreground shadow-primary/20 hover:shadow-primary/30';
+    const getApplyBtnBg = () => {
+        switch (accentColor) {
+            case 'emerald': return 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20 hover:shadow-emerald-500/30';
+            case 'amber': return 'bg-amber-600 hover:bg-amber-700 text-white shadow-amber-500/20 hover:shadow-amber-500/30';
+            case 'rose': return 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-500/20 hover:shadow-rose-500/30';
+            default: return 'bg-primary text-primary-foreground shadow-primary/20 hover:shadow-primary/30';
+        }
+    };
+
+    const iconColor = getIconColor();
+    const selectedDayBg = getSelectedDayBg();
+    const rangeDayBg = getRangeDayBg();
+    const applyBtnBg = getApplyBtnBg();
 
     // Sync tempRange when popover opens or dateRange changes externally
     React.useEffect(() => {

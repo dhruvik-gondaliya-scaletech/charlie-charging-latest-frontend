@@ -40,19 +40,51 @@ export function ColumnsSelector({
   disabled = false,
   accentColor = 'primary',
 }: ColumnsSelectorProps) {
-  const iconColor =
-    accentColor === 'emerald'
-      ? 'text-emerald-500'
-      : accentColor === 'amber'
-      ? 'text-amber-500'
-      : 'text-primary';
+  const getIconColor = () => {
+    switch (accentColor) {
+      case 'emerald': return 'text-emerald-500';
+      case 'amber': return 'text-amber-500';
+      default: return 'text-primary';
+    }
+  };
 
-  const checkboxColor =
-    accentColor === 'emerald'
-      ? 'data-[state=checked]:bg-emerald-500 dark:data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500 dark:data-[state=checked]:border-emerald-500'
-      : accentColor === 'amber'
-      ? 'data-[state=checked]:bg-amber-500 dark:data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500 dark:data-[state=checked]:border-amber-500'
-      : 'data-[state=checked]:bg-primary dark:data-[state=checked]:bg-primary data-[state=checked]:border-primary dark:data-[state=checked]:border-primary';
+  const getCheckboxColor = () => {
+    switch (accentColor) {
+      case 'emerald':
+        return 'data-[state=checked]:bg-emerald-500 dark:data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500 dark:data-[state=checked]:border-emerald-500';
+      case 'amber':
+        return 'data-[state=checked]:bg-amber-500 dark:data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500 dark:data-[state=checked]:border-amber-500';
+      default:
+        return 'data-[state=checked]:bg-primary dark:data-[state=checked]:bg-primary data-[state=checked]:border-primary dark:data-[state=checked]:border-primary';
+    }
+  };
+
+  const getScrollbarClass = () => {
+    switch (accentColor) {
+      case 'emerald': return 'custom-scrollbar-emerald';
+      case 'amber': return 'custom-scrollbar-amber';
+      default: return 'custom-scrollbar';
+    }
+  };
+
+  const getPresetBtnClass = (isActive: boolean) => {
+    if (!isActive) {
+      switch (accentColor) {
+        case 'emerald': return 'border-emerald-500/40 text-emerald-500 bg-emerald-500/5 hover:bg-emerald-500/10';
+        case 'amber': return 'border-amber-500/40 text-amber-500 bg-amber-500/5 hover:bg-amber-500/10';
+        default: return 'border-primary/40 text-primary bg-primary/5 hover:bg-primary/10';
+      }
+    }
+    switch (accentColor) {
+      case 'emerald': return 'border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600';
+      case 'amber': return 'border-amber-500 bg-amber-500 text-white hover:bg-amber-600';
+      default: return 'border-primary bg-primary text-primary-foreground hover:bg-primary/90';
+    }
+  };
+
+  const iconColor = getIconColor();
+  const checkboxColor = getCheckboxColor();
+  const scrollbarClass = getScrollbarClass();
 
   return (
     <div className="space-y-3 flex flex-col min-h-0 h-full">
@@ -100,17 +132,7 @@ export function ColumnsSelector({
                 onClick={() => onApplyPreset(isActive ? [] : preset.columns)}
                 className={cn(
                   'text-xs font-semibold px-2.5 py-1 rounded-full border transition-colors cursor-pointer',
-                  isActive
-                    ? accentColor === 'emerald'
-                      ? 'border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600'
-                      : accentColor === 'amber'
-                      ? 'border-amber-500 bg-amber-500 text-white hover:bg-amber-600'
-                      : 'border-primary bg-primary text-primary-foreground hover:bg-primary/90'
-                    : accentColor === 'emerald'
-                      ? 'border-emerald-500/40 text-emerald-500 bg-emerald-500/5 hover:bg-emerald-500/10'
-                      : accentColor === 'amber'
-                      ? 'border-amber-500/40 text-amber-500 bg-amber-500/5 hover:bg-amber-500/10'
-                      : 'border-primary/40 text-primary bg-primary/5 hover:bg-primary/10',
+                  getPresetBtnClass(isActive)
                 )}
               >
                 {preset.label}
@@ -122,7 +144,7 @@ export function ColumnsSelector({
 
       <div className={cn(
         "flex-1 min-h-[300px] max-h-[340px] overflow-y-auto pr-2 border border-border rounded-xl bg-muted/10 p-3 space-y-2.5",
-        accentColor === 'emerald' ? "custom-scrollbar-emerald" : accentColor === 'amber' ? "custom-scrollbar-amber" : "custom-scrollbar",
+        scrollbarClass,
         disabled && "opacity-75"
       )}>
         {availableColumns.map((col) => {
