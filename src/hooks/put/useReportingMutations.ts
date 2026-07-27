@@ -1,13 +1,15 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { reportingService } from '@/services/reporting.service';
+import { useEnvironment } from '@/contexts/EnvironmentContext';
 import { toast } from 'sonner';
 
 export const useUpdateLocationGroupLocations = () => {
+  const { environment } = useEnvironment();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ groupName, locationIds }: { groupName: string; locationIds: string[] }) =>
-      reportingService.updateLocationGroupLocations(groupName, locationIds),
+      reportingService.updateLocationGroupLocations(groupName, locationIds, environment),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['location-group', variables.groupName] });
       queryClient.invalidateQueries({ queryKey: ['location-groups'] });

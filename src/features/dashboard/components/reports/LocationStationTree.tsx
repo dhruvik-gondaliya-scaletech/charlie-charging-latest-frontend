@@ -20,7 +20,7 @@ interface LocationStationTreeProps {
   onLocationCheck: (locationId: string, checked: boolean) => void;
   onStationCheck: (stationId: string, locationId: string, checked: boolean) => void;
   onToggleExpand: (locationId: string) => void;
-  accentColor?: 'primary' | 'emerald' | 'rose';
+  accentColor?: 'primary' | 'emerald' | 'rose' | 'amber';
 }
 
 export function LocationStationTree({
@@ -39,12 +39,30 @@ export function LocationStationTree({
     stations.some((s) => s.locationId === loc.id)
   );
 
-  const spinnerColor =
-    accentColor === 'emerald'
-      ? 'border-emerald-500'
-      : accentColor === 'rose'
-      ? 'border-rose-500'
-      : 'border-primary';
+  const getSpinnerColor = () => {
+    switch (accentColor) {
+      case 'emerald': return 'border-emerald-500';
+      case 'rose': return 'border-rose-500';
+      case 'amber': return 'border-amber-500';
+      default: return 'border-primary';
+    }
+  };
+
+  const getCheckboxColor = () => {
+    switch (accentColor) {
+      case 'emerald':
+        return 'data-[state=checked]:bg-emerald-500 dark:data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500 dark:data-[state=checked]:border-emerald-500';
+      case 'rose':
+        return 'data-[state=checked]:bg-rose-500 dark:data-[state=checked]:bg-rose-500 data-[state=checked]:border-rose-500 dark:data-[state=checked]:border-rose-500';
+      case 'amber':
+        return 'data-[state=checked]:bg-amber-500 dark:data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500 dark:data-[state=checked]:border-amber-500';
+      default:
+        return 'data-[state=checked]:bg-primary dark:data-[state=checked]:bg-primary data-[state=checked]:border-primary dark:data-[state=checked]:border-primary';
+    }
+  };
+
+  const spinnerColor = getSpinnerColor();
+  const checkboxColor = getCheckboxColor();
 
   if (isLoadingTree) {
     return (
@@ -90,6 +108,7 @@ export function LocationStationTree({
                 id={`loc-node-${loc.id}`}
                 checked={isLocChecked ? true : isSomeChecked ? 'indeterminate' : false}
                 onCheckedChange={(checked) => onLocationCheck(loc.id, !!checked)}
+                className={checkboxColor}
               />
               <Label
                 htmlFor={`loc-node-${loc.id}`}
@@ -113,6 +132,7 @@ export function LocationStationTree({
                       id={`sta-node-${sta.id}`}
                       checked={selectedStationIds.has(sta.id)}
                       onCheckedChange={(checked) => onStationCheck(sta.id, loc.id, !!checked)}
+                      className={checkboxColor}
                     />
                     <Label
                       htmlFor={`sta-node-${sta.id}`}

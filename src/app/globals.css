@@ -277,4 +277,52 @@
     scrollbar-width: thin;
     scrollbar-color: color-mix(in oklch, var(--primary) 40%, transparent) transparent;
   }
+
+  /* Custom emerald scrollbar utility */
+  .custom-scrollbar-emerald::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar-emerald::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar-emerald::-webkit-scrollbar-thumb {
+    background: rgba(16, 185, 129, 0.4);
+    border-radius: 10px;
+  }
+
+  .custom-scrollbar-emerald::-webkit-scrollbar-thumb:hover {
+    background: rgb(16, 185, 129);
+  }
+
+  .custom-scrollbar-emerald {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(16, 185, 129, 0.4) transparent;
+  }
+
+  /* Custom amber scrollbar utility */
+  .custom-scrollbar-amber::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar-amber::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar-amber::-webkit-scrollbar-thumb {
+    background: rgba(245, 158, 11, 0.4);
+    border-radius: 10px;
+  }
+
+  .custom-scrollbar-amber::-webkit-scrollbar-thumb:hover {
+    background: rgb(245, 158, 11);
+  }
+
+  .custom-scrollbar-amber {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(245, 158, 11, 0.4) transparent;
+  }
 }

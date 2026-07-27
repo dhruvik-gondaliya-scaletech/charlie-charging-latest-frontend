@@ -254,18 +254,24 @@ class ReportingService {
     return filename;
   }
 
-  async getLocationGroups(): Promise<Array<{ id: string; name: string; locations: Array<{ id: string; name: string }> }>> {
-    return httpService.get(API_CONFIG.endpoints.reporting.getLocationGroups);
-  }
-
-  async getLocationGroup(groupName: string): Promise<{ id: string; name: string; locations: Array<{ id: string; name: string }> }> {
-    return httpService.get(API_CONFIG.endpoints.reporting.getLocationGroup(groupName));
-  }
-
-  async updateLocationGroupLocations(groupName: string, locationIds: string[]): Promise<Array<{ id: string; name: string }>> {
-    return httpService.put(API_CONFIG.endpoints.reporting.updateLocationGroupLocations(groupName), {
-      locationIds,
+  async getLocationGroups(env?: string): Promise<Array<{ id: string; name: string; locations: Array<{ id: string; name: string }> }>> {
+    return httpService.get(API_CONFIG.endpoints.reporting.getLocationGroups, {
+      params: env ? { env } : undefined,
     });
+  }
+
+  async getLocationGroup(groupName: string, env?: string): Promise<{ id: string; name: string; locations: Array<{ id: string; name: string }> }> {
+    return httpService.get(API_CONFIG.endpoints.reporting.getLocationGroup(groupName), {
+      params: env ? { env } : undefined,
+    });
+  }
+
+  async updateLocationGroupLocations(groupName: string, locationIds: string[], env?: string): Promise<Array<{ id: string; name: string }>> {
+    return httpService.put(
+      API_CONFIG.endpoints.reporting.updateLocationGroupLocations(groupName),
+      { locationIds },
+      { params: env ? { env } : undefined },
+    );
   }
 
   async getApiKey(): Promise<{ apiKey: string }> {
