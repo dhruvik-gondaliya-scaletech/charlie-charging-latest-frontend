@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { AUTH_CONFIG } from '@/constants/constants';
+import { AUTH_CONFIG, FRONTEND_ROUTES } from '@/constants/constants';
 import { User, Tenant } from '@/types';
 import { authService } from '@/services/auth.service';
 import { toast } from 'sonner';
@@ -12,6 +12,7 @@ interface AuthContextType {
   tenant: Tenant | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  googleLogin: (idToken: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -21,6 +22,7 @@ const AuthContext = createContext<AuthContextType>({
   tenant: null,
   loading: true,
   login: async () => {},
+  googleLogin: async () => {},
   logout: () => {},
   isAuthenticated: false,
 });
@@ -90,7 +92,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(user);
       setTenant(tenant);
       toast.success('Login successful!');
-      router.push('/dashboard');
+      router.push(FRONTEND_ROUTES.DASHBOARD);
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const googleLogin = async (idToken: string) => {
+    try {
+      const { access_token, user, tenant } = await authService.googleLogin(idToken);
+
+      // Set localStorage for client-side access
+      localStorage.setItem(AUTH_CONFIG.tokenKey, access_token);
+      localStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(user));
+      localStorage.setItem(AUTH_CONFIG.tenantKey, JSON.stringify(tenant));
+
+      // Set cookies for middleware access
+      document.cookie = `${AUTH_CONFIG.tokenKey}=${access_token}; path=/; max-age=86400; SameSite=Lax`;
+      document.cookie = `${AUTH_CONFIG.userKey}=${encodeURIComponent(JSON.stringify(user))}; path=/; max-age=86400; SameSite=Lax`;
+      document.cookie = `${AUTH_CONFIG.tenantKey}=${encodeURIComponent(JSON.stringify(tenant))}; path=/; max-age=86400; SameSite=Lax`;
+
+      setUser(user);
+      setTenant(tenant);
+      toast.success('Google Login successful!');
+      router.push(FRONTEND_ROUTES.DASHBOARD);
     } catch (error) {
       throw error;
     }
@@ -110,7 +135,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setTenant(null);
     toast.info('You have been logged out.');
-    router.push('/login');
+    router.push(FRONTEND_ROUTES.LOGIN);
   };
 
   return (
@@ -120,6 +145,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         tenant,
         loading,
         login,
+        googleLogin,
         logout,
         isAuthenticated: !!user,
       }}
