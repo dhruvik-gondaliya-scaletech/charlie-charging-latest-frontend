@@ -1337,10 +1337,10 @@ export function ReportsContainer() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
                   {/* Left Sidebar endpoint list */}
-                  <div className="lg:col-span-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2">
-                    <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-3 mb-1 col-span-full">
+                  <div className="lg:col-span-1 flex flex-col gap-2 self-start bg-card/30 border border-border/40 p-3 rounded-2xl">
+                    <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-1 pb-1 border-b border-border/30 mb-1">
                       Endpoints ({selectedGroupDoc})
                     </div>
                     {selectedGroupDoc === 'CALSTART' ? (
@@ -1348,32 +1348,32 @@ export function ReportsContainer() {
                         <button
                           onClick={() => setActiveApiEndpoint('charge-events')}
                           className={cn(
-                            "w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all border flex flex-col gap-1 cursor-pointer",
+                            "w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all border flex flex-col gap-1 cursor-pointer",
                             activeApiEndpoint === 'charge-events'
-                              ? "bg-primary/10 text-primary border-primary/20 shadow-sm"
-                              : "bg-transparent text-muted-foreground border-transparent hover:bg-muted/40 hover:text-foreground"
+                              ? "bg-primary/15 text-primary border-primary/40 shadow-sm"
+                              : "bg-muted/10 text-muted-foreground border-border/30 hover:bg-muted/30 hover:text-foreground"
                           )}
                         >
-                          <div className="flex items-center gap-1.5">
-                            <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-[9px] font-extrabold text-emerald-500 uppercase">GET</span>
+                          <div className="flex items-center justify-between gap-2">
                             <span>Charge Events</span>
+                            <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-extrabold text-emerald-500 uppercase shrink-0">GET</span>
                           </div>
-                          <span className="text-[10px] opacity-80 truncate font-mono">/calstart/charge-events</span>
+                          <span className="text-[10px] opacity-75 truncate font-mono">/calstart/charge-events</span>
                         </button>
                         <button
                           onClick={() => setActiveApiEndpoint('downtime-events')}
                           className={cn(
-                            "w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all border flex flex-col gap-1 cursor-pointer",
+                            "w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all border flex flex-col gap-1 cursor-pointer",
                             activeApiEndpoint === 'downtime-events'
-                              ? "bg-primary/10 text-primary border-primary/20 shadow-sm"
-                              : "bg-transparent text-muted-foreground border-transparent hover:bg-muted/40 hover:text-foreground"
+                              ? "bg-primary/15 text-primary border-primary/40 shadow-sm"
+                              : "bg-muted/10 text-muted-foreground border-border/30 hover:bg-muted/30 hover:text-foreground"
                           )}
                         >
-                          <div className="flex items-center gap-1.5">
-                            <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-[9px] font-extrabold text-emerald-500 uppercase">GET</span>
+                          <div className="flex items-center justify-between gap-2">
                             <span>Downtime Events</span>
+                            <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-extrabold text-emerald-500 uppercase shrink-0">GET</span>
                           </div>
-                          <span className="text-[10px] opacity-80 truncate font-mono">/calstart/downtime-events</span>
+                          <span className="text-[10px] opacity-75 truncate font-mono">/calstart/downtime-events</span>
                         </button>
                       </>
                     ) : (
@@ -1381,62 +1381,62 @@ export function ReportsContainer() {
                         <button
                           onClick={() => setActiveApiEndpoint('pac-site')}
                           className={cn(
-                            "w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all border flex flex-col gap-1 cursor-pointer",
+                            "w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all border flex flex-col gap-1 cursor-pointer",
                             activeApiEndpoint === 'pac-site'
-                              ? "bg-primary/10 text-primary border-primary/20 shadow-sm"
-                              : "bg-transparent text-muted-foreground border-transparent hover:bg-muted/40 hover:text-foreground"
+                              ? "bg-primary/15 text-primary border-primary/40 shadow-sm"
+                              : "bg-muted/10 text-muted-foreground border-border/30 hover:bg-muted/30 hover:text-foreground"
                           )}
                         >
-                          <div className="flex items-center gap-1.5">
-                            <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-[9px] font-extrabold text-emerald-500 uppercase">GET</span>
+                          <div className="flex items-center justify-between gap-2">
                             <span>Site API</span>
+                            <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-extrabold text-emerald-500 uppercase shrink-0">GET</span>
                           </div>
-                          <span className="text-[10px] opacity-80 truncate font-mono">/pac/site</span>
+                          <span className="text-[10px] opacity-75 truncate font-mono">/pac/site</span>
                         </button>
                         <button
                           onClick={() => setActiveApiEndpoint('pac-stations')}
                           className={cn(
-                            "w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all border flex flex-col gap-1 cursor-pointer",
+                            "w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all border flex flex-col gap-1 cursor-pointer",
                             activeApiEndpoint === 'pac-stations'
-                              ? "bg-primary/10 text-primary border-primary/20 shadow-sm"
-                              : "bg-transparent text-muted-foreground border-transparent hover:bg-muted/40 hover:text-foreground"
+                              ? "bg-primary/15 text-primary border-primary/40 shadow-sm"
+                              : "bg-muted/10 text-muted-foreground border-border/30 hover:bg-muted/30 hover:text-foreground"
                           )}
                         >
-                          <div className="flex items-center gap-1.5">
-                            <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-[9px] font-extrabold text-emerald-500 uppercase">GET</span>
+                          <div className="flex items-center justify-between gap-2">
                             <span>Station API</span>
+                            <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-extrabold text-emerald-500 uppercase shrink-0">GET</span>
                           </div>
-                          <span className="text-[10px] opacity-80 truncate font-mono">/pac/stations</span>
+                          <span className="text-[10px] opacity-75 truncate font-mono">/pac/stations</span>
                         </button>
                         <button
                           onClick={() => setActiveApiEndpoint('pac-sessions')}
                           className={cn(
-                            "w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all border flex flex-col gap-1 cursor-pointer",
+                            "w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all border flex flex-col gap-1 cursor-pointer",
                             activeApiEndpoint === 'pac-sessions'
-                              ? "bg-primary/10 text-primary border-primary/20 shadow-sm"
-                              : "bg-transparent text-muted-foreground border-transparent hover:bg-muted/40 hover:text-foreground"
+                              ? "bg-primary/15 text-primary border-primary/40 shadow-sm"
+                              : "bg-muted/10 text-muted-foreground border-border/30 hover:bg-muted/30 hover:text-foreground"
                           )}
                         >
-                          <div className="flex items-center gap-1.5">
-                            <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-[9px] font-extrabold text-emerald-500 uppercase">GET</span>
+                          <div className="flex items-center justify-between gap-2">
                             <span>Session API</span>
+                            <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-extrabold text-emerald-500 uppercase shrink-0">GET</span>
                           </div>
-                          <span className="text-[10px] opacity-80 truncate font-mono">/pac/sessions</span>
+                          <span className="text-[10px] opacity-75 truncate font-mono">/pac/sessions</span>
                         </button>
                         <button
                           onClick={() => setActiveApiEndpoint('pac-interval')}
                           className={cn(
-                            "w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all border flex flex-col gap-1 cursor-pointer",
+                            "w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all border flex flex-col gap-1 cursor-pointer",
                             activeApiEndpoint === 'pac-interval'
-                              ? "bg-primary/10 text-primary border-primary/20 shadow-sm"
-                              : "bg-transparent text-muted-foreground border-transparent hover:bg-muted/40 hover:text-foreground"
+                              ? "bg-primary/15 text-primary border-primary/40 shadow-sm"
+                              : "bg-muted/10 text-muted-foreground border-border/30 hover:bg-muted/30 hover:text-foreground"
                           )}
                         >
-                          <div className="flex items-center gap-1.5">
-                            <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-[9px] font-extrabold text-emerald-500 uppercase">GET</span>
+                          <div className="flex items-center justify-between gap-2">
                             <span>Interval API</span>
+                            <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-extrabold text-emerald-500 uppercase shrink-0">GET</span>
                           </div>
-                          <span className="text-[10px] opacity-80 truncate font-mono">/pac/interval</span>
+                          <span className="text-[10px] opacity-75 truncate font-mono">/pac/interval</span>
                         </button>
                       </>
                     )}
