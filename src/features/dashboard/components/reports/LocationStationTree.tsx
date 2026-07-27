@@ -20,7 +20,7 @@ interface LocationStationTreeProps {
   onLocationCheck: (locationId: string, checked: boolean) => void;
   onStationCheck: (stationId: string, locationId: string, checked: boolean) => void;
   onToggleExpand: (locationId: string) => void;
-  accentColor?: 'primary' | 'emerald' | 'rose';
+  accentColor?: 'primary' | 'emerald' | 'rose' | 'amber';
 }
 
 export function LocationStationTree({
@@ -44,7 +44,18 @@ export function LocationStationTree({
       ? 'border-emerald-500'
       : accentColor === 'rose'
       ? 'border-rose-500'
+      : accentColor === 'amber'
+      ? 'border-amber-500'
       : 'border-primary';
+
+  const checkboxColor =
+    accentColor === 'emerald'
+      ? 'data-[state=checked]:bg-emerald-500 dark:data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500 dark:data-[state=checked]:border-emerald-500'
+      : accentColor === 'rose'
+      ? 'data-[state=checked]:bg-rose-500 dark:data-[state=checked]:bg-rose-500 data-[state=checked]:border-rose-500 dark:data-[state=checked]:border-rose-500'
+      : accentColor === 'amber'
+      ? 'data-[state=checked]:bg-amber-500 dark:data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500 dark:data-[state=checked]:border-amber-500'
+      : 'data-[state=checked]:bg-primary dark:data-[state=checked]:bg-primary data-[state=checked]:border-primary dark:data-[state=checked]:border-primary';
 
   if (isLoadingTree) {
     return (
@@ -90,6 +101,7 @@ export function LocationStationTree({
                 id={`loc-node-${loc.id}`}
                 checked={isLocChecked ? true : isSomeChecked ? 'indeterminate' : false}
                 onCheckedChange={(checked) => onLocationCheck(loc.id, !!checked)}
+                className={checkboxColor}
               />
               <Label
                 htmlFor={`loc-node-${loc.id}`}
@@ -113,6 +125,7 @@ export function LocationStationTree({
                       id={`sta-node-${sta.id}`}
                       checked={selectedStationIds.has(sta.id)}
                       onCheckedChange={(checked) => onStationCheck(sta.id, loc.id, !!checked)}
+                      className={checkboxColor}
                     />
                     <Label
                       htmlFor={`sta-node-${sta.id}`}

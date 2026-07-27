@@ -39,14 +39,57 @@ interface DatePickerProps {
     onDateRangeChange: (range: { from: Date | undefined; to: Date | undefined }) => void;
     className?: string;
     showTimeSelect?: boolean;
+    accentColor?: 'primary' | 'emerald' | 'amber' | 'rose';
 }
 
-export function DatePicker({ dateRange, onDateRangeChange, className, showTimeSelect = false }: DatePickerProps) {
+export function DatePicker({
+    dateRange,
+    onDateRangeChange,
+    className,
+    showTimeSelect = false,
+    accentColor = 'primary',
+}: DatePickerProps) {
     const [isOpen, setIsOpen] = React.useState(false);
     const [viewDate, setViewDate] = React.useState(new Date());
     const [tempRange, setTempRange] = React.useState(dateRange);
     const [startTime, setStartTime] = React.useState({ hours: 0, minutes: 0 });
     const [endTime, setEndTime] = React.useState({ hours: 23, minutes: 59 });
+
+    const iconColor =
+        accentColor === 'emerald'
+            ? 'text-emerald-500'
+            : accentColor === 'amber'
+            ? 'text-amber-500'
+            : accentColor === 'rose'
+            ? 'text-rose-500'
+            : 'text-primary';
+
+    const selectedDayBg =
+        accentColor === 'emerald'
+            ? 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-lg shadow-emerald-500/20'
+            : accentColor === 'amber'
+            ? 'bg-amber-500 text-white hover:bg-amber-600 shadow-lg shadow-amber-500/20'
+            : accentColor === 'rose'
+            ? 'bg-rose-500 text-white hover:bg-rose-600 shadow-lg shadow-rose-500/20'
+            : 'bg-primary text-primary-foreground hover:bg-primary shadow-lg shadow-primary/20';
+
+    const rangeDayBg =
+        accentColor === 'emerald'
+            ? 'bg-emerald-500/10 text-emerald-500'
+            : accentColor === 'amber'
+            ? 'bg-amber-500/10 text-amber-500'
+            : accentColor === 'rose'
+            ? 'bg-rose-500/10 text-rose-500'
+            : 'bg-primary/10 text-primary';
+
+    const applyBtnBg =
+        accentColor === 'emerald'
+            ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20 hover:shadow-emerald-500/30'
+            : accentColor === 'amber'
+            ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-amber-500/20 hover:shadow-amber-500/30'
+            : accentColor === 'rose'
+            ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-500/20 hover:shadow-rose-500/30'
+            : 'bg-primary text-primary-foreground shadow-primary/20 hover:shadow-primary/30';
 
     // Sync tempRange when popover opens or dateRange changes externally
     React.useEffect(() => {
@@ -110,18 +153,18 @@ export function DatePicker({ dateRange, onDateRangeChange, className, showTimeSe
                                 size="icon"
                                 className={cn(
                                     "h-9 w-9 rounded-xl text-xs font-bold transition-all relative overflow-hidden group",
-                                    (isSelectedStart || isSelectedEnd) && "bg-primary text-primary-foreground hover:bg-primary shadow-lg shadow-primary/20 scale-105 z-10",
-                                    isInRange && !isSelectedStart && !isSelectedEnd && "bg-primary/10 text-primary rounded-none",
+                                    (isSelectedStart || isSelectedEnd) && `${selectedDayBg} scale-105 z-10`,
+                                    isInRange && !isSelectedStart && !isSelectedEnd && `${rangeDayBg} rounded-none`,
                                     isInRange && isSelectedStart && tempRange.to && "rounded-r-none",
                                     isInRange && isSelectedEnd && tempRange.from && "rounded-l-none",
                                     !isSameMonth(day, monthDate) && "text-muted-foreground opacity-20 hover:opacity-100",
-                                    isToday && !isSelectedStart && !isSelectedEnd && "border border-primary/30"
+                                    isToday && !isSelectedStart && !isSelectedEnd && "border border-muted-foreground/30"
                                 )}
                                 onClick={() => handleDayClick(day)}
                             >
                                 <span className="relative z-10">{format(day, 'd')}</span>
                                 {isToday && !isSelectedStart && !isSelectedEnd && (
-                                    <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
+                                    <div className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${iconColor}`} />
                                 )}
                             </Button>
                         );
@@ -195,7 +238,7 @@ export function DatePicker({ dateRange, onDateRangeChange, className, showTimeSe
                             !dateRange.from && "text-muted-foreground"
                         )}
                     >
-                        <CalendarIcon className="mr-3 h-4 w-4 opacity-60 group-hover:opacity-100 transition-opacity text-primary" />
+                        <CalendarIcon className={cn("mr-3 h-4 w-4 opacity-80 group-hover:opacity-100 transition-opacity", iconColor)} />
                         <span className="flex-1">
                             {dateRange?.from ? (
                                 dateRange.to ? (

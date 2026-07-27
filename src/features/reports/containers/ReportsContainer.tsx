@@ -40,6 +40,7 @@ import {
   AlertCircle,
   ArrowLeft,
   Clock,
+  BarChart2,
   FileSpreadsheet,
   Terminal,
   Copy,
@@ -550,14 +551,14 @@ export function ReportsContainer() {
       variants={staggerContainer}
       initial="initial"
       animate="animate"
-      className="space-y-8 p-4 md:p-8 max-w-[1600px] mx-auto pb-16"
+      className="space-y-6 sm:space-y-8 p-3 sm:p-6 md:p-8 max-w-[1600px] mx-auto pb-16"
     >
       {/* Header */}
       <motion.div variants={staggerItem} className="space-y-1">
-        <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
           Reports & Reporting Group Management
         </h1>
-        <p className="text-sm font-medium text-muted-foreground mt-1 tracking-tight">
+        <p className="text-xs sm:text-sm font-medium text-muted-foreground mt-1 tracking-tight">
           Manage location filters for regulatory reporting compliance and network export data.
         </p>
       </motion.div>
@@ -565,39 +566,57 @@ export function ReportsContainer() {
       {/* Tabs */}
       <motion.div variants={staggerItem}>
         <Tabs defaultValue="downloads" className="space-y-6">
-          <TabsList className="bg-muted/40 p-1 border border-border/40 rounded-xl backdrop-blur-md w-fit inline-flex h-auto gap-1 shadow-inner">
-            <TabsTrigger value="downloads" className="rounded-lg font-bold px-6 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">
-              <FileText className="h-4 w-4 mr-2" />
-              Download Reports
+          <TabsList className="bg-muted/40 p-1 border border-border/40 rounded-xl backdrop-blur-md w-full sm:w-auto grid grid-cols-3 sm:inline-flex h-auto gap-1 shadow-inner">
+            <TabsTrigger value="downloads" className="rounded-lg font-bold px-1.5 sm:px-5 py-2 sm:py-2.5 text-[11px] sm:text-sm flex items-center justify-center gap-1 sm:gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
+              <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+              <span className="sm:hidden">Reports</span>
+              <span className="hidden sm:inline">Download Reports</span>
             </TabsTrigger>
-            <TabsTrigger value="groups" className="rounded-lg font-bold px-6 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">
-              <MapPin className="h-4 w-4 mr-2" />
-              Location Group
+            <TabsTrigger value="groups" className="rounded-lg font-bold px-1.5 sm:px-5 py-2 sm:py-2.5 text-[11px] sm:text-sm flex items-center justify-center gap-1 sm:gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
+              <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+              <span className="sm:hidden">Groups</span>
+              <span className="hidden sm:inline">Location Group</span>
             </TabsTrigger>
-            <TabsTrigger value="api-docs" className="rounded-lg font-bold px-6 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">
-              <Terminal className="h-4 w-4 mr-2" />
-              API Docs
+            <TabsTrigger value="api-docs" className="rounded-lg font-bold px-1.5 sm:px-5 py-2 sm:py-2.5 text-[11px] sm:text-sm flex items-center justify-center gap-1 sm:gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
+              <Terminal className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+              <span>API Docs</span>
             </TabsTrigger>
           </TabsList>
 
           {/* Downloads Tab */}
           <TabsContent value="downloads">
-            <Card className="bg-card/40 border-border/40 backdrop-blur-md rounded-2xl shadow-md p-6">
+            <Card className="bg-card/40 border-border/40 backdrop-blur-md rounded-2xl shadow-md p-4 sm:p-6">
               
               {/* Step Header */}
               {downloadStep !== 'select-type' && (
-                <div className="flex items-center gap-3 border-b border-border/60 pb-5 mb-5">
+                <div className="flex items-start sm:items-center gap-3 border-b border-border/60 pb-4 sm:pb-5 mb-4 sm:mb-5">
                   <button
                     onClick={handleStepReset}
-                    className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                    className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer shrink-0"
                   >
                     <ArrowLeft className="h-5 w-5" />
                   </button>
                   <div>
-                    <h2 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent flex items-center gap-2">
-                      <FileSpreadsheet className="h-5 w-5 text-primary" /> Configure Export
+                    <h2
+                      className={cn(
+                        "text-lg sm:text-xl font-bold flex items-center gap-2",
+                        downloadStep === 'configure-downtime'
+                          ? 'text-amber-500'
+                          : downloadStep === 'configure-intervals'
+                          ? 'text-emerald-500'
+                          : 'text-primary'
+                      )}
+                    >
+                      {downloadStep === 'configure-downtime' ? (
+                        <Clock className="h-5 w-5 text-amber-500 shrink-0" />
+                      ) : downloadStep === 'configure-intervals' ? (
+                        <BarChart2 className="h-5 w-5 text-emerald-500 shrink-0" />
+                      ) : (
+                        <FileSpreadsheet className="h-5 w-5 text-primary shrink-0" />
+                      )}
+                      Configure Export
                     </h2>
-                    <p className="text-muted-foreground text-sm mt-1">
+                    <p className="text-muted-foreground text-xs sm:text-sm mt-1">
                       {downloadStep === 'configure-intervals'
                         ? 'Configure interval size, type, and date range for your interval export.'
                         : downloadStep === 'configure-downtime'
@@ -612,8 +631,8 @@ export function ReportsContainer() {
               {downloadStep === 'select-type' && (
                 <div className="space-y-4">
                   <div className="pb-3 border-b border-border/40">
-                    <h2 className="text-lg font-bold">Export Reports</h2>
-                    <p className="text-sm text-muted-foreground">Select a report type to begin your data export.</p>
+                    <h2 className="text-base sm:text-lg font-bold">Export Reports</h2>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Select a report type to begin your data export.</p>
                   </div>
                   <ReportTypeSelector onSelectStep={setDownloadStep} />
                 </div>
@@ -622,33 +641,34 @@ export function ReportsContainer() {
               {/* Step 2: Configure Intervals */}
               {downloadStep === 'configure-intervals' && (
                 <div className="space-y-5">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 min-h-0">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0">
                     {/* Left Column */}
                     <div className="space-y-5 flex flex-col min-h-0">
                       {/* Date Range */}
                       <div className="space-y-2">
-                        <Label className="text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
+                        <Label className="text-xs sm:text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
                           <Calendar className="h-4 w-4 text-emerald-500" /> Date Range
                         </Label>
                         <DatePicker
                           dateRange={dateRange}
                           onDateRangeChange={setDateRange}
                           className="w-full"
+                          accentColor="emerald"
                         />
                       </div>
 
                       {/* Interval Size */}
                       <div className="space-y-2">
-                        <Label className="text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
+                        <Label className="text-xs sm:text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
                           <Clock className="h-4 w-4 text-emerald-500" /> Interval Size
                         </Label>
-                        <div className="flex gap-2 max-w-md">
+                        <div className="flex gap-2 w-full max-w-md">
                           {([15, 30, 60] as const).map((m) => (
                             <button
                               key={m}
                               onClick={() => setIntervalMinutes(m)}
                               className={cn(
-                                `flex-1 py-2 rounded-xl border text-sm font-semibold transition-all cursor-pointer`,
+                                `flex-1 py-2 rounded-xl border text-xs sm:text-sm font-semibold transition-all cursor-pointer`,
                                 intervalMinutes === m
                                   ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-600 dark:text-emerald-400'
                                   : 'border-border bg-muted/20 text-muted-foreground hover:bg-muted/40',
@@ -660,23 +680,23 @@ export function ReportsContainer() {
                         </div>
                       </div>
 
-                      <p className="text-xs text-muted-foreground rounded-xl border border-border bg-muted/20 px-4 py-2.5 leading-relaxed">
+                      <p className="text-xs text-muted-foreground rounded-xl border border-border bg-muted/20 px-3.5 py-2.5 leading-relaxed">
                         📊 Flat Slices — one row per session per interval block. Best for per-transaction compliance or billing verification.
                       </p>
 
                       {/* Locations & Stations */}
                       <div className="space-y-2 flex-1 flex flex-col min-h-0">
                         <div className="flex items-center justify-between">
-                          <Label className="text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
+                          <Label className="text-xs sm:text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
                             <MapPin className="h-4 w-4 text-emerald-500" /> Locations &amp; Stations
                           </Label>
                           {selectedStationIds.size > 0 && (
-                            <span className="text-[11px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold px-2 py-0.5 rounded-full">
+                            <span className="text-[10px] sm:text-[11px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold px-2 py-0.5 rounded-full">
                               {selectedStationIds.size} stations selected
                             </span>
                           )}
                         </div>
-                        <div className="flex-1 min-h-[180px] max-h-[220px] overflow-y-auto custom-scrollbar border border-border rounded-xl bg-muted/10 p-3 space-y-1">
+                        <div className="flex-1 min-h-[180px] max-h-[220px] overflow-y-auto custom-scrollbar-emerald border border-border rounded-xl bg-muted/10 p-3 space-y-1">
                           <LocationStationTree
                             locations={treeLocations}
                             stations={treeStations}
@@ -697,7 +717,7 @@ export function ReportsContainer() {
                     <div className="h-full flex flex-col gap-4">
                       {/* Preset Switcher */}
                       <div className="rounded-xl border border-border bg-muted/5 p-3 space-y-3">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between gap-3">
                           <div className="space-y-0.5">
                             <Label className="text-xs font-semibold text-foreground/90">
                               Export for specific recipient
@@ -747,20 +767,21 @@ export function ReportsContainer() {
                           onSelectAll={() => setSelectedIntervalColumns(AVAILABLE_INTERVAL_COLUMNS.map(c => c.id))}
                           onDeselectAll={() => setSelectedIntervalColumns([])}
                           disabled={exportForRecipient}
+                          accentColor="emerald"
                         />
                       </div>
                     </div>
                   </div>
 
                   {/* Actions */}
-                  <div className="flex justify-end gap-3 pt-3 border-t border-border">
-                    <Button variant="ghost" onClick={handleStepReset} disabled={isExporting}>
+                  <div className="flex flex-col-reverse sm:flex-row justify-end gap-2.5 sm:gap-3 pt-3 border-t border-border">
+                    <Button variant="ghost" onClick={handleStepReset} disabled={isExporting} className="w-full sm:w-auto">
                       Cancel
                     </Button>
                     <Button
                       onClick={handleExportIntervals}
                       disabled={isExporting}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-2"
+                      className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center justify-center gap-2"
                     >
                       <Download className="h-4 w-4" />
                       {isExporting ? 'Exporting...' : 'Export Intervals CSV'}
@@ -772,33 +793,34 @@ export function ReportsContainer() {
               {/* Step 3: Configure Downtime */}
               {downloadStep === 'configure-downtime' && (
                 <div className="space-y-5">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 min-h-0">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0">
                     {/* Left Column */}
                     <div className="space-y-5 flex flex-col min-h-0">
                       <div className="space-y-2">
-                        <Label className="text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
-                          <Calendar className="h-4 w-4 text-rose-500" /> Date Range
+                        <Label className="text-xs sm:text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
+                          <Calendar className="h-4 w-4 text-amber-500" /> Date Range
                         </Label>
                         <DatePicker
                           dateRange={dateRange}
                           onDateRangeChange={setDateRange}
                           className="w-full"
+                          accentColor="amber"
                         />
                       </div>
 
                       <div className="space-y-2 flex-1 flex flex-col min-h-0">
                         <div className="flex items-center justify-between">
-                          <Label className="text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
-                            <MapPin className="h-4 w-4 text-rose-500" /> Locations &amp; Stations
+                          <Label className="text-xs sm:text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
+                            <MapPin className="h-4 w-4 text-amber-500" /> Locations &amp; Stations
                           </Label>
                           {selectedStationIds.size > 0 && (
-                            <span className="text-[11px] bg-rose-500/10 text-rose-600 dark:text-rose-400 font-semibold px-2 py-0.5 rounded-full">
+                            <span className="text-[10px] sm:text-[11px] bg-amber-500/10 text-amber-600 dark:text-amber-400 font-semibold px-2 py-0.5 rounded-full">
                               {selectedStationIds.size} stations
                             </span>
                           )}
                         </div>
 
-                        <div className="flex-1 min-h-[220px] max-h-[260px] overflow-y-auto custom-scrollbar border border-border rounded-xl bg-muted/10 p-3 space-y-1">
+                        <div className="flex-1 min-h-[220px] max-h-[260px] overflow-y-auto custom-scrollbar-amber border border-border rounded-xl bg-muted/10 p-3 space-y-1">
                           <LocationStationTree
                             locations={treeLocations}
                             stations={treeStations}
@@ -809,7 +831,7 @@ export function ReportsContainer() {
                             onLocationCheck={handleLocationCheck}
                             onStationCheck={handleStationCheck}
                             onToggleExpand={toggleLocationExpand}
-                            accentColor="rose"
+                            accentColor="amber"
                           />
                         </div>
                       </div>
@@ -833,28 +855,28 @@ export function ReportsContainer() {
                           </Label>
                           <div className="space-y-2">
                             <div className="flex items-start gap-2 text-xs">
-                              <span className="h-1.5 w-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0" />
+                              <span className="h-1.5 w-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
                               <div>
                                 <span className="font-semibold text-foreground/90">EVSE ID</span>
                                 <p className="text-[11px] text-muted-foreground">The station's physical hardware serial number.</p>
                               </div>
                             </div>
                             <div className="flex items-start gap-2 text-xs">
-                              <span className="h-1.5 w-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0" />
+                              <span className="h-1.5 w-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
                               <div>
                                 <span className="font-semibold text-foreground/90">Downtime reason</span>
                                 <p className="text-[11px] text-muted-foreground">Reason code or category for the downtime event.</p>
                               </div>
                             </div>
                             <div className="flex items-start gap-2 text-xs">
-                              <span className="h-1.5 w-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0" />
+                              <span className="h-1.5 w-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
                               <div>
                                 <span className="font-semibold text-foreground/90">Event start datetime</span>
                                 <p className="text-[11px] text-muted-foreground">Start of the downtime event (MM/DD/YYYY HH:MM:SS).</p>
                               </div>
                             </div>
                             <div className="flex items-start gap-2 text-xs">
-                              <span className="h-1.5 w-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0" />
+                              <span className="h-1.5 w-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
                               <div>
                                 <span className="font-semibold text-foreground/90">Event end datetime</span>
                                 <p className="text-[11px] text-muted-foreground">End of the downtime event (MM/DD/YYYY HH:MM:SS).</p>
@@ -867,14 +889,14 @@ export function ReportsContainer() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex justify-end gap-3 pt-3 border-t border-border">
-                    <Button variant="ghost" onClick={handleStepReset} disabled={isExporting}>
+                  <div className="flex flex-col-reverse sm:flex-row justify-end gap-2.5 sm:gap-3 pt-3 border-t border-border">
+                    <Button variant="ghost" onClick={handleStepReset} disabled={isExporting} className="w-full sm:w-auto">
                       Cancel
                     </Button>
                     <Button
                       onClick={handleExportDowntime}
                       disabled={isExporting}
-                      className="bg-rose-600 hover:bg-rose-700 text-white font-bold flex items-center gap-2"
+                      className="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white font-bold flex items-center justify-center gap-2"
                     >
                       <Download className="h-4 w-4" />
                       {isExporting ? 'Exporting...' : 'Export Downtime CSV'}
@@ -886,27 +908,28 @@ export function ReportsContainer() {
               {/* Step 4: Configure Sessions */}
               {downloadStep === 'configure-sessions' && (
                 <div className="space-y-5">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 min-h-0">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0">
                     {/* Left Column */}
                     <div className="space-y-5 flex flex-col min-h-0">
                       <div className="space-y-2">
-                        <Label className="text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
+                        <Label className="text-xs sm:text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
                           <Calendar className="h-4 w-4 text-primary" /> Date Range
                         </Label>
                         <DatePicker
                           dateRange={dateRange}
                           onDateRangeChange={setDateRange}
                           className="w-full"
+                          accentColor="primary"
                         />
                       </div>
 
                       <div className="space-y-2 flex-1 flex flex-col min-h-0">
                         <div className="flex items-center justify-between">
-                          <Label className="text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
+                          <Label className="text-xs sm:text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
                             <MapPin className="h-4 w-4 text-primary" /> Locations &amp; Stations
                           </Label>
                           {selectedStationIds.size > 0 && (
-                            <span className="text-[11px] bg-primary/10 text-primary font-semibold px-2 py-0.5 rounded-full">
+                            <span className="text-[10px] sm:text-[11px] bg-primary/10 text-primary font-semibold px-2 py-0.5 rounded-full">
                               {selectedStationIds.size} stations
                             </span>
                           )}
@@ -933,7 +956,7 @@ export function ReportsContainer() {
                     <div className="h-full flex flex-col gap-4">
                       {/* Preset Switcher */}
                       <div className="rounded-xl border border-border bg-muted/5 p-3 space-y-3">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between gap-3">
                           <div className="space-y-0.5">
                             <Label className="text-xs font-semibold text-foreground/90">
                               Export for specific recipient
@@ -988,14 +1011,14 @@ export function ReportsContainer() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex justify-end gap-3 pt-3 border-t border-border">
-                    <Button variant="ghost" onClick={handleStepReset} disabled={isExporting}>
+                  <div className="flex flex-col-reverse sm:flex-row justify-end gap-2.5 sm:gap-3 pt-3 border-t border-border">
+                    <Button variant="ghost" onClick={handleStepReset} disabled={isExporting} className="w-full sm:w-auto">
                       Cancel
                     </Button>
                     <Button
                       onClick={handleExportSessions}
                       disabled={isExporting}
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold flex items-center gap-2"
+                      className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold flex items-center justify-center gap-2"
                     >
                       <Download className="h-4 w-4" />
                       {isExporting ? 'Exporting...' : 'Export CSV'}
@@ -1010,10 +1033,10 @@ export function ReportsContainer() {
           {/* Location Group Tab */}
           <TabsContent value="groups">
             {!selectedGroup ? (
-              <Card className="bg-card/40 border-border/40 backdrop-blur-md rounded-2xl shadow-md p-6">
+              <Card className="bg-card/40 border-border/40 backdrop-blur-md rounded-2xl shadow-md p-4 sm:p-6">
                 <div className="pb-4 border-b border-border/10 mb-6">
-                  <h2 className="text-xl font-bold">Location Groups</h2>
-                  <p className="text-sm text-muted-foreground mt-1">Select a location group to configure its assigned compliance locations.</p>
+                  <h2 className="text-lg sm:text-xl font-bold">Location Groups</h2>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">Select a location group to configure its assigned compliance locations.</p>
                 </div>
 
                 {isGroupsLoading ? (
@@ -1027,22 +1050,22 @@ export function ReportsContainer() {
                     <p className="text-sm font-semibold">No location groups found</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {locationGroups.map((group: any) => (
                       <Card
                         key={group.id || group.name}
                         onClick={() => setSelectedGroup(group)}
-                        className="group relative cursor-pointer overflow-hidden rounded-xl border border-primary/20 bg-primary/5 p-5 hover:bg-primary/10 hover:border-primary/40 transition-all duration-300 shadow-sm"
+                        className="group relative cursor-pointer overflow-hidden rounded-xl border border-primary/20 bg-primary/5 p-4 sm:p-5 hover:bg-primary/10 hover:border-primary/40 transition-all duration-300 shadow-sm"
                       >
-                        <div className="flex items-start gap-4">
-                          <div className="p-3 rounded-lg bg-primary/20 text-primary group-hover:scale-110 transition-transform duration-300">
-                            <MapPin className="h-6 w-6" />
+                        <div className="flex items-start gap-3.5 sm:gap-4">
+                          <div className="p-2.5 sm:p-3 rounded-lg bg-primary/20 text-primary group-hover:scale-110 transition-transform duration-300 shrink-0">
+                            <MapPin className="h-5 w-5 sm:h-6 sm:w-6" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-lg text-primary truncate">
+                            <h3 className="font-bold text-base sm:text-lg text-primary truncate">
                               {group.name.toUpperCase()} Group
                             </h3>
-                            <p className="text-muted-foreground text-sm mt-1">
+                            <p className="text-muted-foreground text-xs sm:text-sm mt-1">
                               {group.locations?.length || 0} locations attached
                             </p>
                             <div className="mt-4 flex justify-end">
@@ -1062,36 +1085,36 @@ export function ReportsContainer() {
                 )}
               </Card>
             ) : (
-              <Card className="bg-card/40 border-border/40 backdrop-blur-md rounded-2xl shadow-md p-6">
-                <div className="pb-4 border-b border-border/10 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
+              <Card className="bg-card/40 border-border/40 backdrop-blur-md rounded-2xl shadow-md p-4 sm:p-6">
+                <div className="pb-4 border-b border-border/10 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-start sm:items-center gap-3">
                     <button
                       onClick={() => setSelectedGroup(null)}
-                      className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                      className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer shrink-0 mt-0.5 sm:mt-0"
                     >
                       <ArrowLeft className="h-5 w-5" />
                     </button>
                     <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h2 className="text-xl font-bold">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 className="text-lg sm:text-xl font-bold">
                           {selectedGroup.name.toUpperCase()} Group Assignments
                         </h2>
-                        <span className="bg-primary/15 text-primary text-[10px] font-black uppercase px-2.5 py-1 rounded-full border border-primary/20 tracking-wider">
+                        <span className="bg-primary/15 text-primary text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border border-primary/20 tracking-wider">
                           {selectedGroup.name.toUpperCase()}
                         </span>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-1">
+                      <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                         Check the locations whose stations should be included in {selectedGroup.name.toUpperCase()} reporting API outputs.
                       </p>
                     </div>
                   </div>
                   
-                  <div className="flex gap-2 pl-12 md:pl-0">
+                  <div className="flex gap-2 w-full sm:w-auto">
                     <Button 
                       variant="outline" 
                       onClick={handleSelectAllGroup} 
                       size="sm" 
-                      className="rounded-lg text-xs font-bold"
+                      className="flex-1 sm:flex-initial rounded-lg text-xs font-bold"
                       disabled={isLocationsLoading}
                     >
                       Select All
@@ -1100,7 +1123,7 @@ export function ReportsContainer() {
                       variant="outline" 
                       onClick={handleDeselectAllGroup} 
                       size="sm" 
-                      className="rounded-lg text-xs font-bold"
+                      className="flex-1 sm:flex-initial rounded-lg text-xs font-bold"
                       disabled={isLocationsLoading}
                     >
                       Deselect All
@@ -1116,7 +1139,7 @@ export function ReportsContainer() {
                       placeholder="Search locations by name or address..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 h-11 rounded-xl bg-background/50 border-border/40 focus:border-primary/50 transition-colors"
+                      className="pl-10 h-10 sm:h-11 text-xs sm:text-sm rounded-xl bg-background/50 border-border/40 focus:border-primary/50 transition-colors"
                     />
                   </div>
 
@@ -1133,14 +1156,14 @@ export function ReportsContainer() {
                       <p className="text-xs text-muted-foreground">Try altering your search phrase.</p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[500px] overflow-y-auto pr-2 no-scrollbar">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 max-h-[500px] overflow-y-auto pr-1 no-scrollbar">
                       {filteredGroupLocations.map((loc) => {
                         const isSelected = selectedGroupLocationIds.includes(loc.id);
                         return (
                           <div
                             key={loc.id}
                             onClick={() => handleToggleGroupLocation(loc.id)}
-                            className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all cursor-pointer select-none ${
+                            className={`flex items-start gap-3 sm:gap-4 p-3.5 sm:p-4 rounded-xl border-2 transition-all cursor-pointer select-none ${
                               isSelected
                                 ? 'border-primary bg-primary/5 shadow-sm shadow-primary/5'
                                 : 'border-border/40 bg-background/20 hover:border-border/80'
@@ -1153,10 +1176,10 @@ export function ReportsContainer() {
                                 className="rounded-md border-2"
                               />
                             </div>
-                            <div className="space-y-1 min-w-0">
-                              <p className="text-sm font-bold truncate leading-snug">{loc.name}</p>
+                            <div className="space-y-1 min-w-0 flex-1">
+                              <p className="text-xs sm:text-sm font-bold truncate leading-snug">{loc.name}</p>
                               {loc.address && (
-                                <p className="text-xs text-muted-foreground truncate max-w-[250px]">
+                                <p className="text-xs text-muted-foreground break-words line-clamp-2">
                                   {loc.address}
                                 </p>
                               )}
@@ -1173,24 +1196,24 @@ export function ReportsContainer() {
                   )}
 
                   {/* Footer Save Button */}
-                  <div className="flex items-center justify-between pt-6 border-t border-border/10">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t border-border/10">
                     <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-                      <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                      <ShieldCheck className="h-4 w-4 text-emerald-500 shrink-0" />
                       <span>{selectedGroupLocationIds.length} location(s) selected for group inclusion.</span>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex gap-2.5 sm:gap-3 w-full sm:w-auto">
                       <Button
                         variant="ghost"
                         onClick={() => setSelectedGroup(null)}
                         disabled={isSavingGroup}
-                        className="rounded-xl px-5 h-11 font-bold"
+                        className="flex-1 sm:flex-none rounded-xl px-5 h-10 sm:h-11 font-bold text-xs sm:text-sm"
                       >
                         Cancel
                       </Button>
                       <Button
                         onClick={handleSaveChangesGroup}
                         disabled={isSavingGroup || isLocationsLoading}
-                        className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 h-11 rounded-xl transition-all shadow-md shadow-primary/10 flex items-center gap-2"
+                        className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 h-10 sm:h-11 rounded-xl transition-all shadow-md shadow-primary/10 flex items-center justify-center gap-2 text-xs sm:text-sm"
                       >
                         {isSavingGroup ? (
                           <>
@@ -1211,18 +1234,18 @@ export function ReportsContainer() {
 
           {/* API Docs Tab */}
           <TabsContent value="api-docs">
-            <Card className="bg-card/40 border-border/40 backdrop-blur-md rounded-2xl shadow-md p-6">
+            <Card className="bg-card/40 border-border/40 backdrop-blur-md rounded-2xl shadow-md p-4 sm:p-6">
               <div className="space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h2 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent flex items-center gap-2">
-                      <Terminal className="h-5 w-5 text-primary" /> {selectedGroupDoc} API Documentation
+                    <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent flex items-center gap-2">
+                      <Terminal className="h-5 w-5 text-primary shrink-0" /> {selectedGroupDoc} API Documentation
                     </h2>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                       Retrieve regulatory compliance datasets for locations in the {selectedGroupDoc} reporting group.
                     </p>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
                     <Label className="text-xs font-bold text-muted-foreground whitespace-nowrap">Reporting Group:</Label>
                     <Select
                       value={selectedGroupDoc}
@@ -1231,7 +1254,7 @@ export function ReportsContainer() {
                         setActiveApiEndpoint(val === 'CALSTART' ? 'charge-events' : 'pac-site');
                       }}
                     >
-                      <SelectTrigger className="w-[160px] h-9 text-xs font-bold bg-card border-border/80 shadow-sm rounded-xl">
+                      <SelectTrigger className="w-full sm:w-[160px] h-9 text-xs font-bold bg-card border-border/80 shadow-sm rounded-xl">
                         <SelectValue placeholder="Select Group" />
                       </SelectTrigger>
                       <SelectContent>
@@ -1242,7 +1265,7 @@ export function ReportsContainer() {
                   </div>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20 text-sm text-muted-foreground leading-relaxed flex items-start gap-3">
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-primary/5 border border-primary/20 text-xs sm:text-sm text-muted-foreground leading-relaxed flex items-start gap-3">
                   <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                   <div>
                     <span className="font-bold text-foreground">Compliance Context:</span> These endpoints query datasets solely for charging stations belonging to locations assigned to the <code className="font-mono text-primary font-bold bg-primary/10 px-1.5 py-0.5 rounded">{selectedGroupDoc}</code> group. Assign compliance-tracked sites in the <span className="font-bold text-foreground">Location Group</span> tab.
@@ -1250,13 +1273,13 @@ export function ReportsContainer() {
                 </div>
 
                 {/* API Key Box */}
-                <div className="p-4 rounded-2xl bg-card border border-border/60 shadow-sm space-y-3">
-                  <div className="flex items-center justify-between">
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-card border border-border/60 shadow-sm space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <Key className="h-4 w-4 text-primary" />
-                      <span className="text-sm font-bold text-foreground">Your Encrypted API Key</span>
+                      <Key className="h-4 w-4 text-primary shrink-0" />
+                      <span className="text-xs sm:text-sm font-bold text-foreground">Your Encrypted API Key</span>
                     </div>
-                    <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full font-medium">
+                    <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full font-medium w-fit">
                       AES-256 Encrypted Context
                     </span>
                   </div>
@@ -1269,23 +1292,23 @@ export function ReportsContainer() {
                         type={showApiKey ? "text" : "password"}
                         value={apiKeyData?.apiKey || ''}
                         readOnly
-                        className="w-full font-mono text-xs p-3 pr-20 bg-muted/60 border border-border/40 rounded-xl focus:outline-none select-all text-foreground"
+                        className="w-full font-mono text-[11px] sm:text-xs p-2.5 sm:p-3 pr-20 bg-muted/60 border border-border/40 rounded-xl focus:outline-none select-all text-foreground"
                         placeholder="Loading API key..."
                       />
-                      <div className="absolute right-2 top-1.5 flex items-center gap-1">
+                      <div className="absolute right-2 top-1 sm:top-1.5 flex items-center gap-1">
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-lg"
+                          className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-foreground rounded-lg"
                           onClick={() => setShowApiKey(!showApiKey)}
                           disabled={!apiKeyData?.apiKey}
                         >
-                          {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          {showApiKey ? <EyeOff className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-lg"
+                          className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-foreground rounded-lg"
                           onClick={() => {
                             if (apiKeyData?.apiKey) {
                               handleCopyText(apiKeyData.apiKey, 'api-key');
@@ -1294,9 +1317,9 @@ export function ReportsContainer() {
                           disabled={!apiKeyData?.apiKey}
                         >
                           {copiedEndpoint === 'api-key' ? (
-                            <Check className="h-4 w-4 text-emerald-500" />
+                            <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-500" />
                           ) : (
-                            <Copy className="h-4 w-4" />
+                            <Copy className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                           )}
                         </Button>
                       </div>
@@ -1306,8 +1329,8 @@ export function ReportsContainer() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                   {/* Left Sidebar endpoint list */}
-                  <div className="lg:col-span-1 flex flex-col gap-2">
-                    <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-3 mb-1">
+                  <div className="lg:col-span-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2">
+                    <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-3 mb-1 col-span-full">
                       Endpoints ({selectedGroupDoc})
                     </div>
                     {selectedGroupDoc === 'CALSTART' ? (
@@ -1426,8 +1449,8 @@ export function ReportsContainer() {
 
                         <div className="space-y-3">
                           <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Query Parameters</h4>
-                          <div className="overflow-x-auto border border-border/40 rounded-xl bg-muted/20">
-                            <table className="w-full text-left border-collapse text-xs">
+                          <div className="overflow-x-auto border border-border/40 rounded-xl bg-muted/20 custom-scrollbar">
+                            <table className="w-full min-w-[500px] text-left border-collapse text-xs">
                               <thead>
                                 <tr className="border-b border-border/40 bg-muted/40 font-bold">
                                   <th className="p-3">Parameter</th>
@@ -1552,8 +1575,8 @@ export function ReportsContainer() {
 
                         <div className="space-y-3">
                           <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Query Parameters</h4>
-                          <div className="overflow-x-auto border border-border/40 rounded-xl bg-muted/20">
-                            <table className="w-full text-left border-collapse text-xs">
+                          <div className="overflow-x-auto border border-border/40 rounded-xl bg-muted/20 custom-scrollbar">
+                            <table className="w-full min-w-[500px] text-left border-collapse text-xs">
                               <thead>
                                 <tr className="border-b border-border/40 bg-muted/40 font-bold">
                                   <th className="p-3">Parameter</th>
@@ -1666,8 +1689,8 @@ export function ReportsContainer() {
 
                         <div className="space-y-3">
                           <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Query Parameters</h4>
-                          <div className="overflow-x-auto border border-border/40 rounded-xl bg-muted/20">
-                            <table className="w-full text-left border-collapse text-xs">
+                          <div className="overflow-x-auto border border-border/40 rounded-xl bg-muted/20 custom-scrollbar">
+                            <table className="w-full min-w-[500px] text-left border-collapse text-xs">
                               <thead>
                                 <tr className="border-b border-border/40 bg-muted/40 font-bold">
                                   <th className="p-3">Parameter</th>
@@ -1769,8 +1792,8 @@ export function ReportsContainer() {
 
                         <div className="space-y-3">
                           <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Query Parameters</h4>
-                          <div className="overflow-x-auto border border-border/40 rounded-xl bg-muted/20">
-                            <table className="w-full text-left border-collapse text-xs">
+                          <div className="overflow-x-auto border border-border/40 rounded-xl bg-muted/20 custom-scrollbar">
+                            <table className="w-full min-w-[500px] text-left border-collapse text-xs">
                               <thead>
                                 <tr className="border-b border-border/40 bg-muted/40 font-bold">
                                   <th className="p-3">Parameter</th>
@@ -1889,8 +1912,8 @@ export function ReportsContainer() {
 
                         <div className="space-y-3">
                           <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Query Parameters</h4>
-                          <div className="overflow-x-auto border border-border/40 rounded-xl bg-muted/20">
-                            <table className="w-full text-left border-collapse text-xs">
+                          <div className="overflow-x-auto border border-border/40 rounded-xl bg-muted/20 custom-scrollbar">
+                            <table className="w-full min-w-[500px] text-left border-collapse text-xs">
                               <thead>
                                 <tr className="border-b border-border/40 bg-muted/40 font-bold">
                                   <th className="p-3">Parameter</th>
@@ -2019,8 +2042,8 @@ export function ReportsContainer() {
 
                         <div className="space-y-3">
                           <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Query Parameters</h4>
-                          <div className="overflow-x-auto border border-border/40 rounded-xl bg-muted/20">
-                            <table className="w-full text-left border-collapse text-xs">
+                          <div className="overflow-x-auto border border-border/40 rounded-xl bg-muted/20 custom-scrollbar">
+                            <table className="w-full min-w-[500px] text-left border-collapse text-xs">
                               <thead>
                                 <tr className="border-b border-border/40 bg-muted/40 font-bold">
                                   <th className="p-3">Parameter</th>
