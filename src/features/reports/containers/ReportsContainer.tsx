@@ -1456,6 +1456,12 @@ export function ReportsContainer() {
                                   <td className="p-3 text-muted-foreground">Optional filter by the physical charging station's serial number. If omitted, events for all stations in the location group are returned.</td>
                                 </tr>
                                 <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">env</td>
+                                  <td className="p-3 text-muted-foreground font-mono">string</td>
+                                  <td className="p-3"><span className="text-muted-foreground font-bold">Optional</span></td>
+                                  <td className="p-3 text-muted-foreground">Environment filter (<code className="font-mono bg-muted px-1 rounded">dev</code> or <code className="font-mono bg-muted px-1 rounded">prod</code>). Defaults to <code className="font-mono bg-muted px-1 rounded">prod</code> if omitted.</td>
+                                </tr>
+                                <tr>
                                   <td className="p-3 font-mono font-bold text-primary">page</td>
                                   <td className="p-3 text-muted-foreground font-mono">number</td>
                                   <td className="p-3"><span className="text-rose-500 font-bold">Required</span></td>
@@ -1479,7 +1485,7 @@ export function ReportsContainer() {
                               variant="outline"
                               size="sm"
                               className="h-8 rounded-lg font-bold text-[11px] gap-1.5"
-                              onClick={() => handleCopyText(`curl -X GET "${API_CONFIG.baseUrl || window.location.origin}/calstart/charge-events?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`, 'curl-charge')}
+                              onClick={() => handleCopyText(`curl -X GET "${API_CONFIG.baseUrl || window.location.origin}/calstart/charge-events?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&env=${environment}&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`, 'curl-charge')}
                             >
                               {copiedEndpoint === 'curl-charge' ? (
                                 <>
@@ -1493,7 +1499,7 @@ export function ReportsContainer() {
                             </Button>
                           </div>
                           <pre className="p-4 rounded-xl bg-slate-950/80 border border-border/40 text-[11px] font-mono text-slate-300 overflow-x-auto leading-relaxed shadow-inner">
-                            {`curl -X GET "${API_CONFIG.baseUrl || 'https://api.example.com'}/calstart/charge-events?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`}
+                            {`curl -X GET "${API_CONFIG.baseUrl || 'https://api.example.com'}/calstart/charge-events?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&env=${environment}&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`}
                           </pre>
                         </div>
 
@@ -1576,6 +1582,12 @@ export function ReportsContainer() {
                                   <td className="p-3 text-muted-foreground">Optional filter by the physical charging station's serial number. If omitted, events for all stations in the location group are returned.</td>
                                 </tr>
                                 <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">env</td>
+                                  <td className="p-3 text-muted-foreground font-mono">string</td>
+                                  <td className="p-3"><span className="text-muted-foreground font-bold">Optional</span></td>
+                                  <td className="p-3 text-muted-foreground">Environment filter (<code className="font-mono bg-muted px-1 rounded">dev</code> or <code className="font-mono bg-muted px-1 rounded">prod</code>). Defaults to <code className="font-mono bg-muted px-1 rounded">prod</code> if omitted.</td>
+                                </tr>
+                                <tr>
                                   <td className="p-3 font-mono font-bold text-primary">page</td>
                                   <td className="p-3 text-muted-foreground font-mono">number</td>
                                   <td className="p-3"><span className="text-rose-500 font-bold">Required</span></td>
@@ -1599,7 +1611,7 @@ export function ReportsContainer() {
                               variant="outline"
                               size="sm"
                               className="h-8 rounded-lg font-bold text-[11px] gap-1.5"
-                              onClick={() => handleCopyText(`curl -X GET "${API_CONFIG.baseUrl || window.location.origin}/calstart/downtime-events?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`, 'curl-downtime')}
+                              onClick={() => handleCopyText(`curl -X GET "${API_CONFIG.baseUrl || window.location.origin}/calstart/downtime-events?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&env=${environment}&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`, 'curl-downtime')}
                             >
                               {copiedEndpoint === 'curl-downtime' ? (
                                 <>
@@ -1613,7 +1625,7 @@ export function ReportsContainer() {
                             </Button>
                           </div>
                           <pre className="p-4 rounded-xl bg-slate-950/80 border border-border/40 text-[11px] font-mono text-slate-300 overflow-x-auto leading-relaxed shadow-inner">
-                            {`curl -X GET "${API_CONFIG.baseUrl || 'https://api.example.com'}/calstart/downtime-events?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`}
+                            {`curl -X GET "${API_CONFIG.baseUrl || 'https://api.example.com'}/calstart/downtime-events?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&env=${environment}&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`}
                           </pre>
                         </div>
 
@@ -1666,6 +1678,12 @@ export function ReportsContainer() {
                               </thead>
                               <tbody className="divide-y divide-border/20 font-medium">
                                 <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">env</td>
+                                  <td className="p-3 text-muted-foreground font-mono">string</td>
+                                  <td className="p-3"><span className="text-muted-foreground font-bold">Optional</span></td>
+                                  <td className="p-3 text-muted-foreground">Environment filter (<code className="font-mono bg-muted px-1 rounded">dev</code> or <code className="font-mono bg-muted px-1 rounded">prod</code>). Defaults to <code className="font-mono bg-muted px-1 rounded">prod</code> if omitted.</td>
+                                </tr>
+                                <tr>
                                   <td className="p-3 font-mono font-bold text-primary">page</td>
                                   <td className="p-3 text-muted-foreground font-mono">number</td>
                                   <td className="p-3"><span className="text-rose-500 font-bold">Required</span></td>
@@ -1689,7 +1707,7 @@ export function ReportsContainer() {
                               variant="outline"
                               size="sm"
                               className="h-8 rounded-lg font-bold text-[11px] gap-1.5"
-                              onClick={() => handleCopyText(`curl -X GET "${API_CONFIG.baseUrl || window.location.origin}/pac/site?page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`, 'curl-pac-site')}
+                              onClick={() => handleCopyText(`curl -X GET "${API_CONFIG.baseUrl || window.location.origin}/pac/site?env=${environment}&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`, 'curl-pac-site')}
                             >
                               {copiedEndpoint === 'curl-pac-site' ? (
                                 <>
@@ -1703,7 +1721,7 @@ export function ReportsContainer() {
                             </Button>
                           </div>
                           <pre className="p-4 rounded-xl bg-slate-950/80 border border-border/40 text-[11px] font-mono text-slate-300 overflow-x-auto leading-relaxed shadow-inner">
-                            {`curl -X GET "${API_CONFIG.baseUrl || 'https://api.example.com'}/pac/site?page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`}
+                            {`curl -X GET "${API_CONFIG.baseUrl || 'https://api.example.com'}/pac/site?env=${environment}&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`}
                           </pre>
                         </div>
 
@@ -1769,6 +1787,12 @@ export function ReportsContainer() {
                                   <td className="p-3 text-muted-foreground">Filter stations by location/site ID.</td>
                                 </tr>
                                 <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">env</td>
+                                  <td className="p-3 text-muted-foreground font-mono">string</td>
+                                  <td className="p-3"><span className="text-muted-foreground font-bold">Optional</span></td>
+                                  <td className="p-3 text-muted-foreground">Environment filter (<code className="font-mono bg-muted px-1 rounded">dev</code> or <code className="font-mono bg-muted px-1 rounded">prod</code>). Defaults to <code className="font-mono bg-muted px-1 rounded">prod</code> if omitted.</td>
+                                </tr>
+                                <tr>
                                   <td className="p-3 font-mono font-bold text-primary">page</td>
                                   <td className="p-3 text-muted-foreground font-mono">number</td>
                                   <td className="p-3"><span className="text-rose-500 font-bold">Required</span></td>
@@ -1792,7 +1816,7 @@ export function ReportsContainer() {
                               variant="outline"
                               size="sm"
                               className="h-8 rounded-lg font-bold text-[11px] gap-1.5"
-                              onClick={() => handleCopyText(`curl -X GET "${API_CONFIG.baseUrl || window.location.origin}/pac/stations?page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`, 'curl-pac-stations')}
+                              onClick={() => handleCopyText(`curl -X GET "${API_CONFIG.baseUrl || window.location.origin}/pac/stations?env=${environment}&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`, 'curl-pac-stations')}
                             >
                               {copiedEndpoint === 'curl-pac-stations' ? (
                                 <>
@@ -1806,7 +1830,7 @@ export function ReportsContainer() {
                             </Button>
                           </div>
                           <pre className="p-4 rounded-xl bg-slate-950/80 border border-border/40 text-[11px] font-mono text-slate-300 overflow-x-auto leading-relaxed shadow-inner">
-                            {`curl -X GET "${API_CONFIG.baseUrl || 'https://api.example.com'}/pac/stations?page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`}
+                            {`curl -X GET "${API_CONFIG.baseUrl || 'https://api.example.com'}/pac/stations?env=${environment}&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`}
                           </pre>
                         </div>
 
@@ -1901,6 +1925,12 @@ export function ReportsContainer() {
                                   <td className="p-3 text-muted-foreground">Filter by site/location ID.</td>
                                 </tr>
                                 <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">env</td>
+                                  <td className="p-3 text-muted-foreground font-mono">string</td>
+                                  <td className="p-3"><span className="text-muted-foreground font-bold">Optional</span></td>
+                                  <td className="p-3 text-muted-foreground">Environment filter (<code className="font-mono bg-muted px-1 rounded">dev</code> or <code className="font-mono bg-muted px-1 rounded">prod</code>). Defaults to <code className="font-mono bg-muted px-1 rounded">prod</code> if omitted.</td>
+                                </tr>
+                                <tr>
                                   <td className="p-3 font-mono font-bold text-primary">page</td>
                                   <td className="p-3 text-muted-foreground font-mono">number</td>
                                   <td className="p-3"><span className="text-rose-500 font-bold">Required</span></td>
@@ -1924,7 +1954,7 @@ export function ReportsContainer() {
                               variant="outline"
                               size="sm"
                               className="h-8 rounded-lg font-bold text-[11px] gap-1.5"
-                              onClick={() => handleCopyText(`curl -X GET "${API_CONFIG.baseUrl || window.location.origin}/pac/sessions?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`, 'curl-pac-sessions')}
+                              onClick={() => handleCopyText(`curl -X GET "${API_CONFIG.baseUrl || window.location.origin}/pac/sessions?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&env=${environment}&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`, 'curl-pac-sessions')}
                             >
                               {copiedEndpoint === 'curl-pac-sessions' ? (
                                 <>
@@ -1938,7 +1968,7 @@ export function ReportsContainer() {
                             </Button>
                           </div>
                           <pre className="p-4 rounded-xl bg-slate-950/80 border border-border/40 text-[11px] font-mono text-slate-300 overflow-x-auto leading-relaxed shadow-inner">
-                            {`curl -X GET "${API_CONFIG.baseUrl || 'https://api.example.com'}/pac/sessions?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`}
+                            {`curl -X GET "${API_CONFIG.baseUrl || 'https://api.example.com'}/pac/sessions?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&env=${environment}&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`}
                           </pre>
                         </div>
 
@@ -2025,6 +2055,12 @@ export function ReportsContainer() {
                                   <td className="p-3 text-muted-foreground">Filter intervals by station ID.</td>
                                 </tr>
                                 <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">env</td>
+                                  <td className="p-3 text-muted-foreground font-mono">string</td>
+                                  <td className="p-3"><span className="text-muted-foreground font-bold">Optional</span></td>
+                                  <td className="p-3 text-muted-foreground">Environment filter (<code className="font-mono bg-muted px-1 rounded">dev</code> or <code className="font-mono bg-muted px-1 rounded">prod</code>). Defaults to <code className="font-mono bg-muted px-1 rounded">prod</code> if omitted.</td>
+                                </tr>
+                                <tr>
                                   <td className="p-3 font-mono font-bold text-primary">page</td>
                                   <td className="p-3 text-muted-foreground font-mono">number</td>
                                   <td className="p-3"><span className="text-rose-500 font-bold">Required</span></td>
@@ -2048,7 +2084,7 @@ export function ReportsContainer() {
                               variant="outline"
                               size="sm"
                               className="h-8 rounded-lg font-bold text-[11px] gap-1.5"
-                              onClick={() => handleCopyText(`curl -X GET "${API_CONFIG.baseUrl || window.location.origin}/pac/interval?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`, 'curl-pac-interval')}
+                              onClick={() => handleCopyText(`curl -X GET "${API_CONFIG.baseUrl || window.location.origin}/pac/interval?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&env=${environment}&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`, 'curl-pac-interval')}
                             >
                               {copiedEndpoint === 'curl-pac-interval' ? (
                                 <>
@@ -2062,7 +2098,7 @@ export function ReportsContainer() {
                             </Button>
                           </div>
                           <pre className="p-4 rounded-xl bg-slate-950/80 border border-border/40 text-[11px] font-mono text-slate-300 overflow-x-auto leading-relaxed shadow-inner">
-                            {`curl -X GET "${API_CONFIG.baseUrl || 'https://api.example.com'}/pac/interval?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`}
+                            {`curl -X GET "${API_CONFIG.baseUrl || 'https://api.example.com'}/pac/interval?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&env=${environment}&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`}
                           </pre>
                         </div>
 
