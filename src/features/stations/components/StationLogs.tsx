@@ -817,6 +817,7 @@ export function StationLogs({ stationId, sessionId, onClearSessionId, className 
                 stationId={stationId}
                 sessionId={sessionId}
                 defaultSelectedEvents={messageTypeFilter}
+                defaultDateRange={dateRange}
             />
         </div>
     );

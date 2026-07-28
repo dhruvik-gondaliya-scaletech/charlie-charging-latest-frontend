@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useLocation } from '@/hooks/get/useLocations';
 import { useStations } from '@/hooks/get/useStations';
 import { Badge } from '@/components/ui/badge';
@@ -29,16 +29,24 @@ import { LocationEnv } from '@/types';
 
 export function LocationDetailContainer() {
     const { id } = useParams();
+    const router = useRouter();
     const searchParams = useSearchParams();
     const tabParam = searchParams ? searchParams.get('tab') : null;
-    const [activeTab, setActiveTab] = useState('overview');
+    const [activeTab, setActiveTab] = useState(tabParam || 'overview');
     const [isTariffModalOpen, setIsTariffModalOpen] = useState(false);
 
     React.useEffect(() => {
-        if (tabParam && tabParam !== activeTab) {
+        if (tabParam) {
             setActiveTab(tabParam);
         }
-    }, [tabParam, activeTab]);
+    }, [tabParam]);
+
+    const handleTabChange = (val: string) => {
+        setActiveTab(val);
+        const params = new URLSearchParams(searchParams ? searchParams.toString() : '');
+        params.set('tab', val);
+        router.replace(`?${params.toString()}`, { scroll: false });
+    };
 
     const { data: location, isLoading: isLocationLoading, error: locationError } = useLocation(id as string);
     const { data: stations, isLoading: isStationsLoading } = useStations({ locationId: id as string });
@@ -187,7 +195,7 @@ export function LocationDetailContainer() {
 
             {/* Main Content Tabs */}
             <motion.div variants={fadeInUp} className="relative z-10">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+                <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
                     <TabsList className="bg-muted/40 p-1 border border-border/40 rounded-2xl backdrop-blur-md h-auto flex-wrap sm:flex-nowrap w-full sm:w-auto">
                         <TabsTrigger value="overview" className="flex-1 sm:flex-none rounded-xl font-black uppercase tracking-widest text-[11px] px-4 sm:px-8 py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">Overview</TabsTrigger>
                         <TabsTrigger value="stations" className="flex-1 sm:flex-none rounded-xl font-black uppercase tracking-widest text-[11px] px-4 sm:px-8 py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">Assigned Stations</TabsTrigger>
