@@ -219,6 +219,14 @@ export enum IdTagStatus {
   INVALID = 'Invalid',
 }
 
+export enum TokenType {
+  RFID = 'RFID (ISO14443)',
+  VICINITY = 'Vicinity (ISO15693)',
+  PLUG_AND_CHARGE = 'Plug & Charge (eMAID)',
+  AUTO_CHARGE = 'AutoCharge (MAC)',
+  CUSTOM = 'Custom (OCPP 1.6)',
+}
+
 export interface Driver {
   id: string;
   firstName: string;
@@ -233,9 +241,13 @@ export interface Driver {
 export interface IdTag {
   idTag: string;
   status: IdTagStatus;
+  idTagType?: string | null;
   driverId?: string | null;
+  stationId?: string | null;
   companyName?: string | null;
   driver?: Driver;
+  station?: Station;
+  locations?: Location[];
   expiryDate?: string;
   createdAt: string;
   updatedAt: string;
@@ -252,14 +264,20 @@ export interface CreateDriverData {
 export interface CreateIdTagData {
   idTag: string;
   status: IdTagStatus;
+  idTagType?: string | null;
   driverId?: string | null;
+  stationId?: string | null;
+  locationIds?: string[];
   companyName?: string | null;
   expiryDate?: string;
 }
 
 export interface UpdateIdTagData {
   status?: IdTagStatus;
+  idTagType?: string | null;
   driverId?: string | null;
+  stationId?: string | null;
+  locationIds?: string[];
   companyName?: string | null;
   expiryDate?: string;
 }

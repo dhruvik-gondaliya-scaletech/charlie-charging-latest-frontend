@@ -18,6 +18,8 @@ import {
   Edit2,
   ShieldAlert,
   Building2,
+  Tag,
+  MapPin,
 } from 'lucide-react';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Table } from '@/components/shared/Table';
@@ -62,6 +64,36 @@ export function IdTagsContainer() {
             </span>
           </div>
         ),
+      },
+      {
+        accessorKey: 'idTagType',
+        header: 'Tag Type',
+        cell: ({ row }) => (
+          <div className="flex items-center gap-1.5 text-xs font-bold text-foreground/90 tracking-tight">
+            <Tag className="h-3.5 w-3.5 text-primary/60" />
+            {row.original.idTagType || 'Driver RFID'}
+          </div>
+        ),
+      },
+      {
+        accessorKey: 'locations',
+        header: 'Allowed Locations',
+        cell: ({ row }) => {
+          const locs = row.original.locations || [];
+          if (locs.length === 0) {
+            return (
+              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 font-bold px-2 py-0.5 text-[10px]">
+                All Locations
+              </Badge>
+            );
+          }
+          return (
+            <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+              <MapPin className="h-3.5 w-3.5 text-primary/70" />
+              <span>{locs.length} {locs.length === 1 ? 'Location' : 'Locations'}</span>
+            </div>
+          );
+        },
       },
       {
         accessorKey: 'driver',

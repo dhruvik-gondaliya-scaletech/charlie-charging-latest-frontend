@@ -3,8 +3,8 @@ import { API_CONFIG } from '@/constants/constants';
 import { Driver, CreateDriverData, DriverSession } from '@/types';
 
 class DriverService {
-  async getAllDrivers() {
-    return httpService.get<Driver[]>(API_CONFIG.endpoints.drivers.base);
+  async getAllDrivers(params?: { search?: string; name?: string; page?: number; limit?: number }) {
+    return httpService.get<Driver[] | { data: Driver[]; meta: any }>(API_CONFIG.endpoints.drivers.base, { params });
   }
 
   async getDriverById(id: string) {
