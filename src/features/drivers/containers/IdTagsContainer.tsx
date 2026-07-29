@@ -32,22 +32,44 @@ import { IdTagFormModal } from '../components/IdTagFormModal';
 import { useDeleteIdTag } from '@/hooks/delete/useDeleteIdTag';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import { ActionIconButton } from '@/components/shared/ActionIconButton';
+import { useDebounce } from '@/hooks/use-debounce';
 
 export function IdTagsContainer() {
-  const { data: idTags, isLoading, error } = useIdTags();
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 400);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+
+  const { data: idTags, isLoading, error } = useIdTags({
+    page,
+    limit: pageSize,
+    search: debouncedSearch || undefined,
+  });
+
   const deleteIdTag = useDeleteIdTag();
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [selectedIdTag, setSelectedIdTag] = useState<IdTag | null>(null);
   const [idTagToDelete, setIdTagToDelete] = useState<string | null>(null);
 
-  const stats = useMemo(() => {
-    if (!idTags) return { total: 0, active: 0, blocked: 0 };
-    return {
-      total: idTags.length,
-      active: idTags.filter(t => t.status === IdTagStatus.ACCEPTED).length,
-      blocked: idTags.filter(t => t.status === IdTagStatus.BLOCKED).length,
-    };
+  const idTagsList = useMemo(() => {
+    if (!idTags) return [];
+    if (Array.isArray(idTags)) return idTags;
+    return idTags.data || [];
   }, [idTags]);
+
+  const totalCount = useMemo(() => {
+    if (!idTags) return 0;
+    if (Array.isArray(idTags)) return idTags.length;
+    return idTags.meta?.total ?? idTagsList.length;
+  }, [idTags, idTagsList]);
+
+  const stats = useMemo(() => {
+    return {
+      total: totalCount,
+      active: idTagsList.filter(t => t.status === IdTagStatus.ACCEPTED).length,
+      blocked: idTagsList.filter(t => t.status === IdTagStatus.BLOCKED).length,
+    };
+  }, [totalCount, idTagsList]);
 
   const columns: ColumnDef<IdTag>[] = useMemo(
     () => [
@@ -247,11 +269,24 @@ export function IdTagsContainer() {
         {/* Tabular Matrix */}
         <motion.div variants={staggerItem} className="relative">
           <Table<IdTag>
-            data={idTags || []}
+            data={idTagsList}
             columns={columns}
             isLoading={isLoading}
             showSearch
             searchPosition="end"
+            onSearch={(value) => {
+              setSearch(value);
+              setPage(1);
+            }}
+            manualPagination={true}
+            totalCount={totalCount}
+            pageIndex={page - 1}
+            pageSize={pageSize}
+            onPageChange={(newPage) => setPage(newPage + 1)}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setPage(1);
+            }}
             appendWithSearch={
               <Button
                 onClick={() => {
@@ -264,7 +299,6 @@ export function IdTagsContainer() {
                 Enroll New Tag
               </Button>
             }
-            pageSize={DEFAULT_PAGE_SIZE}
             maxHeight="700px"
             className="border-none shadow-none"
             renderMobileCard={(tag) => {

@@ -246,7 +246,7 @@ export function Table<T>({
   }, [currentPage]);
 
   const filteredData = useMemo(() => {
-    if (!search) return data;
+    if (manualSearching || !search) return data;
     return data.filter((row: T) => {
       // Convert row to a string representation of its values for searching
       const searchableString = Object.entries(row as object)
@@ -262,7 +262,7 @@ export function Table<T>({
 
       return searchableString.includes(search.toLowerCase());
     });
-  }, [data, search]);
+  }, [data, search, manualSearching]);
 
   const table = useReactTable({
     data: filteredData,

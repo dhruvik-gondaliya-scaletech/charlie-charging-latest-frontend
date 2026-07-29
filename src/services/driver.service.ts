@@ -19,8 +19,10 @@ class DriverService {
     return httpService.put<Driver>(API_CONFIG.endpoints.drivers.byId(id), data);
   }
 
-  async getDriverSessions(id: string) {
-    return httpService.get<DriverSession[]>(API_CONFIG.endpoints.drivers.sessions(id));
+  async getDriverSessions(id: string, params?: { search?: string; page?: number; limit?: number }) {
+    return httpService.get<
+      DriverSession[] | { data: DriverSession[]; meta: { total: number; page: number; limit: number; totalPages: number } }
+    >(API_CONFIG.endpoints.drivers.sessions(id), { params });
   }
 }
 

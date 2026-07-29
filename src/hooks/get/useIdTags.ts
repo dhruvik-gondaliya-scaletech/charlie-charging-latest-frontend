@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { idTagService } from '@/services/id-tag.service';
+import { idTagService, IdTagQueryParams } from '@/services/id-tag.service';
 
-export const useIdTags = () => {
+export const useIdTags = (params?: IdTagQueryParams) => {
   return useQuery({
-    queryKey: ['id-tags'],
-    queryFn: () => idTagService.getAllIdTags(),
+    queryKey: ['id-tags', params],
+    queryFn: () => idTagService.getAllIdTags(params),
     staleTime: 30000,
   });
 };
