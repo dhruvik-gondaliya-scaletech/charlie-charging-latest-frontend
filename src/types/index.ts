@@ -433,3 +433,23 @@ export interface SessionStats {
   failedSessions: number;
   totalEnergyDelivered: number;
 }
+
+export interface DayStat {
+  date: string;
+  label: string;
+  availablePercent: number;
+  busyPercent: number;
+  errorPercent: number;
+}
+
+export interface LocationStatistics {
+  totalKwh: number;
+  chargingSessions: number;
+  successfulSessionsPercent: number;
+  uptimePercent: number;
+  dailyStats: DayStat[];
+  periodLabel: string;
+  overallAvailablePercent: number;
+  overallBusyPercent: number;
+  overallErrorPercent: number;
+}

@@ -20,3 +20,15 @@ export const useLocation = (id: string) => {
     staleTime: 60000,
   });
 };
+
+export const useLocationStatistics = (
+  id: string,
+  params?: { period?: string; timezone?: string },
+) => {
+  return useQuery({
+    queryKey: ['location-statistics', id, params],
+    queryFn: () => locationService.getLocationStatistics(id, params || {}),
+    enabled: !!id,
+    staleTime: 60000,
+  });
+};
