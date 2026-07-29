@@ -40,6 +40,10 @@ class AuthService {
     return httpService.post<LoginResponse>(API_CONFIG.endpoints.auth.login, { email, password });
   }
 
+  async googleLogin(idToken: string) {
+    return httpService.post<LoginResponse>(API_CONFIG.endpoints.auth.googleLogin, { idToken });
+  }
+
   async register(data: RegisterData) {
     return httpService.post(API_CONFIG.endpoints.auth.register, data);
   }

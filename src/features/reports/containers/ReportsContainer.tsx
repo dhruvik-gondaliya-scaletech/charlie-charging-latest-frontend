@@ -40,6 +40,7 @@ import {
   AlertCircle,
   ArrowLeft,
   Clock,
+  BarChart2,
   FileSpreadsheet,
   Terminal,
   Copy,
@@ -172,7 +173,8 @@ export function ReportsContainer() {
   const { environment } = useEnvironment();
 
   // API Docs state
-  const [activeApiEndpoint, setActiveApiEndpoint] = useState<'charge-events' | 'downtime-events'>('charge-events');
+  const [selectedGroupDoc, setSelectedGroupDoc] = useState<'CALSTART' | 'PAC'>('CALSTART');
+  const [activeApiEndpoint, setActiveApiEndpoint] = useState<string>('charge-events');
   const [copiedEndpoint, setCopiedEndpoint] = useState<string | null>(null);
 
   const handleCopyText = (text: string, id: string) => {
@@ -549,14 +551,14 @@ export function ReportsContainer() {
       variants={staggerContainer}
       initial="initial"
       animate="animate"
-      className="space-y-8 p-4 md:p-8 max-w-[1600px] mx-auto pb-16"
+      className="space-y-6 sm:space-y-8 p-3 sm:p-6 md:p-8 max-w-[1600px] mx-auto pb-16"
     >
       {/* Header */}
       <motion.div variants={staggerItem} className="space-y-1">
-        <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
           Reports & Reporting Group Management
         </h1>
-        <p className="text-sm font-medium text-muted-foreground mt-1 tracking-tight">
+        <p className="text-xs sm:text-sm font-medium text-muted-foreground mt-1 tracking-tight">
           Manage location filters for regulatory reporting compliance and network export data.
         </p>
       </motion.div>
@@ -564,45 +566,73 @@ export function ReportsContainer() {
       {/* Tabs */}
       <motion.div variants={staggerItem}>
         <Tabs defaultValue="downloads" className="space-y-6">
-          <TabsList className="bg-muted/40 p-1 border border-border/40 rounded-xl backdrop-blur-md w-fit inline-flex h-auto gap-1 shadow-inner">
-            <TabsTrigger value="downloads" className="rounded-lg font-bold px-6 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">
-              <FileText className="h-4 w-4 mr-2" />
-              Download Reports
+          <TabsList className="bg-muted/40 p-1 border border-border/40 rounded-xl backdrop-blur-md w-full sm:w-auto grid grid-cols-3 sm:inline-flex h-auto gap-1 shadow-inner">
+            <TabsTrigger value="downloads" className="rounded-lg font-bold px-1.5 sm:px-5 py-2 sm:py-2.5 text-[11px] sm:text-sm flex items-center justify-center gap-1 sm:gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
+              <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+              <span className="sm:hidden">Reports</span>
+              <span className="hidden sm:inline">Download Reports</span>
             </TabsTrigger>
-            <TabsTrigger value="groups" className="rounded-lg font-bold px-6 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">
-              <MapPin className="h-4 w-4 mr-2" />
-              Location Group
+            <TabsTrigger value="groups" className="rounded-lg font-bold px-1.5 sm:px-5 py-2 sm:py-2.5 text-[11px] sm:text-sm flex items-center justify-center gap-1 sm:gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
+              <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+              <span className="sm:hidden">Groups</span>
+              <span className="hidden sm:inline">Location Group</span>
             </TabsTrigger>
-            <TabsTrigger value="api-docs" className="rounded-lg font-bold px-6 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">
-              <Terminal className="h-4 w-4 mr-2" />
-              API Docs
+            <TabsTrigger value="api-docs" className="rounded-lg font-bold px-1.5 sm:px-5 py-2 sm:py-2.5 text-[11px] sm:text-sm flex items-center justify-center gap-1 sm:gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
+              <Terminal className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+              <span>API Docs</span>
             </TabsTrigger>
           </TabsList>
 
           {/* Downloads Tab */}
           <TabsContent value="downloads">
-            <Card className="bg-card/40 border-border/40 backdrop-blur-md rounded-2xl shadow-md p-6">
+            <Card className="bg-card/40 border-border/40 backdrop-blur-md rounded-2xl shadow-md p-4 sm:p-6">
               
               {/* Step Header */}
               {downloadStep !== 'select-type' && (
-                <div className="flex items-center gap-3 border-b border-border/60 pb-5 mb-5">
+                <div className="flex items-start sm:items-center gap-3 border-b border-border/60 pb-4 sm:pb-5 mb-4 sm:mb-5">
                   <button
                     onClick={handleStepReset}
-                    className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                    className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer shrink-0"
                   >
                     <ArrowLeft className="h-5 w-5" />
                   </button>
                   <div>
-                    <h2 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent flex items-center gap-2">
-                      <FileSpreadsheet className="h-5 w-5 text-primary" /> Configure Export
-                    </h2>
-                    <p className="text-muted-foreground text-sm mt-1">
-                      {downloadStep === 'configure-intervals'
-                        ? 'Configure interval size, type, and date range for your interval export.'
-                        : downloadStep === 'configure-downtime'
-                          ? 'Configure date range and filters for station downtime CSV export.'
-                          : 'Configure parameters, filters, and custom fields for your CSV export.'}
-                    </p>
+                    {(() => {
+                      let headerTextColor = 'text-primary';
+                      let HeaderIcon = FileSpreadsheet;
+                      let headerDescription = 'Configure parameters, filters, and custom fields for your CSV export.';
+
+                      switch (downloadStep) {
+                        case 'configure-downtime':
+                          headerTextColor = 'text-amber-500';
+                          HeaderIcon = Clock;
+                          headerDescription = 'Configure date range and filters for station downtime CSV export.';
+                          break;
+                        case 'configure-intervals':
+                          headerTextColor = 'text-emerald-500';
+                          HeaderIcon = BarChart2;
+                          headerDescription = 'Configure interval size, type, and date range for your interval export.';
+                          break;
+                        case 'configure-sessions':
+                        default:
+                          headerTextColor = 'text-primary';
+                          HeaderIcon = FileSpreadsheet;
+                          headerDescription = 'Configure parameters, filters, and custom fields for your CSV export.';
+                          break;
+                      }
+
+                      return (
+                        <>
+                          <h2 className={cn("text-lg sm:text-xl font-bold flex items-center gap-2", headerTextColor)}>
+                            <HeaderIcon className={cn("h-5 w-5 shrink-0", headerTextColor)} />
+                            Configure Export
+                          </h2>
+                          <p className="text-muted-foreground text-xs sm:text-sm mt-1">
+                            {headerDescription}
+                          </p>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               )}
@@ -611,8 +641,8 @@ export function ReportsContainer() {
               {downloadStep === 'select-type' && (
                 <div className="space-y-4">
                   <div className="pb-3 border-b border-border/40">
-                    <h2 className="text-lg font-bold">Export Reports</h2>
-                    <p className="text-sm text-muted-foreground">Select a report type to begin your data export.</p>
+                    <h2 className="text-base sm:text-lg font-bold">Export Reports</h2>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Select a report type to begin your data export.</p>
                   </div>
                   <ReportTypeSelector onSelectStep={setDownloadStep} />
                 </div>
@@ -621,33 +651,34 @@ export function ReportsContainer() {
               {/* Step 2: Configure Intervals */}
               {downloadStep === 'configure-intervals' && (
                 <div className="space-y-5">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 min-h-0">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0">
                     {/* Left Column */}
                     <div className="space-y-5 flex flex-col min-h-0">
                       {/* Date Range */}
                       <div className="space-y-2">
-                        <Label className="text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
+                        <Label className="text-xs sm:text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
                           <Calendar className="h-4 w-4 text-emerald-500" /> Date Range
                         </Label>
                         <DatePicker
                           dateRange={dateRange}
                           onDateRangeChange={setDateRange}
                           className="w-full"
+                          accentColor="emerald"
                         />
                       </div>
 
                       {/* Interval Size */}
                       <div className="space-y-2">
-                        <Label className="text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
+                        <Label className="text-xs sm:text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
                           <Clock className="h-4 w-4 text-emerald-500" /> Interval Size
                         </Label>
-                        <div className="flex gap-2 max-w-md">
+                        <div className="flex gap-2 w-full max-w-md">
                           {([15, 30, 60] as const).map((m) => (
                             <button
                               key={m}
                               onClick={() => setIntervalMinutes(m)}
                               className={cn(
-                                `flex-1 py-2 rounded-xl border text-sm font-semibold transition-all cursor-pointer`,
+                                `flex-1 py-2 rounded-xl border text-xs sm:text-sm font-semibold transition-all cursor-pointer`,
                                 intervalMinutes === m
                                   ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-600 dark:text-emerald-400'
                                   : 'border-border bg-muted/20 text-muted-foreground hover:bg-muted/40',
@@ -659,23 +690,23 @@ export function ReportsContainer() {
                         </div>
                       </div>
 
-                      <p className="text-xs text-muted-foreground rounded-xl border border-border bg-muted/20 px-4 py-2.5 leading-relaxed">
+                      <p className="text-xs text-muted-foreground rounded-xl border border-border bg-muted/20 px-3.5 py-2.5 leading-relaxed">
                         📊 Flat Slices — one row per session per interval block. Best for per-transaction compliance or billing verification.
                       </p>
 
                       {/* Locations & Stations */}
                       <div className="space-y-2 flex-1 flex flex-col min-h-0">
                         <div className="flex items-center justify-between">
-                          <Label className="text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
+                          <Label className="text-xs sm:text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
                             <MapPin className="h-4 w-4 text-emerald-500" /> Locations &amp; Stations
                           </Label>
                           {selectedStationIds.size > 0 && (
-                            <span className="text-[11px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold px-2 py-0.5 rounded-full">
+                            <span className="text-[10px] sm:text-[11px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold px-2 py-0.5 rounded-full">
                               {selectedStationIds.size} stations selected
                             </span>
                           )}
                         </div>
-                        <div className="flex-1 min-h-[180px] max-h-[220px] overflow-y-auto custom-scrollbar border border-border rounded-xl bg-muted/10 p-3 space-y-1">
+                        <div className="flex-1 min-h-[180px] max-h-[220px] overflow-y-auto custom-scrollbar-emerald border border-border rounded-xl bg-muted/10 p-3 space-y-1">
                           <LocationStationTree
                             locations={treeLocations}
                             stations={treeStations}
@@ -696,7 +727,7 @@ export function ReportsContainer() {
                     <div className="h-full flex flex-col gap-4">
                       {/* Preset Switcher */}
                       <div className="rounded-xl border border-border bg-muted/5 p-3 space-y-3">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between gap-3">
                           <div className="space-y-0.5">
                             <Label className="text-xs font-semibold text-foreground/90">
                               Export for specific recipient
@@ -725,6 +756,7 @@ export function ReportsContainer() {
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="calstart">CALSTART</SelectItem>
+                                <SelectItem value="pac">PAC</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
@@ -745,20 +777,21 @@ export function ReportsContainer() {
                           onSelectAll={() => setSelectedIntervalColumns(AVAILABLE_INTERVAL_COLUMNS.map(c => c.id))}
                           onDeselectAll={() => setSelectedIntervalColumns([])}
                           disabled={exportForRecipient}
+                          accentColor="emerald"
                         />
                       </div>
                     </div>
                   </div>
 
                   {/* Actions */}
-                  <div className="flex justify-end gap-3 pt-3 border-t border-border">
-                    <Button variant="ghost" onClick={handleStepReset} disabled={isExporting}>
+                  <div className="flex flex-col-reverse sm:flex-row justify-end gap-2.5 sm:gap-3 pt-3 border-t border-border">
+                    <Button variant="ghost" onClick={handleStepReset} disabled={isExporting} className="w-full sm:w-auto">
                       Cancel
                     </Button>
                     <Button
                       onClick={handleExportIntervals}
                       disabled={isExporting}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-2"
+                      className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center justify-center gap-2"
                     >
                       <Download className="h-4 w-4" />
                       {isExporting ? 'Exporting...' : 'Export Intervals CSV'}
@@ -770,33 +803,34 @@ export function ReportsContainer() {
               {/* Step 3: Configure Downtime */}
               {downloadStep === 'configure-downtime' && (
                 <div className="space-y-5">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 min-h-0">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0">
                     {/* Left Column */}
                     <div className="space-y-5 flex flex-col min-h-0">
                       <div className="space-y-2">
-                        <Label className="text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
-                          <Calendar className="h-4 w-4 text-rose-500" /> Date Range
+                        <Label className="text-xs sm:text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
+                          <Calendar className="h-4 w-4 text-amber-500" /> Date Range
                         </Label>
                         <DatePicker
                           dateRange={dateRange}
                           onDateRangeChange={setDateRange}
                           className="w-full"
+                          accentColor="amber"
                         />
                       </div>
 
                       <div className="space-y-2 flex-1 flex flex-col min-h-0">
                         <div className="flex items-center justify-between">
-                          <Label className="text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
-                            <MapPin className="h-4 w-4 text-rose-500" /> Locations &amp; Stations
+                          <Label className="text-xs sm:text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
+                            <MapPin className="h-4 w-4 text-amber-500" /> Locations &amp; Stations
                           </Label>
                           {selectedStationIds.size > 0 && (
-                            <span className="text-[11px] bg-rose-500/10 text-rose-600 dark:text-rose-400 font-semibold px-2 py-0.5 rounded-full">
+                            <span className="text-[10px] sm:text-[11px] bg-amber-500/10 text-amber-600 dark:text-amber-400 font-semibold px-2 py-0.5 rounded-full">
                               {selectedStationIds.size} stations
                             </span>
                           )}
                         </div>
 
-                        <div className="flex-1 min-h-[220px] max-h-[260px] overflow-y-auto custom-scrollbar border border-border rounded-xl bg-muted/10 p-3 space-y-1">
+                        <div className="flex-1 min-h-[220px] max-h-[260px] overflow-y-auto custom-scrollbar-amber border border-border rounded-xl bg-muted/10 p-3 space-y-1">
                           <LocationStationTree
                             locations={treeLocations}
                             stations={treeStations}
@@ -807,7 +841,7 @@ export function ReportsContainer() {
                             onLocationCheck={handleLocationCheck}
                             onStationCheck={handleStationCheck}
                             onToggleExpand={toggleLocationExpand}
-                            accentColor="rose"
+                            accentColor="amber"
                           />
                         </div>
                       </div>
@@ -831,28 +865,28 @@ export function ReportsContainer() {
                           </Label>
                           <div className="space-y-2">
                             <div className="flex items-start gap-2 text-xs">
-                              <span className="h-1.5 w-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0" />
+                              <span className="h-1.5 w-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
                               <div>
                                 <span className="font-semibold text-foreground/90">EVSE ID</span>
                                 <p className="text-[11px] text-muted-foreground">The station's physical hardware serial number.</p>
                               </div>
                             </div>
                             <div className="flex items-start gap-2 text-xs">
-                              <span className="h-1.5 w-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0" />
+                              <span className="h-1.5 w-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
                               <div>
                                 <span className="font-semibold text-foreground/90">Downtime reason</span>
                                 <p className="text-[11px] text-muted-foreground">Reason code or category for the downtime event.</p>
                               </div>
                             </div>
                             <div className="flex items-start gap-2 text-xs">
-                              <span className="h-1.5 w-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0" />
+                              <span className="h-1.5 w-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
                               <div>
                                 <span className="font-semibold text-foreground/90">Event start datetime</span>
                                 <p className="text-[11px] text-muted-foreground">Start of the downtime event (MM/DD/YYYY HH:MM:SS).</p>
                               </div>
                             </div>
                             <div className="flex items-start gap-2 text-xs">
-                              <span className="h-1.5 w-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0" />
+                              <span className="h-1.5 w-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
                               <div>
                                 <span className="font-semibold text-foreground/90">Event end datetime</span>
                                 <p className="text-[11px] text-muted-foreground">End of the downtime event (MM/DD/YYYY HH:MM:SS).</p>
@@ -865,14 +899,14 @@ export function ReportsContainer() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex justify-end gap-3 pt-3 border-t border-border">
-                    <Button variant="ghost" onClick={handleStepReset} disabled={isExporting}>
+                  <div className="flex flex-col-reverse sm:flex-row justify-end gap-2.5 sm:gap-3 pt-3 border-t border-border">
+                    <Button variant="ghost" onClick={handleStepReset} disabled={isExporting} className="w-full sm:w-auto">
                       Cancel
                     </Button>
                     <Button
                       onClick={handleExportDowntime}
                       disabled={isExporting}
-                      className="bg-rose-600 hover:bg-rose-700 text-white font-bold flex items-center gap-2"
+                      className="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white font-bold flex items-center justify-center gap-2"
                     >
                       <Download className="h-4 w-4" />
                       {isExporting ? 'Exporting...' : 'Export Downtime CSV'}
@@ -884,27 +918,28 @@ export function ReportsContainer() {
               {/* Step 4: Configure Sessions */}
               {downloadStep === 'configure-sessions' && (
                 <div className="space-y-5">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 min-h-0">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0">
                     {/* Left Column */}
                     <div className="space-y-5 flex flex-col min-h-0">
                       <div className="space-y-2">
-                        <Label className="text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
+                        <Label className="text-xs sm:text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
                           <Calendar className="h-4 w-4 text-primary" /> Date Range
                         </Label>
                         <DatePicker
                           dateRange={dateRange}
                           onDateRangeChange={setDateRange}
                           className="w-full"
+                          accentColor="primary"
                         />
                       </div>
 
                       <div className="space-y-2 flex-1 flex flex-col min-h-0">
                         <div className="flex items-center justify-between">
-                          <Label className="text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
+                          <Label className="text-xs sm:text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
                             <MapPin className="h-4 w-4 text-primary" /> Locations &amp; Stations
                           </Label>
                           {selectedStationIds.size > 0 && (
-                            <span className="text-[11px] bg-primary/10 text-primary font-semibold px-2 py-0.5 rounded-full">
+                            <span className="text-[10px] sm:text-[11px] bg-primary/10 text-primary font-semibold px-2 py-0.5 rounded-full">
                               {selectedStationIds.size} stations
                             </span>
                           )}
@@ -931,7 +966,7 @@ export function ReportsContainer() {
                     <div className="h-full flex flex-col gap-4">
                       {/* Preset Switcher */}
                       <div className="rounded-xl border border-border bg-muted/5 p-3 space-y-3">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between gap-3">
                           <div className="space-y-0.5">
                             <Label className="text-xs font-semibold text-foreground/90">
                               Export for specific recipient
@@ -986,14 +1021,14 @@ export function ReportsContainer() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex justify-end gap-3 pt-3 border-t border-border">
-                    <Button variant="ghost" onClick={handleStepReset} disabled={isExporting}>
+                  <div className="flex flex-col-reverse sm:flex-row justify-end gap-2.5 sm:gap-3 pt-3 border-t border-border">
+                    <Button variant="ghost" onClick={handleStepReset} disabled={isExporting} className="w-full sm:w-auto">
                       Cancel
                     </Button>
                     <Button
                       onClick={handleExportSessions}
                       disabled={isExporting}
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold flex items-center gap-2"
+                      className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold flex items-center justify-center gap-2"
                     >
                       <Download className="h-4 w-4" />
                       {isExporting ? 'Exporting...' : 'Export CSV'}
@@ -1008,10 +1043,10 @@ export function ReportsContainer() {
           {/* Location Group Tab */}
           <TabsContent value="groups">
             {!selectedGroup ? (
-              <Card className="bg-card/40 border-border/40 backdrop-blur-md rounded-2xl shadow-md p-6">
+              <Card className="bg-card/40 border-border/40 backdrop-blur-md rounded-2xl shadow-md p-4 sm:p-6">
                 <div className="pb-4 border-b border-border/10 mb-6">
-                  <h2 className="text-xl font-bold">Location Groups</h2>
-                  <p className="text-sm text-muted-foreground mt-1">Select a location group to configure its assigned compliance locations.</p>
+                  <h2 className="text-lg sm:text-xl font-bold">Location Groups</h2>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">Select a location group to configure its assigned compliance locations.</p>
                 </div>
 
                 {isGroupsLoading ? (
@@ -1025,22 +1060,22 @@ export function ReportsContainer() {
                     <p className="text-sm font-semibold">No location groups found</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {locationGroups.map((group: any) => (
                       <Card
                         key={group.id || group.name}
                         onClick={() => setSelectedGroup(group)}
-                        className="group relative cursor-pointer overflow-hidden rounded-xl border border-primary/20 bg-primary/5 p-5 hover:bg-primary/10 hover:border-primary/40 transition-all duration-300 shadow-sm"
+                        className="group relative cursor-pointer overflow-hidden rounded-xl border border-primary/20 bg-primary/5 p-4 sm:p-5 hover:bg-primary/10 hover:border-primary/40 transition-all duration-300 shadow-sm"
                       >
-                        <div className="flex items-start gap-4">
-                          <div className="p-3 rounded-lg bg-primary/20 text-primary group-hover:scale-110 transition-transform duration-300">
-                            <MapPin className="h-6 w-6" />
+                        <div className="flex items-start gap-3.5 sm:gap-4">
+                          <div className="p-2.5 sm:p-3 rounded-lg bg-primary/20 text-primary group-hover:scale-110 transition-transform duration-300 shrink-0">
+                            <MapPin className="h-5 w-5 sm:h-6 sm:w-6" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-lg text-primary truncate">
+                            <h3 className="font-bold text-base sm:text-lg text-primary truncate">
                               {group.name.toUpperCase()} Group
                             </h3>
-                            <p className="text-muted-foreground text-sm mt-1">
+                            <p className="text-muted-foreground text-xs sm:text-sm mt-1">
                               {group.locations?.length || 0} locations attached
                             </p>
                             <div className="mt-4 flex justify-end">
@@ -1060,36 +1095,36 @@ export function ReportsContainer() {
                 )}
               </Card>
             ) : (
-              <Card className="bg-card/40 border-border/40 backdrop-blur-md rounded-2xl shadow-md p-6">
-                <div className="pb-4 border-b border-border/10 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
+              <Card className="bg-card/40 border-border/40 backdrop-blur-md rounded-2xl shadow-md p-4 sm:p-6">
+                <div className="pb-4 border-b border-border/10 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-start sm:items-center gap-3">
                     <button
                       onClick={() => setSelectedGroup(null)}
-                      className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                      className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer shrink-0 mt-0.5 sm:mt-0"
                     >
                       <ArrowLeft className="h-5 w-5" />
                     </button>
                     <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h2 className="text-xl font-bold">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 className="text-lg sm:text-xl font-bold">
                           {selectedGroup.name.toUpperCase()} Group Assignments
                         </h2>
-                        <span className="bg-primary/15 text-primary text-[10px] font-black uppercase px-2.5 py-1 rounded-full border border-primary/20 tracking-wider">
+                        <span className="bg-primary/15 text-primary text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border border-primary/20 tracking-wider">
                           {selectedGroup.name.toUpperCase()}
                         </span>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-1">
+                      <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                         Check the locations whose stations should be included in {selectedGroup.name.toUpperCase()} reporting API outputs.
                       </p>
                     </div>
                   </div>
                   
-                  <div className="flex gap-2 pl-12 md:pl-0">
+                  <div className="flex gap-2 w-full sm:w-auto">
                     <Button 
                       variant="outline" 
                       onClick={handleSelectAllGroup} 
                       size="sm" 
-                      className="rounded-lg text-xs font-bold"
+                      className="flex-1 sm:flex-initial rounded-lg text-xs font-bold"
                       disabled={isLocationsLoading}
                     >
                       Select All
@@ -1098,7 +1133,7 @@ export function ReportsContainer() {
                       variant="outline" 
                       onClick={handleDeselectAllGroup} 
                       size="sm" 
-                      className="rounded-lg text-xs font-bold"
+                      className="flex-1 sm:flex-initial rounded-lg text-xs font-bold"
                       disabled={isLocationsLoading}
                     >
                       Deselect All
@@ -1114,7 +1149,7 @@ export function ReportsContainer() {
                       placeholder="Search locations by name or address..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 h-11 rounded-xl bg-background/50 border-border/40 focus:border-primary/50 transition-colors"
+                      className="pl-10 h-10 sm:h-11 text-xs sm:text-sm rounded-xl bg-background/50 border-border/40 focus:border-primary/50 transition-colors"
                     />
                   </div>
 
@@ -1131,14 +1166,14 @@ export function ReportsContainer() {
                       <p className="text-xs text-muted-foreground">Try altering your search phrase.</p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[500px] overflow-y-auto pr-2 no-scrollbar">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 max-h-[500px] overflow-y-auto pr-1 no-scrollbar">
                       {filteredGroupLocations.map((loc) => {
                         const isSelected = selectedGroupLocationIds.includes(loc.id);
                         return (
                           <div
                             key={loc.id}
                             onClick={() => handleToggleGroupLocation(loc.id)}
-                            className={`flex items-start gap-4 p-4 rounded-xl border-2 transition-all cursor-pointer select-none ${
+                            className={`flex items-start gap-3 sm:gap-4 p-3.5 sm:p-4 rounded-xl border-2 transition-all cursor-pointer select-none ${
                               isSelected
                                 ? 'border-primary bg-primary/5 shadow-sm shadow-primary/5'
                                 : 'border-border/40 bg-background/20 hover:border-border/80'
@@ -1151,10 +1186,10 @@ export function ReportsContainer() {
                                 className="rounded-md border-2"
                               />
                             </div>
-                            <div className="space-y-1 min-w-0">
-                              <p className="text-sm font-bold truncate leading-snug">{loc.name}</p>
+                            <div className="space-y-1 min-w-0 flex-1">
+                              <p className="text-xs sm:text-sm font-bold truncate leading-snug">{loc.name}</p>
                               {loc.address && (
-                                <p className="text-xs text-muted-foreground truncate max-w-[250px]">
+                                <p className="text-xs text-muted-foreground break-words line-clamp-2">
                                   {loc.address}
                                 </p>
                               )}
@@ -1171,24 +1206,24 @@ export function ReportsContainer() {
                   )}
 
                   {/* Footer Save Button */}
-                  <div className="flex items-center justify-between pt-6 border-t border-border/10">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t border-border/10">
                     <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-                      <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                      <ShieldCheck className="h-4 w-4 text-emerald-500 shrink-0" />
                       <span>{selectedGroupLocationIds.length} location(s) selected for group inclusion.</span>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex gap-2.5 sm:gap-3 w-full sm:w-auto">
                       <Button
                         variant="ghost"
                         onClick={() => setSelectedGroup(null)}
                         disabled={isSavingGroup}
-                        className="rounded-xl px-5 h-11 font-bold"
+                        className="flex-1 sm:flex-none rounded-xl px-5 h-10 sm:h-11 font-bold text-xs sm:text-sm"
                       >
                         Cancel
                       </Button>
                       <Button
                         onClick={handleSaveChangesGroup}
                         disabled={isSavingGroup || isLocationsLoading}
-                        className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 h-11 rounded-xl transition-all shadow-md shadow-primary/10 flex items-center gap-2"
+                        className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 h-10 sm:h-11 rounded-xl transition-all shadow-md shadow-primary/10 flex items-center justify-center gap-2 text-xs sm:text-sm"
                       >
                         {isSavingGroup ? (
                           <>
@@ -1209,37 +1244,57 @@ export function ReportsContainer() {
 
           {/* API Docs Tab */}
           <TabsContent value="api-docs">
-            <Card className="bg-card/40 border-border/40 backdrop-blur-md rounded-2xl shadow-md p-6">
+            <Card className="bg-card/40 border-border/40 backdrop-blur-md rounded-2xl shadow-md p-4 sm:p-6">
               <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent flex items-center gap-2">
-                    <Terminal className="h-5 w-5 text-primary" /> CALSTART API Documentation
-                  </h2>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Retrieve regulatory compliance datasets for locations in the CALSTART reporting group.
-                  </p>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent flex items-center gap-2">
+                      <Terminal className="h-5 w-5 text-primary shrink-0" /> {selectedGroupDoc} API Documentation
+                    </h2>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                      Retrieve regulatory compliance datasets for locations in the {selectedGroupDoc} reporting group.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                    <Label className="text-xs font-bold text-muted-foreground whitespace-nowrap">Reporting Group:</Label>
+                    <Select
+                      value={selectedGroupDoc}
+                      onValueChange={(val: 'CALSTART' | 'PAC') => {
+                        setSelectedGroupDoc(val);
+                        setActiveApiEndpoint(val === 'CALSTART' ? 'charge-events' : 'pac-site');
+                      }}
+                    >
+                      <SelectTrigger className="w-full sm:w-[160px] h-9 text-xs font-bold bg-card border-border/80 shadow-sm rounded-xl">
+                        <SelectValue placeholder="Select Group" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="CALSTART">CALSTART</SelectItem>
+                        <SelectItem value="PAC">PAC</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20 text-sm text-muted-foreground leading-relaxed flex items-start gap-3">
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-primary/5 border border-primary/20 text-xs sm:text-sm text-muted-foreground leading-relaxed flex items-start gap-3">
                   <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-bold text-foreground">Compliance Context:</span> These endpoints query transactions and downtime intervals solely for charging stations belonging to locations assigned to the <code className="font-mono text-primary font-bold bg-primary/10 px-1.5 py-0.5 rounded">CALSTART</code> group. Assign compliance-tracked sites in the <span className="font-bold text-foreground">Location Group</span> tab.
+                    <span className="font-bold text-foreground">Compliance Context:</span> These endpoints query datasets solely for charging stations belonging to locations assigned to the <code className="font-mono text-primary font-bold bg-primary/10 px-1.5 py-0.5 rounded">{selectedGroupDoc}</code> group. Assign compliance-tracked sites in the <span className="font-bold text-foreground">Location Group</span> tab.
                   </div>
                 </div>
 
                 {/* API Key Box */}
-                <div className="p-4 rounded-2xl bg-card border border-border/60 shadow-sm space-y-3">
-                  <div className="flex items-center justify-between">
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-card border border-border/60 shadow-sm space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <Key className="h-4 w-4 text-primary" />
-                      <span className="text-sm font-bold text-foreground">Your Encrypted API Key</span>
+                      <Key className="h-4 w-4 text-primary shrink-0" />
+                      <span className="text-xs sm:text-sm font-bold text-foreground">Your Encrypted API Key</span>
                     </div>
-                    <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full font-medium">
+                    <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full font-medium w-fit">
                       AES-256 Encrypted Context
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Use this key to authenticate public CALSTART API requests by passing it in the <code className="font-mono bg-muted px-1 py-0.5 rounded text-foreground">x-api-key</code> header or as a query parameter <code className="font-mono bg-muted px-1 py-0.5 rounded text-foreground">apiKey</code>.
+                    Use this key to authenticate public {selectedGroupDoc} API requests by passing it in the <code className="font-mono bg-muted px-1 py-0.5 rounded text-foreground">x-api-key</code> header or as a query parameter <code className="font-mono bg-muted px-1 py-0.5 rounded text-foreground">apiKey</code>.
                   </p>
                   <div className="flex items-center gap-2">
                     <div className="relative flex-1">
@@ -1247,23 +1302,23 @@ export function ReportsContainer() {
                         type={showApiKey ? "text" : "password"}
                         value={apiKeyData?.apiKey || ''}
                         readOnly
-                        className="w-full font-mono text-xs p-3 pr-20 bg-muted/60 border border-border/40 rounded-xl focus:outline-none select-all text-foreground"
+                        className="w-full font-mono text-[11px] sm:text-xs p-2.5 sm:p-3 pr-20 bg-muted/60 border border-border/40 rounded-xl focus:outline-none select-all text-foreground"
                         placeholder="Loading API key..."
                       />
-                      <div className="absolute right-2 top-1.5 flex items-center gap-1">
+                      <div className="absolute right-2 top-1 sm:top-1.5 flex items-center gap-1">
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-lg"
+                          className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-foreground rounded-lg"
                           onClick={() => setShowApiKey(!showApiKey)}
                           disabled={!apiKeyData?.apiKey}
                         >
-                          {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          {showApiKey ? <EyeOff className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-lg"
+                          className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-foreground rounded-lg"
                           onClick={() => {
                             if (apiKeyData?.apiKey) {
                               handleCopyText(apiKeyData.apiKey, 'api-key');
@@ -1272,9 +1327,9 @@ export function ReportsContainer() {
                           disabled={!apiKeyData?.apiKey}
                         >
                           {copiedEndpoint === 'api-key' ? (
-                            <Check className="h-4 w-4 text-emerald-500" />
+                            <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-500" />
                           ) : (
-                            <Copy className="h-4 w-4" />
+                            <Copy className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                           )}
                         </Button>
                       </div>
@@ -1282,49 +1337,116 @@ export function ReportsContainer() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
                   {/* Left Sidebar endpoint list */}
-                  <div className="lg:col-span-1 flex flex-col gap-2">
-                    <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-3 mb-1">
-                      Endpoints
+                  <div className="lg:col-span-1 flex flex-col gap-2 self-start bg-card/30 border border-border/40 p-3 rounded-2xl">
+                    <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-1 pb-1 border-b border-border/30 mb-1">
+                      Endpoints ({selectedGroupDoc})
                     </div>
-                    <button
-                      onClick={() => setActiveApiEndpoint('charge-events')}
-                      className={cn(
-                        "w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all border flex flex-col gap-1 cursor-pointer",
-                        activeApiEndpoint === 'charge-events'
-                          ? "bg-primary/10 text-primary border-primary/20 shadow-sm"
-                          : "bg-transparent text-muted-foreground border-transparent hover:bg-muted/40 hover:text-foreground"
-                      )}
-                    >
-                      <div className="flex items-center gap-1.5">
-                        <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-[9px] font-extrabold text-emerald-500 uppercase">GET</span>
-                        <span>Charge Events</span>
-                      </div>
-                      <span className="text-[10px] opacity-80 truncate font-mono">/calstart/charge-events</span>
-                    </button>
-                    <button
-                      onClick={() => setActiveApiEndpoint('downtime-events')}
-                      className={cn(
-                        "w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all border flex flex-col gap-1 cursor-pointer",
-                        activeApiEndpoint === 'downtime-events'
-                          ? "bg-primary/10 text-primary border-primary/20 shadow-sm"
-                          : "bg-transparent text-muted-foreground border-transparent hover:bg-muted/40 hover:text-foreground"
-                      )}
-                    >
-                      <div className="flex items-center gap-1.5">
-                        <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-[9px] font-extrabold text-emerald-500 uppercase">GET</span>
-                        <span>Downtime Events</span>
-                      </div>
-                      <span className="text-[10px] opacity-80 truncate font-mono">/calstart/downtime-events</span>
-                    </button>
+                    {selectedGroupDoc === 'CALSTART' ? (
+                      <>
+                        <button
+                          onClick={() => setActiveApiEndpoint('charge-events')}
+                          className={cn(
+                            "w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all border flex flex-col gap-1 cursor-pointer",
+                            activeApiEndpoint === 'charge-events'
+                              ? "bg-primary/15 text-primary border-primary/40 shadow-sm"
+                              : "bg-muted/10 text-muted-foreground border-border/30 hover:bg-muted/30 hover:text-foreground"
+                          )}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span>Charge Events</span>
+                            <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-extrabold text-emerald-500 uppercase shrink-0">GET</span>
+                          </div>
+                          <span className="text-[10px] opacity-75 truncate font-mono">/calstart/charge-events</span>
+                        </button>
+                        <button
+                          onClick={() => setActiveApiEndpoint('downtime-events')}
+                          className={cn(
+                            "w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all border flex flex-col gap-1 cursor-pointer",
+                            activeApiEndpoint === 'downtime-events'
+                              ? "bg-primary/15 text-primary border-primary/40 shadow-sm"
+                              : "bg-muted/10 text-muted-foreground border-border/30 hover:bg-muted/30 hover:text-foreground"
+                          )}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span>Downtime Events</span>
+                            <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-extrabold text-emerald-500 uppercase shrink-0">GET</span>
+                          </div>
+                          <span className="text-[10px] opacity-75 truncate font-mono">/calstart/downtime-events</span>
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => setActiveApiEndpoint('pac-site')}
+                          className={cn(
+                            "w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all border flex flex-col gap-1 cursor-pointer",
+                            activeApiEndpoint === 'pac-site'
+                              ? "bg-primary/15 text-primary border-primary/40 shadow-sm"
+                              : "bg-muted/10 text-muted-foreground border-border/30 hover:bg-muted/30 hover:text-foreground"
+                          )}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span>Site API</span>
+                            <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-extrabold text-emerald-500 uppercase shrink-0">GET</span>
+                          </div>
+                          <span className="text-[10px] opacity-75 truncate font-mono">/pac/site</span>
+                        </button>
+                        <button
+                          onClick={() => setActiveApiEndpoint('pac-stations')}
+                          className={cn(
+                            "w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all border flex flex-col gap-1 cursor-pointer",
+                            activeApiEndpoint === 'pac-stations'
+                              ? "bg-primary/15 text-primary border-primary/40 shadow-sm"
+                              : "bg-muted/10 text-muted-foreground border-border/30 hover:bg-muted/30 hover:text-foreground"
+                          )}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span>Station API</span>
+                            <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-extrabold text-emerald-500 uppercase shrink-0">GET</span>
+                          </div>
+                          <span className="text-[10px] opacity-75 truncate font-mono">/pac/stations</span>
+                        </button>
+                        <button
+                          onClick={() => setActiveApiEndpoint('pac-sessions')}
+                          className={cn(
+                            "w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all border flex flex-col gap-1 cursor-pointer",
+                            activeApiEndpoint === 'pac-sessions'
+                              ? "bg-primary/15 text-primary border-primary/40 shadow-sm"
+                              : "bg-muted/10 text-muted-foreground border-border/30 hover:bg-muted/30 hover:text-foreground"
+                          )}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span>Session API</span>
+                            <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-extrabold text-emerald-500 uppercase shrink-0">GET</span>
+                          </div>
+                          <span className="text-[10px] opacity-75 truncate font-mono">/pac/sessions</span>
+                        </button>
+                        <button
+                          onClick={() => setActiveApiEndpoint('pac-interval')}
+                          className={cn(
+                            "w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all border flex flex-col gap-1 cursor-pointer",
+                            activeApiEndpoint === 'pac-interval'
+                              ? "bg-primary/15 text-primary border-primary/40 shadow-sm"
+                              : "bg-muted/10 text-muted-foreground border-border/30 hover:bg-muted/30 hover:text-foreground"
+                          )}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span>Interval API</span>
+                            <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-extrabold text-emerald-500 uppercase shrink-0">GET</span>
+                          </div>
+                          <span className="text-[10px] opacity-75 truncate font-mono">/pac/interval</span>
+                        </button>
+                      </>
+                    )}
                   </div>
 
                   {/* Right Column endpoint detail panel */}
                   <div className="lg:col-span-3 space-y-6 lg:border-l lg:border-border/40 lg:pl-6">
-                    {activeApiEndpoint === 'charge-events' ? (
+                    {/* CALSTART Charge Events */}
+                    {activeApiEndpoint === 'charge-events' && (
                       <div className="space-y-6">
-                        {/* Heading */}
                         <div className="space-y-2">
                           <div className="flex flex-wrap items-center gap-3">
                             <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs font-black text-emerald-500 uppercase">GET</span>
@@ -1335,11 +1457,10 @@ export function ReportsContainer() {
                           </p>
                         </div>
 
-                        {/* Query Params Table */}
                         <div className="space-y-3">
                           <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Query Parameters</h4>
-                          <div className="overflow-x-auto border border-border/40 rounded-xl bg-muted/20">
-                            <table className="w-full text-left border-collapse text-xs">
+                          <div className="overflow-x-auto border border-border/40 rounded-xl bg-muted/20 custom-scrollbar">
+                            <table className="w-full min-w-[500px] text-left border-collapse text-xs">
                               <thead>
                                 <tr className="border-b border-border/40 bg-muted/40 font-bold">
                                   <th className="p-3">Parameter</th>
@@ -1368,6 +1489,12 @@ export function ReportsContainer() {
                                   <td className="p-3 text-muted-foreground">Optional filter by the physical charging station's serial number. If omitted, events for all stations in the location group are returned.</td>
                                 </tr>
                                 <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">env</td>
+                                  <td className="p-3 text-muted-foreground font-mono">string</td>
+                                  <td className="p-3"><span className="text-muted-foreground font-bold">Optional</span></td>
+                                  <td className="p-3 text-muted-foreground">Environment filter (<code className="font-mono bg-muted px-1 rounded">dev</code> or <code className="font-mono bg-muted px-1 rounded">prod</code>). Defaults to <code className="font-mono bg-muted px-1 rounded">prod</code> if omitted.</td>
+                                </tr>
+                                <tr>
                                   <td className="p-3 font-mono font-bold text-primary">page</td>
                                   <td className="p-3 text-muted-foreground font-mono">number</td>
                                   <td className="p-3"><span className="text-rose-500 font-bold">Required</span></td>
@@ -1384,7 +1511,6 @@ export function ReportsContainer() {
                           </div>
                         </div>
 
-                        {/* Request cURL */}
                         <div className="space-y-3">
                           <div className="flex justify-between items-center">
                             <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Example Request</h4>
@@ -1392,7 +1518,7 @@ export function ReportsContainer() {
                               variant="outline"
                               size="sm"
                               className="h-8 rounded-lg font-bold text-[11px] gap-1.5"
-                              onClick={() => handleCopyText(`curl -X GET "${API_CONFIG.baseUrl || window.location.origin}/calstart/charge-events?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`, 'curl-charge')}
+                              onClick={() => handleCopyText(`curl -X GET "${API_CONFIG.baseUrl || window.location.origin}/calstart/charge-events?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&env=${environment}&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`, 'curl-charge')}
                             >
                               {copiedEndpoint === 'curl-charge' ? (
                                 <>
@@ -1406,11 +1532,10 @@ export function ReportsContainer() {
                             </Button>
                           </div>
                           <pre className="p-4 rounded-xl bg-slate-950/80 border border-border/40 text-[11px] font-mono text-slate-300 overflow-x-auto leading-relaxed shadow-inner">
-                            {`curl -X GET "${API_CONFIG.baseUrl || 'https://api.example.com'}/calstart/charge-events?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`}
+                            {`curl -X GET "${API_CONFIG.baseUrl || 'https://api.example.com'}/calstart/charge-events?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&env=${environment}&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`}
                           </pre>
                         </div>
 
-                        {/* Response Schema */}
                         <div className="space-y-3">
                           <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Example Response</h4>
                           <pre className="p-4 rounded-xl bg-slate-950/80 border border-border/40 text-[11px] font-mono text-emerald-400 overflow-x-auto leading-relaxed max-h-[350px] shadow-inner no-scrollbar">
@@ -1443,9 +1568,11 @@ export function ReportsContainer() {
                           </pre>
                         </div>
                       </div>
-                    ) : (
+                    )}
+
+                    {/* CALSTART Downtime Events */}
+                    {activeApiEndpoint === 'downtime-events' && (
                       <div className="space-y-6">
-                        {/* Heading */}
                         <div className="space-y-2">
                           <div className="flex flex-wrap items-center gap-3">
                             <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs font-black text-emerald-500 uppercase">GET</span>
@@ -1456,11 +1583,10 @@ export function ReportsContainer() {
                           </p>
                         </div>
 
-                        {/* Query Params Table */}
                         <div className="space-y-3">
                           <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Query Parameters</h4>
-                          <div className="overflow-x-auto border border-border/40 rounded-xl bg-muted/20">
-                            <table className="w-full text-left border-collapse text-xs">
+                          <div className="overflow-x-auto border border-border/40 rounded-xl bg-muted/20 custom-scrollbar">
+                            <table className="w-full min-w-[500px] text-left border-collapse text-xs">
                               <thead>
                                 <tr className="border-b border-border/40 bg-muted/40 font-bold">
                                   <th className="p-3">Parameter</th>
@@ -1489,6 +1615,12 @@ export function ReportsContainer() {
                                   <td className="p-3 text-muted-foreground">Optional filter by the physical charging station's serial number. If omitted, events for all stations in the location group are returned.</td>
                                 </tr>
                                 <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">env</td>
+                                  <td className="p-3 text-muted-foreground font-mono">string</td>
+                                  <td className="p-3"><span className="text-muted-foreground font-bold">Optional</span></td>
+                                  <td className="p-3 text-muted-foreground">Environment filter (<code className="font-mono bg-muted px-1 rounded">dev</code> or <code className="font-mono bg-muted px-1 rounded">prod</code>). Defaults to <code className="font-mono bg-muted px-1 rounded">prod</code> if omitted.</td>
+                                </tr>
+                                <tr>
                                   <td className="p-3 font-mono font-bold text-primary">page</td>
                                   <td className="p-3 text-muted-foreground font-mono">number</td>
                                   <td className="p-3"><span className="text-rose-500 font-bold">Required</span></td>
@@ -1505,7 +1637,6 @@ export function ReportsContainer() {
                           </div>
                         </div>
 
-                        {/* Request cURL */}
                         <div className="space-y-3">
                           <div className="flex justify-between items-center">
                             <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Example Request</h4>
@@ -1513,7 +1644,7 @@ export function ReportsContainer() {
                               variant="outline"
                               size="sm"
                               className="h-8 rounded-lg font-bold text-[11px] gap-1.5"
-                              onClick={() => handleCopyText(`curl -X GET "${API_CONFIG.baseUrl || window.location.origin}/calstart/downtime-events?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`, 'curl-downtime')}
+                              onClick={() => handleCopyText(`curl -X GET "${API_CONFIG.baseUrl || window.location.origin}/calstart/downtime-events?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&env=${environment}&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`, 'curl-downtime')}
                             >
                               {copiedEndpoint === 'curl-downtime' ? (
                                 <>
@@ -1527,11 +1658,10 @@ export function ReportsContainer() {
                             </Button>
                           </div>
                           <pre className="p-4 rounded-xl bg-slate-950/80 border border-border/40 text-[11px] font-mono text-slate-300 overflow-x-auto leading-relaxed shadow-inner">
-                            {`curl -X GET "${API_CONFIG.baseUrl || 'https://api.example.com'}/calstart/downtime-events?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`}
+                            {`curl -X GET "${API_CONFIG.baseUrl || 'https://api.example.com'}/calstart/downtime-events?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&env=${environment}&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`}
                           </pre>
                         </div>
 
-                        {/* Response Schema */}
                         <div className="space-y-3">
                           <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Example Response</h4>
                           <pre className="p-4 rounded-xl bg-slate-950/80 border border-border/40 text-[11px] font-mono text-emerald-400 overflow-x-auto leading-relaxed max-h-[350px] shadow-inner no-scrollbar">
@@ -1549,6 +1679,491 @@ export function ReportsContainer() {
     "eventEndDatetime": "2026-07-05T10:30:00Z"
   }
 ]`}
+                          </pre>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* PAC Site API */}
+                    {activeApiEndpoint === 'pac-site' && (
+                      <div className="space-y-6">
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs font-black text-emerald-500 uppercase">GET</span>
+                            <code className="font-mono text-sm sm:text-base font-bold text-foreground">/pac/site</code>
+                          </div>
+                          <p className="text-sm text-muted-foreground leading-relaxed">
+                            Retrieve a detailed, paginated array of sites/locations assigned to the PAC reporting group.
+                          </p>
+                        </div>
+
+                        <div className="space-y-3">
+                          <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Query Parameters</h4>
+                          <div className="overflow-x-auto border border-border/40 rounded-xl bg-muted/20 custom-scrollbar">
+                            <table className="w-full min-w-[500px] text-left border-collapse text-xs">
+                              <thead>
+                                <tr className="border-b border-border/40 bg-muted/40 font-bold">
+                                  <th className="p-3">Parameter</th>
+                                  <th className="p-3">Type</th>
+                                  <th className="p-3">Requirement</th>
+                                  <th className="p-3">Description</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-border/20 font-medium">
+                                <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">env</td>
+                                  <td className="p-3 text-muted-foreground font-mono">string</td>
+                                  <td className="p-3"><span className="text-muted-foreground font-bold">Optional</span></td>
+                                  <td className="p-3 text-muted-foreground">Environment filter (<code className="font-mono bg-muted px-1 rounded">dev</code> or <code className="font-mono bg-muted px-1 rounded">prod</code>). Defaults to <code className="font-mono bg-muted px-1 rounded">prod</code> if omitted.</td>
+                                </tr>
+                                <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">page</td>
+                                  <td className="p-3 text-muted-foreground font-mono">number</td>
+                                  <td className="p-3"><span className="text-rose-500 font-bold">Required</span></td>
+                                  <td className="p-3 text-muted-foreground">Pagination page index (minimum: <code className="font-mono bg-muted px-1 rounded">1</code>).</td>
+                                </tr>
+                                <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">limit</td>
+                                  <td className="p-3 text-muted-foreground font-mono">number</td>
+                                  <td className="p-3"><span className="text-rose-500 font-bold">Required</span></td>
+                                  <td className="p-3 text-muted-foreground">Number of items per page (minimum: <code className="font-mono bg-muted px-1 rounded">1</code>).</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center">
+                            <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Example Request</h4>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 rounded-lg font-bold text-[11px] gap-1.5"
+                              onClick={() => handleCopyText(`curl -X GET "${API_CONFIG.baseUrl || window.location.origin}/pac/site?env=${environment}&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`, 'curl-pac-site')}
+                            >
+                              {copiedEndpoint === 'curl-pac-site' ? (
+                                <>
+                                  <Check className="h-3.5 w-3.5 text-emerald-500" /> Copied
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="h-3.5 w-3.5" /> Copy cURL
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                          <pre className="p-4 rounded-xl bg-slate-950/80 border border-border/40 text-[11px] font-mono text-slate-300 overflow-x-auto leading-relaxed shadow-inner">
+                            {`curl -X GET "${API_CONFIG.baseUrl || 'https://api.example.com'}/pac/site?env=${environment}&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`}
+                          </pre>
+                        </div>
+
+                        <div className="space-y-3">
+                          <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Example Response</h4>
+                          <pre className="p-4 rounded-xl bg-slate-950/80 border border-border/40 text-[11px] font-mono text-emerald-400 overflow-x-auto leading-relaxed max-h-[350px] shadow-inner no-scrollbar">
+{`{
+  "items": [
+    {
+      "site_id": "8fa134bc-1122-3344-5566-778899aabbcc",
+      "site_name": "Pacific Hub - Downtown",
+      "address_1": "100 Pacific Ave",
+      "city": "Los Angeles",
+      "state": "CA",
+      "zip_code": "90012",
+      "operating_status": "Active",
+      "access_type": "PUBLIC",
+      "county": "USA"
+    }
+  ],
+  "meta": {
+    "total": 1,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1
+  }
+}`}
+                          </pre>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* PAC Station API */}
+                    {activeApiEndpoint === 'pac-stations' && (
+                      <div className="space-y-6">
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs font-black text-emerald-500 uppercase">GET</span>
+                            <code className="font-mono text-sm sm:text-base font-bold text-foreground">/pac/stations</code>
+                          </div>
+                          <p className="text-sm text-muted-foreground leading-relaxed">
+                            Retrieve a detailed, paginated list of charging stations in the PAC reporting group, including activation date (<code className="font-mono bg-muted px-1 rounded">initialboot</code>), port count, charger type, and total downtime hours.
+                          </p>
+                        </div>
+
+                        <div className="space-y-3">
+                          <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Query Parameters</h4>
+                          <div className="overflow-x-auto border border-border/40 rounded-xl bg-muted/20 custom-scrollbar">
+                            <table className="w-full min-w-[500px] text-left border-collapse text-xs">
+                              <thead>
+                                <tr className="border-b border-border/40 bg-muted/40 font-bold">
+                                  <th className="p-3">Parameter</th>
+                                  <th className="p-3">Type</th>
+                                  <th className="p-3">Requirement</th>
+                                  <th className="p-3">Description</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-border/20 font-medium">
+                                <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">siteId</td>
+                                  <td className="p-3 text-muted-foreground font-mono">string</td>
+                                  <td className="p-3"><span className="text-muted-foreground font-bold">Optional</span></td>
+                                  <td className="p-3 text-muted-foreground">Filter stations by location/site ID.</td>
+                                </tr>
+                                <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">env</td>
+                                  <td className="p-3 text-muted-foreground font-mono">string</td>
+                                  <td className="p-3"><span className="text-muted-foreground font-bold">Optional</span></td>
+                                  <td className="p-3 text-muted-foreground">Environment filter (<code className="font-mono bg-muted px-1 rounded">dev</code> or <code className="font-mono bg-muted px-1 rounded">prod</code>). Defaults to <code className="font-mono bg-muted px-1 rounded">prod</code> if omitted.</td>
+                                </tr>
+                                <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">page</td>
+                                  <td className="p-3 text-muted-foreground font-mono">number</td>
+                                  <td className="p-3"><span className="text-rose-500 font-bold">Required</span></td>
+                                  <td className="p-3 text-muted-foreground">Pagination page index (minimum: <code className="font-mono bg-muted px-1 rounded">1</code>).</td>
+                                </tr>
+                                <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">limit</td>
+                                  <td className="p-3 text-muted-foreground font-mono">number</td>
+                                  <td className="p-3"><span className="text-rose-500 font-bold">Required</span></td>
+                                  <td className="p-3 text-muted-foreground">Number of items per page (minimum: <code className="font-mono bg-muted px-1 rounded">1</code>).</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center">
+                            <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Example Request</h4>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 rounded-lg font-bold text-[11px] gap-1.5"
+                              onClick={() => handleCopyText(`curl -X GET "${API_CONFIG.baseUrl || window.location.origin}/pac/stations?env=${environment}&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`, 'curl-pac-stations')}
+                            >
+                              {copiedEndpoint === 'curl-pac-stations' ? (
+                                <>
+                                  <Check className="h-3.5 w-3.5 text-emerald-500" /> Copied
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="h-3.5 w-3.5" /> Copy cURL
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                          <pre className="p-4 rounded-xl bg-slate-950/80 border border-border/40 text-[11px] font-mono text-slate-300 overflow-x-auto leading-relaxed shadow-inner">
+                            {`curl -X GET "${API_CONFIG.baseUrl || 'https://api.example.com'}/pac/stations?env=${environment}&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`}
+                          </pre>
+                        </div>
+
+                        <div className="space-y-3">
+                          <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Example Response</h4>
+                          <pre className="p-4 rounded-xl bg-slate-950/80 border border-border/40 text-[11px] font-mono text-emerald-400 overflow-x-auto leading-relaxed max-h-[350px] shadow-inner no-scrollbar">
+{`{
+  "items": [
+    {
+      "site_id": "8fa134bc-1122-3344-5566-778899aabbcc",
+      "station_id": "31b94d12-4455-6677-8899-aabbccdd0011",
+      "station_serial": "PAC-STA-001",
+      "station_name": "Pacific Charger 1",
+      "is_active": true,
+      "power_level_kw": 50,
+      "num_ports": 2,
+      "station_activation_date": "2026-01-15 08:30:00",
+      "charger_type": "Level 3",
+      "connector_type": "CCS1, CHAdeMO",
+      "model_number": "Express-250",
+      "serial_number": "PAC-STA-001",
+      "evse_manufacturer": "ChargePoint",
+      "vendor_name": "ScaleEV",
+      "latitude": 34.0522,
+      "longitude": -118.2437,
+      "port_ID": ["e3b0c442-98fc-4c14-9626-d6652613c32e"],
+      "install_date": "2026-01-10 12:00:00",
+      "downtime_hours": 2.5,
+      "latest_communication": "2026-07-20 16:00:00"
+    }
+  ],
+  "meta": {
+    "total": 1,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1
+  }
+}`}
+                          </pre>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* PAC Session API */}
+                    {activeApiEndpoint === 'pac-sessions' && (
+                      <div className="space-y-6">
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs font-black text-emerald-500 uppercase">GET</span>
+                            <code className="font-mono text-sm sm:text-base font-bold text-foreground">/pac/sessions</code>
+                          </div>
+                          <p className="text-sm text-muted-foreground leading-relaxed">
+                            Retrieve a detailed, paginated list of charging sessions under the PAC reporting group, including plug/unplug and charging start/end timestamps and session/charging durations in seconds.
+                          </p>
+                        </div>
+
+                        <div className="space-y-3">
+                          <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Query Parameters</h4>
+                          <div className="overflow-x-auto border border-border/40 rounded-xl bg-muted/20 custom-scrollbar">
+                            <table className="w-full min-w-[500px] text-left border-collapse text-xs">
+                              <thead>
+                                <tr className="border-b border-border/40 bg-muted/40 font-bold">
+                                  <th className="p-3">Parameter</th>
+                                  <th className="p-3">Type</th>
+                                  <th className="p-3">Requirement</th>
+                                  <th className="p-3">Description</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-border/20 font-medium">
+                                <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">from</td>
+                                  <td className="p-3 text-muted-foreground font-mono">string</td>
+                                  <td className="p-3"><span className="text-rose-500 font-bold">Required</span></td>
+                                  <td className="p-3 text-muted-foreground">Start date-time in ISO 8601 format (e.g., <code className="font-mono bg-muted px-1 rounded">2026-07-01T00:00:00Z</code>).</td>
+                                </tr>
+                                <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">to</td>
+                                  <td className="p-3 text-muted-foreground font-mono">string</td>
+                                  <td className="p-3"><span className="text-rose-500 font-bold">Required</span></td>
+                                  <td className="p-3 text-muted-foreground">End date-time in ISO 8601 format (e.g., <code className="font-mono bg-muted px-1 rounded">2026-07-08T23:59:59Z</code>).</td>
+                                </tr>
+                                <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">stationId</td>
+                                  <td className="p-3 text-muted-foreground font-mono">string</td>
+                                  <td className="p-3"><span className="text-muted-foreground font-bold">Optional</span></td>
+                                  <td className="p-3 text-muted-foreground">Filter by station ID.</td>
+                                </tr>
+                                <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">siteId</td>
+                                  <td className="p-3 text-muted-foreground font-mono">string</td>
+                                  <td className="p-3"><span className="text-muted-foreground font-bold">Optional</span></td>
+                                  <td className="p-3 text-muted-foreground">Filter by site/location ID.</td>
+                                </tr>
+                                <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">env</td>
+                                  <td className="p-3 text-muted-foreground font-mono">string</td>
+                                  <td className="p-3"><span className="text-muted-foreground font-bold">Optional</span></td>
+                                  <td className="p-3 text-muted-foreground">Environment filter (<code className="font-mono bg-muted px-1 rounded">dev</code> or <code className="font-mono bg-muted px-1 rounded">prod</code>). Defaults to <code className="font-mono bg-muted px-1 rounded">prod</code> if omitted.</td>
+                                </tr>
+                                <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">page</td>
+                                  <td className="p-3 text-muted-foreground font-mono">number</td>
+                                  <td className="p-3"><span className="text-rose-500 font-bold">Required</span></td>
+                                  <td className="p-3 text-muted-foreground">Pagination page index (minimum: <code className="font-mono bg-muted px-1 rounded">1</code>).</td>
+                                </tr>
+                                <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">limit</td>
+                                  <td className="p-3 text-muted-foreground font-mono">number</td>
+                                  <td className="p-3"><span className="text-rose-500 font-bold">Required</span></td>
+                                  <td className="p-3 text-muted-foreground">Number of items per page (minimum: <code className="font-mono bg-muted px-1 rounded">1</code>).</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center">
+                            <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Example Request</h4>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 rounded-lg font-bold text-[11px] gap-1.5"
+                              onClick={() => handleCopyText(`curl -X GET "${API_CONFIG.baseUrl || window.location.origin}/pac/sessions?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&env=${environment}&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`, 'curl-pac-sessions')}
+                            >
+                              {copiedEndpoint === 'curl-pac-sessions' ? (
+                                <>
+                                  <Check className="h-3.5 w-3.5 text-emerald-500" /> Copied
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="h-3.5 w-3.5" /> Copy cURL
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                          <pre className="p-4 rounded-xl bg-slate-950/80 border border-border/40 text-[11px] font-mono text-slate-300 overflow-x-auto leading-relaxed shadow-inner">
+                            {`curl -X GET "${API_CONFIG.baseUrl || 'https://api.example.com'}/pac/sessions?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&env=${environment}&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`}
+                          </pre>
+                        </div>
+
+                        <div className="space-y-3">
+                          <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Example Response</h4>
+                          <pre className="p-4 rounded-xl bg-slate-950/80 border border-border/40 text-[11px] font-mono text-emerald-400 overflow-x-auto leading-relaxed max-h-[350px] shadow-inner no-scrollbar">
+{`{
+  "items": [
+    {
+      "session_id": "a1b2c3d4-e5f6-7890-1234-56789abcdef0",
+      "station_id": "31b94d12-4455-6677-8899-aabbccdd0011",
+      "port_number": 1,
+      "plug_start_datetime": "2026-07-01 10:00:00",
+      "plug_end_datetime": "2026-07-01 10:45:00",
+      "charge_start_datetime": "2026-07-01 10:05:00",
+      "charge_end_datetime": "2026-07-01 10:40:00",
+      "session_duration": 2700,
+      "charging_duration": 2100,
+      "energy_kwh": 35.4,
+      "peak_kw": 48.2,
+      "total_fee_charged": "0"
+    }
+  ],
+  "meta": {
+    "total": 1,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1
+  }
+}`}
+                          </pre>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* PAC Interval API */}
+                    {activeApiEndpoint === 'pac-interval' && (
+                      <div className="space-y-6">
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs font-black text-emerald-500 uppercase">GET</span>
+                            <code className="font-mono text-sm sm:text-base font-bold text-foreground">/pac/interval</code>
+                          </div>
+                          <p className="text-sm text-muted-foreground leading-relaxed">
+                            Retrieve 15-minute interval power (kW) and energy (kWh) data for charging sessions under the PAC reporting group.
+                          </p>
+                        </div>
+
+                        <div className="space-y-3">
+                          <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Query Parameters</h4>
+                          <div className="overflow-x-auto border border-border/40 rounded-xl bg-muted/20 custom-scrollbar">
+                            <table className="w-full min-w-[500px] text-left border-collapse text-xs">
+                              <thead>
+                                <tr className="border-b border-border/40 bg-muted/40 font-bold">
+                                  <th className="p-3">Parameter</th>
+                                  <th className="p-3">Type</th>
+                                  <th className="p-3">Requirement</th>
+                                  <th className="p-3">Description</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-border/20 font-medium">
+                                <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">from</td>
+                                  <td className="p-3 text-muted-foreground font-mono">string</td>
+                                  <td className="p-3"><span className="text-rose-500 font-bold">Required</span></td>
+                                  <td className="p-3 text-muted-foreground">Start date-time in ISO 8601 format (e.g., <code className="font-mono bg-muted px-1 rounded">2026-07-01T00:00:00Z</code>).</td>
+                                </tr>
+                                <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">to</td>
+                                  <td className="p-3 text-muted-foreground font-mono">string</td>
+                                  <td className="p-3"><span className="text-rose-500 font-bold">Required</span></td>
+                                  <td className="p-3 text-muted-foreground">End date-time in ISO 8601 format (e.g., <code className="font-mono bg-muted px-1 rounded">2026-07-08T23:59:59Z</code>).</td>
+                                </tr>
+                                <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">sessionId</td>
+                                  <td className="p-3 text-muted-foreground font-mono">string</td>
+                                  <td className="p-3"><span className="text-muted-foreground font-bold">Optional</span></td>
+                                  <td className="p-3 text-muted-foreground">Filter intervals by session ID.</td>
+                                </tr>
+                                <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">stationId</td>
+                                  <td className="p-3 text-muted-foreground font-mono">string</td>
+                                  <td className="p-3"><span className="text-muted-foreground font-bold">Optional</span></td>
+                                  <td className="p-3 text-muted-foreground">Filter intervals by station ID.</td>
+                                </tr>
+                                <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">env</td>
+                                  <td className="p-3 text-muted-foreground font-mono">string</td>
+                                  <td className="p-3"><span className="text-muted-foreground font-bold">Optional</span></td>
+                                  <td className="p-3 text-muted-foreground">Environment filter (<code className="font-mono bg-muted px-1 rounded">dev</code> or <code className="font-mono bg-muted px-1 rounded">prod</code>). Defaults to <code className="font-mono bg-muted px-1 rounded">prod</code> if omitted.</td>
+                                </tr>
+                                <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">page</td>
+                                  <td className="p-3 text-muted-foreground font-mono">number</td>
+                                  <td className="p-3"><span className="text-rose-500 font-bold">Required</span></td>
+                                  <td className="p-3 text-muted-foreground">Pagination page index (minimum: <code className="font-mono bg-muted px-1 rounded">1</code>).</td>
+                                </tr>
+                                <tr>
+                                  <td className="p-3 font-mono font-bold text-primary">limit</td>
+                                  <td className="p-3 text-muted-foreground font-mono">number</td>
+                                  <td className="p-3"><span className="text-rose-500 font-bold">Required</span></td>
+                                  <td className="p-3 text-muted-foreground">Number of items per page (minimum: <code className="font-mono bg-muted px-1 rounded">1</code>).</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center">
+                            <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Example Request</h4>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 rounded-lg font-bold text-[11px] gap-1.5"
+                              onClick={() => handleCopyText(`curl -X GET "${API_CONFIG.baseUrl || window.location.origin}/pac/interval?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&env=${environment}&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`, 'curl-pac-interval')}
+                            >
+                              {copiedEndpoint === 'curl-pac-interval' ? (
+                                <>
+                                  <Check className="h-3.5 w-3.5 text-emerald-500" /> Copied
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="h-3.5 w-3.5" /> Copy cURL
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                          <pre className="p-4 rounded-xl bg-slate-950/80 border border-border/40 text-[11px] font-mono text-slate-300 overflow-x-auto leading-relaxed shadow-inner">
+                            {`curl -X GET "${API_CONFIG.baseUrl || 'https://api.example.com'}/pac/interval?from=2026-07-01T00:00:00Z&to=2026-07-08T23:59:59Z&env=${environment}&page=1&limit=10" \\\n  -H "x-api-key: ${apiKeyData?.apiKey || '<your_api_key>'}"`}
+                          </pre>
+                        </div>
+
+                        <div className="space-y-3">
+                          <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Example Response</h4>
+                          <pre className="p-4 rounded-xl bg-slate-950/80 border border-border/40 text-[11px] font-mono text-emerald-400 overflow-x-auto leading-relaxed max-h-[350px] shadow-inner no-scrollbar">
+{`{
+  "items": [
+    {
+      "interval_id": 1,
+      "session_id": "a1b2c3d4-e5f6-7890-1234-56789abcdef0",
+      "interval_start_date_time": "2026-07-01 10:00:00",
+      "interval_end_date_time": "2026-07-01 10:14:59",
+      "interval_kw": 42.1,
+      "interval_kwh": 7.02
+    },
+    {
+      "interval_id": 2,
+      "session_id": "a1b2c3d4-e5f6-7890-1234-56789abcdef0",
+      "interval_start_date_time": "2026-07-01 10:15:00",
+      "interval_end_date_time": "2026-07-01 10:29:59",
+      "interval_kw": 45.0,
+      "interval_kwh": 11.25
+    }
+  ],
+  "meta": {
+    "total": 2,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1
+  }
+}`}
                           </pre>
                         </div>
                       </div>

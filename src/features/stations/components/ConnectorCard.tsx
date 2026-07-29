@@ -118,12 +118,12 @@ export function ConnectorCard({
                         </Button>
                     )}
 
-                    <div className="w-full">
+                    <div className="flex gap-2 w-full">
                         <Button
                             variant="outline"
                             onClick={() => onUnlock(connector.connectorId)}
                             disabled={disabled || isUnlocking}
-                            className="w-full border-border/40 hover:bg-muted/40 font-bold rounded-xl h-11 transition-all active:scale-95 flex items-center justify-center gap-1.5 text-xs px-2"
+                            className="flex-1 border-border/40 hover:bg-muted/40 font-bold rounded-xl h-11 transition-all active:scale-95 flex items-center justify-center gap-1.5 text-xs px-2"
                         >
                             {isUnlocking ? (
                                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -133,17 +133,17 @@ export function ConnectorCard({
                             Unlock Cable
                         </Button>
 
-                        {/* <Button
+                        <Button
                             variant="outline"
                             onClick={() => {
                                 const nameParam = stationName ? `&name=${encodeURIComponent(stationName)}` : '';
                                 router.push(`/stations/${connector.stationId}/uptime?connectorId=${connector.id}${nameParam}`);
                             }}
-                            className="w-full border-border/40 hover:bg-muted/40 font-bold rounded-xl h-11 transition-all active:scale-95 flex items-center justify-center gap-1.5 text-xs px-2"
+                            className="flex-1 border-border/40 hover:bg-muted/40 font-bold rounded-xl h-11 transition-all active:scale-95 flex items-center justify-center gap-1.5 text-xs px-2"
                         >
                             <Activity className="h-3.5 w-3.5 text-primary" />
                             Uptime
-                        </Button> */}
+                        </Button>
                     </div>
                 </div>
             </CardContent>

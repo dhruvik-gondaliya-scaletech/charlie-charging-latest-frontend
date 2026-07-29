@@ -32,9 +32,10 @@ export const useAggregatedIntervalReport = (params?: IntervalReportQuery, enable
 };
 
 export const useLocationGroup = (groupName: string) => {
+  const { environment } = useEnvironment();
   return useQuery({
-    queryKey: ['location-group', groupName],
-    queryFn: () => reportingService.getLocationGroup(groupName),
+    queryKey: ['location-group', groupName, environment],
+    queryFn: () => reportingService.getLocationGroup(groupName, environment),
     staleTime: 60_000,
     enabled: !!groupName,
   });
@@ -44,7 +45,7 @@ export const useLocationGroups = () => {
   const { environment } = useEnvironment();
   return useQuery({
     queryKey: ['location-groups', environment],
-    queryFn: () => reportingService.getLocationGroups(),
+    queryFn: () => reportingService.getLocationGroups(environment),
     staleTime: 60_000,
   });
 };
