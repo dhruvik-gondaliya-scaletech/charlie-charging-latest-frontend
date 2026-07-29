@@ -756,7 +756,6 @@ export function ReportsContainer() {
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="calstart">CALSTART</SelectItem>
-                                <SelectItem value="pac">PAC</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
@@ -1269,7 +1268,6 @@ export function ReportsContainer() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="CALSTART">CALSTART</SelectItem>
-                        <SelectItem value="PAC">PAC</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
