@@ -46,7 +46,8 @@ interface StationFormProps {
 }
 
 export function StationForm({ initialData, onSubmit, isLoading, onCancel }: StationFormProps) {
-    const { data: locations, isLoading: locationsLoading } = useLocations();
+    const { data: rawLocations, isLoading: locationsLoading } = useLocations();
+    const locations = Array.isArray(rawLocations) ? rawLocations : (rawLocations?.items || []);
     const { tenant } = useAuth();
     const isEdit = !!initialData?.serialNumber;
 

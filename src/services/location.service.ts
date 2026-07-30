@@ -1,6 +1,6 @@
 import httpService from '@/lib/http-service';
 import { API_CONFIG } from '@/constants/constants';
-import { Location, LocationEnv } from '@/types';
+import { Location, LocationEnv, PaginatedResponse, PaginationParams } from '@/types';
 
 export interface CreateLocationData {
   name: string;
@@ -19,9 +19,20 @@ export interface UpdateLocationData extends Partial<CreateLocationData> {
   isActive?: boolean;
 }
 
+export interface GetLocationsParams extends PaginationParams {
+  name?: string;
+  search?: string;
+}
+
 class LocationService {
-  async getAllLocations(env: string, params?: { name?: string }) {
-    return httpService.get<Location[]>(API_CONFIG.endpoints.locations.base(env), { params });
+  async getAllLocations(
+    env: string,
+    params?: GetLocationsParams,
+  ): Promise<Location[] | PaginatedResponse<Location>> {
+    return httpService.get<Location[] | PaginatedResponse<Location>>(
+      API_CONFIG.endpoints.locations.base(env),
+      { params },
+    );
   }
 
   async getLocationById(env: string, id: string) {

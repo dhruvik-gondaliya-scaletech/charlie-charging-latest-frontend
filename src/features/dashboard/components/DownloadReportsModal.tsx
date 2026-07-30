@@ -198,16 +198,18 @@ export function DownloadReportsModal({ isOpen, onClose }: DownloadReportsModalPr
       const fetchData = async () => {
         try {
           setIsLoadingTree(true);
-          const [locData, staData] = await Promise.all([
+          const [rawLocData, rawStaData] = await Promise.all([
             locationService.getAllLocations(environment),
             stationService.getAllStations(environment),
           ]);
-          setLocations(locData || []);
-          setStations(staData || []);
+          const locList = Array.isArray(rawLocData) ? rawLocData : (rawLocData?.items || []);
+          const staList = Array.isArray(rawStaData) ? rawStaData : (rawStaData?.items || []);
+          setLocations(locList);
+          setStations(staList);
 
           // Automatically expand all locations for convenient browsing
-          if (locData) {
-            setExpandedLocationIds(new Set(locData.map((l: any) => l.id)));
+          if (locList.length > 0) {
+            setExpandedLocationIds(new Set(locList.map((l: any) => l.id)));
           }
         } catch (err) {
           console.error('Failed to load locations/stations for CSV export:', err);

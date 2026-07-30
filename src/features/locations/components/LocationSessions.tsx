@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useSessions } from '@/hooks/get/useSessions';
 import { Table } from '@/components/shared/Table';
 import { ColumnDef } from '@tanstack/react-table';
-import { Session, SessionStatus } from '@/types';
+import { Session, SessionStatus, PaginatedResponse } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { formatDate, formatTime, formatDuration as formatDurationUtil } from '@/lib/date';
 import { cn } from '@/lib/utils';
@@ -16,12 +16,16 @@ import {
     AlertCircle,
     History,
     User as UserIcon,
+    Cable,
+    ArrowRight,
+    Download,
     Filter,
+    Calendar,
     RefreshCw,
+    Terminal,
     RotateCcw,
     Leaf,
-    Building2,
-    Terminal
+    Building2
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -41,9 +45,10 @@ import { StationLogs } from '@/features/stations/components/StationLogs';
 interface LocationSessionsProps {
     locationId: string;
     env?: string;
+    onViewLogs?: (sessionId: string) => void;
 }
 
-export function LocationSessions({ locationId, env }: LocationSessionsProps) {
+export function LocationSessions({ locationId, env, onViewLogs }: LocationSessionsProps) {
     const router = useRouter();
     const [viewLogsSession, setViewLogsSession] = useState<{ stationId: string; sessionId: string } | null>(null);
     const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -52,9 +57,14 @@ export function LocationSessions({ locationId, env }: LocationSessionsProps) {
         to: undefined,
     });
 
+    // Server-side pagination state
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(10);
+
     const handleResetFilters = () => {
         setStatusFilter('all');
         setDateRange({ from: undefined, to: undefined });
+        setPage(1);
     };
 
     const isAnyFilterActive = statusFilter !== 'all' || dateRange.from || dateRange.to;
@@ -65,9 +75,20 @@ export function LocationSessions({ locationId, env }: LocationSessionsProps) {
         status: statusFilter === 'all' ? undefined : statusFilter,
         startFrom: dateRange.from ? format(startOfDay(dateRange.from), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") : undefined,
         startTo: dateRange.to ? format(endOfDay(dateRange.to), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") : undefined,
-    }), [locationId, env, statusFilter, dateRange]);
+        page,
+        limit,
+    }), [locationId, env, statusFilter, dateRange, page, limit]);
 
-    const { data: sessions, isLoading, error, refetch } = useSessions(filters);
+    const { data: rawData, isLoading, error, refetch } = useSessions(filters);
+
+    const isPaginatedData = rawData && !Array.isArray(rawData) && 'meta' in rawData;
+    const sessions = useMemo<Session[]>(() => {
+        if (!rawData) return [];
+        if (Array.isArray(rawData)) return rawData;
+        return (rawData as PaginatedResponse<Session>).items;
+    }, [rawData]);
+    const sessionsMeta = isPaginatedData ? (rawData as PaginatedResponse<Session>).meta : null;
+    const totalSessionCount = sessionsMeta?.total ?? sessions.length;
 
     const columns: ColumnDef<Session>[] = useMemo(
         () => [
@@ -409,9 +430,14 @@ export function LocationSessions({ locationId, env }: LocationSessionsProps) {
                 data={sessions || []}
                 columns={columns}
                 isLoading={isLoading}
-                pageSize={10}
+                pageSize={limit}
                 maxHeight="800px"
                 className="border-none shadow-none"
+                manualPagination={true}
+                totalCount={totalSessionCount}
+                pageIndex={page - 1}
+                onPageChange={(newPage) => setPage(newPage + 1)}
+                onPageSizeChange={(newLimit) => { setLimit(newLimit); setPage(1); }}
                 renderMobileCard={(session) => {
                     const status = session.status as string;
                     let colorClasses = "";

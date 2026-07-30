@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { useStationSessions } from '@/hooks/get/useStations';
 import { Table } from '@/components/shared/Table';
 import { ColumnDef } from '@tanstack/react-table';
-import { Session, SessionStatus } from '@/types';
+import { Session, SessionStatus, PaginatedResponse } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { formatDate, formatTime, formatDuration as formatDurationUtil } from '@/lib/date';
 import { cn } from '@/lib/utils';
@@ -49,9 +49,14 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
         to: undefined,
     });
 
+    // Server-side pagination state
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(10);
+
     const handleResetFilters = () => {
         setStatusFilter('all');
         setDateRange({ from: undefined, to: undefined });
+        setPage(1);
     };
 
     const isAnyFilterActive = statusFilter !== 'all' || dateRange.from || dateRange.to;
@@ -60,9 +65,21 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
         status: statusFilter === 'all' ? undefined : statusFilter,
         startFrom: dateRange.from ? format(startOfDay(dateRange.from), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") : undefined,
         startTo: dateRange.to ? format(endOfDay(dateRange.to), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") : undefined,
-    }), [statusFilter, dateRange]);
+        page,
+        limit,
+    }), [statusFilter, dateRange, page, limit]);
 
-    const { data: sessions, isLoading, error, refetch } = useStationSessions(stationId, filters);
+    const { data: rawData, isLoading, error, refetch } = useStationSessions(stationId, filters);
+
+    // Normalize the response (paginated or plain array)
+    const isPaginatedData = rawData && !Array.isArray(rawData) && 'meta' in rawData;
+    const sessions = useMemo<Session[]>(() => {
+        if (!rawData) return [];
+        if (Array.isArray(rawData)) return rawData;
+        return (rawData as PaginatedResponse<Session>).items;
+    }, [rawData]);
+    const sessionsMeta = isPaginatedData ? (rawData as PaginatedResponse<Session>).meta : null;
+    const totalSessionCount = sessionsMeta?.total ?? sessions.length;
 
     const columns: ColumnDef<Session>[] = useMemo(
         () => [
@@ -458,9 +475,14 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
                 data={sessions || []}
                 columns={columns}
                 isLoading={isLoading}
-                pageSize={10}
+                pageSize={limit}
                 maxHeight="800px"
                 className="border-none shadow-none"
+                manualPagination={true}
+                totalCount={totalSessionCount}
+                pageIndex={page - 1}
+                onPageChange={(newPage) => setPage(newPage + 1)}
+                onPageSizeChange={(newLimit) => { setLimit(newLimit); setPage(1); }}
                 renderMobileCard={(session) => {
                     const status = session.status as string;
                     let colorClasses = "";
