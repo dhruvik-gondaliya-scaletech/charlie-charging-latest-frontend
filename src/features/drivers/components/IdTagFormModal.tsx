@@ -318,8 +318,10 @@ export function IdTagFormModal({ isOpen, onClose, initialData }: IdTagFormModalP
   const updateIdTag = useUpdateIdTag(initialData?.idTag || '');
   const [locationSearchQuery, setLocationSearchQuery] = useState('');
   const { data: drivers, isLoading: isLoadingDrivers } = useDrivers();
-  const { data: locations, isLoading: isLoadingLocations } = useLocations({ name: locationSearchQuery || undefined });
-  const { data: stations } = useStations();
+  const { data: rawLocations, isLoading: isLoadingLocations } = useLocations({ name: locationSearchQuery || undefined });
+  const locations = Array.isArray(rawLocations) ? rawLocations : (rawLocations?.items || rawLocations?.data || []);
+  const { data: rawStations } = useStations();
+  const stations = Array.isArray(rawStations) ? rawStations : (rawStations?.items || rawStations?.data || []);
 
   const [expandedLocations, setExpandedLocations] = useState<Record<string, boolean>>({});
 
