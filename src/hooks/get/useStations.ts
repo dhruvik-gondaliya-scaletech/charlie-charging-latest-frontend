@@ -68,13 +68,14 @@ export const useInfiniteOcppLogs = (stationId: string, params?: GetOcppLogsParam
   });
 };
 
-export const useStationSessions = (stationId: string, params?: SessionFilterParams) => {
+export const useStationSessions = (stationId: string, params?: SessionFilterParams & { page?: number; limit?: number }) => {
   const { environment } = useEnvironment();
   return useQuery({
     queryKey: ['station-sessions', environment, stationId, params],
     queryFn: () => stationService.getStationSessions(environment, stationId, params),
     enabled: !!stationId,
     staleTime: 30000,
+    placeholderData: keepPreviousData,
   });
 };
 

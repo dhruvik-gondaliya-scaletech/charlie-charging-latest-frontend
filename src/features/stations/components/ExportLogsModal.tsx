@@ -51,9 +51,10 @@ interface ExportLogsModalProps {
   stationId: string;
   sessionId?: string;
   defaultSelectedEvents?: string[];
+  defaultDateRange?: { from: Date | undefined; to: Date | undefined };
 }
 
-export function ExportLogsModal({ isOpen, onClose, stationId, sessionId, defaultSelectedEvents }: ExportLogsModalProps) {
+export function ExportLogsModal({ isOpen, onClose, stationId, sessionId, defaultSelectedEvents, defaultDateRange }: ExportLogsModalProps) {
   const [isExporting, setIsExporting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -76,8 +77,14 @@ export function ExportLogsModal({ isOpen, onClose, stationId, sessionId, default
       } else {
         setSelectedEvents([...OCPP_MESSAGE_TYPES]);
       }
+
+      if (defaultDateRange && (defaultDateRange.from || defaultDateRange.to)) {
+        setDateRange(defaultDateRange);
+      } else {
+        setDateRange(getInitialDateRange());
+      }
     }
-  }, [isOpen, defaultSelectedEvents]);
+  }, [isOpen, defaultSelectedEvents, defaultDateRange]);
 
   const filteredTypes = useMemo(() => {
     return OCPP_MESSAGE_TYPES.filter(type =>

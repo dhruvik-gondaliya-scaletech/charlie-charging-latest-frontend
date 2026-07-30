@@ -185,7 +185,11 @@ export function ReportsContainer() {
   };
 
   // Tab 2 (Group Management) logic states
-  const { data: rawLocations, isLoading: isLocationsLoading } = useLocations();
+  const { data: rawLocationsData, isLoading: isLocationsLoading } = useLocations();
+  const rawLocations = useMemo(() => {
+    if (!rawLocationsData) return [];
+    return Array.isArray(rawLocationsData) ? rawLocationsData : (rawLocationsData?.items || []);
+  }, [rawLocationsData]);
   const { data: locationGroups, isLoading: isGroupsLoading } = useLocationGroups();
   const { data: apiKeyData } = useApiKey();
   const [showApiKey, setShowApiKey] = useState(false);
@@ -250,16 +254,18 @@ export function ReportsContainer() {
       const fetchData = async () => {
         try {
           setIsLoadingTree(true);
-          const [locData, staData] = await Promise.all([
+          const [rawLocData, rawStaData] = await Promise.all([
             locationService.getAllLocations(environment),
             stationService.getAllStations(environment),
           ]);
-          setTreeLocations(locData || []);
-          setTreeStations(staData || []);
+          const locList = Array.isArray(rawLocData) ? rawLocData : (rawLocData?.items || []);
+          const staList = Array.isArray(rawStaData) ? rawStaData : (rawStaData?.items || []);
+          setTreeLocations(locList);
+          setTreeStations(staList);
 
           // Automatically expand all locations
-          if (locData) {
-            setExpandedLocationIds(new Set(locData.map((l: any) => l.id)));
+          if (locList.length > 0) {
+            setExpandedLocationIds(new Set(locList.map((l: any) => l.id)));
           }
         } catch (err) {
           console.error('Failed to load locations/stations for CSV export:', err);
@@ -756,7 +762,6 @@ export function ReportsContainer() {
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="calstart">CALSTART</SelectItem>
-                                <SelectItem value="pac">PAC</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>

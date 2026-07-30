@@ -1,8 +1,8 @@
 import httpService from '@/lib/http-service';
 import { API_CONFIG } from '@/constants/constants';
-import { Session } from '@/types';
+import { Session, PaginatedResponse, PaginationParams } from '@/types';
 
-export interface GetSessionsParams {
+export interface GetSessionsParams extends PaginationParams {
   stationId?: string;
   userId?: string;
   status?: string;
@@ -19,16 +19,16 @@ export interface GetSessionsParams {
 }
 
 class SessionService {
-  async getAllSessions(params?: GetSessionsParams) {
-    return httpService.get<Session[]>(API_CONFIG.endpoints.sessions.base, { params });
+  async getAllSessions(params?: GetSessionsParams): Promise<Session[] | PaginatedResponse<Session>> {
+    return httpService.get<Session[] | PaginatedResponse<Session>>(API_CONFIG.endpoints.sessions.base, { params });
   }
 
   async getSessionById(id: string) {
     return httpService.get<Session>(API_CONFIG.endpoints.sessions.byId(id));
   }
 
-  async getSessionsByStation(stationId: string, params?: GetSessionsParams) {
-    return httpService.get<Session[]>(API_CONFIG.endpoints.sessions.byStation(stationId), { params });
+  async getSessionsByStation(stationId: string, params?: GetSessionsParams): Promise<Session[] | PaginatedResponse<Session>> {
+    return httpService.get<Session[] | PaginatedResponse<Session>>(API_CONFIG.endpoints.sessions.byStation(stationId), { params });
   }
 
   async getActiveSessionByStation(stationId: string, connectorId?: number) {
