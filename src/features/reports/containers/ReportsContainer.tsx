@@ -1268,6 +1268,7 @@ export function ReportsContainer() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="CALSTART">CALSTART</SelectItem>
+                        <SelectItem value="PAC">PAC</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
