@@ -1,6 +1,6 @@
 import httpService from '@/lib/http-service';
 import { API_CONFIG } from '@/constants/constants';
-import { Station, OcppLogResponse, GetConfigurationResponse, ChargingStatus, ConnectorType, Session, SessionFilterParams, StationChargingProfile, SessionStats } from '@/types';
+import { Station, OcppLogResponse, GetConfigurationResponse, ChargingStatus, ConnectorType, Session, SessionFilterParams, StationChargingProfile, SessionStats, PaginatedResponse, PaginationParams } from '@/types';
 
 export interface CreateStationData {
   name: string;
@@ -34,8 +34,9 @@ export interface UpdateStationData {
   status?: ChargingStatus;
 }
 
-export interface GetStationsParams {
+export interface GetStationsParams extends PaginationParams {
   name?: string;
+  search?: string;
   status?: string;
   locationId?: string;
   type?: string;
@@ -63,8 +64,8 @@ export interface StationStats {
 }
 
 class StationService {
-  async getAllStations(env: string, params?: GetStationsParams) {
-    return httpService.get<Station[]>(API_CONFIG.endpoints.stations.base(env), {
+  async getAllStations(env: string, params?: GetStationsParams): Promise<Station[] | PaginatedResponse<Station>> {
+    return httpService.get<Station[] | PaginatedResponse<Station>>(API_CONFIG.endpoints.stations.base(env), {
       params,
     });
   }
@@ -136,10 +137,15 @@ class StationService {
     });
   }
 
-  async getStationSessions(env: string, stationId: string, filters?: SessionFilterParams) {
-    return httpService.get<Session[]>(API_CONFIG.endpoints.stations.sessions(env, stationId), {
-      params: filters,
-    });
+  async getStationSessions(
+    env: string,
+    stationId: string,
+    filters?: SessionFilterParams & PaginationParams,
+  ): Promise<Session[] | PaginatedResponse<Session>> {
+    return httpService.get<Session[] | PaginatedResponse<Session>>(
+      API_CONFIG.endpoints.stations.sessions(env, stationId),
+      { params: filters },
+    );
   }
 
   async getStationSessionStats(env: string, stationId: string): Promise<SessionStats> {

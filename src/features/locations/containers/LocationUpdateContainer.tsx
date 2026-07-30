@@ -17,7 +17,8 @@ interface LocationUpdateContainerProps {
 
 export function LocationUpdateContainer({ locationId }: LocationUpdateContainerProps) {
     const router = useRouter();
-    const { data: locations, isLoading: isFetching } = useLocations();
+    const { data: rawLocations, isLoading: isFetching } = useLocations();
+    const locations = Array.isArray(rawLocations) ? rawLocations : (rawLocations?.items || []);
     const updateLocation = useUpdateLocation();
 
     const location = locations?.find(l => l.id === locationId);

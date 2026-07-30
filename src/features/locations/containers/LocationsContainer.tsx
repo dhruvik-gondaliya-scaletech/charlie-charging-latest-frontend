@@ -10,10 +10,11 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ActionIconButton } from '@/components/shared/ActionIconButton';
-import { Plus, MapPin, Trash2, Pencil, Zap, AlertTriangle, ArrowRightLeft } from 'lucide-react';
+import { Plus, MapPin, Trash2, Pencil, Zap, AlertTriangle, ArrowRightLeft, Search } from 'lucide-react';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Table } from '@/components/shared/Table';
-import { Location, LocationEnv } from '@/types';
+import { Input } from '@/components/ui/input';
+import { Location, LocationEnv, PaginatedResponse } from '@/types';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import { cn } from '@/lib/utils';
 import {
@@ -22,7 +23,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { DEFAULT_PAGE_SIZE, FRONTEND_ROUTES } from '@/constants/constants';
+import { FRONTEND_ROUTES } from '@/constants/constants';
+import { useDebounce } from '@/hooks/use-debounce';
+
+const SERVER_PAGE_SIZE = 25;
 
 export function LocationsContainer() {
   const router = useRouter();
@@ -30,11 +34,33 @@ export function LocationsContainer() {
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
 
-  const { data: locations, isLoading, error } = useLocations();
-  const sortedLocations = useMemo(() => {
-    if (!locations) return [];
-    return [...locations].sort((a, b) => a.name.localeCompare(b.name));
-  }, [locations]);
+  // Server-side search + pagination state
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(SERVER_PAGE_SIZE);
+  const debouncedSearch = useDebounce(search, 500);
+
+  // Reset to page 1 whenever the search changes
+  const handleSearchChange = useCallback((value: string) => {
+    setSearch(value);
+    setPage(1);
+  }, []);
+
+  const { data: rawData, isLoading, error } = useLocations({
+    search: debouncedSearch || undefined,
+    page,
+    limit,
+  });
+
+  // Normalise the server response — paginated or plain array
+  const isPaginated = rawData && !Array.isArray(rawData) && 'meta' in rawData;
+  const locations = useMemo<Location[]>(() => {
+    if (!rawData) return [];
+    if (Array.isArray(rawData)) return [...rawData].sort((a, b) => a.name.localeCompare(b.name));
+    return (rawData as PaginatedResponse<Location>).items;
+  }, [rawData]);
+  const paginationMeta = isPaginated ? (rawData as PaginatedResponse<Location>).meta : null;
+  const totalCount = paginationMeta?.total ?? locations.length;
   const deleteLocation = useDeleteLocation();
   const transferLocation = useTransferLocation();
 
@@ -261,24 +287,38 @@ export function LocationsContainer() {
         </motion.div>
 
         <motion.div variants={staggerItem} className="relative">
+          {/* Server-side search input */}
+          <div className="flex items-center gap-3 mb-4">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search locations…"
+                value={search}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="pl-9 h-10 rounded-xl border-border/50 bg-card/20"
+              />
+            </div>
+            <Button
+              onClick={handleCreate}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
+            >
+              <Plus className="h-4 w-4" />
+              Create Location
+            </Button>
+          </div>
+
           <Table<Location>
-            data={sortedLocations}
+            data={locations}
             columns={columns}
             isLoading={isLoading}
-            showSearch
-            searchPosition="start"
-            appendWithSearch={
-              <Button
-                onClick={handleCreate}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
-              >
-                <Plus className="h-4 w-4" />
-                Create Location
-              </Button>
-            }
-            pageSize={DEFAULT_PAGE_SIZE || 25}
+            pageSize={limit}
             maxHeight="650px"
             className="border-none shadow-none"
+            manualPagination={true}
+            totalCount={totalCount}
+            pageIndex={page - 1}
+            onPageChange={(newPage) => setPage(newPage + 1)}
+            onPageSizeChange={(newLimit) => { setLimit(newLimit); setPage(1); }}
             renderMobileCard={(location) => (
               <div className="bg-card border border-border rounded-[1.5rem] p-5 shadow-sm space-y-4">
                 <div className="flex justify-between items-start text-left">

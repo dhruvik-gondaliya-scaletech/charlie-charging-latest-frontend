@@ -33,7 +33,7 @@ import {
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table } from '@/components/shared/Table';
-import { Station, ChargingStatus, LocationEnv } from '@/types';
+import { Station, ChargingStatus, LocationEnv, PaginatedResponse } from '@/types';
 import { formatDate } from '@/lib/date';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import { cn } from '@/lib/utils';
@@ -74,12 +74,29 @@ export function StationsContainer() {
     window.history.replaceState(null, '', newPath);
   }, [debouncedSearch, status, type, visibility]);
 
-  const { data: stations, isLoading, isFetching, error } = useStations({
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(DEFAULT_PAGE_SIZE || 10);
+
+  const { data: rawStations, isLoading, isFetching, error } = useStations({
     name: debouncedSearch || undefined,
     status: status === 'ALL' ? undefined : status,
     type: type === 'ALL' ? undefined : type,
     visibility: visibility === 'ALL' ? undefined : visibility,
+    page,
+    limit,
   });
+
+  // Normalize the station response (paginated or plain array)
+  const isPaginatedData = rawStations && !Array.isArray(rawStations) && 'meta' in rawStations;
+  const stations = useMemo<Station[]>(() => {
+    if (!rawStations) return [];
+    if (Array.isArray(rawStations)) return rawStations;
+    return (rawStations as PaginatedResponse<Station>).items;
+  }, [rawStations]);
+  const stationsMeta = isPaginatedData ? (rawStations as PaginatedResponse<Station>).meta : null;
+  const totalStationCount = stationsMeta?.total ?? stations.length;
+
   const { data: stats, isLoading: isStatsLoading } = useStationStats();
 
   // Establish WebSocket connection
@@ -444,9 +461,14 @@ export function StationsContainer() {
             columns={columns}
             isLoading={isLoading}
             showSearch={false}
-            pageSize={DEFAULT_PAGE_SIZE || 25}
+            pageSize={limit}
             maxHeight="650px"
             className="border-none shadow-none"
+            manualPagination={true}
+            totalCount={totalStationCount}
+            pageIndex={page - 1}
+            onPageChange={(newPage) => setPage(newPage + 1)}
+            onPageSizeChange={(newLimit) => { setLimit(newLimit); setPage(1); }}
             renderMobileCard={(station) => {
               const status = station.status as ChargingStatus;
               let colorClasses = "";
