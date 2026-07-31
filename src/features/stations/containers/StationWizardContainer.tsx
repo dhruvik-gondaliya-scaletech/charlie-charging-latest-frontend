@@ -22,7 +22,8 @@ export function StationWizardContainer({ stationId, mode }: StationWizardContain
     const { tenant } = useAuth();
     const isEdit = mode === 'edit';
     const { data: station, isLoading: stationLoading, error } = useStation(stationId || '', { enabled: isEdit && !!stationId });
-    const { data: locations, isLoading: locationsLoading } = useLocations();
+    const { data: rawLocations, isLoading: locationsLoading } = useLocations();
+    const locations = Array.isArray(rawLocations) ? rawLocations : (rawLocations?.items || []);
     const updateStation = useUpdateStation();
     const createStation = useCreateStation();
     const isPending = isEdit ? updateStation.isPending : createStation.isPending;

@@ -68,7 +68,8 @@ export function StationDetailContainer() {
     const { user, tenant } = useAuth();
     const { data: station, isLoading, error } = useStation(id as string);
     const { data: tariffs } = useTariffs();
-    const { data: sessions } = useStationSessions(id as string);
+    const { data: rawSessions } = useStationSessions(id as string, { page: 1, limit: 10 });
+    const sessions = Array.isArray(rawSessions) ? rawSessions : (rawSessions?.items || []);
     const { data: sessionStats, isLoading: isStatsLoading } = useStationSessionStats(id as string);
     const [activeTab, setActiveTab] = useState('connectors');
 

@@ -49,7 +49,8 @@ export function LocationDetailContainer() {
     };
 
     const { data: location, isLoading: isLocationLoading, error: locationError } = useLocation(id as string);
-    const { data: stations, isLoading: isStationsLoading } = useStations({ locationId: id as string });
+    const { data: rawStations, isLoading: isStationsLoading } = useStations({ locationId: id as string });
+    const stations = Array.isArray(rawStations) ? rawStations : (rawStations?.items || []);
 
     if (isLocationLoading) {
         return (
