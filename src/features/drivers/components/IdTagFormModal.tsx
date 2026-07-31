@@ -216,7 +216,7 @@ function DriverPickerField({
 
   const selectedDriver = drivers?.find((d) => d.id === value);
   const selectedLabel =
-    value === 'unassigned' || !value
+    !value
       ? 'None (Unassigned)'
       : selectedDriver
       ? `${selectedDriver.firstName} ${selectedDriver.lastName}`.trim()
@@ -263,12 +263,12 @@ function DriverPickerField({
             type="button"
             className={cn(
               'w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-between',
-              (value === 'unassigned' || !value)
+              !value
                 ? 'bg-primary/10 text-primary'
                 : 'hover:bg-muted/50 text-muted-foreground italic'
             )}
             onClick={() => {
-              onChange('unassigned');
+              onChange('');
               setIsOpen(false);
             }}
           >
@@ -340,8 +340,8 @@ export function IdTagFormModal({ isOpen, onClose, initialData }: IdTagFormModalP
       idTag: '',
       status: IdTagStatus.ACCEPTED,
       idTagType: TokenType.RFID,
-      driverId: 'unassigned',
-      stationId: 'unassigned',
+      driverId: '',
+      stationId: '',
       locationIds: [],
       companyName: '',
       expiryDate: '',
@@ -357,8 +357,8 @@ export function IdTagFormModal({ isOpen, onClose, initialData }: IdTagFormModalP
         idTag: initialData.idTag,
         status: initialData.status,
         idTagType: (initialData.idTagType as TokenType) || TokenType.RFID,
-        driverId: initialData.driverId || 'unassigned',
-        stationId: initialData.stationId || 'unassigned',
+        driverId: initialData.driverId || '',
+        stationId: initialData.stationId || '',
         locationIds: initialData.locations ? initialData.locations.map((l) => l.id) : [],
         companyName: initialData.companyName || '',
         expiryDate: initialData.expiryDate ? new Date(initialData.expiryDate).toISOString().split('T')[0] : '',
@@ -368,8 +368,8 @@ export function IdTagFormModal({ isOpen, onClose, initialData }: IdTagFormModalP
         idTag: '',
         status: IdTagStatus.ACCEPTED,
         idTagType: TokenType.RFID,
-        driverId: 'unassigned',
-        stationId: 'unassigned',
+        driverId: '',
+        stationId: '',
         locationIds: [],
         companyName: '',
         expiryDate: '',
@@ -396,8 +396,8 @@ export function IdTagFormModal({ isOpen, onClose, initialData }: IdTagFormModalP
     const payload = {
       ...data,
       idTagType: data.idTagType,
-      driverId: data.driverId === 'unassigned' ? null : data.driverId,
-      stationId: data.stationId === 'unassigned' ? null : data.stationId,
+      driverId: data.driverId ? data.driverId : null,
+      stationId: data.stationId ? data.stationId : null,
       companyName: data.companyName || null,
       expiryDate: data.expiryDate ? new Date(data.expiryDate).toISOString() : undefined,
       locationIds: selectedLocationIds,
