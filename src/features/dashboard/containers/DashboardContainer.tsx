@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useDashboardStats, useRecentActivity } from '@/hooks/get/useDashboard';
 import { Card } from '@/components/ui/card';
@@ -27,19 +27,80 @@ import {
 import { DatePicker } from '@/components/shared/DatePicker';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { StationLogs } from '@/features/stations/components/StationLogs';
+import { SessionStatus } from '@/types';
 
 export function DashboardContainer() {
   const [isReportsModalOpen, setIsReportsModalOpen] = useState(false);
   const [viewLogsSession, setViewLogsSession] = useState<{ stationId: string; sessionId: string } | null>(null);
-  const [eventsLimit, setEventsLimit] = useState<number>(10);
+  
+  const [eventsLimit, setEventsLimit] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('dashboard_events_limit');
+      if (saved) return Number(saved);
+    }
+    return 10;
+  });
+
+  const [statusFilter, setStatusFilter] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('dashboard_status_filter');
+      if (saved) return saved;
+    }
+    return 'all';
+  });
+
   const queryClient = useQueryClient();
   const { environment } = useEnvironment();
 
-  const [selectedRange, setSelectedRange] = useState<string>('Today');
-  const [customRange, setCustomRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
-    from: undefined,
-    to: undefined,
+  const [selectedRange, setSelectedRange] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('dashboard_selected_range');
+      if (saved) return saved;
+    }
+    return 'Today';
   });
+
+  const [customRange, setCustomRange] = useState<{ from: Date | undefined; to: Date | undefined }>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('dashboard_custom_range');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          return {
+            from: parsed.from ? new Date(parsed.from) : undefined,
+            to: parsed.to ? new Date(parsed.to) : undefined,
+          };
+        } catch (e) {
+          // ignore
+        }
+      }
+    }
+    return { from: undefined, to: undefined };
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('dashboard_events_limit', String(eventsLimit));
+    }
+  }, [eventsLimit]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('dashboard_status_filter', statusFilter);
+    }
+  }, [statusFilter]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('dashboard_selected_range', selectedRange);
+    }
+  }, [selectedRange]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('dashboard_custom_range', JSON.stringify(customRange));
+    }
+  }, [customRange]);
 
   const dateParams = useMemo(() => {
     const now = new Date();
@@ -85,23 +146,23 @@ export function DashboardContainer() {
   // Subscribe to real-time events and trigger debounced cache invalidation
   useRealTimeEvent('station-status-change', () => {
     invalidateQueriesDebounced(queryClient, ['dashboard-stats', environment, dateParams]);
-    invalidateQueriesDebounced(queryClient, ['recent-activity', environment, { ...dateParams, limit: eventsLimit }]);
-  }, [environment, dateParams, eventsLimit]);
+    invalidateQueriesDebounced(queryClient, ['recent-activity', environment, { ...dateParams, limit: eventsLimit, status: statusFilter === 'all' ? undefined : (statusFilter as SessionStatus) }]);
+  }, [environment, dateParams, eventsLimit, statusFilter]);
 
   useRealTimeEvent('connector-status-change', () => {
     invalidateQueriesDebounced(queryClient, ['dashboard-stats', environment, dateParams]);
-    invalidateQueriesDebounced(queryClient, ['recent-activity', environment, { ...dateParams, limit: eventsLimit }]);
-  }, [environment, dateParams, eventsLimit]);
+    invalidateQueriesDebounced(queryClient, ['recent-activity', environment, { ...dateParams, limit: eventsLimit, status: statusFilter === 'all' ? undefined : (statusFilter as SessionStatus) }]);
+  }, [environment, dateParams, eventsLimit, statusFilter]);
 
   useRealTimeEvent('transaction-start', () => {
     invalidateQueriesDebounced(queryClient, ['dashboard-stats', environment, dateParams]);
-    invalidateQueriesDebounced(queryClient, ['recent-activity', environment, { ...dateParams, limit: eventsLimit }]);
-  }, [environment, dateParams, eventsLimit]);
+    invalidateQueriesDebounced(queryClient, ['recent-activity', environment, { ...dateParams, limit: eventsLimit, status: statusFilter === 'all' ? undefined : (statusFilter as SessionStatus) }]);
+  }, [environment, dateParams, eventsLimit, statusFilter]);
 
   useRealTimeEvent('transaction-stop', () => {
     invalidateQueriesDebounced(queryClient, ['dashboard-stats', environment, dateParams]);
-    invalidateQueriesDebounced(queryClient, ['recent-activity', environment, { ...dateParams, limit: eventsLimit }]);
-  }, [environment, dateParams, eventsLimit]);
+    invalidateQueriesDebounced(queryClient, ['recent-activity', environment, { ...dateParams, limit: eventsLimit, status: statusFilter === 'all' ? undefined : (statusFilter as SessionStatus) }]);
+  }, [environment, dateParams, eventsLimit, statusFilter]);
 
   const {
     data: stats,
@@ -116,7 +177,11 @@ export function DashboardContainer() {
     isLoading: activitiesLoading,
     refetch: refetchActivities,
     isRefetching: isRefetchingActivities
-  } = useRecentActivity({ ...dateParams, limit: eventsLimit });
+  } = useRecentActivity({
+    ...dateParams,
+    limit: eventsLimit,
+    status: statusFilter === 'all' ? undefined : (statusFilter as SessionStatus),
+  });
 
   const handleRefresh = () => {
     refetchStats();
@@ -353,16 +418,30 @@ export function DashboardContainer() {
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest opacity-60">Real-time event stream</p>
                 </div>
               </div>
-              <Select value={String(eventsLimit)} onValueChange={(val) => setEventsLimit(Number(val))}>
-                <SelectTrigger className="w-[175px] h-9 rounded-full border border-border/40 bg-muted/30 font-bold text-[10px] uppercase tracking-widest px-4 py-2 text-muted-foreground backdrop-blur-md focus:ring-0 focus:ring-offset-0 cursor-pointer flex justify-between items-center gap-2">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="rounded-2xl border-border/40 bg-card/95 backdrop-blur-xl">
-                  <SelectItem value="10" className="text-xs font-semibold uppercase tracking-wider cursor-pointer">Last 10 Events</SelectItem>
-                  <SelectItem value="20" className="text-xs font-semibold uppercase tracking-wider cursor-pointer">Last 20 Events</SelectItem>
-                  <SelectItem value="50" className="text-xs font-semibold uppercase tracking-wider cursor-pointer">Last 50 Events</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                <Select value={statusFilter} onValueChange={(val) => setStatusFilter(val)}>
+                  <SelectTrigger className="w-[145px] h-9 rounded-full border border-border/40 bg-muted/30 font-bold text-[10px] uppercase tracking-widest px-4 py-2 text-muted-foreground backdrop-blur-md focus:ring-0 focus:ring-offset-0 cursor-pointer flex justify-between items-center gap-2">
+                    <SelectValue placeholder="All Statuses" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-border/40 bg-card/95 backdrop-blur-xl">
+                    <SelectItem value="all" className="text-xs font-semibold uppercase tracking-wider cursor-pointer">All Statuses</SelectItem>
+                    <SelectItem value={SessionStatus.COMPLETED} className="text-xs font-semibold uppercase tracking-wider cursor-pointer">Completed</SelectItem>
+                    <SelectItem value={SessionStatus.IN_PROGRESS} className="text-xs font-semibold uppercase tracking-wider cursor-pointer">In Progress</SelectItem>
+                    <SelectItem value={SessionStatus.FAILED} className="text-xs font-semibold uppercase tracking-wider cursor-pointer">Failed</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={String(eventsLimit)} onValueChange={(val) => setEventsLimit(Number(val))}>
+                  <SelectTrigger className="w-[175px] h-9 rounded-full border border-border/40 bg-muted/30 font-bold text-[10px] uppercase tracking-widest px-4 py-2 text-muted-foreground backdrop-blur-md focus:ring-0 focus:ring-offset-0 cursor-pointer flex justify-between items-center gap-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-border/40 bg-card/95 backdrop-blur-xl">
+                    <SelectItem value="10" className="text-xs font-semibold uppercase tracking-wider cursor-pointer">Last 10 Events</SelectItem>
+                    <SelectItem value="20" className="text-xs font-semibold uppercase tracking-wider cursor-pointer">Last 20 Events</SelectItem>
+                    <SelectItem value="50" className="text-xs font-semibold uppercase tracking-wider cursor-pointer">Last 50 Events</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="relative overflow-hidden rounded-3xl border border-border/40 bg-card/20 backdrop-blur-xl transition-all hover:bg-card/30">

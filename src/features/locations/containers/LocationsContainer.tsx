@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ColumnDef } from '@tanstack/react-table';
 import { useLocations } from '@/hooks/get/useLocations';
 import { useDeleteLocation } from '@/hooks/delete/useLocationMutations';
 import { useTransferLocation } from '@/hooks/post/useLocationMutations';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ActionIconButton } from '@/components/shared/ActionIconButton';
@@ -30,15 +30,36 @@ const SERVER_PAGE_SIZE = 25;
 
 export function LocationsContainer() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
 
   // Server-side search + pagination state
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(() => {
+    const fromUrl = searchParams.get('search') || searchParams.get('name');
+    if (fromUrl !== null) return fromUrl;
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('locations_search') || '';
+    }
+    return '';
+  });
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(SERVER_PAGE_SIZE);
   const debouncedSearch = useDebounce(search, 500);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (debouncedSearch) params.set('search', debouncedSearch);
+
+    const queryString = params.toString();
+    const newPath = `${window.location.pathname}${queryString ? `?${queryString}` : ''}`;
+    window.history.replaceState(null, '', newPath);
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('locations_search', search);
+    }
+  }, [debouncedSearch, search]);
 
   // Reset to page 1 whenever the search changes
   const handleSearchChange = useCallback((value: string) => {

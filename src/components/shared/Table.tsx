@@ -71,6 +71,7 @@ interface TableProps<T> {
   rightPinnedColumnIds?: string[];
   renderRowDetails?: (row: T) => ReactNode;
   onRowClick?: (row: T) => void;
+  rowClassName?: (row: T) => string;
   emptyState?: ReactNode;
   renderMobileCard?: (item: T, index: number) => ReactNode;
   totalCount?: number;
@@ -164,6 +165,7 @@ export function Table<T>({
   rightPinnedColumnIds = [],
   renderRowDetails,
   onRowClick,
+  rowClassName,
   emptyState,
   manualPagination = false,
   manualSorting = false,
@@ -596,8 +598,11 @@ export function Table<T>({
                     table.getRowModel().rows.map((row) => (
                       <Fragment key={row.id}>
                         <tr
-                          className={`bg-card hover:bg-muted/30 group border-b border-border transition-colors ${onRowClick || renderRowDetails ? "cursor-pointer" : ""
-                            }`}
+                          className={cn(
+                            "bg-card hover:bg-muted/30 group border-b border-border transition-colors",
+                            onRowClick || renderRowDetails ? "cursor-pointer" : "",
+                            rowClassName ? rowClassName(row.original) : ""
+                          )}
                           onClick={() => {
                             if (onRowClick) onRowClick(row.original);
                             if (renderRowDetails) toggleRow(row.id);
