@@ -1,6 +1,6 @@
 import httpService from '@/lib/http-service';
 import { API_CONFIG } from '@/constants/constants';
-import { DashboardData, DashboardStats, RecentActivity } from '@/types';
+import { DashboardData, DashboardStats, RecentActivity, SessionStatus } from '@/types';
 
 export interface DashboardParams {
   limit?: number;
@@ -10,6 +10,7 @@ export interface DashboardParams {
   fromDate?: string;
   toDate?: string;
   env?: string;
+  status?: SessionStatus;
 }
 
 class DashboardService {

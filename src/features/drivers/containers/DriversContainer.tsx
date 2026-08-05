@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { useDebounce } from '@/hooks/use-debounce';
 import { motion } from 'framer-motion';
 import { ColumnDef } from '@tanstack/react-table';
 import { useDrivers } from '@/hooks/get/useDrivers';
@@ -35,19 +36,32 @@ import { DriverAppConfig } from '../components/DriverAppConfig';
 import { ActionIconButton } from '@/components/shared/ActionIconButton';
 
 export function DriversContainer() {
-
   const router = useRouter();
-  const { data: drivers, isLoading, error } = useDrivers();
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const debouncedSearch = useDebounce(search, 400);
+
+  const { data: drivers, isLoading, error } = useDrivers({
+    search: debouncedSearch,
+    page,
+    limit: pageSize,
+  });
+
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
 
+  const driversList: Driver[] = drivers || [];
+  const totalCount = drivers?.meta?.total ?? driversList.length;
+  const totalPages = drivers?.meta?.totalPages ?? Math.ceil((driversList.length || 1) / pageSize);
+
   const stats = useMemo(() => {
-    if (!drivers) return { total: 0, active: 0, inactive: 0 };
+    if (!driversList) return { total: 0, active: 0, inactive: 0 };
     return {
-      total: drivers.length,
-      active: drivers.filter(d => d.isActive).length,
-      inactive: drivers.filter(d => !d.isActive).length,
+      total: totalCount || driversList.length,
+      active: driversList.filter((d) => d.isActive).length,
+      inactive: driversList.filter((d) => !d.isActive).length,
     };
-  }, [drivers]);
+  }, [driversList, totalCount]);
 
   const columns: ColumnDef<Driver>[] = useMemo(
     // ... columns logic ...
@@ -216,11 +230,25 @@ export function DriversContainer() {
 
             <motion.div variants={staggerItem} className="relative">
               <Table<Driver>
-                data={drivers || []}
+                data={driversList}
                 columns={columns}
                 isLoading={isLoading}
                 showSearch
                 searchPosition="end"
+                onSearch={(value: string) => {
+                  setSearch(value);
+                  setPage(1);
+                }}
+                manualPagination={true}
+                manualSearching={true}
+                totalCount={totalCount}
+                pageIndex={page - 1}
+                pageSize={pageSize}
+                onPageChange={(newPage: number) => setPage(newPage + 1)}
+                onPageSizeChange={(newSize: number) => {
+                  setPageSize(newSize);
+                  setPage(1);
+                }}
                 appendWithSearch={
                   <Button
                     onClick={() => setIsFormModalOpen(true)}
@@ -230,7 +258,6 @@ export function DriversContainer() {
                     Add Driver
                   </Button>
                 }
-                pageSize={DEFAULT_PAGE_SIZE}
                 maxHeight="700px"
                 className="border-none shadow-none"
                 renderMobileCard={(driver) => (

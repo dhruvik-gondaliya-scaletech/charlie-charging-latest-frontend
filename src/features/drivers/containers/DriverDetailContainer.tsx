@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useParams } from 'next/navigation';
+import { useDebounce } from '@/hooks/use-debounce';
 import { motion } from 'framer-motion';
 import { ColumnDef } from '@tanstack/react-table';
 import { useDriver } from '@/hooks/get/useDrivers';
@@ -28,8 +29,28 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export function DriverSessionsContainer() {
   const { id } = useParams();
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const debouncedSearch = useDebounce(search, 400);
+
   const { data: driver, isLoading: isLoadingDriver } = useDriver(id as string);
-  const { data: sessions, isLoading: isLoadingSessions, error } = useDriverSessions(id as string);
+  const {
+    data: sessionsResponse,
+    isLoading: isLoadingSessions,
+    error,
+  } = useDriverSessions(id as string, { search: debouncedSearch, page, limit: pageSize });
+
+  const isPaginated = sessionsResponse && typeof sessionsResponse === 'object' && 'data' in sessionsResponse;
+  const sessions: DriverSession[] = useMemo(() => {
+    if (!sessionsResponse) return [];
+    if (isPaginated) return (sessionsResponse as any).data || [];
+    if (Array.isArray(sessionsResponse)) return sessionsResponse;
+    return [];
+  }, [sessionsResponse, isPaginated]);
+
+  const totalCount = isPaginated ? (sessionsResponse as any).meta?.total || 0 : sessions.length;
+  const totalPages = isPaginated ? (sessionsResponse as any).meta?.totalPages || 1 : Math.ceil((sessions.length || 1) / pageSize);
 
   const stats = useMemo(() => {
     if (!sessions) return { totalEnergy: 0, totalDuration: 0, totalCost: 0, count: 0 };
@@ -37,9 +58,9 @@ export function DriverSessionsContainer() {
       totalEnergy: sessions.reduce((acc, s) => acc + (s.energyDeliveredKwh || 0), 0),
       totalDuration: sessions.reduce((acc, s) => acc + (s.durationMinutes || 0), 0),
       totalCost: sessions.reduce((acc, s) => acc + (s.totalCost || 0), 0),
-      count: sessions.length,
+      count: totalCount || sessions.length,
     };
-  }, [sessions]);
+  }, [sessions, totalCount]);
 
   const columns: ColumnDef<DriverSession>[] = useMemo(
     () => [
@@ -51,10 +72,6 @@ export function DriverSessionsContainer() {
             <div className="flex flex-col">
               <span className="font-bold tracking-tight text-foreground">{row.original.stationName}</span>
               <div className="flex items-center gap-1.5 text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest mt-0.5">
-                <Badge variant="outline" className="text-[8px] px-1 py-0 h-4 border-primary/20 bg-primary/5 text-primary">
-                  Port #{row.original.connectorId}
-                </Badge>
-                <span>•</span>
                 <span>{row.original.connectorType || 'Type 2'}</span>
               </div>
             </div>
@@ -308,7 +325,20 @@ export function DriverSessionsContainer() {
           isLoading={isLoadingSessions}
           showSearch
           searchPosition="end"
-          pageSize={10}
+          manualPagination={true}
+          manualSearching={true}
+          totalCount={totalCount}
+          pageIndex={page - 1}
+          pageSize={pageSize}
+          onPageChange={(newPage: number) => setPage(newPage + 1)}
+          onPageSizeChange={(newSize: number) => {
+            setPageSize(newSize);
+            setPage(1);
+          }}
+          onSearch={(val: string) => {
+            setSearch(val);
+            setPage(1);
+          }}
           maxHeight="800px"
           className="border-none shadow-none"
           renderMobileCard={(session) => (
@@ -317,9 +347,6 @@ export function DriverSessionsContainer() {
                 <div className="space-y-1">
                   <h4 className="text-base font-black tracking-tight text-foreground">{session.stationName}</h4>
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-primary/30 bg-primary/5 text-primary font-black uppercase tracking-widest">
-                      Port #{session.connectorId}
-                    </Badge>
                     <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">{session.connectorType || 'Type 2'}</span>
                   </div>
                 </div>

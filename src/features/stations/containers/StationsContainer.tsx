@@ -52,14 +52,45 @@ export function StationsContainer() {
   const queryClient = useQueryClient();
 
   // Filter States
-  const [search, setSearch] = useState(searchParams.get('name') || '');
-  const [status, setStatus] = useState<string>(searchParams.get('status') || 'ALL');
-  const [type, setType] = useState<string>(searchParams.get('type') || 'ALL');
-  const [visibility, setVisibility] = useState<string>(searchParams.get('visibility') || 'ALL');
+  const [search, setSearch] = useState(() => {
+    const fromUrl = searchParams.get('name');
+    if (fromUrl !== null) return fromUrl;
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('stations_search') || '';
+    }
+    return '';
+  });
+
+  const [status, setStatus] = useState<string>(() => {
+    const fromUrl = searchParams.get('status');
+    if (fromUrl !== null) return fromUrl;
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('stations_status') || 'ALL';
+    }
+    return 'ALL';
+  });
+
+  const [type, setType] = useState<string>(() => {
+    const fromUrl = searchParams.get('type');
+    if (fromUrl !== null) return fromUrl;
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('stations_type') || 'ALL';
+    }
+    return 'ALL';
+  });
+
+  const [visibility, setVisibility] = useState<string>(() => {
+    const fromUrl = searchParams.get('visibility');
+    if (fromUrl !== null) return fromUrl;
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('stations_visibility') || 'ALL';
+    }
+    return 'ALL';
+  });
 
   const debouncedSearch = useDebounce(search, 500);
 
-  // Sync filters to URL
+  // Sync filters to URL and localStorage
   useEffect(() => {
     const params = new URLSearchParams();
     if (debouncedSearch) params.set('name', debouncedSearch);
@@ -72,7 +103,14 @@ export function StationsContainer() {
 
     // Use window.history.replaceState to avoid adding to history stack on every keystroke
     window.history.replaceState(null, '', newPath);
-  }, [debouncedSearch, status, type, visibility]);
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('stations_search', search);
+      localStorage.setItem('stations_status', status);
+      localStorage.setItem('stations_type', type);
+      localStorage.setItem('stations_visibility', visibility);
+    }
+  }, [debouncedSearch, search, status, type, visibility]);
 
   // Pagination state
   const [page, setPage] = useState(1);
@@ -139,6 +177,12 @@ export function StationsContainer() {
     setStatus('ALL');
     setType('ALL');
     setVisibility('ALL');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('stations_search');
+      localStorage.removeItem('stations_status');
+      localStorage.removeItem('stations_type');
+      localStorage.removeItem('stations_visibility');
+    }
   };
 
   const isFiltered = search !== '' || status !== 'ALL' || type !== 'ALL' || visibility !== 'ALL';

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useStationSessions } from '@/hooks/get/useStations';
 import { Table } from '@/components/shared/Table';
 import { ColumnDef } from '@tanstack/react-table';
@@ -43,11 +44,35 @@ interface StationSessionsProps {
 }
 
 export function StationSessions({ stationId, onViewLogs }: StationSessionsProps) {
+    const searchParams = useSearchParams();
+    const selectedSessionId = searchParams ? searchParams.get('sessionId') : null;
+    const selectedDateParam = searchParams ? searchParams.get('date') : null;
+
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
         from: undefined,
         to: undefined,
     });
+
+    useEffect(() => {
+        if (selectedDateParam) {
+            const parts = selectedDateParam.split('-');
+            if (parts.length === 3) {
+                const year = parseInt(parts[0], 10);
+                const month = parseInt(parts[1], 10) - 1;
+                const day = parseInt(parts[2], 10);
+                const parsedDate = new Date(year, month, day);
+                if (!isNaN(parsedDate.getTime())) {
+                    setDateRange({ from: parsedDate, to: parsedDate });
+                }
+            } else {
+                const parsedDate = new Date(selectedDateParam);
+                if (!isNaN(parsedDate.getTime())) {
+                    setDateRange({ from: parsedDate, to: parsedDate });
+                }
+            }
+        }
+    }, [selectedDateParam]);
 
     // Server-side pagination state
     const [page, setPage] = useState(1);
@@ -427,9 +452,9 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
                             </SelectTrigger>
                             <SelectContent className="w-[var(--radix-select-trigger-width)] sm:w-auto rounded-xl border-border/40 bg-card/95 backdrop-blur-xl">
                                 <SelectItem value="all" className="text-xs font-semibold">All Statuses</SelectItem>
-                                <SelectItem value="completed" className="text-xs font-semibold">Completed</SelectItem>
-                                <SelectItem value="in-progress" className="text-xs font-semibold">In Progress</SelectItem>
-                                <SelectItem value="failed" className="text-xs font-semibold">Failed</SelectItem>
+                                <SelectItem value={SessionStatus.COMPLETED} className="text-xs font-semibold">Completed</SelectItem>
+                                <SelectItem value={SessionStatus.IN_PROGRESS} className="text-xs font-semibold">In Progress</SelectItem>
+                                <SelectItem value={SessionStatus.FAILED} className="text-xs font-semibold">Failed</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -483,7 +508,12 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
                 pageIndex={page - 1}
                 onPageChange={(newPage) => setPage(newPage + 1)}
                 onPageSizeChange={(newLimit) => { setLimit(newLimit); setPage(1); }}
+                rowClassName={(session) => {
+                    const isSelected = selectedSessionId && (session.id === selectedSessionId || String(session.transactionId) === selectedSessionId);
+                    return isSelected ? "bg-primary/15 border-l-4 border-l-primary font-bold shadow-md shadow-primary/5 transition-all" : "";
+                }}
                 renderMobileCard={(session) => {
+                    const isSelected = selectedSessionId && (session.id === selectedSessionId || String(session.transactionId) === selectedSessionId);
                     const status = session.status as string;
                     let colorClasses = "";
                     if (status?.toLowerCase().includes('completed')) colorClasses = "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
@@ -493,7 +523,10 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
                     const fullName = session.userFirstName && session.userLastName ? `${session.userFirstName} ${session.userLastName}` : 'Guest User';
 
                     return (
-                        <div className="bg-card border border-border/50 rounded-3xl p-5 space-y-4 shadow-sm">
+                        <div className={cn(
+                            "bg-card border border-border/50 rounded-3xl p-5 space-y-4 shadow-sm transition-all",
+                            isSelected && "ring-2 ring-primary bg-primary/10 border-primary/50"
+                        )}>
                             <div className="flex justify-between items-start">
                                 <div className="flex items-center gap-3">
                                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
