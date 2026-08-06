@@ -1,10 +1,23 @@
 import { useQuery } from '@tanstack/react-query';
 import { driverService } from '@/services/driver.service';
+import { Driver } from '@/types';
 
-export const useDrivers = () => {
+export type PaginatedDrivers = Driver[] & {
+  meta?: { total: number; page: number; limit: number; totalPages: number };
+};
+
+export const useDrivers = (params?: { search?: string; name?: string; page?: number; limit?: number }) => {
   return useQuery({
-    queryKey: ['drivers'],
-    queryFn: () => driverService.getAllDrivers(),
+    queryKey: ['drivers', params],
+    queryFn: async (): Promise<PaginatedDrivers> => {
+      const res = await driverService.getAllDrivers(params);
+      if (res && typeof res === 'object' && 'data' in res && Array.isArray((res as any).data)) {
+        const list = [...(res as any).data] as PaginatedDrivers;
+        list.meta = (res as any).meta;
+        return list;
+      }
+      return (res || []) as PaginatedDrivers;
+    },
     staleTime: 30000,
   });
 };

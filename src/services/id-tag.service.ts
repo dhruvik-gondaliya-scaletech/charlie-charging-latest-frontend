@@ -2,9 +2,27 @@ import httpService from '@/lib/http-service';
 import { API_CONFIG } from '@/constants/constants';
 import { IdTag, CreateIdTagData, UpdateIdTagData } from '@/types';
 
+export interface IdTagQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+  driverId?: string;
+}
+
+export interface PaginatedIdTagsResponse {
+  data: IdTag[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
 class IdTagService {
-  async getAllIdTags() {
-    return httpService.get<IdTag[]>(API_CONFIG.endpoints.idTags.base);
+  async getAllIdTags(params?: IdTagQueryParams) {
+    return httpService.get<IdTag[] | PaginatedIdTagsResponse>(API_CONFIG.endpoints.idTags.base, { params });
   }
 
   async getIdTagById(idTag: string) {

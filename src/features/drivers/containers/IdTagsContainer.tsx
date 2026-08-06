@@ -18,6 +18,8 @@ import {
   Edit2,
   ShieldAlert,
   Building2,
+  Tag,
+  MapPin,
 } from 'lucide-react';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Table } from '@/components/shared/Table';
@@ -30,22 +32,44 @@ import { IdTagFormModal } from '../components/IdTagFormModal';
 import { useDeleteIdTag } from '@/hooks/delete/useDeleteIdTag';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import { ActionIconButton } from '@/components/shared/ActionIconButton';
+import { useDebounce } from '@/hooks/use-debounce';
 
 export function IdTagsContainer() {
-  const { data: idTags, isLoading, error } = useIdTags();
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 400);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+
+  const { data: idTags, isLoading, error } = useIdTags({
+    page,
+    limit: pageSize,
+    search: debouncedSearch || undefined,
+  });
+
   const deleteIdTag = useDeleteIdTag();
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [selectedIdTag, setSelectedIdTag] = useState<IdTag | null>(null);
   const [idTagToDelete, setIdTagToDelete] = useState<string | null>(null);
 
-  const stats = useMemo(() => {
-    if (!idTags) return { total: 0, active: 0, blocked: 0 };
-    return {
-      total: idTags.length,
-      active: idTags.filter(t => t.status === IdTagStatus.ACCEPTED).length,
-      blocked: idTags.filter(t => t.status === IdTagStatus.BLOCKED).length,
-    };
+  const idTagsList = useMemo(() => {
+    if (!idTags) return [];
+    if (Array.isArray(idTags)) return idTags;
+    return idTags.data || [];
   }, [idTags]);
+
+  const totalCount = useMemo(() => {
+    if (!idTags) return 0;
+    if (Array.isArray(idTags)) return idTags.length;
+    return idTags.meta?.total ?? idTagsList.length;
+  }, [idTags, idTagsList]);
+
+  const stats = useMemo(() => {
+    return {
+      total: totalCount,
+      active: idTagsList.filter(t => t.status === IdTagStatus.ACCEPTED).length,
+      blocked: idTagsList.filter(t => t.status === IdTagStatus.BLOCKED).length,
+    };
+  }, [totalCount, idTagsList]);
 
   const columns: ColumnDef<IdTag>[] = useMemo(
     () => [
@@ -62,6 +86,36 @@ export function IdTagsContainer() {
             </span>
           </div>
         ),
+      },
+      {
+        accessorKey: 'idTagType',
+        header: 'Tag Type',
+        cell: ({ row }) => (
+          <div className="flex items-center gap-1.5 text-xs font-bold text-foreground/90 tracking-tight">
+            <Tag className="h-3.5 w-3.5 text-primary/60" />
+            {row.original.idTagType || 'Driver RFID'}
+          </div>
+        ),
+      },
+      {
+        accessorKey: 'locations',
+        header: 'Allowed Locations',
+        cell: ({ row }) => {
+          const locs = row.original.locations || [];
+          if (locs.length === 0) {
+            return (
+              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 font-bold px-2 py-0.5 text-[10px]">
+                All Locations
+              </Badge>
+            );
+          }
+          return (
+            <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+              <MapPin className="h-3.5 w-3.5 text-primary/70" />
+              <span>{locs.length} {locs.length === 1 ? 'Location' : 'Locations'}</span>
+            </div>
+          );
+        },
       },
       {
         accessorKey: 'driver',
@@ -215,11 +269,24 @@ export function IdTagsContainer() {
         {/* Tabular Matrix */}
         <motion.div variants={staggerItem} className="relative">
           <Table<IdTag>
-            data={idTags || []}
+            data={idTagsList}
             columns={columns}
             isLoading={isLoading}
             showSearch
             searchPosition="end"
+            onSearch={(value) => {
+              setSearch(value);
+              setPage(1);
+            }}
+            manualPagination={true}
+            totalCount={totalCount}
+            pageIndex={page - 1}
+            pageSize={pageSize}
+            onPageChange={(newPage) => setPage(newPage + 1)}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setPage(1);
+            }}
             appendWithSearch={
               <Button
                 onClick={() => {
@@ -232,7 +299,6 @@ export function IdTagsContainer() {
                 Enroll New Tag
               </Button>
             }
-            pageSize={DEFAULT_PAGE_SIZE}
             maxHeight="700px"
             className="border-none shadow-none"
             renderMobileCard={(tag) => {

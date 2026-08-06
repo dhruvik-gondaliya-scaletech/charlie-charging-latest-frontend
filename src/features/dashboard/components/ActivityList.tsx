@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Battery, User, Clock, Zap, Timer, Terminal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
 
 interface ActivityListProps {
   activities: RecentActivity[];
@@ -15,6 +16,33 @@ interface ActivityListProps {
 }
 
 export function ActivityList({ activities, isLoading = false, onViewLogs, limit = 10 }: ActivityListProps) {
+  const router = useRouter();
+
+  const handleRowClick = (activity: RecentActivity) => {
+    if (activity.stationId) {
+      const sessionDate = activity.startDate || activity.eventTime;
+      let dateStr = '';
+      if (sessionDate) {
+        const d = new Date(sessionDate);
+        if (!isNaN(d.getTime())) {
+          const year = d.getFullYear();
+          const month = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          dateStr = `${year}-${month}-${day}`;
+        }
+      }
+      const params = new URLSearchParams();
+      params.set('tab', 'sessions');
+      if (dateStr) {
+        params.set('date', dateStr);
+      }
+      if (activity.eventId) {
+        params.set('sessionId', activity.eventId);
+      }
+      router.push(`/stations/${activity.stationId}?${params.toString()}`);
+    }
+  };
+
   const columns: ColumnDef<RecentActivity>[] = [
     {
       accessorKey: 'startDate',
@@ -58,9 +86,9 @@ export function ActivityList({ activities, isLoading = false, onViewLogs, limit 
       accessorKey: 'station',
       header: 'Station',
       cell: ({ row }) => (
-        <div className="flex items-center gap-2 text-muted-foreground group-hover:text-foreground transition-colors">
+        <div className="flex items-center gap-2 text-muted-foreground group-hover:text-primary transition-colors cursor-pointer font-semibold">
           <Battery className="h-4 w-4 text-blue-500/70" />
-          <span className="text-sm font-medium">{row.original.station}</span>
+          <span className="text-sm font-semibold">{row.original.station}</span>
         </div>
       ),
     },
@@ -125,7 +153,10 @@ export function ActivityList({ activities, isLoading = false, onViewLogs, limit 
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => onViewLogs?.(stationId, eventId)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewLogs?.(stationId, eventId);
+            }}
             className="h-8 px-2 text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary/10"
           >
             <Terminal className="h-3.5 w-3.5 mr-1.5" />
@@ -144,6 +175,7 @@ export function ActivityList({ activities, isLoading = false, onViewLogs, limit 
       pageSize={limit}
       showSearch={false}
       showPagination={false}
+      onRowClick={handleRowClick}
       maxHeight="540px"
       className="border-none shadow-none bg-transparent"
       renderMobileCard={(activity) => {
@@ -162,7 +194,10 @@ export function ActivityList({ activities, isLoading = false, onViewLogs, limit 
         const val = activity.startDate || activity.eventTime;
 
         return (
-          <div className="bg-card/40 mx-4 border border-border/40 rounded-2xl p-4 space-y-3">
+          <div
+            onClick={() => handleRowClick(activity)}
+            className="bg-card/40 mx-4 border border-border/40 rounded-2xl p-4 space-y-3 cursor-pointer hover:border-primary/40 transition-colors"
+          >
             <div className="flex justify-between items-start">
               <div className="flex items-center gap-2">
                 <div className="h-7 w-7 rounded-full bg-blue-500/10 flex items-center justify-center">
@@ -218,7 +253,10 @@ export function ActivityList({ activities, isLoading = false, onViewLogs, limit 
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => onViewLogs?.(activity.stationId!, activity.eventId!)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onViewLogs?.(activity.stationId!, activity.eventId!);
+                  }}
                   className="h-7 px-2 text-[9px] font-black uppercase tracking-widest text-primary hover:bg-primary/10"
                 >
                   <Terminal className="h-3 w-3 mr-1" />
