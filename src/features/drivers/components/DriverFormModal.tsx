@@ -59,8 +59,33 @@ export function DriverFormModal({ isOpen, onClose }: DriverFormModalProps) {
       title="Register New Driver"
       description="Enter driver credentials to grant access to the charging network infrastructure."
       size="md"
+      footer={
+        <div className="flex gap-3 w-full">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            className="flex-1 h-12 rounded-xl font-black uppercase tracking-widest text-[10px] border-border/40 hover:bg-muted"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            form="driver-form"
+            onClick={handleSubmit(onSubmit)}
+            disabled={createDriver.isPending}
+            className="flex-1 h-12 rounded-xl font-black uppercase tracking-widest text-[10px] bg-primary shadow-lg shadow-primary/20"
+          >
+            {createDriver.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              "Confirm Registration"
+            )}
+          </Button>
+        </div>
+      }
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      <form id="driver-form" onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="firstName" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 ml-1">First Name</Label>
@@ -150,27 +175,6 @@ export function DriverFormModal({ isOpen, onClose }: DriverFormModalProps) {
           {errors.phoneNumber && <p className="text-[10px] font-bold text-destructive uppercase tracking-widest ml-1">{errors.phoneNumber.message}</p>}
         </div>
 
-        <div className="flex gap-3 pt-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            className="flex-1 h-12 rounded-xl font-black uppercase tracking-widest text-[10px] border-border/40 hover:bg-muted"
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            disabled={createDriver.isPending}
-            className="flex-1 h-12 rounded-xl font-black uppercase tracking-widest text-[10px] bg-primary shadow-lg shadow-primary/20"
-          >
-            {createDriver.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              "Confirm Registration"
-            )}
-          </Button>
-        </div>
       </form>
     </AnimatedModal>
   );
