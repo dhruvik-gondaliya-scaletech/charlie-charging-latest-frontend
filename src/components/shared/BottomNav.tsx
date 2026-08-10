@@ -17,7 +17,8 @@ import {
   LogOut,
   UserCircle,
   Globe,
-  FileText
+  FileText,
+  Shield,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { FRONTEND_ROUTES } from '@/constants/constants';
@@ -43,23 +44,33 @@ const mainNavItems = [
 ];
 
 const moreNavItems = [
-  { href: FRONTEND_ROUTES.REPORTS, label: 'Reports', icon: FileText, roles: ['admin', 'super_admin'] },
+  { href: FRONTEND_ROUTES.REPORTS, label: 'Reports', icon: FileText, roles: ['viewer', 'site_manager', 'admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.USERS, label: 'Operators', icon: Users, roles: ['admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.DRIVERS, label: 'Drivers', icon: User, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.ID_TAGS, label: 'ID Tags', icon: CreditCard, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.TARIFF, label: 'Tariff', icon: Coins, roles: ['admin', 'super_admin'] },
-  // { href: FRONTEND_ROUTES.OCPI, label: 'OCPI Roaming', icon: Globe, roles: ['admin', 'super_admin'] },
+  { href: FRONTEND_ROUTES.ID_TAGS, label: 'ID Tags', icon: CreditCard, roles: ['site_manager', 'admin', 'super_admin'] },
+  { href: FRONTEND_ROUTES.TARIFF, label: 'Tariff', icon: Coins, roles: ['site_manager', 'admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.WEBHOOKS, label: 'Webhooks', icon: Webhook, roles: ['admin', 'super_admin'] },
+  { href: FRONTEND_ROUTES.RBAC_ROLES, label: 'Access Control', icon: Shield, roles: ['super_admin'] },
 ];
 
 export function BottomNav() {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user, logout, roles } = useAuth();
   const [isMoreOpen, setIsMoreOpen] = React.useState(false);
 
   const canAccessRoute = (requiredRoles: string[]) => {
-    if (!user?.role) return false;
-    return requiredRoles.includes(user.role);
+    if (!requiredRoles) return false;
+
+    if (Array.isArray(roles)) {
+      const uppercaseRoles = requiredRoles.map(r => r.toUpperCase());
+      const hasMatch = roles.some(role => uppercaseRoles.includes(role));
+      if (hasMatch) return true;
+    }
+
+    if (user?.role) {
+      return requiredRoles.includes(user.role.toLowerCase());
+    }
+    return false;
   };
 
   return (

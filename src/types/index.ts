@@ -178,6 +178,46 @@ export interface TenantListResponse {
   stripePayoutsEnabled?: boolean;
 }
 
+// ─── RBAC Types ──────────────────────────────────────────────────────────────
+
+export interface Permission {
+  id: string;
+  module: string;
+  action: string;
+  code: string;
+  description?: string | null;
+}
+
+export interface Role {
+  id: string;
+  name: string;
+  description?: string | null;
+  isSystem: boolean;
+  tenantId?: string | null;
+  permissions?: Permission[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserRoleAssignment {
+  userId: string;
+  roleId: string;
+  role: Role;
+}
+
+export interface UserLocationAssignment {
+  userId: string;
+  locationId: string;
+  location?: Location;
+}
+
+export interface UserEffectivePermissions {
+  userId: string;
+  permissions: string[];
+}
+
+// ─── User ─────────────────────────────────────────────────────────────────────
+
 export interface User {
   id: string;
   email: string;
@@ -190,6 +230,10 @@ export interface User {
   createdAt: string;
   tenantId: string;
   tenant?: Tenant;
+  // RBAC JWT fields (populated from token payload)
+  roles: string[];        // e.g. ['ADMIN']
+  permissions: string[];  // e.g. ['station.read', 'session.read']
+  locations: string[];    // location UUIDs; empty = unrestricted
 }
 
 export interface DriverSession {

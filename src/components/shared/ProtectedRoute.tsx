@@ -1,31 +1,56 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { FRONTEND_ROUTES } from '@/constants/constants';
 
-export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, loading } = useAuth();
+interface ProtectedRouteProps {
+  /** Required role — redirects to /unauthorized if user lacks it */
+  requiredRole?: string;
+  /** Required permission code */
+  requiredPermission?: string;
+  /** Custom redirect path (default: /unauthorized) */
+  redirectTo?: string;
+  children: ReactNode;
+}
+
+/**
+ * Layout-level route guard. Redirects to /unauthorized when the current
+ * user lacks the required role or permission.
+ *
+ * Usage in layout.tsx:
+ * <ProtectedRoute requiredRole="SUPER_ADMIN">
+ *   {children}
+ * </ProtectedRoute>
+ */
+export function ProtectedRoute({
+  requiredRole,
+  requiredPermission,
+  redirectTo = '/unauthorized',
+  children,
+}: ProtectedRouteProps) {
+  const { hasRole, hasPermission, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      router.push(FRONTEND_ROUTES.LOGIN);
+    if (loading) return;
+    if (requiredRole && !hasRole(requiredRole)) {
+      router.replace(redirectTo);
+      return;
     }
-  }, [isAuthenticated, loading, router]);
+    if (requiredPermission && !hasPermission(requiredPermission)) {
+      router.replace(redirectTo);
+    }
+  }, [loading, requiredRole, requiredPermission, hasRole, hasPermission, router, redirectTo]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  // Don't flash content while loading
+  if (loading) return null;
 
-  if (!isAuthenticated) {
-    return null;
-  }
+  const allowed =
+    (!requiredRole || hasRole(requiredRole)) &&
+    (!requiredPermission || hasPermission(requiredPermission));
+
+  if (!allowed) return null;
 
   return <>{children}</>;
 }

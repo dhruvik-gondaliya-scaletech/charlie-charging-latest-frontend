@@ -20,7 +20,8 @@ export interface InviteUserData {
   email: string;
   firstName?: string;
   lastName?: string;
-  role: string;
+  roleId: string;
+  locationIds?: string[];
 }
 
 export interface AcceptInvitationData {

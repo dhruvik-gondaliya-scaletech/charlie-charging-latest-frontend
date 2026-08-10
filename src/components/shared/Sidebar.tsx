@@ -17,7 +17,8 @@ import {
   LogOut,
   Share2,
   Globe,
-  FileText
+  FileText,
+  Shield,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
@@ -34,16 +35,17 @@ import { AnimatedModal } from './AnimatedModal';
 import { BrandLogo } from './BrandLogo';
 
 const navItems = [
-  { href: FRONTEND_ROUTES.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard, roles: ['user', 'admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.STATIONS, label: 'Stations', icon: Zap, roles: ['user', 'admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.LOCATIONS, label: 'Locations', icon: MapPin, roles: ['user', 'admin', 'super_admin'] },
+  { href: FRONTEND_ROUTES.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard, roles: ['user', 'viewer', 'site_manager', 'admin', 'super_admin'] },
+  { href: FRONTEND_ROUTES.STATIONS, label: 'Stations', icon: Zap, roles: ['user', 'viewer', 'site_manager', 'admin', 'super_admin'] },
+  { href: FRONTEND_ROUTES.LOCATIONS, label: 'Locations', icon: MapPin, roles: ['user', 'viewer', 'site_manager', 'admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.USERS, label: 'Operators', icon: Users, roles: ['admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.DRIVERS, label: 'Drivers', icon: User, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.ID_TAGS, label: 'ID Tags', icon: CreditCard, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.TARIFF, label: 'Tariff', icon: Coins, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.REPORTS, label: 'Reports', icon: FileText, roles: ['admin', 'super_admin'] },
+  { href: FRONTEND_ROUTES.ID_TAGS, label: 'ID Tags', icon: CreditCard, roles: ['site_manager', 'admin', 'super_admin'] },
+  { href: FRONTEND_ROUTES.TARIFF, label: 'Tariff', icon: Coins, roles: ['site_manager', 'admin', 'super_admin'] },
+  { href: FRONTEND_ROUTES.REPORTS, label: 'Reports', icon: FileText, roles: ['viewer', 'site_manager', 'admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.OCPI, label: 'OCPI Roaming', icon: Globe, roles: ['admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.WEBHOOKS, label: 'Webhooks', icon: Webhook, roles: ['admin', 'super_admin'] },
+  { href: FRONTEND_ROUTES.RBAC_ROLES, label: 'Access Control', icon: Shield, roles: ['super_admin'] },
   { href: FRONTEND_ROUTES.API_DOCS, label: 'API Docs', icon: Share2, roles: ['admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.TENANTS, label: 'Tenants', icon: Building2, roles: ['super_admin'] },
 ];
@@ -51,7 +53,7 @@ const navItems = [
 export function Sidebar() {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = React.useState(false);
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user, logout, roles } = useAuth();
 
   const getInitials = (firstName?: string | null, lastName?: string | null) => {
     if (!firstName || !lastName) return 'U';
@@ -59,8 +61,18 @@ export function Sidebar() {
   };
 
   const canAccessRoute = (requiredRoles: string[]) => {
-    if (!user?.role) return false;
-    return requiredRoles.includes(user.role);
+    if (!requiredRoles) return false;
+
+    if (Array.isArray(roles)) {
+      const uppercaseRoles = requiredRoles.map(r => r.toUpperCase());
+      const hasMatch = roles.some(role => uppercaseRoles.includes(role));
+      if (hasMatch) return true;
+    }
+
+    if (user?.role) {
+      return requiredRoles.includes(user.role.toLowerCase());
+    }
+    return false;
   };
 
   return (

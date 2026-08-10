@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { AUTH_CONFIG, FRONTEND_ROUTES } from '@/constants/constants';
 import { User, Tenant } from '@/types';
@@ -15,6 +15,14 @@ interface AuthContextType {
   googleLogin: (idToken: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
+  // RBAC fields
+  roles: string[];
+  permissions: string[];
+  locationScope: string[];          // empty = unrestricted (ADMIN / SUPER_ADMIN)
+  hasPermission: (code: string) => boolean;
+  hasRole: (role: string) => boolean;
+  isSuperAdmin: boolean;
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -25,9 +33,26 @@ const AuthContext = createContext<AuthContextType>({
   googleLogin: async () => {},
   logout: () => {},
   isAuthenticated: false,
+  roles: [],
+  permissions: [],
+  locationScope: [],
+  hasPermission: () => false,
+  hasRole: () => false,
+  isSuperAdmin: false,
+  isAdmin: false,
 });
 
 export const useAuth = () => useContext(AuthContext);
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+const extractRbacFromUser = (user: User | null) => ({
+  roles: user?.roles ?? [],
+  permissions: user?.permissions ?? [],
+  locationScope: user?.locations ?? [],
+});
+
+// ─── Provider ────────────────────────────────────────────────────────────────
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -50,12 +75,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
           const userData = JSON.parse(storedUser);
           const tenantData = JSON.parse(storedTenant);
-          
+
           // Sync cookies with localStorage for middleware
           document.cookie = `${AUTH_CONFIG.tokenKey}=${token}; path=/; max-age=86400; SameSite=Lax`;
           document.cookie = `${AUTH_CONFIG.userKey}=${encodeURIComponent(storedUser)}; path=/; max-age=86400; SameSite=Lax`;
           document.cookie = `${AUTH_CONFIG.tenantKey}=${encodeURIComponent(storedTenant)}; path=/; max-age=86400; SameSite=Lax`;
-          
+
           setUser(userData);
           setTenant(tenantData);
         } catch (error) {
@@ -68,7 +93,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           document.cookie = `${AUTH_CONFIG.tenantKey}=; path=/; max-age=0`;
         }
       }
-      
+
       setLoading(false);
     };
 
@@ -79,12 +104,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const { access_token, user, tenant } = await authService.login(email, password);
 
-      // Set localStorage for client-side access
       localStorage.setItem(AUTH_CONFIG.tokenKey, access_token);
       localStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(user));
       localStorage.setItem(AUTH_CONFIG.tenantKey, JSON.stringify(tenant));
 
-      // Set cookies for middleware access
       document.cookie = `${AUTH_CONFIG.tokenKey}=${access_token}; path=/; max-age=86400; SameSite=Lax`;
       document.cookie = `${AUTH_CONFIG.userKey}=${encodeURIComponent(JSON.stringify(user))}; path=/; max-age=86400; SameSite=Lax`;
       document.cookie = `${AUTH_CONFIG.tenantKey}=${encodeURIComponent(JSON.stringify(tenant))}; path=/; max-age=86400; SameSite=Lax`;
@@ -102,12 +125,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const { access_token, user, tenant } = await authService.googleLogin(idToken);
 
-      // Set localStorage for client-side access
       localStorage.setItem(AUTH_CONFIG.tokenKey, access_token);
       localStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(user));
       localStorage.setItem(AUTH_CONFIG.tenantKey, JSON.stringify(tenant));
 
-      // Set cookies for middleware access
       document.cookie = `${AUTH_CONFIG.tokenKey}=${access_token}; path=/; max-age=86400; SameSite=Lax`;
       document.cookie = `${AUTH_CONFIG.userKey}=${encodeURIComponent(JSON.stringify(user))}; path=/; max-age=86400; SameSite=Lax`;
       document.cookie = `${AUTH_CONFIG.tenantKey}=${encodeURIComponent(JSON.stringify(tenant))}; path=/; max-age=86400; SameSite=Lax`;
@@ -122,21 +143,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = () => {
-    // Clear localStorage
     localStorage.removeItem(AUTH_CONFIG.tokenKey);
     localStorage.removeItem(AUTH_CONFIG.userKey);
     localStorage.removeItem(AUTH_CONFIG.tenantKey);
-    
-    // Clear cookies
+
     document.cookie = `${AUTH_CONFIG.tokenKey}=; path=/; max-age=0`;
     document.cookie = `${AUTH_CONFIG.userKey}=; path=/; max-age=0`;
     document.cookie = `${AUTH_CONFIG.tenantKey}=; path=/; max-age=0`;
-    
+
     setUser(null);
     setTenant(null);
     toast.info('You have been logged out.');
     router.push(FRONTEND_ROUTES.LOGIN);
   };
+
+  // ─── Derived RBAC state ─────────────────────────────────────────────────────
+
+  const { roles, permissions, locationScope } = extractRbacFromUser(user);
+  const superAdmin = roles.includes('SUPER_ADMIN');
+  const admin = superAdmin || roles.includes('ADMIN');
+
+  const hasPermission = useCallback(
+    (code: string): boolean => {
+      if (superAdmin) return true;
+      return permissions.includes(code);
+    },
+    [superAdmin, permissions],
+  );
+
+  const hasRole = useCallback(
+    (role: string): boolean => roles.includes(role),
+    [roles],
+  );
 
   return (
     <AuthContext.Provider
@@ -148,6 +186,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         googleLogin,
         logout,
         isAuthenticated: !!user,
+        roles,
+        permissions,
+        locationScope,
+        hasPermission,
+        hasRole,
+        isSuperAdmin: superAdmin,
+        isAdmin: admin,
       }}
     >
       {children}

@@ -145,9 +145,19 @@ export const API_CONFIG = {
             update: (env: string, id: string) => `/billing/tariffs/${id}?env=${env}`,
             delete: (id: string) => `/billing/tariffs/${id}`,
             estimate: "/billing/estimate",
-            calculateSessionCost: (id: string) => `/billing/sessions/${id}/calculate`,
         },
         contact: "/contact",
+        rbac: {
+            roles: '/rbac/roles',
+            roleById: (id: string) => `/rbac/roles/${id}`,
+            rolePermissions: (id: string) => `/rbac/roles/${id}/permissions`,
+            permissions: '/rbac/permissions',
+            userRoles: (userId: string) => `/rbac/users/${userId}/roles`,
+            userRoleById: (userId: string, roleId: string) => `/rbac/users/${userId}/roles/${roleId}`,
+            userLocations: (userId: string) => `/rbac/users/${userId}/locations`,
+            userLocationById: (userId: string, locationId: string) => `/rbac/users/${userId}/locations/${locationId}`,
+            userPermissions: (userId: string) => `/rbac/users/${userId}/permissions`,
+        },
         partner: {
             auth: {
                 token: "/partner/auth/token",
@@ -218,6 +228,11 @@ export const FRONTEND_ROUTES = {
     LANDING_PAGE_FOUR: "/landing-four",
     API_DOCS: "/docs",
     REPORTS: "/reports",
+    RBAC_ROLES: "/rbac/roles",
+    RBAC_ROLE_NEW: "/rbac/roles/new",
+    RBAC_ROLE_EDIT: (id: string) => `/rbac/roles/${id}/edit`,
+    RBAC_ROLE_DETAIL: (id: string) => `/rbac/roles/${id}`,
+    RBAC_USER: (userId: string) => `/rbac/users/${userId}`,
 }
 
 export const AUTH_CONFIG = {

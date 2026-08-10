@@ -18,7 +18,9 @@ import {
   ShieldAlert,
   Loader2,
   Trash2,
+  Key,
 } from 'lucide-react';
+import Link from 'next/link';
 import { useInviteUser } from '@/hooks/post/useAuthMutations';
 import { useDeleteUser } from '@/hooks/delete/useUserMutations';
 import { staggerContainer, staggerItem } from '@/lib/motion';
@@ -28,14 +30,18 @@ import { formatDate } from '@/lib/date';
 import { UserInvitationModal } from '../components/UserInvitationModal';
 import { StatCard } from '../../dashboard/components/StatCard';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
+import { DEFAULT_PAGE_SIZE, FRONTEND_ROUTES } from '@/constants/constants';
 import { ActionIconButton } from '@/components/shared/ActionIconButton';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRoles } from '@/hooks/get/useRbac';
 
 export function UsersContainer() {
+  const { isAdmin, isSuperAdmin } = useAuth();
   const { data: users, isLoading, error } = useUsers();
   const inviteUser = useInviteUser();
   const deleteUser = useDeleteUser();
+  const { data: allRoles } = useRoles();
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
 
@@ -134,14 +140,27 @@ export function UsersContainer() {
 
           return (
             <div className="flex items-center gap-2">
+              {(isAdmin || isSuperAdmin) && (
+                <Link href={FRONTEND_ROUTES.RBAC_USER(user.id)}>
+                  <ActionIconButton
+                    tooltip="Access Control"
+                    tone="primary"
+                    icon={<Key className="h-3 w-3" />}
+                  />
+                </Link>
+              )}
               <ActionIconButton
                 tooltip="Resend Invitation"
                 tone="primary"
                 disabled={!isPending || inviteUser.isPending}
                 onClick={() => {
+                  const userRoleName = user.role === 'super_admin' ? 'SUPER_ADMIN' : 
+                                       user.role === 'operator' ? 'SITE_MANAGER' : 'ADMIN';
+                  const targetRoleId = allRoles?.find(r => r.name === userRoleName)?.id || '';
+
                   inviteUser.mutate({
                     email: user.email,
-                    role: 'admin',
+                    roleId: targetRoleId,
                   });
                 }}
                 icon={inviteUser.isPending ? (
@@ -161,7 +180,7 @@ export function UsersContainer() {
         },
       },
     ],
-    [inviteUser]
+    [inviteUser, isAdmin, isSuperAdmin]
   );
 
   if (error) {
@@ -308,9 +327,13 @@ export function UsersContainer() {
                       disabled={!isPending || inviteUser.isPending}
                       className="h-8 px-3 rounded-xl font-bold text-xs"
                       onClick={() => {
+                        const userRoleName = user.role === 'super_admin' ? 'SUPER_ADMIN' : 
+                                             user.role === 'operator' ? 'SITE_MANAGER' : 'ADMIN';
+                        const targetRoleId = allRoles?.find(r => r.name === userRoleName)?.id || '';
+
                         inviteUser.mutate({
                           email: user.email,
-                          role: 'admin',
+                          roleId: targetRoleId,
                         });
                       }}
                     >
