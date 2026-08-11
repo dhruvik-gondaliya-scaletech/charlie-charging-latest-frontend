@@ -8,7 +8,10 @@ import { UserEffectivePermissions } from '@/features/rbac/components/UserEffecti
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { Location } from '@/types';
-import { Shield, MapPin, Key } from 'lucide-react';
+import { Shield, MapPin, Key, ArrowLeft, User } from 'lucide-react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { FRONTEND_ROUTES } from '@/constants/constants';
 
 interface UserRbacContainerProps {
   userId: string;
@@ -31,59 +34,85 @@ export function UserRbacContainer({ userId }: UserRbacContainerProps) {
     : ((locationsResponse as { data?: Location[] } | undefined)?.data ?? []);
 
   return (
-    <Tabs defaultValue={isSuperAdmin ? 'roles' : 'locations'} className="w-full">
-      <TabsList className="bg-white/5 border border-white/10 p-1 rounded-lg">
-        {isSuperAdmin && (
-          <TabsTrigger
-            value="roles"
-            className="data-[state=active]:bg-purple-600 data-[state=active]:text-white text-white/60 gap-2"
-          >
-            <Shield className="h-4 w-4" />
-            Roles
-          </TabsTrigger>
-        )}
-        <TabsTrigger
-          value="locations"
-          className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-white/60 gap-2"
-        >
-          <MapPin className="h-4 w-4" />
-          Locations
-        </TabsTrigger>
-        <TabsTrigger
-          value="permissions"
-          className="data-[state=active]:bg-slate-600 data-[state=active]:text-white text-white/60 gap-2"
-        >
-          <Key className="h-4 w-4" />
-          Permissions
-        </TabsTrigger>
-      </TabsList>
+    <div className="max-w-3xl mx-auto p-6 lg:p-8 space-y-8">
+      {/* Back */}
+      <Link href={FRONTEND_ROUTES.USERS}>
+        <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground -ml-2">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Users
+        </Button>
+      </Link>
 
-      {isSuperAdmin && (
-        <TabsContent value="roles" className="mt-6">
-          <UserRolesPanel
-            userId={userId}
-            assignments={userRoles ?? []}
-            availableRoles={allRoles ?? []}
-            isLoading={rolesLoading}
-          />
-        </TabsContent>
-      )}
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted border border-border">
+          <User className="h-6 w-6 text-muted-foreground" />
+        </div>
+        <div>
+          <h1 className="text-xl font-bold text-foreground">Access Control</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Manage roles and location scope for this user
+          </p>
+        </div>
+      </div>
 
-      <TabsContent value="locations" className="mt-6">
-        <UserLocationsPanel
-          userId={userId}
-          assignments={userLocations ?? []}
-          availableLocations={allLocations}
-          isLoading={locationsLoading}
-        />
-      </TabsContent>
+      {/* RBAC tabs */}
+      <div className="rounded-xl border border-border bg-card/30 backdrop-blur-sm p-6">
+        <Tabs defaultValue={isSuperAdmin ? 'roles' : 'locations'} className="w-full">
+          <TabsList className="bg-muted border border-border p-1 rounded-lg">
+            {isSuperAdmin && (
+              <TabsTrigger
+                value="roles"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground gap-2"
+              >
+                <Shield className="h-4 w-4" />
+                Roles
+              </TabsTrigger>
+            )}
+            <TabsTrigger
+              value="locations"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground gap-2"
+            >
+              <MapPin className="h-4 w-4" />
+              Locations
+            </TabsTrigger>
+            <TabsTrigger
+              value="permissions"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground gap-2"
+            >
+              <Key className="h-4 w-4" />
+              Permissions
+            </TabsTrigger>
+          </TabsList>
 
-      <TabsContent value="permissions" className="mt-6">
-        <UserEffectivePermissions
-          permissions={effectivePermissions?.permissions ?? []}
-          isLoading={permissionsLoading}
-        />
-      </TabsContent>
-    </Tabs>
+          {isSuperAdmin && (
+            <TabsContent value="roles" className="mt-6">
+              <UserRolesPanel
+                userId={userId}
+                assignments={userRoles ?? []}
+                availableRoles={allRoles ?? []}
+                isLoading={rolesLoading}
+              />
+            </TabsContent>
+          )}
+
+          <TabsContent value="locations" className="mt-6">
+            <UserLocationsPanel
+              userId={userId}
+              assignments={userLocations ?? []}
+              availableLocations={allLocations}
+              isLoading={locationsLoading}
+            />
+          </TabsContent>
+
+          <TabsContent value="permissions" className="mt-6">
+            <UserEffectivePermissions
+              permissions={effectivePermissions?.permissions ?? []}
+              isLoading={permissionsLoading}
+            />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
   );
 }

@@ -72,7 +72,7 @@ export function UserLocationsPanel({
               {unassigned.map((loc) => (
                 <SelectItem key={loc.id} value={loc.id} className="text-white">
                   <div className="flex items-center gap-2">
-                    <MapPin className="h-3.5 w-3.5 text-blue-400" />
+                    <MapPin className="h-3.5 w-3.5 text-primary" />
                     <span>{loc.name}</span>
                     {loc.city && (
                       <span className="text-white/40 text-xs">— {loc.city}</span>
@@ -85,7 +85,7 @@ export function UserLocationsPanel({
           <Button
             onClick={handleAssign}
             disabled={!selectedLocationId || assignMutation.isPending}
-            className="bg-blue-600 hover:bg-blue-700 text-white shrink-0"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground shrink-0"
           >
             {assignMutation.isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -108,8 +108,8 @@ export function UserLocationsPanel({
                 className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-3"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 border border-blue-500/20">
-                    <MapPin className="h-4 w-4 text-blue-400" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
+                    <MapPin className="h-4 w-4 text-primary" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-white">

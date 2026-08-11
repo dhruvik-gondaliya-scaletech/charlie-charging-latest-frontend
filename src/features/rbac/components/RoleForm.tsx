@@ -49,7 +49,7 @@ export function RoleForm({ mode, defaultValues, onSubmit, isLoading }: RoleFormP
                 <Input
                   {...field}
                   placeholder="e.g. Billing Manager"
-                  className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-purple-500/60"
+                  className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-primary/60"
                   aria-invalid={!!form.formState.errors.name}
                 />
               </FormControl>
@@ -72,7 +72,7 @@ export function RoleForm({ mode, defaultValues, onSubmit, isLoading }: RoleFormP
                   {...field}
                   placeholder="Describe what this role can do…"
                   rows={3}
-                  className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-purple-500/60 resize-none"
+                  className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-primary/60 resize-none"
                 />
               </FormControl>
               <FormMessage />
@@ -83,7 +83,7 @@ export function RoleForm({ mode, defaultValues, onSubmit, isLoading }: RoleFormP
         <Button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
         >
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {mode === 'create' ? 'Create Role' : 'Save Changes'}

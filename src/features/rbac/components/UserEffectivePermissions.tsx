@@ -41,7 +41,7 @@ export function UserEffectivePermissions({
   return (
     <div className="space-y-4">
       {/* Info banner */}
-      <div className="flex items-start gap-2 rounded-lg border border-blue-500/30 bg-blue-500/10 px-4 py-3 text-sm text-blue-300">
+      <div className="flex items-start gap-2 rounded-lg border border-primary/20 bg-primary/10 px-4 py-3 text-sm text-primary">
         <Info className="h-4 w-4 mt-0.5 shrink-0" />
         <span>
           These are the effective permissions granted by all assigned roles combined.

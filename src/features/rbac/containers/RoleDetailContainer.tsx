@@ -28,7 +28,7 @@ export function RoleDetailContainer({ roleId, editable = false }: RoleDetailCont
 
   if (roleLoading || permsLoading) {
     return (
-      <div className="flex items-center justify-center py-16 text-white/40">
+      <div className="flex items-center justify-center py-16 text-muted-foreground/60">
         <Loader2 className="h-6 w-6 animate-spin mr-3" />
         Loading role details…
       </div>
@@ -38,8 +38,8 @@ export function RoleDetailContainer({ roleId, editable = false }: RoleDetailCont
   if (roleError || !role) {
     return (
       <div className="flex flex-col items-center gap-4 py-16 text-center">
-        <p className="text-white/60">Failed to load role. Please try again.</p>
-        <Button variant="ghost" onClick={() => refetch()} className="text-white/60">
+        <p className="text-muted-foreground">Failed to load role. Please try again.</p>
+        <Button variant="ghost" onClick={() => refetch()} className="text-muted-foreground">
           <RefreshCw className="mr-2 h-4 w-4" />
           Retry
         </Button>
@@ -59,13 +59,13 @@ export function RoleDetailContainer({ roleId, editable = false }: RoleDetailCont
     <div className="space-y-6">
       {editable && !role.isSystem && (
         <div className="flex items-center justify-between">
-          <p className="text-sm text-white/50">
+          <p className="text-sm text-muted-foreground">
             Toggle permissions then click Save to apply.
           </p>
           <Button
             onClick={handleSave}
             disabled={assignMutation.isPending || selectedCodes === null}
-            className="bg-purple-600 hover:bg-purple-700 text-white"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             {assignMutation.isPending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -78,7 +78,7 @@ export function RoleDetailContainer({ roleId, editable = false }: RoleDetailCont
       )}
 
       {role.isSystem && editable && (
-        <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
+        <div className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
           System roles cannot be modified. Permissions are shown in read-only mode.
         </div>
       )}

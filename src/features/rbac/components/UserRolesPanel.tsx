@@ -75,7 +75,7 @@ export function UserRolesPanel({
           <Button
             onClick={handleAssign}
             disabled={!selectedRoleId || assignMutation.isPending}
-            className="bg-purple-600 hover:bg-purple-700 text-white shrink-0"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground shrink-0"
           >
             {assignMutation.isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />

@@ -109,7 +109,7 @@ export function PermissionMatrix({
                       editable && 'cursor-pointer hover:scale-[1.02]',
                       !editable && 'cursor-default',
                       isSelected
-                        ? 'bg-purple-500/20 border-purple-500/50 text-purple-300'
+                        ? 'bg-primary/20 border-primary/50 text-primary'
                         : 'bg-white/5 border-white/10 text-white/40',
                     )}
                     title={perm.description ?? perm.code}
