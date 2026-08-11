@@ -44,11 +44,11 @@ const mainNavItems = [
 ];
 
 const moreNavItems = [
-  { href: FRONTEND_ROUTES.REPORTS, label: 'Reports', icon: FileText, roles: ['viewer', 'site_manager', 'admin', 'super_admin'] },
+  { href: FRONTEND_ROUTES.REPORTS, label: 'Reports', icon: FileText, roles: ['viewer', 'admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.USERS, label: 'Operators', icon: Users, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.DRIVERS, label: 'Drivers', icon: User, roles: ['admin', 'super_admin'] },
+  { href: FRONTEND_ROUTES.DRIVERS, label: 'Drivers', icon: User, roles: ['site_manager', 'admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.ID_TAGS, label: 'ID Tags', icon: CreditCard, roles: ['site_manager', 'admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.TARIFF, label: 'Tariff', icon: Coins, roles: ['site_manager', 'admin', 'super_admin'] },
+  { href: FRONTEND_ROUTES.TARIFF, label: 'Tariff', icon: Coins, roles: ['admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.WEBHOOKS, label: 'Webhooks', icon: Webhook, roles: ['admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.RBAC_ROLES, label: 'Access Control', icon: Shield, roles: ['super_admin'] },
 ];
@@ -120,8 +120,19 @@ export function BottomNav() {
                 <DrawerDescription>Access all management features</DrawerDescription>
               </DrawerHeader>
               <div className="p-4 grid grid-cols-3 gap-4">
-                {moreNavItems.map((item) => {
-                  if (!canAccessRoute(item.roles)) return null;
+                {(() => {
+                  const isSiteManager = Array.isArray(roles) && roles.some(r => r.toUpperCase() === 'SITE_MANAGER');
+                  const allowedHrefsForSiteManager = [
+                    FRONTEND_ROUTES.DASHBOARD,
+                    FRONTEND_ROUTES.STATIONS,
+                    FRONTEND_ROUTES.LOCATIONS,
+                    FRONTEND_ROUTES.DRIVERS,
+                    FRONTEND_ROUTES.ID_TAGS,
+                  ];
+
+                  return moreNavItems.map((item) => {
+                    if (isSiteManager && !allowedHrefsForSiteManager.includes(item.href)) return null;
+                    if (!canAccessRoute(item.roles)) return null;
                   const Icon = item.icon;
                   const isActive = pathname.startsWith(item.href);
 
@@ -140,7 +151,8 @@ export function BottomNav() {
                       <span className="text-[10px] font-bold text-center">{item.label}</span>
                     </Link>
                   );
-                })}
+                  });
+                })()}
               </div>
               <Separator className="my-2" />
               <DrawerFooter>

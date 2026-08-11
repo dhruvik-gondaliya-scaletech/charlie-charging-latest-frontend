@@ -39,10 +39,10 @@ const navItems = [
   { href: FRONTEND_ROUTES.STATIONS, label: 'Stations', icon: Zap, roles: ['user', 'viewer', 'site_manager', 'admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.LOCATIONS, label: 'Locations', icon: MapPin, roles: ['user', 'viewer', 'site_manager', 'admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.USERS, label: 'Operators', icon: Users, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.DRIVERS, label: 'Drivers', icon: User, roles: ['admin', 'super_admin'] },
+  { href: FRONTEND_ROUTES.DRIVERS, label: 'Drivers', icon: User, roles: ['site_manager', 'admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.ID_TAGS, label: 'ID Tags', icon: CreditCard, roles: ['site_manager', 'admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.TARIFF, label: 'Tariff', icon: Coins, roles: ['site_manager', 'admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.REPORTS, label: 'Reports', icon: FileText, roles: ['viewer', 'site_manager', 'admin', 'super_admin'] },
+  { href: FRONTEND_ROUTES.TARIFF, label: 'Tariff', icon: Coins, roles: ['admin', 'super_admin'] },
+  { href: FRONTEND_ROUTES.REPORTS, label: 'Reports', icon: FileText, roles: ['viewer', 'admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.OCPI, label: 'OCPI Roaming', icon: Globe, roles: ['admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.WEBHOOKS, label: 'Webhooks', icon: Webhook, roles: ['admin', 'super_admin'] },
   { href: FRONTEND_ROUTES.RBAC_ROLES, label: 'Access Control', icon: Shield, roles: ['super_admin'] },
@@ -84,8 +84,19 @@ export function Sidebar() {
       <Separator />
 
       <nav className="flex-1 p-4 space-y-2">
-        {navItems.map((item) => {
-          if (!canAccessRoute(item.roles)) return null;
+        {(() => {
+          const isSiteManager = Array.isArray(roles) && roles.some(r => r.toUpperCase() === 'SITE_MANAGER');
+          const allowedHrefsForSiteManager = [
+            FRONTEND_ROUTES.DASHBOARD,
+            FRONTEND_ROUTES.STATIONS,
+            FRONTEND_ROUTES.LOCATIONS,
+            FRONTEND_ROUTES.DRIVERS,
+            FRONTEND_ROUTES.ID_TAGS,
+          ];
+
+          return navItems.map((item) => {
+            if (isSiteManager && !allowedHrefsForSiteManager.includes(item.href)) return null;
+            if (!canAccessRoute(item.roles)) return null;
 
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;
@@ -123,7 +134,8 @@ export function Sidebar() {
               )}
             </div>
           );
-        })}
+          });
+        })()}
       </nav>
 
       <Separator />
