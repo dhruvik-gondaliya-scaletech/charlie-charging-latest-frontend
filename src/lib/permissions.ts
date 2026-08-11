@@ -1,58 +1,15 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { AppPermission } from '@/types';
 
-// ─── Permission Codes (mirrors backend PERMISSIONS constant) ─────────────────
+// ─── Permission Codes ────────────────────────────────────────────────────────
 
-export const PERMISSIONS = {
-  // Location
-  LOCATION_READ: 'location.read',
-  LOCATION_CREATE: 'location.create',
-  LOCATION_UPDATE: 'location.update',
-  LOCATION_DELETE: 'location.delete',
-  // Station
-  STATION_READ: 'station.read',
-  STATION_CREATE: 'station.create',
-  STATION_UPDATE: 'station.update',
-  STATION_DELETE: 'station.delete',
-  // Connector
-  CONNECTOR_READ: 'connector.read',
-  CONNECTOR_UPDATE: 'connector.update',
-  // Session
-  SESSION_READ: 'session.read',
-  // OCPP
-  OCPP_REMOTE_START: 'ocpp.remote_start',
-  OCPP_REMOTE_STOP: 'ocpp.remote_stop',
-  OCPP_UNLOCK_CONNECTOR: 'ocpp.unlock_connector',
-  OCPP_RESET: 'ocpp.reset',
-  OCPP_CHANGE_CONFIG: 'ocpp.change_config',
-  // Users
-  USERS_READ: 'users.read',
-  USERS_INVITE: 'users.invite',
-  USERS_UPDATE: 'users.update',
-  USERS_DELETE: 'users.delete',
-  USERS_ASSIGN_ROLE: 'users.assign_role',
-  USERS_ASSIGN_LOCATION: 'users.assign_location',
-  // Reports
-  REPORTS_READ: 'reports.read',
-  // Tariff
-  TARIFF_READ: 'tariff.read',
-  TARIFF_CREATE: 'tariff.create',
-  TARIFF_UPDATE: 'tariff.update',
-  TARIFF_DELETE: 'tariff.delete',
-  // Drivers
-  DRIVER_READ: 'driver.read',
-  DRIVER_CREATE: 'driver.create',
-  DRIVER_UPDATE: 'driver.update',
+export const PERMISSIONS = AppPermission;
 
-  // ID Tags
-  ID_TAG_READ: 'id_tag.read',
-  ID_TAG_CREATE: 'id_tag.create',
-  ID_TAG_UPDATE: 'id_tag.update',
-  ID_TAG_DELETE: 'id_tag.delete',
-} as const;
+export type PermissionCode = AppPermission;
 
-export type PermissionCode = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
+export { AppPermission };
 
 // ─── Roles ───────────────────────────────────────────────────────────────────
 
@@ -89,16 +46,41 @@ export const PERMISSION_MODULES = [
 
 export type PermissionModule = (typeof PERMISSION_MODULES)[number];
 
-// ─── Hooks ───────────────────────────────────────────────────────────────────
+// ─── Permission Utilities ───────────────────────────────────────────────────
 
 /**
- * Returns true if the current user has the given permission code.
- * SUPER_ADMIN always returns true (backend also bypasses).
+ * Flattens module permissions from the API response into a list of AppPermission strings (e.g., 'station.read')
  */
+export const flattenModulePermissions = (
+  modulePermissions?: Record<string, string[]>
+): AppPermission[] => {
+  if (!modulePermissions) return [];
+  return Object.entries(modulePermissions).flatMap(([moduleName, actions]) =>
+    actions.map((action) => `${moduleName}.${action}` as AppPermission)
+  );
+};
+
+/**
+ * Checks if the module permissions map contains a given permission code (e.g., 'station.read')
+ */
+export const checkModulePermission = (
+  modulePermissions: Record<string, string[]> | undefined,
+  code: string | AppPermission
+): boolean => {
+  if (!modulePermissions) return false;
+  const parts = code.split('.');
+  if (parts.length !== 2) return false;
+  const [moduleName, action] = parts;
+  return modulePermissions[moduleName]?.includes(action) ?? false;
+};
+
+// ─── Hooks ───────────────────────────────────────────────────────────────────
+
 export const useHasPermission = (code: PermissionCode | string): boolean => {
   const { roles, permissions } = useAuth();
   if (roles.includes(ROLES.SUPER_ADMIN)) return true;
-  return permissions.includes(code);
+  if (roles.includes(ROLES.ADMIN) && code !== AppPermission.TENANTS_READ) return true;
+  return permissions.includes(code as AppPermission);
 };
 
 /**

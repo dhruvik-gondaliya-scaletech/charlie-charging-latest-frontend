@@ -33,46 +33,37 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { AnimatedModal } from './AnimatedModal';
 import { BrandLogo } from './BrandLogo';
+import { AppPermission } from '@/types';
 
 const navItems = [
-  { href: FRONTEND_ROUTES.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard, roles: ['user', 'viewer', 'site_manager', 'admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.STATIONS, label: 'Stations', icon: Zap, roles: ['user', 'viewer', 'site_manager', 'admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.LOCATIONS, label: 'Locations', icon: MapPin, roles: ['user', 'viewer', 'site_manager', 'admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.USERS, label: 'Operators', icon: Users, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.DRIVERS, label: 'Drivers', icon: User, roles: ['site_manager', 'admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.ID_TAGS, label: 'ID Tags', icon: CreditCard, roles: ['site_manager', 'admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.TARIFF, label: 'Tariff', icon: Coins, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.REPORTS, label: 'Reports', icon: FileText, roles: ['viewer', 'admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.OCPI, label: 'OCPI Roaming', icon: Globe, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.WEBHOOKS, label: 'Webhooks', icon: Webhook, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.RBAC_ROLES, label: 'Access Control', icon: Shield, roles: ['super_admin'] },
-  { href: FRONTEND_ROUTES.API_DOCS, label: 'API Docs', icon: Share2, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.TENANTS, label: 'Tenants', icon: Building2, roles: ['super_admin'] },
+  { href: FRONTEND_ROUTES.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard },
+  { href: FRONTEND_ROUTES.STATIONS, label: 'Stations', icon: Zap, permission: AppPermission.STATION_READ },
+  { href: FRONTEND_ROUTES.LOCATIONS, label: 'Locations', icon: MapPin, permission: AppPermission.LOCATION_READ },
+  { href: FRONTEND_ROUTES.USERS, label: 'Operators', icon: Users, permission: AppPermission.USERS_READ },
+  { href: FRONTEND_ROUTES.DRIVERS, label: 'Drivers', icon: User, permission: AppPermission.DRIVER_READ },
+  { href: FRONTEND_ROUTES.ID_TAGS, label: 'ID Tags', icon: CreditCard, permission: AppPermission.ID_TAG_READ },
+  { href: FRONTEND_ROUTES.TARIFF, label: 'Tariff', icon: Coins, permission: AppPermission.TARIFF_READ },
+  { href: FRONTEND_ROUTES.REPORTS, label: 'Reports', icon: FileText, permission: AppPermission.REPORTS_READ },
+  { href: FRONTEND_ROUTES.OCPI, label: 'OCPI Roaming', icon: Globe, permission: AppPermission.OCPI_READ },
+  { href: FRONTEND_ROUTES.WEBHOOKS, label: 'Webhooks', icon: Webhook, permission: AppPermission.WEBHOOKS_READ },
+  { href: FRONTEND_ROUTES.RBAC_ROLES, label: 'Access Control', icon: Shield, permission: AppPermission.RBAC_READ },
+  { href: FRONTEND_ROUTES.API_DOCS, label: 'API Docs', icon: Share2, permission: AppPermission.API_DOCS_READ },
+  { href: FRONTEND_ROUTES.TENANTS, label: 'Tenants', icon: Building2, permission: AppPermission.TENANTS_READ },
 ];
 
 export function Sidebar() {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = React.useState(false);
   const pathname = usePathname();
-  const { user, logout, roles } = useAuth();
+  const { user, logout, roles, hasPermission } = useAuth();
 
   const getInitials = (firstName?: string | null, lastName?: string | null) => {
     if (!firstName || !lastName) return 'U';
     return `${firstName[0]}${lastName[0]}`.toUpperCase();
   };
 
-  const canAccessRoute = (requiredRoles: string[]) => {
-    if (!requiredRoles) return false;
-
-    if (Array.isArray(roles)) {
-      const uppercaseRoles = requiredRoles.map(r => r.toUpperCase());
-      const hasMatch = roles.some(role => uppercaseRoles.includes(role));
-      if (hasMatch) return true;
-    }
-
-    if (user?.role) {
-      return requiredRoles.includes(user.role.toLowerCase());
-    }
-    return false;
+  const canAccessRoute = (item: typeof navItems[number]) => {
+    if (!item.permission) return true;
+    return hasPermission(item.permission);
   };
 
   return (
@@ -96,44 +87,44 @@ export function Sidebar() {
 
           return navItems.map((item) => {
             if (isSiteManager && !allowedHrefsForSiteManager.includes(item.href)) return null;
-            if (!canAccessRoute(item.roles)) return null;
+            if (!canAccessRoute(item)) return null;
 
-          const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
-          const Icon = item.icon;
+            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const Icon = item.icon;
 
-          const navContent = (
-            <motion.div
-              whileHover={{ x: 4 }}
-              whileTap={{ scale: 0.98 }}
-              className={cn(
-                'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
-                isActive
-                  ? 'bg-primary text-primary-foreground'
-                  : 'hover:bg-accent hover:text-accent-foreground'
-              )}
-            >
-              <Icon className="h-5 w-5" />
-              <span className="font-medium">{item.label}</span>
-            </motion.div>
-          );
+            const navContent = (
+              <motion.div
+                whileHover={{ x: 4 }}
+                whileTap={{ scale: 0.98 }}
+                className={cn(
+                  'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
+                  isActive
+                    ? 'bg-primary text-primary-foreground'
+                    : 'hover:bg-accent hover:text-accent-foreground'
+                )}
+              >
+                <Icon className="h-5 w-5" />
+                <span className="font-medium">{item.label}</span>
+              </motion.div>
+            );
 
-          return (
-            <div key={item.href}>
-              {item.href === FRONTEND_ROUTES.API_DOCS ? (
-                <a
-                  href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {navContent}
-                </a>
-              ) : (
-                <Link href={item.href} prefetch={false}>
-                  {navContent}
-                </Link>
-              )}
-            </div>
-          );
+            return (
+              <div key={item.href}>
+                {item.href === FRONTEND_ROUTES.API_DOCS ? (
+                  <a
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {navContent}
+                  </a>
+                ) : (
+                  <Link href={item.href} prefetch={false}>
+                    {navContent}
+                  </Link>
+                )}
+              </div>
+            );
           });
         })()}
       </nav>

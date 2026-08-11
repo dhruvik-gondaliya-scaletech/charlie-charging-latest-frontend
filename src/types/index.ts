@@ -180,6 +180,70 @@ export interface TenantListResponse {
 
 // ─── RBAC Types ──────────────────────────────────────────────────────────────
 
+export enum AppPermission {
+  // OCPP
+  OCPP_RESET = 'ocpp.reset',
+  OCPP_REMOTE_START = 'ocpp.remote_start',
+  OCPP_REMOTE_STOP = 'ocpp.remote_stop',
+  OCPP_UNLOCK_CONNECTOR = 'ocpp.unlock_connector',
+  OCPP_CHANGE_CONFIG = 'ocpp.change_config',
+
+  // ID Tag
+  ID_TAG_UPDATE = 'id_tag.update',
+  ID_TAG_CREATE = 'id_tag.create',
+  ID_TAG_DELETE = 'id_tag.delete',
+  ID_TAG_READ = 'id_tag.read',
+
+  // Driver
+  DRIVER_UPDATE = 'driver.update',
+  DRIVER_CREATE = 'driver.create',
+  DRIVER_READ = 'driver.read',
+
+  // Station
+  STATION_READ = 'station.read',
+  STATION_DELETE = 'station.delete',
+  STATION_UPDATE = 'station.update',
+  STATION_CREATE = 'station.create',
+
+  // Connector
+  CONNECTOR_READ = 'connector.read',
+  CONNECTOR_UPDATE = 'connector.update',
+
+  // Tariff
+  TARIFF_DELETE = 'tariff.delete',
+  TARIFF_CREATE = 'tariff.create',
+  TARIFF_UPDATE = 'tariff.update',
+  TARIFF_READ = 'tariff.read',
+
+  // Users
+  USERS_ASSIGN_ROLE = 'users.assign_role',
+  USERS_ASSIGN_LOCATION = 'users.assign_location',
+  USERS_DELETE = 'users.delete',
+  USERS_UPDATE = 'users.update',
+  USERS_READ = 'users.read',
+  USERS_INVITE = 'users.invite',
+
+  // Location
+  LOCATION_DELETE = 'location.delete',
+  LOCATION_CREATE = 'location.create',
+  LOCATION_UPDATE = 'location.update',
+  LOCATION_READ = 'location.read',
+
+  // Session
+  SESSION_READ = 'session.read',
+
+  // Reports
+  REPORTS_UPDATE = 'reports.update',
+  REPORTS_READ = 'reports.read',
+
+  // Custom/Platform administration permissions
+  OCPI_READ = 'ocpi.read',
+  WEBHOOKS_READ = 'webhooks.read',
+  RBAC_READ = 'rbac.read',
+  API_DOCS_READ = 'api_docs.read',
+  TENANTS_READ = 'tenants.read',
+}
+
 export interface Permission {
   id: string;
   module: string;
@@ -213,7 +277,7 @@ export interface UserLocationAssignment {
 
 export interface UserEffectivePermissions {
   userId: string;
-  permissions: string[];
+  permissions: AppPermission[];
 }
 
 // ─── User ─────────────────────────────────────────────────────────────────────
@@ -227,12 +291,13 @@ export interface User {
   phoneNumber?: string | null;
   isEmailVerified: boolean;
   isActive: boolean;
-  createdAt: string;
-  tenantId: string;
+  createdAt?: string;
+  tenantId?: string;
   tenant?: Tenant;
   // RBAC JWT fields (populated from token payload)
-  roles: string[];        // e.g. ['ADMIN']
-  permissions: string[];  // e.g. ['station.read', 'session.read']
+  roles?: string[];        // e.g. ['ADMIN']
+  permissions?: AppPermission[];  // e.g. ['station.read', 'session.read']
+  modulePermissions?: Record<string, string[]>;
   locations: string[];    // location UUIDs; empty = unrestricted
 }
 

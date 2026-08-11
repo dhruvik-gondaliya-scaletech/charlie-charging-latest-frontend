@@ -124,12 +124,15 @@ export function UsersContainer() {
       {
         accessorKey: 'createdAt',
         header: 'Onboarding Date',
-        cell: ({ row }) => (
-          <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground/80 tracking-tight">
-            <Calendar className="h-3.5 w-3.5 opacity-40" />
-            {formatDate(row.getValue('createdAt'))}
-          </div>
-        ),
+        cell: ({ row }) => {
+          const val = row.getValue('createdAt') as string | undefined;
+          return (
+            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground/80 tracking-tight">
+              <Calendar className="h-3.5 w-3.5 opacity-40" />
+              {val ? formatDate(val) : 'N/A'}
+            </div>
+          );
+        },
       },
       {
         id: 'actions',
@@ -316,7 +319,7 @@ export function UsersContainer() {
                     </div>
                     <div className="space-y-1">
                       <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Added</span>
-                      <p className="text-sm font-semibold">{formatDate(user.createdAt)}</p>
+                      <p className="text-sm font-semibold">{user.createdAt ? formatDate(user.createdAt) : 'N/A'}</p>
                     </div>
                   </div>
 

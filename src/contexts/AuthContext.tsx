@@ -3,10 +3,11 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { AUTH_CONFIG, FRONTEND_ROUTES } from '@/constants/constants';
-import { User, Tenant } from '@/types';
+import { User, Tenant, AppPermission } from '@/types';
 import { authService } from '@/services/auth.service';
 import { toast } from 'sonner';
 import { useMe } from '@/hooks/get/useMe';
+import { flattenModulePermissions } from '@/lib/permissions';
 
 interface AuthContextType {
   user: User | null;
@@ -18,9 +19,9 @@ interface AuthContextType {
   isAuthenticated: boolean;
   // RBAC fields
   roles: string[];
-  permissions: string[];
+  permissions: AppPermission[];
   locationScope: string[];          // empty = unrestricted (ADMIN / SUPER_ADMIN)
-  hasPermission: (code: string) => boolean;
+  hasPermission: (code: AppPermission | string) => boolean;
   hasRole: (role: string) => boolean;
   isSuperAdmin: boolean;
   isAdmin: boolean;
@@ -47,11 +48,18 @@ export const useAuth = () => useContext(AuthContext);
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const extractRbacFromUser = (user: User | null) => ({
-  roles: user?.roles ?? [],
-  permissions: user?.permissions ?? [],
-  locationScope: user?.locations ?? [],
-});
+const extractRbacFromUser = (user: User | null) => {
+  const roles = user?.roles ?? (user?.role ? [user.role] : []);
+  const permissions = user?.modulePermissions
+    ? flattenModulePermissions(user.modulePermissions)
+    : (user?.permissions ?? []);
+
+  return {
+    roles,
+    permissions,
+    locationScope: user?.locations ?? [],
+  };
+};
 
 // ─── Provider ────────────────────────────────────────────────────────────────
 
@@ -200,11 +208,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const admin = superAdmin || roles.includes('ADMIN');
 
   const hasPermission = useCallback(
-    (code: string): boolean => {
+    (code: AppPermission | string): boolean => {
       if (superAdmin) return true;
-      return permissions.includes(code);
+      if (admin && code !== AppPermission.TENANTS_READ) return true;
+      return permissions.includes(code as AppPermission);
     },
-    [superAdmin, permissions],
+    [superAdmin, admin, permissions],
   );
 
   const hasRole = useCallback(
