@@ -14,6 +14,7 @@ export const API_CONFIG = {
             resetPassword: "/auth/reset-password",
             getCredentials: "/auth/get-credentials",
             documentationToken: "/auth/documentation-token",
+            me: "/auth/me",
         },
         users: {
             base: "/users",

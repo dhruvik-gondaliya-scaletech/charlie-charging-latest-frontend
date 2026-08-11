@@ -6,6 +6,7 @@ import { AUTH_CONFIG, FRONTEND_ROUTES } from '@/constants/constants';
 import { User, Tenant } from '@/types';
 import { authService } from '@/services/auth.service';
 import { toast } from 'sonner';
+import { useMe } from '@/hooks/get/useMe';
 
 interface AuthContextType {
   user: User | null;
@@ -102,42 +103,54 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     try {
-      const { access_token, user, tenant } = await authService.login(email, password);
+      const { access_token, tenant } = await authService.login(email, password);
 
       localStorage.setItem(AUTH_CONFIG.tokenKey, access_token);
-      localStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(user));
+      document.cookie = `${AUTH_CONFIG.tokenKey}=${access_token}; path=/; max-age=86400; SameSite=Lax`;
+
+      // Fetch the full profile details including roles & permissions
+      const fullUser = await authService.getMe();
+
+      localStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(fullUser));
       localStorage.setItem(AUTH_CONFIG.tenantKey, JSON.stringify(tenant));
 
-      document.cookie = `${AUTH_CONFIG.tokenKey}=${access_token}; path=/; max-age=86400; SameSite=Lax`;
-      document.cookie = `${AUTH_CONFIG.userKey}=${encodeURIComponent(JSON.stringify(user))}; path=/; max-age=86400; SameSite=Lax`;
+      document.cookie = `${AUTH_CONFIG.userKey}=${encodeURIComponent(JSON.stringify(fullUser))}; path=/; max-age=86400; SameSite=Lax`;
       document.cookie = `${AUTH_CONFIG.tenantKey}=${encodeURIComponent(JSON.stringify(tenant))}; path=/; max-age=86400; SameSite=Lax`;
 
-      setUser(user);
+      setUser(fullUser);
       setTenant(tenant);
       toast.success('Login successful!');
       router.push(FRONTEND_ROUTES.DASHBOARD);
     } catch (error) {
+      localStorage.removeItem(AUTH_CONFIG.tokenKey);
+      document.cookie = `${AUTH_CONFIG.tokenKey}=; path=/; max-age=0`;
       throw error;
     }
   };
 
   const googleLogin = async (idToken: string) => {
     try {
-      const { access_token, user, tenant } = await authService.googleLogin(idToken);
+      const { access_token, tenant } = await authService.googleLogin(idToken);
 
       localStorage.setItem(AUTH_CONFIG.tokenKey, access_token);
-      localStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(user));
+      document.cookie = `${AUTH_CONFIG.tokenKey}=${access_token}; path=/; max-age=86400; SameSite=Lax`;
+
+      // Fetch the full profile details including roles & permissions
+      const fullUser = await authService.getMe();
+
+      localStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(fullUser));
       localStorage.setItem(AUTH_CONFIG.tenantKey, JSON.stringify(tenant));
 
-      document.cookie = `${AUTH_CONFIG.tokenKey}=${access_token}; path=/; max-age=86400; SameSite=Lax`;
-      document.cookie = `${AUTH_CONFIG.userKey}=${encodeURIComponent(JSON.stringify(user))}; path=/; max-age=86400; SameSite=Lax`;
+      document.cookie = `${AUTH_CONFIG.userKey}=${encodeURIComponent(JSON.stringify(fullUser))}; path=/; max-age=86400; SameSite=Lax`;
       document.cookie = `${AUTH_CONFIG.tenantKey}=${encodeURIComponent(JSON.stringify(tenant))}; path=/; max-age=86400; SameSite=Lax`;
 
-      setUser(user);
+      setUser(fullUser);
       setTenant(tenant);
       toast.success('Google Login successful!');
       router.push(FRONTEND_ROUTES.DASHBOARD);
     } catch (error) {
+      localStorage.removeItem(AUTH_CONFIG.tokenKey);
+      document.cookie = `${AUTH_CONFIG.tokenKey}=; path=/; max-age=0`;
       throw error;
     }
   };
@@ -156,6 +169,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     toast.info('You have been logged out.');
     router.push(FRONTEND_ROUTES.LOGIN);
   };
+
+  // Keep profile, roles, and permissions in sync with the backend
+  const token = typeof window !== 'undefined' ? localStorage.getItem(AUTH_CONFIG.tokenKey) : null;
+  const { data: meUser, error: meError } = useMe({
+    enabled: !!token && !!user,
+  });
+
+  useEffect(() => {
+    if (meUser) {
+      setUser(meUser);
+      localStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(meUser));
+      document.cookie = `${AUTH_CONFIG.userKey}=${encodeURIComponent(JSON.stringify(meUser))}; path=/; max-age=86400; SameSite=Lax`;
+    }
+  }, [meUser]);
+
+  useEffect(() => {
+    if (meError) {
+      console.error('Error fetching latest user profile:', meError);
+      if ((meError as any).response?.status === 401) {
+        logout();
+      }
+    }
+  }, [meError]);
 
   // ─── Derived RBAC state ─────────────────────────────────────────────────────
 

@@ -73,6 +73,10 @@ class AuthService {
     return httpService.post(API_CONFIG.endpoints.auth.resetPassword, data);
   }
 
+  async getMe() {
+    return httpService.get<User>(API_CONFIG.endpoints.auth.me);
+  }
+
   async logout() {
     if (typeof window !== 'undefined') {
       localStorage.removeItem(AUTH_CONFIG.tokenKey);
