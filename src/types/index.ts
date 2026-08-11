@@ -199,6 +199,13 @@ export enum AppPermission {
   DRIVER_CREATE = 'driver.create',
   DRIVER_READ = 'driver.read',
 
+  // Webhook
+  WEBHOOK_READ = 'webhook.read',
+  WEBHOOK_RETRY = 'webhook.retry',
+  WEBHOOK_DELETE = 'webhook.delete',
+  WEBHOOK_UPDATE = 'webhook.update',
+  WEBHOOK_CREATE = 'webhook.create',
+
   // Station
   STATION_READ = 'station.read',
   STATION_DELETE = 'station.delete',
@@ -229,6 +236,11 @@ export enum AppPermission {
   LOCATION_UPDATE = 'location.update',
   LOCATION_READ = 'location.read',
 
+  // OCPI
+  OCPI_COMMAND = 'ocpi.command',
+  OCPI_READ = 'ocpi.read',
+  OCPI_MANAGE = 'ocpi.manage',
+
   // Session
   SESSION_READ = 'session.read',
 
@@ -237,8 +249,6 @@ export enum AppPermission {
   REPORTS_READ = 'reports.read',
 
   // Custom/Platform administration permissions
-  OCPI_READ = 'ocpi.read',
-  WEBHOOKS_READ = 'webhooks.read',
   RBAC_READ = 'rbac.read',
   API_DOCS_READ = 'api_docs.read',
   TENANTS_READ = 'tenants.read',

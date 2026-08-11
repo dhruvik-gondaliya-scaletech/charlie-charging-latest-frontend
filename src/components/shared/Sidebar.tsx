@@ -45,16 +45,16 @@ const navItems = [
   { href: FRONTEND_ROUTES.TARIFF, label: 'Tariff', icon: Coins, permission: AppPermission.TARIFF_READ },
   { href: FRONTEND_ROUTES.REPORTS, label: 'Reports', icon: FileText, permission: AppPermission.REPORTS_READ },
   { href: FRONTEND_ROUTES.OCPI, label: 'OCPI Roaming', icon: Globe, permission: AppPermission.OCPI_READ },
-  { href: FRONTEND_ROUTES.WEBHOOKS, label: 'Webhooks', icon: Webhook, permission: AppPermission.WEBHOOKS_READ },
-  { href: FRONTEND_ROUTES.RBAC_ROLES, label: 'Access Control', icon: Shield, permission: AppPermission.RBAC_READ },
+  { href: FRONTEND_ROUTES.WEBHOOKS, label: 'Webhooks', icon: Webhook, permission: AppPermission.WEBHOOK_READ },
+  { href: FRONTEND_ROUTES.RBAC_ROLES, label: 'Access Control', icon: Shield, permission: AppPermission.RBAC_READ, superAdminOnly: true },
   { href: FRONTEND_ROUTES.API_DOCS, label: 'API Docs', icon: Share2, permission: AppPermission.API_DOCS_READ },
-  { href: FRONTEND_ROUTES.TENANTS, label: 'Tenants', icon: Building2, permission: AppPermission.TENANTS_READ },
+  { href: FRONTEND_ROUTES.TENANTS, label: 'Tenants', icon: Building2, permission: AppPermission.TENANTS_READ, superAdminOnly: true },
 ];
 
 export function Sidebar() {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = React.useState(false);
   const pathname = usePathname();
-  const { user, logout, roles, hasPermission } = useAuth();
+  const { user, logout, hasPermission, isSuperAdmin } = useAuth();
 
   const getInitials = (firstName?: string | null, lastName?: string | null) => {
     if (!firstName || !lastName) return 'U';
@@ -62,6 +62,9 @@ export function Sidebar() {
   };
 
   const canAccessRoute = (item: typeof navItems[number]) => {
+    if ('superAdminOnly' in item && item.superAdminOnly) {
+      return isSuperAdmin;
+    }
     if (!item.permission) return true;
     return hasPermission(item.permission);
   };
@@ -75,58 +78,46 @@ export function Sidebar() {
       <Separator />
 
       <nav className="flex-1 p-4 space-y-2">
-        {(() => {
-          const isSiteManager = Array.isArray(roles) && roles.some(r => r.toUpperCase() === 'SITE_MANAGER');
-          const allowedHrefsForSiteManager = [
-            FRONTEND_ROUTES.DASHBOARD,
-            FRONTEND_ROUTES.STATIONS,
-            FRONTEND_ROUTES.LOCATIONS,
-            FRONTEND_ROUTES.DRIVERS,
-            FRONTEND_ROUTES.ID_TAGS,
-          ];
+        {navItems.map((item) => {
+          if (!canAccessRoute(item)) return null;
 
-          return navItems.map((item) => {
-            if (isSiteManager && !allowedHrefsForSiteManager.includes(item.href)) return null;
-            if (!canAccessRoute(item)) return null;
+          const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+          const Icon = item.icon;
 
-            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
-            const Icon = item.icon;
+          const navContent = (
+            <motion.div
+              whileHover={{ x: 4 }}
+              whileTap={{ scale: 0.98 }}
+              className={cn(
+                'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
+                isActive
+                  ? 'bg-primary text-primary-foreground'
+                  : 'hover:bg-accent hover:text-accent-foreground'
+              )}
+            >
+              <Icon className="h-5 w-5" />
+              <span className="font-medium">{item.label}</span>
+            </motion.div>
+          );
 
-            const navContent = (
-              <motion.div
-                whileHover={{ x: 4 }}
-                whileTap={{ scale: 0.98 }}
-                className={cn(
-                  'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
-                  isActive
-                    ? 'bg-primary text-primary-foreground'
-                    : 'hover:bg-accent hover:text-accent-foreground'
-                )}
-              >
-                <Icon className="h-5 w-5" />
-                <span className="font-medium">{item.label}</span>
-              </motion.div>
-            );
-
-            return (
-              <div key={item.href}>
-                {item.href === FRONTEND_ROUTES.API_DOCS ? (
-                  <a
-                    href={item.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {navContent}
-                  </a>
-                ) : (
-                  <Link href={item.href} prefetch={false}>
-                    {navContent}
-                  </Link>
-                )}
-              </div>
-            );
-          });
-        })()}
+          return (
+            <div key={item.href}>
+              {item.href === FRONTEND_ROUTES.API_DOCS ? (
+                <a
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {navContent}
+                </a>
+              ) : (
+                <Link href={item.href} prefetch={false}>
+                  {navContent}
+                </Link>
+              )}
+            </div>
+          );
+        })}
       </nav>
 
       <Separator />
