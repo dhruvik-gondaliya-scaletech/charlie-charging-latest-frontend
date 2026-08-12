@@ -435,8 +435,35 @@ export function IdTagFormModal({ isOpen, onClose, initialData }: IdTagFormModalP
           : 'Register a new RFID tag, assign type, and configure location permissions.'
       }
       size="2xl"
+      footer={
+        <div className="flex gap-3 w-full">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            className="flex-1 h-12 rounded-xl font-black uppercase tracking-widest text-[10px] border-border/40 hover:bg-muted"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            form="id-tag-form"
+            onClick={handleSubmit(onSubmit)}
+            disabled={createIdTag.isPending || updateIdTag.isPending}
+            className="flex-1 h-12 rounded-xl font-black uppercase tracking-widest text-[10px] bg-primary shadow-lg shadow-primary/20"
+          >
+            {createIdTag.isPending || updateIdTag.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : isEditing ? (
+              'Store Changes'
+            ) : (
+              'Activate Token'
+            )}
+          </Button>
+        </div>
+      }
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 p-1">
+      <form id="id-tag-form" onSubmit={handleSubmit(onSubmit)} className="space-y-5 p-1">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="idTag" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 ml-1">
@@ -677,29 +704,6 @@ export function IdTagFormModal({ isOpen, onClose, initialData }: IdTagFormModalP
           )}
         </div>
 
-        <div className="flex gap-3 pt-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            className="flex-1 h-12 rounded-xl font-black uppercase tracking-widest text-[10px] border-border/40 hover:bg-muted"
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            disabled={createIdTag.isPending || updateIdTag.isPending}
-            className="flex-1 h-12 rounded-xl font-black uppercase tracking-widest text-[10px] bg-primary shadow-lg shadow-primary/20"
-          >
-            {createIdTag.isPending || updateIdTag.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : isEditing ? (
-              'Store Changes'
-            ) : (
-              'Activate Token'
-            )}
-          </Button>
-        </div>
       </form>
     </AnimatedModal>
   );
