@@ -37,12 +37,19 @@ import { DriverAppConfigSchema, DriverAppConfigValues } from '@/lib/validations/
 import { useTenantConfig } from '@/hooks/get/useTenantConfig';
 import { useUpdateTenantConfig } from '@/hooks/put/useUpdateTenantConfig';
 import { staggerItem } from '@/lib/motion';
+import { useAuth } from '@/contexts/AuthContext';
+import { AppPermission } from '@/types';
+import { ProtectedAction } from '@/components/shared/ProtectedAction';
+
 
 export function DriverAppConfig() {
   const { data: config, isLoading } = useTenantConfig();
   const updateConfig = useUpdateTenantConfig();
   const [isCopied, setIsCopied] = React.useState(false);
   const baseDomain = useBaseDomain();
+
+  const { hasPermission } = useAuth();
+  const canUpdate = hasPermission(AppPermission.DRIVER_UPDATE);
 
   const handleCopyDomain = (domain: string) => {
     if (!domain) return;
@@ -107,23 +114,25 @@ export function DriverAppConfig() {
                 <h2 className="text-xl font-bold tracking-tight text-foreground">App Configuration</h2>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mt-1">Configure your white-label branding, domains, and support details</p>
               </div>
-              <Button
-                type="submit"
-                disabled={updateConfig.isPending}
-                className="w-full sm:w-auto min-w-[200px] h-12 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-black uppercase tracking-widest text-xs rounded-xl shrink-0"
-              >
-                {updateConfig.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Syncing...
-                  </>
-                ) : (
-                  <>
-                    <Save className="mr-2 h-4 w-4" />
-                    Save Configuration
-                  </>
-                )}
-              </Button>
+              <ProtectedAction permission={AppPermission.DRIVER_UPDATE}>
+                <Button
+                  type="submit"
+                  disabled={updateConfig.isPending}
+                  className="w-full sm:w-auto min-w-[200px] h-12 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-black uppercase tracking-widest text-xs rounded-xl shrink-0"
+                >
+                  {updateConfig.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Syncing...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Save Configuration
+                    </>
+                  )}
+                </Button>
+              </ProtectedAction>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
@@ -157,6 +166,7 @@ export function DriverAppConfig() {
                           <Input
                             placeholder="e.g. My Charging App"
                             {...field}
+                            disabled={!canUpdate}
                             className="h-12 bg-background border-border/40 focus-visible:ring-primary/20 rounded-xl font-bold"
                           />
                         </FormControl>
@@ -176,6 +186,7 @@ export function DriverAppConfig() {
                           <ImageUpload
                             value={field.value}
                             onChange={field.onChange}
+                            disabled={!canUpdate}
                           />
                         </FormControl>
                         <FormDescription className="text-[10px] ml-1">Upload a high-resolution logo for the driver application interface.</FormDescription>
@@ -197,6 +208,7 @@ export function DriverAppConfig() {
                             <Input
                               placeholder="subdomain"
                               {...field}
+                              disabled={!canUpdate}
                               className="h-10 sm:h-12 bg-background border-none focus-visible:ring-0 focus-visible:ring-offset-0 rounded-none font-bold text-sm sm:text-base flex-1"
                             />
                             <div className="flex items-center h-10 sm:h-12 px-4 bg-muted/30 text-muted-foreground/60 text-[10px] sm:text-xs font-bold group-focus-within:text-primary transition-all border-t sm:border-t-0 sm:border-l border-border/40 gap-2 shrink-0">
@@ -232,6 +244,7 @@ export function DriverAppConfig() {
                           <Switch
                             checked={field.value}
                             onCheckedChange={field.onChange}
+                            disabled={!canUpdate}
                           />
                         </FormControl>
                       </FormItem>
@@ -267,6 +280,7 @@ export function DriverAppConfig() {
                               <Input
                                 placeholder="support@example.com"
                                 {...field}
+                                disabled={!canUpdate}
                                 className="h-12 pl-11 bg-background border-border/40 focus-visible:ring-primary/20 rounded-xl font-bold"
                               />
                             </FormControl>
@@ -288,6 +302,7 @@ export function DriverAppConfig() {
                               <Input
                                 placeholder="+1 (234) 567-8900"
                                 {...field}
+                                disabled={!canUpdate}
                                 className="h-12 pl-11 bg-background border-border/40 focus-visible:ring-primary/20 rounded-xl font-bold"
                               />
                             </FormControl>
@@ -310,6 +325,7 @@ export function DriverAppConfig() {
                             <Input
                               placeholder="https://support.example.com"
                               {...field}
+                              disabled={!canUpdate}
                               className="h-12 pl-11 bg-background border-border/40 focus-visible:ring-primary/20 rounded-xl font-bold"
                             />
                           </FormControl>

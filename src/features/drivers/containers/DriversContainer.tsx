@@ -21,7 +21,7 @@ import {
 import { cn } from '@/lib/utils';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Table } from '@/components/shared/Table';
-import { Driver } from '@/types';
+import { Driver, AppPermission } from '@/types';
 import { formatDate } from '@/lib/date';
 import { StatCard } from '../../dashboard/components/StatCard';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -34,9 +34,16 @@ import { FRONTEND_ROUTES } from '@/constants/constants';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { DriverAppConfig } from '../components/DriverAppConfig';
 import { ActionIconButton } from '@/components/shared/ActionIconButton';
+import { ProtectedAction } from '@/components/shared/ProtectedAction';
+import { useAuth } from '@/contexts/AuthContext';
+
 
 export function DriversContainer() {
   const router = useRouter();
+  const { hasPermission } = useAuth();
+  const canUpdate = hasPermission(AppPermission.DRIVER_UPDATE);
+  const defaultTab = canUpdate ? 'config' : 'drivers';
+
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
@@ -178,15 +185,17 @@ export function DriversContainer() {
           </div>
         </motion.div>
 
-        <Tabs defaultValue="config" className="w-full space-y-8">
+        <Tabs key={defaultTab} defaultValue={defaultTab} className="w-full space-y-8">
           <TabsList className="bg-muted/40 p-1.5 border border-border/40 rounded-2xl backdrop-blur-md h-auto flex-wrap sm:flex-nowrap w-fit gap-1 shadow-inner">
-            <TabsTrigger
-              value="config"
-              className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md font-bold uppercase tracking-wider text-[11px] transition-all flex items-center gap-2 cursor-pointer hover:bg-muted/20 hover:text-foreground text-muted-foreground"
-            >
-              <Settings className="h-3.5 w-3.5" />
-              App Configuration
-            </TabsTrigger>
+            <ProtectedAction permission={AppPermission.DRIVER_UPDATE}>
+              <TabsTrigger
+                value="config"
+                className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md font-bold uppercase tracking-wider text-[11px] transition-all flex items-center gap-2 cursor-pointer hover:bg-muted/20 hover:text-foreground text-muted-foreground"
+              >
+                <Settings className="h-3.5 w-3.5" />
+                App Configuration
+              </TabsTrigger>
+            </ProtectedAction>
             <TabsTrigger
               value="drivers"
               className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md font-bold uppercase tracking-wider text-[11px] transition-all flex items-center gap-2 cursor-pointer hover:bg-muted/20 hover:text-foreground text-muted-foreground"
@@ -196,9 +205,11 @@ export function DriversContainer() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="config">
-            <DriverAppConfig />
-          </TabsContent>
+          <ProtectedAction permission={AppPermission.DRIVER_UPDATE}>
+            <TabsContent value="config">
+              <DriverAppConfig />
+            </TabsContent>
+          </ProtectedAction>
 
           <TabsContent value="drivers" className="space-y-8">
             <motion.div variants={staggerItem} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -250,13 +261,15 @@ export function DriversContainer() {
                   setPage(1);
                 }}
                 appendWithSearch={
-                  <Button
-                    onClick={() => setIsFormModalOpen(true)}
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
-                  >
-                    <UserPlus className="h-4 w-4" />
-                    Add Driver
-                  </Button>
+                  <ProtectedAction permission={AppPermission.DRIVER_CREATE}>
+                    <Button
+                      onClick={() => setIsFormModalOpen(true)}
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
+                    >
+                      <UserPlus className="h-4 w-4" />
+                      Add Driver
+                    </Button>
+                  </ProtectedAction>
                 }
                 maxHeight="700px"
                 className="border-none shadow-none"
@@ -335,12 +348,14 @@ export function DriversContainer() {
                         No drivers detected in the system. Start by adding your first driver.
                       </p>
                     </div>
-                    <Button
-                      onClick={() => setIsFormModalOpen(true)}
-                      className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 font-black px-8 mt-4 uppercase tracking-widest text-[10px]"
-                    >
-                      Add First Driver
-                    </Button>
+                    <ProtectedAction permission={AppPermission.DRIVER_CREATE}>
+                      <Button
+                        onClick={() => setIsFormModalOpen(true)}
+                        className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 font-black px-8 mt-4 uppercase tracking-widest text-[10px]"
+                      >
+                        Add First Driver
+                      </Button>
+                    </ProtectedAction>
                   </div>
                 }
               />

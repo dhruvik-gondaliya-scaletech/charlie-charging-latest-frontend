@@ -14,9 +14,10 @@ interface ImageUploadProps {
   label?: string;
   description?: string;
   uploadingText?: string;
+  disabled?: boolean;
 }
 
-export function ImageUpload({ value, onChange, className, label, description, uploadingText }: ImageUploadProps) {
+export function ImageUpload({ value, onChange, className, label, description, uploadingText, disabled }: ImageUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadMutation = useUploadImage();
 
@@ -109,6 +110,7 @@ export function ImageUpload({ value, onChange, className, label, description, up
               type="button"
               variant="outline"
               size="sm"
+              disabled={disabled}
               onClick={() => fileInputRef.current?.click()}
               className="h-9 rounded-xl font-bold text-[10px] uppercase tracking-wider cursor-pointer border-border/40 hover:bg-muted"
             >
@@ -118,6 +120,7 @@ export function ImageUpload({ value, onChange, className, label, description, up
               type="button"
               variant="destructive"
               size="icon"
+              disabled={disabled}
               className="h-9 w-9 rounded-xl shadow-lg shadow-destructive/20 cursor-pointer"
               onClick={handleRemove}
             >
@@ -128,8 +131,11 @@ export function ImageUpload({ value, onChange, className, label, description, up
       ) : (
         /* Spacious Dashed Dropzone */
         <div
-          onClick={() => fileInputRef.current?.click()}
-          className="relative h-36 w-full rounded-2xl border-2 border-dashed border-border/40 bg-muted/20 hover:border-primary/40 hover:bg-primary/5 flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden group"
+          onClick={() => !disabled && fileInputRef.current?.click()}
+          className={cn(
+            "relative h-36 w-full rounded-2xl border-2 border-dashed border-border/40 bg-muted/20 flex flex-col items-center justify-center transition-all overflow-hidden group",
+            disabled ? "opacity-60 cursor-not-allowed" : "hover:border-primary/40 hover:bg-primary/5 cursor-pointer"
+          )}
         >
           <div className="flex flex-col items-center gap-3 text-muted-foreground group-hover:text-primary transition-colors">
             <div className="h-11 w-11 rounded-xl bg-background border border-border/40 flex items-center justify-center shadow-sm">
