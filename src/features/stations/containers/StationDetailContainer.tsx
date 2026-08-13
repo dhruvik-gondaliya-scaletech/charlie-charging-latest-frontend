@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeInUp, staggerContainer } from '@/lib/motion';
-import { ChargingStatus, LocationEnv } from '@/types';
+import { ChargingStatus, LocationEnv, AppPermission } from '@/types';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -37,6 +37,8 @@ import { ConnectorCard } from '../components/ConnectorCard';
 import { StationSmartCharging } from '../components/StationSmartCharging';
 import { useRemoteStart, useRemoteStop, useResetStation, useChangeAvailability, useUnlockConnector } from '@/hooks/delete/useStationMutations';
 import { useAuth } from '@/contexts/AuthContext';
+import { ProtectedRoute } from '@/components/shared/ProtectedRoute';
+import { ProtectedAction } from '@/components/shared/ProtectedAction';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import WebSocketUrlDisplay from '@/components/shared/WebSocketUrlDisplay';
 import { toast } from 'sonner';
@@ -470,7 +472,8 @@ export function StationDetailContainer() {
     }
 
     return (
-        <motion.div
+        <ProtectedRoute requiredPermission={AppPermission.STATION_READ}>
+            <motion.div
             variants={staggerContainer}
             initial="initial"
             animate="animate"
@@ -522,20 +525,24 @@ export function StationDetailContainer() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-                    <Button
-                        variant="outline"
-                        onClick={() => setIsRebootModalOpen(true)}
-                        className="font-bold border-orange-500/30 text-orange-500 hover:bg-orange-500/10 hover:text-orange-500 h-12 px-6 rounded-xl flex-1 sm:flex-initial"
-                    >
-                        <History className="mr-2.5 h-4.5 w-4.5 text-orange-500" /> Reboot System
-                    </Button>
-                    <Button
-                        variant="outline"
-                        onClick={() => setIsAvailabilityModalOpen(true)}
-                        className="font-bold border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10 hover:text-emerald-500 h-12 px-6 rounded-xl flex-1 sm:flex-initial"
-                    >
-                        <ShieldCheck className="mr-2.5 h-4.5 w-4.5 text-emerald-500" /> Availability Matrix
-                    </Button>
+                    <ProtectedAction permission={AppPermission.OCPP_RESET}>
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsRebootModalOpen(true)}
+                            className="font-bold border-orange-500/30 text-orange-500 hover:bg-orange-500/10 hover:text-orange-500 h-12 px-6 rounded-xl flex-1 sm:flex-initial"
+                        >
+                            <History className="mr-2.5 h-4.5 w-4.5 text-orange-500" /> Reboot System
+                        </Button>
+                    </ProtectedAction>
+                    <ProtectedAction permission={AppPermission.OCPP_CHANGE_CONFIG}>
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsAvailabilityModalOpen(true)}
+                            className="font-bold border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10 hover:text-emerald-500 h-12 px-6 rounded-xl flex-1 sm:flex-initial"
+                        >
+                            <ShieldCheck className="mr-2.5 h-4.5 w-4.5 text-emerald-500" /> Availability Matrix
+                        </Button>
+                    </ProtectedAction>
                 </div>
             </motion.div>
 
@@ -570,8 +577,12 @@ export function StationDetailContainer() {
                         <TabsTrigger value="overview" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Overview</TabsTrigger>
                         <TabsTrigger value="qr-code" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">QR Code</TabsTrigger>
                         <TabsTrigger value="sessions" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Sessions</TabsTrigger>
-                        <TabsTrigger value="config" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Config</TabsTrigger>
-                        <TabsTrigger value="smart-charging" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Smart Charging</TabsTrigger>
+                        <ProtectedAction permission={AppPermission.OCPP_CHANGE_CONFIG}>
+                            <TabsTrigger value="config" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Config</TabsTrigger>
+                        </ProtectedAction>
+                        <ProtectedAction permission={AppPermission.OCPP_CHANGE_CONFIG}>
+                            <TabsTrigger value="smart-charging" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Smart Charging</TabsTrigger>
+                        </ProtectedAction>
                         <TabsTrigger value="logs" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Live Logs</TabsTrigger>
                     </TabsList>
 
@@ -960,5 +971,6 @@ export function StationDetailContainer() {
                 </div>
             </AnimatedModal>
         </motion.div>
+        </ProtectedRoute>
     );
 }

@@ -33,10 +33,11 @@ import {
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table } from '@/components/shared/Table';
-import { Station, ChargingStatus, LocationEnv, PaginatedResponse } from '@/types';
+import { Station, ChargingStatus, LocationEnv, PaginatedResponse, AppPermission } from '@/types';
 import { formatDate } from '@/lib/date';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import { cn } from '@/lib/utils';
+import { ProtectedAction } from '@/components/shared/ProtectedAction';
 import { DEFAULT_PAGE_SIZE, FRONTEND_ROUTES } from '@/constants/constants';
 import {
   Tooltip,
@@ -308,19 +309,23 @@ export function StationsContainer() {
         header: 'Actions',
         cell: ({ row }) => (
           <div className="flex items-center gap-1">
-            <ActionIconButton
-              tone="primary"
-              tooltip="Edit Station"
-              icon={<Pencil className="h-4 w-4" />}
-              onClick={() => handleEdit(row.original)}
-            />
+            <ProtectedAction permission={AppPermission.STATION_UPDATE}>
+              <ActionIconButton
+                tone="primary"
+                tooltip="Edit Station"
+                icon={<Pencil className="h-4 w-4" />}
+                onClick={() => handleEdit(row.original)}
+              />
+            </ProtectedAction>
 
-            <ActionIconButton
-              tone="destructive"
-              tooltip="Delete Station"
-              icon={<Trash2 className="h-4 w-4" />}
-              onClick={() => handleDelete(row.original)}
-            />
+            <ProtectedAction permission={AppPermission.STATION_DELETE}>
+              <ActionIconButton
+                tone="destructive"
+                tooltip="Delete Station"
+                icon={<Trash2 className="h-4 w-4" />}
+                onClick={() => handleDelete(row.original)}
+              />
+            </ProtectedAction>
           </div>
         ),
       },
@@ -483,13 +488,15 @@ export function StationsContainer() {
                 Reset
               </Button>
             )}
-            <Button
-              onClick={() => router.push(FRONTEND_ROUTES.STATIONS_REGISTER)}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold h-10 px-6 rounded-xl shrink-0"
-            >
-              <Plus className="h-4 w-4" />
-              Create Station
-            </Button>
+            <ProtectedAction permission={AppPermission.STATION_CREATE}>
+              <Button
+                onClick={() => router.push(FRONTEND_ROUTES.STATIONS_REGISTER)}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold h-10 px-6 rounded-xl shrink-0"
+              >
+                <Plus className="h-4 w-4" />
+                Create Station
+              </Button>
+            </ProtectedAction>
           </div>
         </motion.div>
 
@@ -585,24 +592,28 @@ export function StationsContainer() {
                       Added {station.createdAt ? formatDate(station.createdAt) : 'N/A'}
                     </span>
                     <div className="flex gap-2">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="h-8 px-3 rounded-xl font-bold text-xs"
-                        onClick={() => handleEdit(station)}
-                      >
-                        <Pencil className="h-3.5 w-3.5 mr-1.5" />
-                        Edit
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 px-3 rounded-xl font-bold text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
-                        onClick={() => handleDelete(station)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                        Delete
-                      </Button>
+                      <ProtectedAction permission={AppPermission.STATION_UPDATE}>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className="h-8 px-3 rounded-xl font-bold text-xs"
+                          onClick={() => handleEdit(station)}
+                        >
+                          <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                          Edit
+                        </Button>
+                      </ProtectedAction>
+                      <ProtectedAction permission={AppPermission.STATION_DELETE}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 px-3 rounded-xl font-bold text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+                          onClick={() => handleDelete(station)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                          Delete
+                        </Button>
+                      </ProtectedAction>
                     </div>
                   </div>
                 </div>
@@ -619,13 +630,15 @@ export function StationsContainer() {
                     Your decentralized charging network is empty. Start by registering your first charging station.
                   </p>
                 </div>
-                <Button
-                  onClick={() => router.push(FRONTEND_ROUTES.STATIONS_REGISTER)}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xl shadow-primary/30 font-black px-8"
-                >
-                  <Plus className="h-4 w-4" />
-                  Create Station
-                </Button>
+                <ProtectedAction permission={AppPermission.STATION_CREATE}>
+                  <Button
+                    onClick={() => router.push(FRONTEND_ROUTES.STATIONS_REGISTER)}
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xl shadow-primary/30 font-black px-8"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Create Station
+                  </Button>
+                </ProtectedAction>
               </div>
             }
           />
