@@ -42,7 +42,7 @@ export function RoleForm({ mode, defaultValues, onSubmit, isLoading }: RoleFormP
   const { data: allPermissions, isLoading: permsLoading } = usePermissions();
 
   const renderFields = () => (
-    <>
+    <div className="space-y-5">
       <FormField
         control={form.control}
         name="name"
@@ -83,7 +83,7 @@ export function RoleForm({ mode, defaultValues, onSubmit, isLoading }: RoleFormP
           </FormItem>
         )}
       />
-    </>
+    </div>
   );
 
   return (
@@ -94,7 +94,7 @@ export function RoleForm({ mode, defaultValues, onSubmit, isLoading }: RoleFormP
             {/* Role Details */}
             <div className="space-y-5">
               <h2 className="text-base font-semibold text-foreground">Role Details</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
+              <div className="max-w-2xl">
                 {renderFields()}
               </div>
             </div>
