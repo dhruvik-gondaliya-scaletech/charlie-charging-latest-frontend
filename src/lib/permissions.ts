@@ -42,6 +42,8 @@ export const PERMISSION_MODULES = [
   'tariff',
   'driver',
   'id_tag',
+  'webhook',
+  'ocpi',
 ] as const;
 
 export type PermissionModule = (typeof PERMISSION_MODULES)[number];

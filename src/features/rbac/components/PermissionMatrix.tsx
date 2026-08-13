@@ -28,6 +28,10 @@ const MODULE_LABEL: Record<string, string> = {
   reports: 'Reports',
   tariff: 'Tariffs',
   billing: 'Billing',
+  driver: 'Drivers',
+  id_tag: 'ID Tags',
+  webhook: 'Webhooks',
+  ocpi: 'OCPI Roaming',
 };
 
 export function PermissionMatrix({
