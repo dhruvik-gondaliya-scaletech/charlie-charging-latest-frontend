@@ -23,9 +23,9 @@ export function RoleDetailContainer({ roleId }: RoleDetailContainerProps) {
 
   const formattedName = role?.name
     ? role.name
-        .split('_')
-        .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join(' ')
+      .split('_')
+      .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ')
     : '';
 
   useEffect(() => {
@@ -72,7 +72,6 @@ export function RoleDetailContainer({ roleId }: RoleDetailContainerProps) {
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-foreground uppercase">
               {formattedName}
             </h1>
-            <RoleBadge role={role.name} />
           </div>
           {role.description && (
             <p className="text-sm font-medium text-muted-foreground mt-1 tracking-tight">
