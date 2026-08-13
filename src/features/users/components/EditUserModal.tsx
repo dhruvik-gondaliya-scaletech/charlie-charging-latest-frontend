@@ -92,7 +92,7 @@ export function EditUserModal({ isOpen, onClose, user }: EditUserModalProps) {
     React.useEffect(() => {
         if (isOpen && user && allRoles) {
             const mappedRoleName = user.role === 'super_admin' ? 'SUPER_ADMIN' :
-                                   user.role === 'operator' ? 'SITE_MANAGER' : 'ADMIN';
+                user.role === 'operator' ? 'SITE_MANAGER' : 'ADMIN';
             const targetRoleId = allRoles.find((r) => r.name === mappedRoleName)?.id || '';
 
             reset({
