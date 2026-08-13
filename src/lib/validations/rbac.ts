@@ -11,6 +11,7 @@ export const createRoleSchema = z.object({
     .max(200, 'Description must be at most 200 characters')
     .optional()
     .or(z.literal('')),
+  permissionCodes: z.array(z.string()),
 });
 
 export type CreateRoleFormValues = z.infer<typeof createRoleSchema>;

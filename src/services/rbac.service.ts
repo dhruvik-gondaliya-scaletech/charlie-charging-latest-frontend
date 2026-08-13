@@ -13,6 +13,7 @@ import {
 export interface CreateRoleDto {
   name: string;
   description?: string;
+  permissionCodes?: string[];
 }
 
 export interface UpdateRoleDto {

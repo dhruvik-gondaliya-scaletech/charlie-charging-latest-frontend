@@ -230,11 +230,11 @@ export const FRONTEND_ROUTES = {
     LANDING_PAGE_FOUR: "/landing-four",
     API_DOCS: "/docs",
     REPORTS: "/reports",
-    RBAC_ROLES: "/rbac/roles",
-    RBAC_ROLE_NEW: "/rbac/roles/new",
-    RBAC_ROLE_EDIT: (id: string) => `/rbac/roles/${id}/edit`,
-    RBAC_ROLE_DETAIL: (id: string) => `/rbac/roles/${id}`,
-    RBAC_USER: (userId: string) => `/rbac/users/${userId}`,
+    RBAC_ROLES: "/roles",
+    RBAC_ROLE_NEW: "/roles/new",
+    RBAC_ROLE_EDIT: (id: string) => `/roles/${id}/edit`,
+    RBAC_ROLE_DETAIL: (id: string) => `/roles/${id}`,
+    RBAC_USER: (userId: string) => `/users/${userId}`,
     UNAUTHORIZED: "/unauthorized",
 }
 
