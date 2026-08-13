@@ -185,8 +185,12 @@ export function OcpiContainer() {
                         <TabsTrigger value="cdrs" className="rounded-lg px-6 min-w-fit shrink-0">Billing (CDRs)</TabsTrigger>
                         <TabsTrigger value="tariffs" className="rounded-lg px-6 min-w-fit shrink-0">Tariffs</TabsTrigger>
                         <TabsTrigger value="locations" className="rounded-lg px-6 min-w-fit shrink-0">Locations</TabsTrigger>
-                        <TabsTrigger value="local-settings" className="rounded-lg px-6 min-w-fit shrink-0">CPO Settings</TabsTrigger>
-                        <TabsTrigger value="commands" className="rounded-lg px-6 min-w-fit shrink-0 text-rose-500 font-bold">Command Console</TabsTrigger>
+                        {canManageOcpi && (
+                            <TabsTrigger value="local-settings" className="rounded-lg px-6 min-w-fit shrink-0">CPO Settings</TabsTrigger>
+                        )}
+                        {canCommandOcpi && (
+                            <TabsTrigger value="commands" className="rounded-lg px-6 min-w-fit shrink-0 text-rose-500 font-bold">Command Console</TabsTrigger>
+                        )}
                     </TabsList>
 
                     <TabsContent value="credentials" className="pt-2">
@@ -213,13 +217,17 @@ export function OcpiContainer() {
                         <OcpiLocationsList />
                     </TabsContent>
 
-                    <TabsContent value="local-settings" className="pt-2">
-                        <OcpiLocalSettings />
-                    </TabsContent>
+                    {canManageOcpi && (
+                        <TabsContent value="local-settings" className="pt-2">
+                            <OcpiLocalSettings />
+                        </TabsContent>
+                    )}
 
-                    <TabsContent value="commands" className="pt-2">
-                        <OcpiCommandConsole />
-                    </TabsContent>
+                    {canCommandOcpi && (
+                        <TabsContent value="commands" className="pt-2">
+                            <OcpiCommandConsole />
+                        </TabsContent>
+                    )}
 
                 </Tabs>
             </motion.div>
