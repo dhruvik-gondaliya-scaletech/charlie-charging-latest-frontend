@@ -4,6 +4,9 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Share2, Plus, Users, ShieldCheck, Activity, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import { AppPermission } from '@/types';
+import { ProtectedAction } from '@/components/shared/ProtectedAction';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { useOcpiCredentials, useOcpiTokens, useOcpiStats } from '@/hooks/get/useOcpi';
@@ -25,6 +28,10 @@ import realtimeService, { OcpiUpdateEvent } from '@/lib/realtime.service';
 import { toast } from 'sonner';
 
 export function OcpiContainer() {
+    const { hasPermission } = useAuth();
+    const canManageOcpi = hasPermission(AppPermission.OCPI_MANAGE);
+    const canCommandOcpi = hasPermission(AppPermission.OCPI_COMMAND);
+
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const { data: stats } = useOcpiStats();
@@ -98,31 +105,37 @@ export function OcpiContainer() {
                     </p>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full md:w-auto">
-                    <Button
-                        variant="outline"
-                        onClick={() => syncAll()}
-                        disabled={isSyncing}
-                        className="bg-background/50 backdrop-blur-sm border shadow-sm font-bold shrink-0 w-full sm:w-auto"
-                    >
-                        <RefreshCw className={cn("mr-2 h-4 w-4", isSyncing && "animate-spin")} />
-                        {isSyncing ? "Syncing..." : "Push Global Sync"}
-                    </Button>
-                    <Button
-                        variant="outline"
-                        onClick={() => syncTokens()}
-                        disabled={isSyncingTokens}
-                        className="bg-background/50 backdrop-blur-sm border-amber-500/30 text-amber-600 shadow-sm font-bold shrink-0 hover:bg-amber-500/5 placeholder:hover:text-amber-700 w-full sm:w-auto"
-                    >
-                        <ShieldCheck className={cn("mr-2 h-4 w-4", isSyncingTokens && "animate-spin")} />
-                        {isSyncingTokens ? "Pulling..." : "Pull Roaming Tokens"}
-                    </Button>
-                    <Button
-                        onClick={() => setIsModalOpen(true)}
-                        className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 font-bold shrink-0 w-full sm:w-auto"
-                    >
-                        <Plus className="mr-2 h-4 w-4" />
-                        Connect New Party
-                    </Button>
+                    <ProtectedAction permission={AppPermission.OCPI_MANAGE}>
+                        <Button
+                            variant="outline"
+                            onClick={() => syncAll()}
+                            disabled={isSyncing}
+                            className="bg-background/50 backdrop-blur-sm border shadow-sm font-bold shrink-0 w-full sm:w-auto"
+                        >
+                            <RefreshCw className={cn("mr-2 h-4 w-4", isSyncing && "animate-spin")} />
+                            {isSyncing ? "Syncing..." : "Push Global Sync"}
+                        </Button>
+                    </ProtectedAction>
+                    <ProtectedAction permission={AppPermission.OCPI_MANAGE}>
+                        <Button
+                            variant="outline"
+                            onClick={() => syncTokens()}
+                            disabled={isSyncingTokens}
+                            className="bg-background/50 backdrop-blur-sm border-amber-500/30 text-amber-600 shadow-sm font-bold shrink-0 hover:bg-amber-500/5 placeholder:hover:text-amber-700 w-full sm:w-auto"
+                        >
+                            <ShieldCheck className={cn("mr-2 h-4 w-4", isSyncingTokens && "animate-spin")} />
+                            {isSyncingTokens ? "Pulling..." : "Pull Roaming Tokens"}
+                        </Button>
+                    </ProtectedAction>
+                    <ProtectedAction permission={AppPermission.OCPI_MANAGE}>
+                        <Button
+                            onClick={() => setIsModalOpen(true)}
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 font-bold shrink-0 w-full sm:w-auto"
+                        >
+                            <Plus className="mr-2 h-4 w-4" />
+                            Connect New Party
+                        </Button>
+                    </ProtectedAction>
                 </div>
             </motion.div>
 

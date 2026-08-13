@@ -11,7 +11,8 @@ import { TariffFormData } from '@/lib/validations/billing.schema';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { formatDate } from '@/lib/date';
 import { cn } from '@/lib/utils';
-import { AppEnvironment } from '@/types';
+import { AppPermission, AppEnvironment } from '@/types';
+import { ProtectedAction } from '@/components/shared/ProtectedAction';
 import { Table } from '@/components/shared/Table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -126,25 +127,29 @@ export function TariffContainer() {
         header: 'Actions',
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
-            <ActionIconButton
-              tone="primary"
-              tooltip="Edit"
-              icon={<Pencil className="h-3.5 w-3.5" />}
-              onClick={() => {
-                const tariff = row.original;
-                setSelectedTariff(tariff);
-                setIsEditOpen(true);
-              }}
-            />
-            <ActionIconButton
-              tone="destructive"
-              tooltip="Delete"
-              icon={<Trash2 className="h-3.5 w-3.5" />}
-              onClick={() => {
-                setSelectedTariff(row.original);
-                setIsDeleteOpen(true);
-              }}
-            />
+            <ProtectedAction permission={AppPermission.TARIFF_UPDATE}>
+              <ActionIconButton
+                tone="primary"
+                tooltip="Edit"
+                icon={<Pencil className="h-3.5 w-3.5" />}
+                onClick={() => {
+                  const tariff = row.original;
+                  setSelectedTariff(tariff);
+                  setIsEditOpen(true);
+                }}
+              />
+            </ProtectedAction>
+            <ProtectedAction permission={AppPermission.TARIFF_DELETE}>
+              <ActionIconButton
+                tone="destructive"
+                tooltip="Delete"
+                icon={<Trash2 className="h-3.5 w-3.5" />}
+                onClick={() => {
+                  setSelectedTariff(row.original);
+                  setIsDeleteOpen(true);
+                }}
+              />
+            </ProtectedAction>
           </div>
         ),
       },
@@ -211,13 +216,15 @@ export function TariffContainer() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Button
-            onClick={() => setIsCreateOpen(true)}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 font-bold shrink-0"
-          >
-            <Plus className="h-4 w-4" />
-            Create Tariff
-          </Button>
+          <ProtectedAction permission={AppPermission.TARIFF_CREATE}>
+            <Button
+              onClick={() => setIsCreateOpen(true)}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 font-bold shrink-0"
+            >
+              <Plus className="h-4 w-4" />
+              Create Tariff
+            </Button>
+          </ProtectedAction>
         </div>
       </motion.div>
 
@@ -290,30 +297,34 @@ export function TariffContainer() {
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/50">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="h-8 px-3 rounded-xl font-bold text-xs"
-                  onClick={() => {
-                    setSelectedTariff(tariff);
-                    setIsEditOpen(true);
-                  }}
-                >
-                  <Pencil className="h-3.5 w-3.5 mr-1.5" />
-                  Edit
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 px-3 rounded-xl font-bold text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
-                  onClick={() => {
-                    setSelectedTariff(tariff);
-                    setIsDeleteOpen(true);
-                  }}
-                >
-                  <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                  Delete
-                </Button>
+                <ProtectedAction permission={AppPermission.TARIFF_UPDATE}>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="h-8 px-3 rounded-xl font-bold text-xs"
+                    onClick={() => {
+                      setSelectedTariff(tariff);
+                      setIsEditOpen(true);
+                    }}
+                  >
+                    <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                    Edit
+                  </Button>
+                </ProtectedAction>
+                <ProtectedAction permission={AppPermission.TARIFF_DELETE}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-3 rounded-xl font-bold text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    onClick={() => {
+                      setSelectedTariff(tariff);
+                      setIsDeleteOpen(true);
+                    }}
+                  >
+                    <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                    Delete
+                  </Button>
+                </ProtectedAction>
               </div>
             </div>
           )}
@@ -328,13 +339,15 @@ export function TariffContainer() {
                   Create your first tariff to define how sessions are priced.
                 </p>
               </div>
-              <Button
-                onClick={() => setIsCreateOpen(true)}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xl shadow-primary/30 font-black px-8"
-              >
-                <Plus className="h-4 w-4" />
-                Create Tariff
-              </Button>
+              <ProtectedAction permission={AppPermission.TARIFF_CREATE}>
+                <Button
+                  onClick={() => setIsCreateOpen(true)}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xl shadow-primary/30 font-black px-8"
+                >
+                  <Plus className="h-4 w-4" />
+                  Create Tariff
+                </Button>
+              </ProtectedAction>
             </div>
           }
         />

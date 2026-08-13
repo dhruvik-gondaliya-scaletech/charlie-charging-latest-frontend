@@ -10,7 +10,8 @@ import { Table } from '@/components/shared/Table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { WebhookDelivery, WebhookDeliveryStatus, WebhookEvent } from '@/types';
+import { WebhookDelivery, WebhookDeliveryStatus, WebhookEvent, AppPermission } from '@/types';
+import { ProtectedAction } from '@/components/shared/ProtectedAction';
 import { formatDateTime, formatTimeAgo } from '@/lib/date';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import {
@@ -220,14 +221,16 @@ export function WebhookLogsContainer() {
                     return (
                         <div className="flex justify-start pr-2">
                             {canRetry && (
-                                <ActionIconButton
-                                    tone="primary"
-                                    tooltip="Retry"
-                                    onClick={() => retryMutation.mutate(row.original.id)}
-                                    disabled={retryMutation.isPending}
-                                    icon={<RotateCcw className={`h-4 w-4 ${retryMutation.isPending ? 'animate-spin' : ''}`} />}
-                                    className="rounded-xl h-9 w-9"
-                                />
+                                <ProtectedAction permission={AppPermission.WEBHOOK_RETRY}>
+                                    <ActionIconButton
+                                        tone="primary"
+                                        tooltip="Retry"
+                                        onClick={() => retryMutation.mutate(row.original.id)}
+                                        disabled={retryMutation.isPending}
+                                        icon={<RotateCcw className={`h-4 w-4 ${retryMutation.isPending ? 'animate-spin' : ''}`} />}
+                                        className="rounded-xl h-9 w-9"
+                                    />
+                                </ProtectedAction>
                             )}
                         </div>
                     );

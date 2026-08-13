@@ -9,6 +9,8 @@ import { reportingService } from '@/services/reporting.service';
 import { stationService } from '@/services/station.service';
 import { locationService } from '@/services/location.service';
 import { useEnvironment } from '@/contexts/EnvironmentContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { AppPermission } from '@/types';
 import { DatePicker } from '@/components/shared/DatePicker';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -171,6 +173,9 @@ const DEFAULT_INTERVAL_COLUMNS = [
 
 export function ReportsContainer() {
   const { environment } = useEnvironment();
+  const { hasPermission } = useAuth();
+  const canReadApiDocs = hasPermission(AppPermission.API_DOCS_READ);
+  const canUpdateReports = hasPermission(AppPermission.REPORTS_UPDATE);
 
   // API Docs state
   const [selectedGroupDoc, setSelectedGroupDoc] = useState<'CALSTART' | 'PAC'>('CALSTART');
@@ -572,7 +577,10 @@ export function ReportsContainer() {
       {/* Tabs */}
       <motion.div variants={staggerItem}>
         <Tabs defaultValue="downloads" className="space-y-6">
-          <TabsList className="bg-muted/40 p-1 border border-border/40 rounded-xl backdrop-blur-md w-full sm:w-auto grid grid-cols-3 sm:inline-flex h-auto gap-1 shadow-inner">
+          <TabsList className={cn(
+            "bg-muted/40 p-1 border border-border/40 rounded-xl backdrop-blur-md w-full sm:w-auto grid sm:inline-flex h-auto gap-1 shadow-inner",
+            canReadApiDocs ? "grid-cols-3" : "grid-cols-2"
+          )}>
             <TabsTrigger value="downloads" className="rounded-lg font-bold px-1.5 sm:px-5 py-2 sm:py-2.5 text-[11px] sm:text-sm flex items-center justify-center gap-1 sm:gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
               <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
               <span className="sm:hidden">Reports</span>
@@ -583,10 +591,12 @@ export function ReportsContainer() {
               <span className="sm:hidden">Groups</span>
               <span className="hidden sm:inline">Location Group</span>
             </TabsTrigger>
-            <TabsTrigger value="api-docs" className="rounded-lg font-bold px-1.5 sm:px-5 py-2 sm:py-2.5 text-[11px] sm:text-sm flex items-center justify-center gap-1 sm:gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
-              <Terminal className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
-              <span>API Docs</span>
-            </TabsTrigger>
+            {canReadApiDocs && (
+              <TabsTrigger value="api-docs" className="rounded-lg font-bold px-1.5 sm:px-5 py-2 sm:py-2.5 text-[11px] sm:text-sm flex items-center justify-center gap-1 sm:gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all">
+                <Terminal className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                <span>API Docs</span>
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {/* Downloads Tab */}
@@ -1089,7 +1099,7 @@ export function ReportsContainer() {
                                 variant="outline"
                                 className="text-xs font-semibold group-hover:bg-primary group-hover:text-primary-foreground transition-colors rounded-lg border-primary/30 text-primary"
                               >
-                                Manage Locations
+                                {canUpdateReports ? 'Manage Locations' : 'View Locations'}
                               </Button>
                             </div>
                           </div>
@@ -1124,26 +1134,28 @@ export function ReportsContainer() {
                     </div>
                   </div>
                   
-                  <div className="flex gap-2 w-full sm:w-auto">
-                    <Button 
-                      variant="outline" 
-                      onClick={handleSelectAllGroup} 
-                      size="sm" 
-                      className="flex-1 sm:flex-initial rounded-lg text-xs font-bold"
-                      disabled={isLocationsLoading}
-                    >
-                      Select All
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      onClick={handleDeselectAllGroup} 
-                      size="sm" 
-                      className="flex-1 sm:flex-initial rounded-lg text-xs font-bold"
-                      disabled={isLocationsLoading}
-                    >
-                      Deselect All
-                    </Button>
-                  </div>
+                  {canUpdateReports && (
+                    <div className="flex gap-2 w-full sm:w-auto">
+                      <Button 
+                        variant="outline" 
+                        onClick={handleSelectAllGroup} 
+                        size="sm" 
+                        className="flex-1 sm:flex-initial rounded-lg text-xs font-bold"
+                        disabled={isLocationsLoading}
+                      >
+                        Select All
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={handleDeselectAllGroup} 
+                        size="sm" 
+                        className="flex-1 sm:flex-initial rounded-lg text-xs font-bold"
+                        disabled={isLocationsLoading}
+                      >
+                        Deselect All
+                      </Button>
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-6">
                   
@@ -1177,18 +1189,25 @@ export function ReportsContainer() {
                         return (
                           <div
                             key={loc.id}
-                            onClick={() => handleToggleGroupLocation(loc.id)}
-                            className={`flex items-start gap-3 sm:gap-4 p-3.5 sm:p-4 rounded-xl border-2 transition-all cursor-pointer select-none ${
+                            onClick={() => {
+                              if (canUpdateReports) {
+                                handleToggleGroupLocation(loc.id);
+                              }
+                            }}
+                            className={cn(
+                              "flex items-start gap-3 sm:gap-4 p-3.5 sm:p-4 rounded-xl border-2 transition-all select-none",
+                              canUpdateReports ? "cursor-pointer" : "cursor-default",
                               isSelected
                                 ? 'border-primary bg-primary/5 shadow-sm shadow-primary/5'
                                 : 'border-border/40 bg-background/20 hover:border-border/80'
-                            }`}
+                            )}
                           >
                             <div className="pt-0.5" onClick={(e) => e.stopPropagation()}>
                               <Checkbox
                                 checked={isSelected}
                                 onCheckedChange={() => handleToggleGroupLocation(loc.id)}
                                 className="rounded-md border-2"
+                                disabled={!canUpdateReports}
                               />
                             </div>
                             <div className="space-y-1 min-w-0 flex-1">
@@ -1216,30 +1235,40 @@ export function ReportsContainer() {
                       <ShieldCheck className="h-4 w-4 text-emerald-500 shrink-0" />
                       <span>{selectedGroupLocationIds.length} location(s) selected for group inclusion.</span>
                     </div>
-                    <div className="flex gap-2.5 sm:gap-3 w-full sm:w-auto">
+                    {canUpdateReports ? (
+                      <div className="flex gap-2.5 sm:gap-3 w-full sm:w-auto">
+                        <Button
+                          variant="ghost"
+                          onClick={() => setSelectedGroup(null)}
+                          disabled={isSavingGroup}
+                          className="flex-1 sm:flex-none rounded-xl px-5 h-10 sm:h-11 font-bold text-xs sm:text-sm"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={handleSaveChangesGroup}
+                          disabled={isSavingGroup || isLocationsLoading}
+                          className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 h-10 sm:h-11 rounded-xl transition-all shadow-md shadow-primary/10 flex items-center justify-center gap-2 text-xs sm:text-sm"
+                        >
+                          {isSavingGroup ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              Saving Group...
+                            </>
+                          ) : (
+                            'Save Changes'
+                          )}
+                        </Button>
+                      </div>
+                    ) : (
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         onClick={() => setSelectedGroup(null)}
-                        disabled={isSavingGroup}
-                        className="flex-1 sm:flex-none rounded-xl px-5 h-10 sm:h-11 font-bold text-xs sm:text-sm"
+                        className="rounded-xl px-5 h-10 sm:h-11 font-bold text-xs sm:text-sm w-full sm:w-auto"
                       >
-                        Cancel
+                        Close
                       </Button>
-                      <Button
-                        onClick={handleSaveChangesGroup}
-                        disabled={isSavingGroup || isLocationsLoading}
-                        className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 h-10 sm:h-11 rounded-xl transition-all shadow-md shadow-primary/10 flex items-center justify-center gap-2 text-xs sm:text-sm"
-                      >
-                        {isSavingGroup ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            Saving Group...
-                          </>
-                        ) : (
-                          'Save Changes'
-                        )}
-                      </Button>
-                    </div>
+                    )}
                   </div>
 
                 </div>
@@ -1248,7 +1277,8 @@ export function ReportsContainer() {
           </TabsContent>
 
           {/* API Docs Tab */}
-          <TabsContent value="api-docs">
+          {canReadApiDocs && (
+            <TabsContent value="api-docs">
             <Card className="bg-card/40 border-border/40 backdrop-blur-md rounded-2xl shadow-md p-4 sm:p-6">
               <div className="space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -2177,7 +2207,8 @@ export function ReportsContainer() {
                 </div>
               </div>
             </Card>
-          </TabsContent>
+            </TabsContent>
+          )}
         </Tabs>
       </motion.div>
     </motion.div>

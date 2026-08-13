@@ -26,7 +26,8 @@ import { useInviteUser } from '@/hooks/post/useAuthMutations';
 import { useDeleteUser } from '@/hooks/delete/useUserMutations';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Table } from '@/components/shared/Table';
-import { User } from '@/types';
+import { AppPermission, User } from '@/types';
+import { ProtectedAction } from '@/components/shared/ProtectedAction';
 import { formatDate } from '@/lib/date';
 import { UserInvitationModal } from '../components/UserInvitationModal';
 import { EditUserModal } from '../components/EditUserModal';
@@ -155,38 +156,44 @@ export function UsersContainer() {
                   />
                 </Link>
               )}
-              <ActionIconButton
-                tooltip="Resend Invitation"
-                tone="primary"
-                disabled={!isPending || inviteUser.isPending}
-                onClick={() => {
-                  const userRoleName = user.role === 'super_admin' ? 'SUPER_ADMIN' : 
-                                       user.role === 'operator' ? 'SITE_MANAGER' : 'ADMIN';
-                  const targetRoleId = allRoles?.find(r => r.name === userRoleName)?.id || '';
+              <ProtectedAction permission={AppPermission.USERS_INVITE}>
+                <ActionIconButton
+                  tooltip="Resend Invitation"
+                  tone="primary"
+                  disabled={!isPending || inviteUser.isPending}
+                  onClick={() => {
+                    const userRoleName = user.role === 'super_admin' ? 'SUPER_ADMIN' : 
+                                         user.role === 'operator' ? 'SITE_MANAGER' : 'ADMIN';
+                    const targetRoleId = allRoles?.find(r => r.name === userRoleName)?.id || '';
 
-                  inviteUser.mutate({
-                    email: user.email,
-                    roleId: targetRoleId,
-                  });
-                }}
-                icon={inviteUser.isPending ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : (
-                  <Mail className="h-3 w-3" />
-                )}
-              />
-              <ActionIconButton
-                tooltip="Edit User"
-                tone="default"
-                onClick={() => setEditTarget(user)}
-                icon={<Pencil className="h-3 w-3" />}
-              />
-              <ActionIconButton
-                tooltip="Delete User"
-                tone="destructive"
-                onClick={() => setDeleteTarget(user)}
-                icon={<Trash2 className="h-3 w-3" />}
-              />
+                    inviteUser.mutate({
+                      email: user.email,
+                      roleId: targetRoleId,
+                    });
+                  }}
+                  icon={inviteUser.isPending ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <Mail className="h-3 w-3" />
+                  )}
+                />
+              </ProtectedAction>
+              <ProtectedAction permission={AppPermission.USERS_UPDATE}>
+                <ActionIconButton
+                  tooltip="Edit User"
+                  tone="default"
+                  onClick={() => setEditTarget(user)}
+                  icon={<Pencil className="h-3 w-3" />}
+                />
+              </ProtectedAction>
+              <ProtectedAction permission={AppPermission.USERS_DELETE}>
+                <ActionIconButton
+                  tooltip="Delete User"
+                  tone="destructive"
+                  onClick={() => setDeleteTarget(user)}
+                  icon={<Trash2 className="h-3 w-3" />}
+                />
+              </ProtectedAction>
             </div>
           );
         },
@@ -265,13 +272,15 @@ export function UsersContainer() {
             showSearch
             searchPosition="end"
             appendWithSearch={
-              <Button
-                onClick={() => setIsInviteModalOpen(true)}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
-              >
-                <UserPlus className="h-4 w-4" />
-                Invite Operator
-              </Button>
+              <ProtectedAction permission={AppPermission.USERS_INVITE}>
+                <Button
+                  onClick={() => setIsInviteModalOpen(true)}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  Invite Operator
+                </Button>
+              </ProtectedAction>
             }
             pageSize={DEFAULT_PAGE_SIZE}
             maxHeight="700px"
@@ -333,38 +342,42 @@ export function UsersContainer() {
                   </div>
 
                   <div className="flex items-center justify-end gap-2 pt-1 border-t border-border/50">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      disabled={!isPending || inviteUser.isPending}
-                      className="h-8 px-3 rounded-xl font-bold text-xs"
-                      onClick={() => {
-                        const userRoleName = user.role === 'super_admin' ? 'SUPER_ADMIN' : 
-                                             user.role === 'operator' ? 'SITE_MANAGER' : 'ADMIN';
-                        const targetRoleId = allRoles?.find(r => r.name === userRoleName)?.id || '';
+                    <ProtectedAction permission={AppPermission.USERS_INVITE}>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        disabled={!isPending || inviteUser.isPending}
+                        className="h-8 px-3 rounded-xl font-bold text-xs"
+                        onClick={() => {
+                          const userRoleName = user.role === 'super_admin' ? 'SUPER_ADMIN' : 
+                                               user.role === 'operator' ? 'SITE_MANAGER' : 'ADMIN';
+                          const targetRoleId = allRoles?.find(r => r.name === userRoleName)?.id || '';
 
-                        inviteUser.mutate({
-                          email: user.email,
-                          roleId: targetRoleId,
-                        });
-                      }}
-                    >
-                      {inviteUser.isPending ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
-                      ) : (
-                        <Mail className="h-3.5 w-3.5 mr-1.5" />
-                      )}
-                      Re-invite
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 px-3 rounded-xl font-bold text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
-                      onClick={() => setDeleteTarget(user)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                      Delete
-                    </Button>
+                          inviteUser.mutate({
+                            email: user.email,
+                            roleId: targetRoleId,
+                          });
+                        }}
+                      >
+                        {inviteUser.isPending ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                        ) : (
+                          <Mail className="h-3.5 w-3.5 mr-1.5" />
+                        )}
+                        Re-invite
+                      </Button>
+                    </ProtectedAction>
+                    <ProtectedAction permission={AppPermission.USERS_DELETE}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-3 rounded-xl font-bold text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+                        onClick={() => setDeleteTarget(user)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                        Delete
+                      </Button>
+                    </ProtectedAction>
                   </div>
                 </div>
               );
@@ -380,12 +393,14 @@ export function UsersContainer() {
                     No personnel detected in the system. Start by inviting your first enterprise operator.
                   </p>
                 </div>
-                <Button
-                  onClick={() => setIsInviteModalOpen(true)}
-                  className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 font-black px-8 mt-4 uppercase tracking-widest text-[10px]"
-                >
-                  Onboard First User
-                </Button>
+                <ProtectedAction permission={AppPermission.USERS_INVITE}>
+                  <Button
+                    onClick={() => setIsInviteModalOpen(true)}
+                    className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 font-black px-8 mt-4 uppercase tracking-widest text-[10px]"
+                  >
+                    Onboard First User
+                  </Button>
+                </ProtectedAction>
               </div>
             }
           />
