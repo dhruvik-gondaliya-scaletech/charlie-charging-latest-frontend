@@ -14,7 +14,8 @@ import { Plus, MapPin, Trash2, Pencil, Zap, AlertTriangle, ArrowRightLeft, Searc
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Table } from '@/components/shared/Table';
 import { Input } from '@/components/ui/input';
-import { Location, LocationEnv, PaginatedResponse } from '@/types';
+import { Location, LocationEnv, PaginatedResponse, AppPermission } from '@/types';
+import { ProtectedAction } from '@/components/shared/ProtectedAction';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import { cn } from '@/lib/utils';
 import {
@@ -222,39 +223,6 @@ export function LocationsContainer() {
         },
       },
       {
-        id: 'actions',
-        header: 'Actions',
-        cell: ({ row }) => (
-          <div className="flex justify-start gap-1">
-            {row.original.locationEnv === LocationEnv.DEVELOPMENT && (
-              <ActionIconButton
-                tone="primary"
-                tooltip="Transfer to Production"
-                icon={<ArrowRightLeft className="h-4 w-4" />}
-                onClick={() => {
-                  setSelectedLocation(row.original);
-                  setIsTransferModalOpen(true);
-                }}
-              />
-            )}
-
-            <ActionIconButton
-              tone="primary"
-              tooltip="Edit Location"
-              icon={<Pencil className="h-4 w-4" />}
-              onClick={() => handleEdit(row.original)}
-            />
-
-            <ActionIconButton
-              tone="destructive"
-              tooltip="Delete Location"
-              icon={<Trash2 className="h-4 w-4" />}
-              onClick={() => handleDelete(row.original)}
-            />
-          </div>
-        ),
-      },
-      {
         accessorKey: 'locationEnv',
         header: 'Environment',
         cell: ({ row }) => {
@@ -274,6 +242,45 @@ export function LocationsContainer() {
             </Badge>
           );
         },
+      },
+      {
+        id: 'actions',
+        header: 'Actions',
+        cell: ({ row }) => (
+          <div className="flex justify-start gap-1">
+            {row.original.locationEnv === LocationEnv.DEVELOPMENT && (
+              <ProtectedAction permission={AppPermission.LOCATION_UPDATE}>
+                <ActionIconButton
+                  tone="primary"
+                  tooltip="Transfer to Production"
+                  icon={<ArrowRightLeft className="h-4 w-4" />}
+                  onClick={() => {
+                    setSelectedLocation(row.original);
+                    setIsTransferModalOpen(true);
+                  }}
+                />
+              </ProtectedAction>
+            )}
+
+            <ProtectedAction permission={AppPermission.LOCATION_UPDATE}>
+              <ActionIconButton
+                tone="primary"
+                tooltip="Edit Location"
+                icon={<Pencil className="h-4 w-4" />}
+                onClick={() => handleEdit(row.original)}
+              />
+            </ProtectedAction>
+
+            <ProtectedAction permission={AppPermission.LOCATION_DELETE}>
+              <ActionIconButton
+                tone="destructive"
+                tooltip="Delete Location"
+                icon={<Trash2 className="h-4 w-4" />}
+                onClick={() => handleDelete(row.original)}
+              />
+            </ProtectedAction>
+          </div>
+        ),
       },
     ],
     [handleEdit, handleViewDetails, handleDelete]
@@ -319,13 +326,15 @@ export function LocationsContainer() {
                 className="pl-9 h-10 rounded-xl border-border/50 bg-card/20"
               />
             </div>
-            <Button
-              onClick={handleCreate}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
-            >
-              <Plus className="h-4 w-4" />
-              Create Location
-            </Button>
+            <ProtectedAction permission={AppPermission.LOCATION_CREATE}>
+              <Button
+                onClick={handleCreate}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
+              >
+                <Plus className="h-4 w-4" />
+                Create Location
+              </Button>
+            </ProtectedAction>
           </div>
 
           <Table<Location>
@@ -423,37 +432,43 @@ export function LocationsContainer() {
                 {/* No Separator needed if using ghost/secondary buttons at bottom */}
                 <div className="flex items-center justify-end gap-2 pt-1 border-t border-border/50">
                   {location.locationEnv === LocationEnv.DEVELOPMENT && (
+                    <ProtectedAction permission={AppPermission.LOCATION_UPDATE}>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="h-8 px-3 rounded-xl font-bold text-xs bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20"
+                        onClick={() => {
+                          setSelectedLocation(location);
+                          setIsTransferModalOpen(true);
+                        }}
+                      >
+                        <ArrowRightLeft className="h-3.5 w-3.5 mr-1.5" />
+                        To Prod
+                      </Button>
+                    </ProtectedAction>
+                  )}
+                  <ProtectedAction permission={AppPermission.LOCATION_UPDATE}>
                     <Button
                       variant="secondary"
                       size="sm"
-                      className="h-8 px-3 rounded-xl font-bold text-xs bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20"
-                      onClick={() => {
-                        setSelectedLocation(location);
-                        setIsTransferModalOpen(true);
-                      }}
+                      className="h-8 px-3 rounded-xl font-bold text-xs"
+                      onClick={() => handleEdit(location)}
                     >
-                      <ArrowRightLeft className="h-3.5 w-3.5 mr-1.5" />
-                      To Prod
+                      <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                      Edit
                     </Button>
-                  )}
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="h-8 px-3 rounded-xl font-bold text-xs"
-                    onClick={() => handleEdit(location)}
-                  >
-                    <Pencil className="h-3.5 w-3.5 mr-1.5" />
-                    Edit
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 px-3 rounded-xl font-bold text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
-                    onClick={() => handleDelete(location)}
-                  >
-                    <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                    Delete
-                  </Button>
+                  </ProtectedAction>
+                  <ProtectedAction permission={AppPermission.LOCATION_DELETE}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-3 rounded-xl font-bold text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+                      onClick={() => handleDelete(location)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                      Delete
+                    </Button>
+                  </ProtectedAction>
                 </div>
               </div>
             )}
@@ -468,13 +483,15 @@ export function LocationsContainer() {
                     Your location registry is empty. Start by defining your first strategic charging site.
                   </p>
                 </div>
-                <Button
-                  onClick={handleCreate}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xl shadow-primary/30 font-black px-8"
-                >
-                  <Plus className="h-4 w-4" />
-                  Create Location
-                </Button>
+                <ProtectedAction permission={AppPermission.LOCATION_CREATE}>
+                  <Button
+                    onClick={handleCreate}
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-xl shadow-primary/30 font-black px-8"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Create Location
+                  </Button>
+                </ProtectedAction>
               </div>
             }
           />
