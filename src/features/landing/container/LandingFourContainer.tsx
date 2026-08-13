@@ -6,9 +6,9 @@ import { FAQSection } from '../components/FAQSection';
 import { CTASection } from '../components/CTASection';
 import { ContactSection } from '../components/ContactSection';
 import { FooterSection } from '../components/FooterSection';
-import { TrustBar } from '@/features/landing/components/TrustBar';
+import { TrustBar } from '../components/TrustBar';
 
-export default function LandingFourContainer() {
+export default function LandingContainer() {
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground font-sans scroll-smooth antialiased">
       <NavbarSection />
