@@ -14,8 +14,10 @@ import { useInviteUser } from '@/hooks/post/useAuthMutations';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Mail, Shield, Loader2 } from 'lucide-react';
 import { useRoles } from '@/hooks/get/useRbac';
-import { useLocations } from '@/hooks/get/useLocations';
 import { Location, LocationEnv } from '@/types';
+import { useQuery } from '@tanstack/react-query';
+import { Environment } from '@/constants/constants';
+import { locationService } from '@/services/location.service';
 
 interface UserInvitationModalProps {
     isOpen: boolean;
@@ -25,21 +27,37 @@ interface UserInvitationModalProps {
 export function UserInvitationModal({ isOpen, onClose }: UserInvitationModalProps) {
     const inviteUser = useInviteUser();
     const { data: allRoles, isLoading: rolesLoading } = useRoles();
-    const { data: locationsResponse, isLoading: locationsLoading } = useLocations();
+    const { data: devLocationsResponse, isLoading: devLoading } = useQuery({
+        queryKey: ['locations', Environment.DEV],
+        queryFn: () => locationService.getAllLocations(Environment.DEV),
+        staleTime: 60000,
+    });
 
-    const allLocations: Location[] = React.useMemo(() => {
-        return Array.isArray(locationsResponse)
-            ? (locationsResponse as Location[])
-            : ((locationsResponse as { data?: Location[] } | undefined)?.data ?? []);
-    }, [locationsResponse]);
+    const { data: prodLocationsResponse, isLoading: prodLoading } = useQuery({
+        queryKey: ['locations', Environment.PROD],
+        queryFn: () => locationService.getAllLocations(Environment.PROD),
+        staleTime: 60000,
+    });
+
+    const locationsLoading = devLoading || prodLoading;
 
     const devLocations = React.useMemo(() => {
-        return allLocations.filter((loc) => loc.locationEnv === LocationEnv.DEVELOPMENT);
-    }, [allLocations]);
+        const locations = Array.isArray(devLocationsResponse)
+            ? (devLocationsResponse as Location[])
+            : ((devLocationsResponse as { data?: Location[] } | undefined)?.data ?? []);
+        return locations.filter((loc) => loc.locationEnv === LocationEnv.DEVELOPMENT || !loc.locationEnv);
+    }, [devLocationsResponse]);
 
     const prodLocations = React.useMemo(() => {
-        return allLocations.filter((loc) => loc.locationEnv === LocationEnv.PRODUCTION);
-    }, [allLocations]);
+        const locations = Array.isArray(prodLocationsResponse)
+            ? (prodLocationsResponse as Location[])
+            : ((prodLocationsResponse as { data?: Location[] } | undefined)?.data ?? []);
+        return locations.filter((loc) => loc.locationEnv === LocationEnv.PRODUCTION);
+    }, [prodLocationsResponse]);
+
+    const allLocations = React.useMemo(() => {
+        return [...devLocations, ...prodLocations];
+    }, [devLocations, prodLocations]);
 
     const {
         register,
