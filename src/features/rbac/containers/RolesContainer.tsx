@@ -24,25 +24,31 @@ export function RolesContainer() {
       id: 'name',
       accessorKey: 'name',
       header: 'Role Name',
-      cell: ({ row }) => (
-        <div className="flex items-center gap-3">
-          <Link
-            href={FRONTEND_ROUTES.RBAC_ROLE_DETAIL(row.original.id)}
-            className="flex items-center gap-3 group/link min-w-0"
-          >
-            <div className="min-w-0">
-              <p className="font-medium text-foreground truncate group-hover/link:text-primary transition-colors">
-                {row.original.name.split('_').map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
-              </p>
-              {row.original.description && (
-                <p className="text-xs text-muted-foreground truncate mt-0.5">
-                  {row.original.description}
+      cell: ({ row }) => {
+        const formattedName = row.original.name
+          .split('_')
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(' ');
+        return (
+          <div className="flex items-center gap-3">
+            <Link
+              href={`${FRONTEND_ROUTES.RBAC_ROLE_DETAIL(row.original.id)}?name=${encodeURIComponent(formattedName)}`}
+              className="flex items-center gap-3 group/link min-w-0"
+            >
+              <div className="min-w-0">
+                <p className="font-medium text-foreground truncate group-hover/link:text-primary transition-colors">
+                  {formattedName}
                 </p>
-              )}
-            </div>
-          </Link>
-        </div>
-      ),
+                {row.original.description && (
+                  <p className="text-xs text-muted-foreground truncate mt-0.5">
+                    {row.original.description}
+                  </p>
+                )}
+              </div>
+            </Link>
+          </div>
+        );
+      },
       minSize: 220,
     },
     {
@@ -50,8 +56,7 @@ export function RolesContainer() {
       header: 'Type',
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
-          <RoleBadge role={row.original.name} size="sm" />
-          {row.original.isSystem && (
+          {row.original.isSystem ? (
             <Badge
               variant="outline"
               className="border-amber-500/40 bg-amber-500/10 text-amber-500 text-xs gap-1"
@@ -59,7 +64,13 @@ export function RolesContainer() {
               <Lock className="h-3 w-3" />
               System
             </Badge>
-          )}
+          ) : <Badge
+            variant="outline"
+            className="border-green-500/40 bg-green-500/10 text-green-500 text-xs gap-1"
+          >
+            <Shield className="h-3 w-3" />
+            Custom
+          </Badge>}
         </div>
       ),
       minSize: 180,

@@ -75,10 +75,10 @@ export function PermissionMatrix({
         const someSelected = modCodes.some((c) => selected.includes(c));
 
         return (
-          <div key={mod} className="rounded-lg border border-white/10 bg-white/3 p-4">
+          <div key={mod} className="rounded-lg border border-border/50 dark:border-white/10 bg-secondary/10 dark:bg-white/3 p-4">
             {/* Module header */}
             <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-semibold text-white/80">
+              <h4 className="text-sm font-semibold text-foreground/80 dark:text-white/80">
                 {MODULE_LABEL[mod] ?? mod}
               </h4>
               {editable && (
@@ -86,7 +86,7 @@ export function PermissionMatrix({
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="h-6 px-2 text-xs text-white/50 hover:text-white"
+                  className="h-6 px-2 text-xs text-muted-foreground dark:text-white/50 hover:text-foreground dark:hover:text-white"
                   onClick={() => toggleModule(mod)}
                 >
                   {allSelected ? 'Deselect all' : someSelected ? 'Select all' : 'Select all'}
@@ -110,7 +110,7 @@ export function PermissionMatrix({
                       !editable && 'cursor-default',
                       isSelected
                         ? 'bg-primary/20 border-primary/50 text-primary'
-                        : 'bg-white/5 border-white/10 text-white/40',
+                        : 'bg-secondary/20 dark:bg-white/5 border-border dark:border-white/10 text-muted-foreground dark:text-white/40 hover:bg-secondary/40 dark:hover:bg-white/10 hover:text-foreground dark:hover:text-white',
                     )}
                     title={perm.description ?? perm.code}
                     aria-pressed={isSelected}

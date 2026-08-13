@@ -45,7 +45,7 @@ export function UserRolesPanel({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12 text-white/40">
+      <div className="flex items-center justify-center py-12 text-muted-foreground">
         <Loader2 className="h-5 w-5 animate-spin mr-2" />
         Loading roles…
       </div>
@@ -58,12 +58,12 @@ export function UserRolesPanel({
       {unassigned.length > 0 && (
         <div className="flex gap-3">
           <Select value={selectedRoleId} onValueChange={setSelectedRoleId}>
-            <SelectTrigger className="flex-1 bg-white/5 border-white/10 text-white">
+            <SelectTrigger className="flex-1 bg-muted/20 border-border/40 text-foreground focus:ring-primary/20 rounded-xl font-bold">
               <SelectValue placeholder="Select a role to assign…" />
             </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-white/10">
+            <SelectContent className="bg-card border-border/40 rounded-xl">
               {unassigned.map((role) => (
-                <SelectItem key={role.id} value={role.id} className="text-white">
+                <SelectItem key={role.id} value={role.id}>
                   <div className="flex items-center gap-2">
                     <RoleBadge role={role.name} size="sm" showDot={false} />
                     <span>{role.name}</span>
@@ -90,9 +90,9 @@ export function UserRolesPanel({
       {/* Current assignments */}
       {assignments.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-10 text-center">
-          <ShieldAlert className="h-10 w-10 text-white/20" />
-          <p className="text-sm text-white/50">No roles assigned yet.</p>
-          <p className="text-xs text-white/30">
+          <ShieldAlert className="h-10 w-10 text-muted-foreground/30" />
+          <p className="text-sm text-muted-foreground">No roles assigned yet.</p>
+          <p className="text-xs text-muted-foreground/60">
             This user has no permissions until a role is assigned.
           </p>
         </div>
@@ -101,12 +101,12 @@ export function UserRolesPanel({
           {assignments.map((a) => (
             <li
               key={a.roleId}
-              className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-3"
+              className="flex items-center justify-between rounded-lg border border-border/50 dark:border-white/10 bg-muted/40 dark:bg-white/5 px-4 py-3"
             >
               <div className="flex items-center gap-3">
                 <RoleBadge role={a.role.name} />
                 {a.role.description && (
-                  <span className="text-xs text-white/40">{a.role.description}</span>
+                  <span className="text-xs text-muted-foreground">{a.role.description}</span>
                 )}
               </div>
               <Button

@@ -44,7 +44,7 @@ export function UserLocationsPanel({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12 text-white/40">
+      <div className="flex items-center justify-center py-12 text-muted-foreground">
         <Loader2 className="h-5 w-5 animate-spin mr-2" />
         Loading locations…
       </div>
@@ -55,7 +55,7 @@ export function UserLocationsPanel({
     <div className="space-y-6">
       {/* Info banner — empty locations = unrestricted */}
       {assignments.length === 0 && (
-        <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
+        <div className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
           <strong>Unrestricted access</strong> — this user can see all locations.
           Assign specific locations to restrict their scope.
         </div>
@@ -65,17 +65,17 @@ export function UserLocationsPanel({
       {unassigned.length > 0 && (
         <div className="flex gap-3">
           <Select value={selectedLocationId} onValueChange={setSelectedLocationId}>
-            <SelectTrigger className="flex-1 bg-white/5 border-white/10 text-white">
+            <SelectTrigger className="flex-1 bg-muted/20 border-border/40 text-foreground focus:ring-primary/20 rounded-xl font-bold">
               <SelectValue placeholder="Select a location to assign…" />
             </SelectTrigger>
-            <SelectContent className="bg-slate-900 border-white/10">
+            <SelectContent className="bg-card border-border/40 rounded-xl">
               {unassigned.map((loc) => (
-                <SelectItem key={loc.id} value={loc.id} className="text-white">
+                <SelectItem key={loc.id} value={loc.id}>
                   <div className="flex items-center gap-2">
                     <MapPin className="h-3.5 w-3.5 text-primary" />
                     <span>{loc.name}</span>
                     {loc.city && (
-                      <span className="text-white/40 text-xs">— {loc.city}</span>
+                      <span className="text-muted-foreground text-xs">— {loc.city}</span>
                     )}
                   </div>
                 </SelectItem>
@@ -105,18 +105,18 @@ export function UserLocationsPanel({
             return (
               <li
                 key={a.locationId}
-                className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-4 py-3"
+                className="flex items-center justify-between rounded-lg border border-border/50 dark:border-white/10 bg-muted/40 dark:bg-white/5 px-4 py-3"
               >
                 <div className="flex items-center gap-3">
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 border border-primary/20">
                     <MapPin className="h-4 w-4 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-white">
+                    <p className="text-sm font-medium text-foreground">
                       {loc?.name ?? a.locationId}
                     </p>
                     {loc && (
-                      <p className="text-xs text-white/40">
+                      <p className="text-xs text-muted-foreground">
                         {[loc.city, loc.state, loc.country].filter(Boolean).join(', ')}
                       </p>
                     )}
@@ -142,8 +142,8 @@ export function UserLocationsPanel({
 
       {assignments.length === 0 && unassigned.length === 0 && !isLoading && (
         <div className="flex flex-col items-center gap-3 py-10 text-center">
-          <MapPinOff className="h-10 w-10 text-white/20" />
-          <p className="text-sm text-white/50">No locations available to assign.</p>
+          <MapPinOff className="h-10 w-10 text-muted-foreground/30" />
+          <p className="text-sm text-muted-foreground">No locations available to assign.</p>
         </div>
       )}
     </div>

@@ -31,17 +31,17 @@ export function RoleDeleteDialog({ role, open, onOpenChange }: RoleDeleteDialogP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-slate-900 border-white/10 text-white sm:max-w-md">
+      <DialogContent className="bg-card border-border/40 text-foreground sm:max-w-md">
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500/10 border border-red-500/20 shrink-0">
               <AlertTriangle className="h-5 w-5 text-red-400" />
             </div>
-            <DialogTitle className="text-white">Delete Role</DialogTitle>
+            <DialogTitle>Delete Role</DialogTitle>
           </div>
-          <DialogDescription className="text-white/60">
+          <DialogDescription className="text-muted-foreground">
             Are you sure you want to delete{' '}
-            <span className="font-semibold text-white">{role?.name}</span>? This will
+            <span className="font-semibold text-foreground">{role?.name}</span>? This will
             remove the role from all users that have it assigned. This action cannot be
             undone.
           </DialogDescription>
@@ -49,7 +49,6 @@ export function RoleDeleteDialog({ role, open, onOpenChange }: RoleDeleteDialogP
         <DialogFooter className="gap-2 sm:gap-0">
           <Button
             variant="ghost"
-            className="bg-white/5 border border-white/10 text-white hover:bg-white/10"
             onClick={() => onOpenChange(false)}
             disabled={deleteMutation.isPending}
           >

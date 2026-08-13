@@ -53,7 +53,7 @@ export function RoleForm({ mode, defaultValues, onSubmit, isLoading }: RoleFormP
               <Input
                 {...field}
                 placeholder="e.g. Billing Manager"
-                className="bg-white/5 border-white/10 text-foreground placeholder:text-muted-foreground/30 focus:border-primary/60"
+                className="bg-secondary/20 dark:bg-white/5 border-border dark:border-white/10 text-foreground placeholder:text-muted-foreground/30 focus:border-primary/60"
                 aria-invalid={!!form.formState.errors.name}
               />
             </FormControl>
@@ -76,7 +76,7 @@ export function RoleForm({ mode, defaultValues, onSubmit, isLoading }: RoleFormP
                 {...field}
                 placeholder="Describe what this role can do…"
                 rows={3}
-                className="bg-white/5 border-white/10 text-foreground placeholder:text-muted-foreground/30 focus:border-primary/60 resize-none"
+                className="bg-secondary/20 dark:bg-white/5 border-border dark:border-white/10 text-foreground placeholder:text-muted-foreground/30 focus:border-primary/60 resize-none"
               />
             </FormControl>
             <FormMessage />
@@ -100,7 +100,7 @@ export function RoleForm({ mode, defaultValues, onSubmit, isLoading }: RoleFormP
             </div>
 
             {/* Permissions selection */}
-            <div className="space-y-5 border-t border-white/10 pt-6">
+            <div className="space-y-5 border-t border-border pt-6">
               <div>
                 <h2 className="text-base font-semibold text-foreground mb-1">Permissions</h2>
                 <p className="text-sm text-muted-foreground">Select the permissions that will be assigned to this role</p>
