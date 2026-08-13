@@ -234,6 +234,7 @@ export const FRONTEND_ROUTES = {
     RBAC_ROLE_EDIT: (id: string) => `/rbac/roles/${id}/edit`,
     RBAC_ROLE_DETAIL: (id: string) => `/rbac/roles/${id}`,
     RBAC_USER: (userId: string) => `/rbac/users/${userId}`,
+    UNAUTHORIZED: "/unauthorized",
 }
 
 export const AUTH_CONFIG = {
