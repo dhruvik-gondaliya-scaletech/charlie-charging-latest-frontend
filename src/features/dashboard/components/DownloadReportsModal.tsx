@@ -684,7 +684,7 @@ export function DownloadReportsModal({ isOpen, onClose }: DownloadReportsModalPr
             <div className="space-y-5 flex flex-col min-h-0">
               <div className="space-y-2">
                 <Label className="text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
-                  <Calendar className="h-4 w-4 text-rose-500" /> Date Range
+                  <Calendar className="h-4 w-4 text-amber-500" /> Date Range
                 </Label>
                 <DatePicker
                   dateRange={dateRange}
@@ -696,10 +696,10 @@ export function DownloadReportsModal({ isOpen, onClose }: DownloadReportsModalPr
               <div className="space-y-2 flex-1 flex flex-col min-h-0">
                 <div className="flex items-center justify-between">
                   <Label className="text-sm font-semibold text-foreground/90 flex items-center gap-1.5">
-                    <MapPin className="h-4 w-4 text-rose-500" /> Locations & Stations
+                    <MapPin className="h-4 w-4 text-amber-500" /> Locations & Stations
                   </Label>
                   {selectedStationIds.size > 0 && (
-                    <span className="text-[11px] bg-rose-500/10 text-rose-600 dark:text-rose-400 font-semibold px-2 py-0.5 rounded-full">
+                    <span className="text-[11px] bg-amber-500/10 text-amber-600 dark:text-amber-400 font-semibold px-2 py-0.5 rounded-full">
                       {selectedStationIds.size} stations
                     </span>
                   )}
@@ -716,7 +716,7 @@ export function DownloadReportsModal({ isOpen, onClose }: DownloadReportsModalPr
                     onLocationCheck={handleLocationCheck}
                     onStationCheck={handleStationCheck}
                     onToggleExpand={toggleLocationExpand}
-                    accentColor="rose"
+                    accentColor="amber"
                   />
                 </div>
               </div>
@@ -740,28 +740,28 @@ export function DownloadReportsModal({ isOpen, onClose }: DownloadReportsModalPr
                   </Label>
                   <div className="space-y-2">
                     <div className="flex items-start gap-2 text-xs">
-                      <span className="h-1.5 w-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
                       <div>
                         <span className="font-semibold text-foreground/90">EVSE ID</span>
-                        <p className="text-[11px] text-muted-foreground">The station's physical hardware serial number.</p>
+                        <p className="text-[11px] text-muted-foreground">The station&apos;s physical hardware serial number.</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-2 text-xs">
-                      <span className="h-1.5 w-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
                       <div>
                         <span className="font-semibold text-foreground/90">Downtime reason</span>
                         <p className="text-[11px] text-muted-foreground">Reason code or category for the downtime event.</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-2 text-xs">
-                      <span className="h-1.5 w-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
                       <div>
                         <span className="font-semibold text-foreground/90">Event start datetime</span>
                         <p className="text-[11px] text-muted-foreground">Start of the downtime event (MM/DD/YYYY HH:MM:SS).</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-2 text-xs">
-                      <span className="h-1.5 w-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
                       <div>
                         <span className="font-semibold text-foreground/90">Event end datetime</span>
                         <p className="text-[11px] text-muted-foreground">End of the downtime event (MM/DD/YYYY HH:MM:SS).</p>
@@ -781,7 +781,7 @@ export function DownloadReportsModal({ isOpen, onClose }: DownloadReportsModalPr
             <Button
               onClick={handleExportDowntime}
               disabled={isExporting}
-              className="bg-rose-600 hover:bg-rose-700 text-white font-bold flex items-center gap-2"
+              className="bg-amber-600 hover:bg-amber-700 text-white font-bold flex items-center gap-2"
             >
               <Download className="h-4 w-4" />
               {isExporting ? 'Exporting...' : 'Export Downtime CSV'}
