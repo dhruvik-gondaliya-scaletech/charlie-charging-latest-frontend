@@ -90,20 +90,20 @@ export function RoleForm({ mode, defaultValues, onSubmit, isLoading }: RoleFormP
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8" noValidate>
         {mode === 'create' ? (
-          <>
-            {/* Role Details */}
-            <div className="space-y-5">
-              <h2 className="text-base font-semibold text-foreground">Role Details</h2>
-              <div className="max-w-2xl">
+          <div className="space-y-8">
+            {/* Role Details Card */}
+            <div className="rounded-xl border border-border bg-card/30 backdrop-blur-sm p-6 space-y-6">
+              <h2 className="text-sm font-semibold text-foreground/70">Role Details</h2>
+              <div className="space-y-5">
                 {renderFields()}
               </div>
             </div>
 
-            {/* Permissions selection */}
-            <div className="space-y-5 border-t border-border pt-6">
+            {/* Permissions selection Card */}
+            <div className="rounded-xl border border-border bg-card/30 backdrop-blur-sm p-6 space-y-6">
               <div>
-                <h2 className="text-base font-semibold text-foreground mb-1">Permissions</h2>
-                <p className="text-sm text-muted-foreground">Select the permissions that will be assigned to this role</p>
+                <h2 className="text-sm font-semibold text-foreground/70 mb-1">Permissions</h2>
+                <p className="text-xs text-muted-foreground">Select the permissions that will be assigned to this role</p>
               </div>
               {permsLoading ? (
                 <div className="flex items-center justify-center py-8 text-muted-foreground/40">
@@ -130,13 +130,13 @@ export function RoleForm({ mode, defaultValues, onSubmit, isLoading }: RoleFormP
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full sm:w-auto px-8 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+                className="w-full sm:w-auto px-8 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-md transition-all uppercase tracking-widest text-xs py-3"
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create Role
               </Button>
             </div>
-          </>
+          </div>
         ) : (
           /* Edit mode - rendered fields directly, styling is handled by the parent page wrapper */
           <>

@@ -155,10 +155,9 @@ export function RoleUpdateContainer({ roleId }: RoleUpdateContainerProps) {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8" noValidate>
-          {/* Grid Layout for Form & Permissions Matrix */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          <div className="space-y-8">
             {/* Name/description form */}
-            <div className="lg:col-span-1 rounded-xl border border-border bg-card/30 backdrop-blur-sm p-6 space-y-6">
+            <div className="rounded-xl border border-border bg-card/30 backdrop-blur-sm p-6 space-y-6">
               <h2 className="text-sm font-semibold text-foreground/70">Role Details</h2>
               <div className="space-y-5">
                 <FormField
@@ -202,19 +201,10 @@ export function RoleUpdateContainer({ roleId }: RoleUpdateContainerProps) {
                   )}
                 />
               </div>
-
-              <Button
-                type="submit"
-                disabled={updateMutation.isPending}
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
-              >
-                {updateMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Save Changes
-              </Button>
             </div>
 
             {/* Permissions matrix */}
-            <div className="lg:col-span-2 rounded-xl border border-border bg-card/30 backdrop-blur-sm p-6 space-y-6">
+            <div className="rounded-xl border border-border bg-card/30 backdrop-blur-sm p-6 space-y-6">
               <div>
                 <h2 className="text-sm font-semibold text-foreground/70 mb-1">Permissions</h2>
                 <p className="text-xs text-muted-foreground">Select the permissions that will be assigned to this role</p>
@@ -232,6 +222,17 @@ export function RoleUpdateContainer({ roleId }: RoleUpdateContainerProps) {
                   />
                 )}
               />
+            </div>
+
+            <div className="flex justify-end pt-4">
+              <Button
+                type="submit"
+                disabled={updateMutation.isPending}
+                className="w-full sm:w-auto px-8 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-md transition-all uppercase tracking-widest text-xs py-3"
+              >
+                {updateMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save Changes
+              </Button>
             </div>
           </div>
         </form>
