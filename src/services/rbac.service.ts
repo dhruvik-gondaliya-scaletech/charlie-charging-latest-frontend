@@ -20,6 +20,7 @@ export interface CreateRoleDto {
 export interface UpdateRoleDto {
   name?: string;
   description?: string;
+  permissionCodes?: string[];
 }
 
 export interface AssignPermissionsDto {
