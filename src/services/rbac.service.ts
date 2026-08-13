@@ -85,6 +85,12 @@ class RbacService {
     return httpService.delete(API_CONFIG.endpoints.rbac.userRoleById(userId, roleId));
   }
 
+  async getUserRole(userId: string): Promise<UserRoleAssignment> {
+    return httpService.get<UserRoleAssignment>(
+      API_CONFIG.endpoints.rbac.userRole(userId),
+    );
+  }
+
   // ── User Locations ─────────────────────────────────────────────────────────
 
   async getUserLocations(userId: string): Promise<UserLocationAssignment[]> {
@@ -103,6 +109,12 @@ class RbacService {
     return httpService.delete(
       API_CONFIG.endpoints.rbac.userLocationById(userId, locationId),
     );
+  }
+
+  async updateUserLocations(userId: string, locationIds: string[]): Promise<void> {
+    return httpService.put(API_CONFIG.endpoints.rbac.userLocations(userId), {
+      locationIds,
+    });
   }
 
   // ── Effective Permissions ──────────────────────────────────────────────────

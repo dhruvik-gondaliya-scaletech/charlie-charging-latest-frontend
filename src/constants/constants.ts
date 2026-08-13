@@ -155,6 +155,7 @@ export const API_CONFIG = {
             permissions: '/rbac/permissions',
             userRoles: (userId: string) => `/rbac/users/${userId}/roles`,
             userRoleById: (userId: string, roleId: string) => `/rbac/users/${userId}/roles/${roleId}`,
+            userRole: (userId: string) => `/rbac/users/${userId}/role`,
             userLocations: (userId: string) => `/rbac/users/${userId}/locations`,
             userLocationById: (userId: string, locationId: string) => `/rbac/users/${userId}/locations/${locationId}`,
             userPermissions: (userId: string) => `/rbac/users/${userId}/permissions`,

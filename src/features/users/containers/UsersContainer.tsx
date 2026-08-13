@@ -37,7 +37,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRoles } from '@/hooks/get/useRbac';
 
 export function UsersContainer() {
-  const { isAdmin, isSuperAdmin } = useAuth();
+  const { isSuperAdmin } = useAuth();
   const { data: users, isLoading, error } = useUsers();
   const inviteUser = useInviteUser();
   const deleteUser = useDeleteUser();
@@ -143,7 +143,7 @@ export function UsersContainer() {
 
           return (
             <div className="flex items-center gap-2">
-              {(isAdmin || isSuperAdmin) && (
+              {isSuperAdmin && (
                 <Link href={FRONTEND_ROUTES.RBAC_USER(user.id)}>
                   <ActionIconButton
                     tooltip="Access Control"
@@ -183,7 +183,7 @@ export function UsersContainer() {
         },
       },
     ],
-    [inviteUser, isAdmin, isSuperAdmin]
+    [inviteUser, isSuperAdmin]
   );
 
   if (error) {

@@ -10,6 +10,7 @@ export const rbacKeys = {
   role: (id: string) => [...rbacKeys.roles(), id] as const,
   permissions: () => [...rbacKeys.all, 'permissions'] as const,
   userRoles: (userId: string) => [...rbacKeys.all, 'users', userId, 'roles'] as const,
+  userRole: (userId: string) => [...rbacKeys.all, 'users', userId, 'role'] as const,
   userLocations: (userId: string) =>
     [...rbacKeys.all, 'users', userId, 'locations'] as const,
   userPermissions: (userId: string) =>
@@ -61,6 +62,17 @@ export const useUserRoles = (userId: string) => {
   return useQuery({
     queryKey: rbacKeys.userRoles(userId),
     queryFn: () => rbacService.getUserRoles(userId),
+    enabled: isSuperAdmin && !!userId,
+    staleTime: 1000 * 60 * 2,
+  });
+};
+
+/** Fetch active role for a specific user. SUPER_ADMIN only. */
+export const useUserRole = (userId: string) => {
+  const { isSuperAdmin } = useAuth();
+  return useQuery({
+    queryKey: rbacKeys.userRole(userId),
+    queryFn: () => rbacService.getUserRole(userId),
     enabled: isSuperAdmin && !!userId,
     staleTime: 1000 * 60 * 2,
   });
