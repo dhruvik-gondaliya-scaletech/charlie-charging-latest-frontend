@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, RefreshCw, Shield, Pencil, Trash2, Lock, Eye } from 'lucide-react';
+import { Plus, RefreshCw, Shield, Pencil, Trash2, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { ColumnDef } from '@tanstack/react-table';
 import { Role } from '@/types';
@@ -26,17 +26,21 @@ export function RolesContainer() {
       header: 'Role Name',
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 border border-primary/20 shrink-0">
-            <Shield className="h-4 w-4 text-primary" />
-          </div>
-          <div className="min-w-0">
-            <p className="font-medium text-foreground truncate">{row.original.name}</p>
-            {row.original.description && (
-              <p className="text-xs text-muted-foreground truncate mt-0.5">
-                {row.original.description}
+          <Link
+            href={FRONTEND_ROUTES.RBAC_ROLE_DETAIL(row.original.id)}
+            className="flex items-center gap-3 group/link min-w-0"
+          >
+            <div className="min-w-0">
+              <p className="font-medium text-foreground truncate group-hover/link:text-primary transition-colors">
+                {row.original.name.split('_').map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
               </p>
-            )}
-          </div>
+              {row.original.description && (
+                <p className="text-xs text-muted-foreground truncate mt-0.5">
+                  {row.original.description}
+                </p>
+              )}
+            </div>
+          </Link>
         </div>
       ),
       minSize: 220,
@@ -66,7 +70,7 @@ export function RolesContainer() {
       cell: ({ row }) => {
         const permCount =
           row.original.permissions?.length ??
-          (row.original as any).rolePermissions?.length ??
+          (row.original as Role & { rolePermissions?: unknown[] }).rolePermissions?.length ??
           0;
         return (
           <span className="text-sm text-muted-foreground">
@@ -81,14 +85,15 @@ export function RolesContainer() {
       header: 'Actions',
       cell: ({ row }) => {
         const role = row.original;
+        if (role.isSystem) {
+          return (
+            <span className="text-xs text-muted-foreground italic font-medium">
+              System roles are read-only
+            </span>
+          );
+        }
         return (
           <div className="flex items-center gap-1">
-            <ActionIconButton
-              tooltip="View"
-              tone="default"
-              icon={<Eye className="h-4 w-4" />}
-              href={FRONTEND_ROUTES.RBAC_ROLE_DETAIL(role.id)}
-            />
             <ProtectedAction role="SUPER_ADMIN">
               <ActionIconButton
                 tooltip="Edit"
@@ -96,19 +101,17 @@ export function RolesContainer() {
                 icon={<Pencil className="h-4 w-4" />}
                 href={FRONTEND_ROUTES.RBAC_ROLE_EDIT(role.id)}
               />
-              {!role.isSystem && (
-                <ActionIconButton
-                  tooltip="Delete"
-                  tone="destructive"
-                  icon={<Trash2 className="h-4 w-4" />}
-                  onClick={() => setDeleteTarget(role)}
-                />
-              )}
+              <ActionIconButton
+                tooltip="Delete"
+                tone="destructive"
+                icon={<Trash2 className="h-4 w-4" />}
+                onClick={() => setDeleteTarget(role)}
+              />
             </ProtectedAction>
           </div>
         );
       },
-      minSize: 140,
+      minSize: 180,
     },
   ];
 
@@ -127,19 +130,16 @@ export function RolesContainer() {
   }
 
   return (
-    <div className="space-y-8 p-6 lg:p-8">
+    <div className="space-y-8 p-4 md:p-8 max-w-[1600px] mx-auto">
       {/* Page header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 border border-primary/20">
-            <Shield className="h-6 w-6 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Roles</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              Manage system and custom roles with their permission sets
-            </p>
-          </div>
+      <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-extrabold tracking-tight bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+            Roles
+          </h1>
+          <p className="text-sm font-medium text-muted-foreground mt-1 tracking-tight">
+            Manage system and custom roles with their permission sets
+          </p>
         </div>
         <Link href={FRONTEND_ROUTES.RBAC_ROLE_NEW}>
           <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">

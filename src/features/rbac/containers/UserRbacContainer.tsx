@@ -34,7 +34,7 @@ export function UserRbacContainer({ userId }: UserRbacContainerProps) {
     : ((locationsResponse as { data?: Location[] } | undefined)?.data ?? []);
 
   return (
-    <div className="max-w-3xl mx-auto p-6 lg:p-8 space-y-8">
+    <div className="max-w-3xl mx-auto p-4 md:p-8 space-y-8">
       {/* Back */}
       <Link href={FRONTEND_ROUTES.USERS}>
         <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground -ml-2">
@@ -49,8 +49,10 @@ export function UserRbacContainer({ userId }: UserRbacContainerProps) {
           <User className="h-6 w-6 text-muted-foreground" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-foreground">Access Control</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
+          <h1 className="text-3xl font-extrabold tracking-tight bg-linear-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+            Access Control
+          </h1>
+          <p className="text-sm font-medium text-muted-foreground mt-1 tracking-tight">
             Manage roles and location scope for this user
           </p>
         </div>
