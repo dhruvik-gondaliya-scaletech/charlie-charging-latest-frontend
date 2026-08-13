@@ -6,6 +6,7 @@ import {
   UserRoleAssignment,
   UserLocationAssignment,
   UserEffectivePermissions,
+  User,
 } from '@/types';
 
 // ─── DTOs ─────────────────────────────────────────────────────────────────────
@@ -31,6 +32,16 @@ export interface AssignRoleDto {
 
 export interface AssignLocationsDto {
   locationIds: string[];
+}
+
+export interface UpdateUserRoleLocationDto {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phoneNumber?: string;
+  roleId?: string;
+  locationIds?: string[];
+  isActive?: boolean;
 }
 
 // ─── Service ─────────────────────────────────────────────────────────────────
@@ -123,6 +134,15 @@ class RbacService {
   async getUserEffectivePermissions(userId: string): Promise<UserEffectivePermissions> {
     return httpService.get<UserEffectivePermissions>(
       API_CONFIG.endpoints.rbac.userPermissions(userId),
+    );
+  }
+
+  // ── User Management / Assignments ──────────────────────────────────────────
+
+  async updateUser(id: string, dto: UpdateUserRoleLocationDto): Promise<{ message: string; user: User }> {
+    return httpService.patch<{ message: string; user: User }>(
+      API_CONFIG.endpoints.users.byId(id),
+      dto,
     );
   }
 }

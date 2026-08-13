@@ -19,6 +19,7 @@ import {
   Loader2,
   Trash2,
   Key,
+  Pencil,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useInviteUser } from '@/hooks/post/useAuthMutations';
@@ -28,6 +29,7 @@ import { Table } from '@/components/shared/Table';
 import { User } from '@/types';
 import { formatDate } from '@/lib/date';
 import { UserInvitationModal } from '../components/UserInvitationModal';
+import { EditUserModal } from '../components/EditUserModal';
 import { StatCard } from '../../dashboard/components/StatCard';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { DEFAULT_PAGE_SIZE, FRONTEND_ROUTES } from '@/constants/constants';
@@ -44,6 +46,7 @@ export function UsersContainer() {
   const { data: allRoles } = useRoles();
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
+  const [editTarget, setEditTarget] = useState<User | null>(null);
 
   const stats = useMemo(() => {
     if (!users) return { total: 0, active: 0, pending: 0 };
@@ -173,6 +176,12 @@ export function UsersContainer() {
                 )}
               />
               <ActionIconButton
+                tooltip="Edit User"
+                tone="default"
+                onClick={() => setEditTarget(user)}
+                icon={<Pencil className="h-3 w-3" />}
+              />
+              <ActionIconButton
                 tooltip="Delete User"
                 tone="destructive"
                 onClick={() => setDeleteTarget(user)}
@@ -183,7 +192,7 @@ export function UsersContainer() {
         },
       },
     ],
-    [inviteUser, isSuperAdmin]
+    [inviteUser, isSuperAdmin, allRoles]
   );
 
   if (error) {
@@ -385,6 +394,12 @@ export function UsersContainer() {
         <UserInvitationModal
           isOpen={isInviteModalOpen}
           onClose={() => setIsInviteModalOpen(false)}
+        />
+
+        <EditUserModal
+          isOpen={!!editTarget}
+          onClose={() => setEditTarget(null)}
+          user={editTarget}
         />
 
         {/* Delete Confirmation Modal */}
