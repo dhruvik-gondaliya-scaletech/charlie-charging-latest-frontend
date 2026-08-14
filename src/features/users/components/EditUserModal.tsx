@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Mail, Shield, Loader2, User as UserIcon } from 'lucide-react';
 import { useRoles } from '@/hooks/get/useRbac';
+import { useUser } from '@/hooks/get/useUsers';
 import { useUpdateUser } from '@/hooks/patch/useUpdateUser';
 import { UpdateUserRoleLocationDto } from '@/services/rbac.service';
 import { Location, LocationEnv, User, AppRole } from '@/types';
@@ -28,6 +29,7 @@ interface EditUserModalProps {
 
 export function EditUserModal({ isOpen, onClose, user }: EditUserModalProps) {
     const updateUser = useUpdateUser();
+    const { data: fetchedUser, isLoading: userLoading } = useUser(isOpen ? user?.id || null : null);
     const { data: allRoles, isLoading: rolesLoading } = useRoles();
     const { data: devLocationsResponse, isLoading: devLoading } = useQuery({
         queryKey: ['locations', Environment.DEV],
@@ -86,25 +88,45 @@ export function EditUserModal({ isOpen, onClose, user }: EditUserModalProps) {
 
     // Check if the selected role is SITE_MANAGER
     const selectedRole = allRoles?.find((r) => r.id === selectedRoleId);
-    const isSiteManager = selectedRole?.name === AppRole.SITE_MANAGER;
+    const selectedRoleName = selectedRole?.name ? String(selectedRole.name).toUpperCase() : '';
+    const isSiteManager = selectedRoleName === 'SITE_MANAGER' || selectedRoleName === 'OPERATOR';
 
-    // Reset default values when user or roles load, or when modal opens
+    // Reset default values when fetchedUser or roles load, or when modal opens
     React.useEffect(() => {
-        if (isOpen && user && allRoles) {
-            const mappedRoleName = user.role === 'super_admin' ? AppRole.SUPER_ADMIN :
-                user.role === 'operator' ? AppRole.SITE_MANAGER : AppRole.ADMIN;
-            const targetRoleId = allRoles.find((r) => r.name === mappedRoleName)?.id || '';
+        if (isOpen && fetchedUser && allRoles) {
+            const fetchedUserAny = fetchedUser as any;
+            
+            let targetRoleId = '';
+            if (fetchedUserAny.roleId) {
+                targetRoleId = allRoles.find((r) => r.id === fetchedUserAny.roleId)?.id || '';
+            }
+            if (!targetRoleId && fetchedUserAny.role) {
+                const roleStr = String(fetchedUserAny.role).toUpperCase();
+                const mappedRoleName = 
+                    roleStr === 'SUPER_ADMIN' || roleStr === 'SUPERADMIN' ? AppRole.SUPER_ADMIN :
+                    roleStr === 'SITE_MANAGER' || roleStr === 'SITEMANAGER' || roleStr === 'OPERATOR' ? AppRole.SITE_MANAGER :
+                    roleStr === 'VIEWER' ? AppRole.VIEWER :
+                    AppRole.ADMIN;
+                targetRoleId = allRoles.find(
+                    (r) => r.name === mappedRoleName || 
+                           r.name.toUpperCase().replace('_', '').replace(' ', '') === mappedRoleName.replace('_', '')
+                )?.id || '';
+            }
+
+            const locationIds = fetchedUserAny.locationIds || 
+                fetchedUserAny.locations?.map((l: any) => typeof l === 'string' ? l : l.id) || 
+                [];
 
             reset({
-                firstName: user.firstName || '',
-                lastName: user.lastName || '',
-                email: user.email || '',
+                firstName: fetchedUserAny.firstName || '',
+                lastName: fetchedUserAny.lastName || '',
+                email: fetchedUserAny.email || '',
                 roleId: targetRoleId,
-                locationIds: user.locations || [],
-                isActive: user.isActive ?? true,
+                locationIds: locationIds,
+                isActive: fetchedUserAny.isActive ?? true,
             });
         }
-    }, [isOpen, user, allRoles, reset]);
+    }, [isOpen, fetchedUser, allRoles, reset]);
 
     // Clear locationIds if the role is changed from SITE_MANAGER
     React.useEffect(() => {
@@ -132,6 +154,22 @@ export function EditUserModal({ isOpen, onClose, user }: EditUserModalProps) {
             },
         });
     };
+
+    if (userLoading) {
+        return (
+            <AnimatedModal
+                isOpen={isOpen}
+                onClose={onClose}
+                title="Edit User Details"
+                description="Loading user details..."
+                size="md"
+            >
+                <div className="flex flex-col items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+            </AnimatedModal>
+        );
+    }
 
     return (
         <AnimatedModal

@@ -162,9 +162,16 @@ export function UsersContainer() {
                   tone="primary"
                   disabled={!isPending || inviteUser.isPending}
                   onClick={() => {
-                    const userRoleName = user.role === 'super_admin' ? AppRole.SUPER_ADMIN : 
-                                         user.role === 'operator' ? AppRole.SITE_MANAGER : AppRole.ADMIN;
-                    const targetRoleId = allRoles?.find(r => r.name === userRoleName)?.id || '';
+                    const roleStr = String(user.role || '').toUpperCase();
+                    const userRoleName = 
+                        roleStr === 'SUPER_ADMIN' || roleStr === 'SUPERADMIN' ? AppRole.SUPER_ADMIN : 
+                        roleStr === 'SITE_MANAGER' || roleStr === 'SITEMANAGER' || roleStr === 'OPERATOR' ? AppRole.SITE_MANAGER : 
+                        roleStr === 'VIEWER' ? AppRole.VIEWER :
+                        AppRole.ADMIN;
+                    const targetRoleId = allRoles?.find(
+                      r => r.name === userRoleName ||
+                           r.name.toUpperCase().replace('_', '').replace(' ', '') === userRoleName.replace('_', '')
+                    )?.id || '';
 
                     inviteUser.mutate({
                       email: user.email,
@@ -349,9 +356,16 @@ export function UsersContainer() {
                         disabled={!isPending || inviteUser.isPending}
                         className="h-8 px-3 rounded-xl font-bold text-xs"
                         onClick={() => {
-                           const userRoleName = user.role === 'super_admin' ? AppRole.SUPER_ADMIN : 
-                                                user.role === 'operator' ? AppRole.SITE_MANAGER : AppRole.ADMIN;
-                           const targetRoleId = allRoles?.find(r => r.name === userRoleName)?.id || '';
+                           const roleStr = String(user.role || '').toUpperCase();
+                           const userRoleName = 
+                               roleStr === 'SUPER_ADMIN' || roleStr === 'SUPERADMIN' ? AppRole.SUPER_ADMIN : 
+                               roleStr === 'SITE_MANAGER' || roleStr === 'SITEMANAGER' || roleStr === 'OPERATOR' ? AppRole.SITE_MANAGER : 
+                               roleStr === 'VIEWER' ? AppRole.VIEWER :
+                               AppRole.ADMIN;
+                           const targetRoleId = allRoles?.find(
+                             r => r.name === userRoleName ||
+                                  r.name.toUpperCase().replace('_', '').replace(' ', '') === userRoleName.replace('_', '')
+                           )?.id || '';
 
                           inviteUser.mutate({
                             email: user.email,

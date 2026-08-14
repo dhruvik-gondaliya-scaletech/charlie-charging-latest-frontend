@@ -23,6 +23,10 @@ class UserService {
     return httpService.get<User>(API_CONFIG.endpoints.users.profile);
   }
 
+  async getUserById(id: string) {
+    return httpService.get<User>(API_CONFIG.endpoints.users.byId(id));
+  }
+
   async updateProfile(data: UpdateProfileData) {
     return httpService.patch<User>(API_CONFIG.endpoints.users.profile, data);
   }
