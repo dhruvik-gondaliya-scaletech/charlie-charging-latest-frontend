@@ -93,24 +93,28 @@ export function EditUserModal({ isOpen, onClose, user }: EditUserModalProps) {
 
     // Reset default values when fetchedUser or roles load, or when modal opens
     React.useEffect(() => {
-        if (isOpen && fetchedUser && allRoles) {
-            const fetchedUserAny = fetchedUser as any;
+        if (isOpen && (fetchedUser || user) && allRoles) {
+            const fetchedUserAny = (fetchedUser || user) as any;
             
             let targetRoleId = '';
             if (fetchedUserAny.roleId) {
                 targetRoleId = allRoles.find((r) => r.id === fetchedUserAny.roleId)?.id || '';
             }
             if (!targetRoleId && fetchedUserAny.role) {
-                const roleStr = String(fetchedUserAny.role).toUpperCase();
-                const mappedRoleName = 
-                    roleStr === 'SUPER_ADMIN' || roleStr === 'SUPERADMIN' ? AppRole.SUPER_ADMIN :
-                    roleStr === 'SITE_MANAGER' || roleStr === 'SITEMANAGER' || roleStr === 'OPERATOR' ? AppRole.SITE_MANAGER :
-                    roleStr === 'VIEWER' ? AppRole.VIEWER :
-                    AppRole.ADMIN;
-                targetRoleId = allRoles.find(
-                    (r) => r.name === mappedRoleName || 
-                           r.name.toUpperCase().replace('_', '').replace(' ', '') === mappedRoleName.replace('_', '')
-                )?.id || '';
+                if (typeof fetchedUserAny.role === 'object' && fetchedUserAny.role.id) {
+                    targetRoleId = allRoles.find((r) => r.id === fetchedUserAny.role.id)?.id || '';
+                } else if (typeof fetchedUserAny.role === 'string') {
+                    const roleStr = fetchedUserAny.role.toUpperCase();
+                    const mappedRoleName = 
+                        roleStr === 'SUPER_ADMIN' || roleStr === 'SUPERADMIN' ? AppRole.SUPER_ADMIN :
+                        roleStr === 'SITE_MANAGER' || roleStr === 'SITEMANAGER' || roleStr === 'OPERATOR' ? AppRole.SITE_MANAGER :
+                        roleStr === 'VIEWER' ? AppRole.VIEWER :
+                        AppRole.ADMIN;
+                    targetRoleId = allRoles.find(
+                        (r) => r.name === mappedRoleName || 
+                               r.name.toUpperCase().replace('_', '').replace(' ', '') === mappedRoleName.replace('_', '')
+                    )?.id || '';
+                }
             }
 
             const locationIds = fetchedUserAny.locationIds || 
@@ -126,7 +130,7 @@ export function EditUserModal({ isOpen, onClose, user }: EditUserModalProps) {
                 isActive: fetchedUserAny.isActive ?? true,
             });
         }
-    }, [isOpen, fetchedUser, allRoles, reset]);
+    }, [isOpen, fetchedUser, user, allRoles, reset]);
 
     // Clear locationIds if the role is changed from SITE_MANAGER
     React.useEffect(() => {
@@ -155,7 +159,7 @@ export function EditUserModal({ isOpen, onClose, user }: EditUserModalProps) {
         });
     };
 
-    if (userLoading) {
+    if (userLoading && !user) {
         return (
             <AnimatedModal
                 isOpen={isOpen}
