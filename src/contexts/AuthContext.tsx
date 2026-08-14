@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { AUTH_CONFIG, FRONTEND_ROUTES } from '@/constants/constants';
-import { User, Tenant, AppPermission } from '@/types';
+import { User, Tenant, AppPermission, AppRole } from '@/types';
 import { authService } from '@/services/auth.service';
 import { toast } from 'sonner';
 import { useMe } from '@/hooks/get/useMe';
@@ -204,8 +204,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // ─── Derived RBAC state ─────────────────────────────────────────────────────
 
   const { roles, permissions, locationScope } = extractRbacFromUser(user);
-  const superAdmin = roles.includes('SUPER_ADMIN');
-  const admin = superAdmin || roles.includes('ADMIN');
+  const superAdmin = roles.includes(AppRole.SUPER_ADMIN);
+  const admin = superAdmin || roles.includes(AppRole.ADMIN);
 
   const hasPermission = useCallback(
     (code: AppPermission | string): boolean => {

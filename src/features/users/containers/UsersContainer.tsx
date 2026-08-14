@@ -26,7 +26,7 @@ import { useInviteUser } from '@/hooks/post/useAuthMutations';
 import { useDeleteUser } from '@/hooks/delete/useUserMutations';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Table } from '@/components/shared/Table';
-import { AppPermission, User } from '@/types';
+import { AppPermission, User, AppRole } from '@/types';
 import { ProtectedAction } from '@/components/shared/ProtectedAction';
 import { formatDate } from '@/lib/date';
 import { UserInvitationModal } from '../components/UserInvitationModal';
@@ -162,8 +162,8 @@ export function UsersContainer() {
                   tone="primary"
                   disabled={!isPending || inviteUser.isPending}
                   onClick={() => {
-                    const userRoleName = user.role === 'super_admin' ? 'SUPER_ADMIN' : 
-                                         user.role === 'operator' ? 'SITE_MANAGER' : 'ADMIN';
+                    const userRoleName = user.role === 'super_admin' ? AppRole.SUPER_ADMIN : 
+                                         user.role === 'operator' ? AppRole.SITE_MANAGER : AppRole.ADMIN;
                     const targetRoleId = allRoles?.find(r => r.name === userRoleName)?.id || '';
 
                     inviteUser.mutate({
@@ -349,9 +349,9 @@ export function UsersContainer() {
                         disabled={!isPending || inviteUser.isPending}
                         className="h-8 px-3 rounded-xl font-bold text-xs"
                         onClick={() => {
-                          const userRoleName = user.role === 'super_admin' ? 'SUPER_ADMIN' : 
-                                               user.role === 'operator' ? 'SITE_MANAGER' : 'ADMIN';
-                          const targetRoleId = allRoles?.find(r => r.name === userRoleName)?.id || '';
+                           const userRoleName = user.role === 'super_admin' ? AppRole.SUPER_ADMIN : 
+                                                user.role === 'operator' ? AppRole.SITE_MANAGER : AppRole.ADMIN;
+                           const targetRoleId = allRoles?.find(r => r.name === userRoleName)?.id || '';
 
                           inviteUser.mutate({
                             email: user.email,

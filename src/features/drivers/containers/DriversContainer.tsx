@@ -21,7 +21,7 @@ import {
 import { cn } from '@/lib/utils';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Table } from '@/components/shared/Table';
-import { Driver, AppPermission } from '@/types';
+import { Driver, AppPermission, AppRole } from '@/types';
 import { formatDate } from '@/lib/date';
 import { StatCard } from '../../dashboard/components/StatCard';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -40,7 +40,14 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export function DriversContainer() {
   const router = useRouter();
-  const { hasPermission } = useAuth();
+  const { hasPermission, roles, hasRole } = useAuth();
+  const isSiteManager = useMemo(() => {
+    return (
+      hasRole(AppRole.SITE_MANAGER) ||
+      hasRole(AppRole.SITE_MANAGER.toLowerCase()) ||
+      (Array.isArray(roles) && roles.some(r => r.toUpperCase() === AppRole.SITE_MANAGER))
+    );
+  }, [roles, hasRole]);
   const canUpdate = hasPermission(AppPermission.DRIVER_UPDATE);
   const defaultTab = canUpdate ? 'config' : 'drivers';
 
@@ -71,86 +78,92 @@ export function DriversContainer() {
   }, [driversList, totalCount]);
 
   const columns: ColumnDef<Driver>[] = useMemo(
-    // ... columns logic ...
-    () => [
-      {
-        accessorKey: 'firstName',
-        header: 'Driver Identity',
-        cell: ({ row }) => (
-          <div className="flex items-center gap-3">
-            <div className="flex flex-col">
-              <span className="font-bold tracking-tight text-foreground">
-                {`${row.original.firstName} ${row.original.lastName}`.trim()}
-              </span>
-              <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium">
-                <Mail className="h-2.5 w-2.5 opacity-60" />
-                {row.original.email}
+    () => {
+      const cols: ColumnDef<Driver>[] = [
+        {
+          accessorKey: 'firstName',
+          header: 'Driver Identity',
+          cell: ({ row }) => (
+            <div className="flex items-center gap-3">
+              <div className="flex flex-col">
+                <span className="font-bold tracking-tight text-foreground">
+                  {`${row.original.firstName} ${row.original.lastName}`.trim()}
+                </span>
+                {!isSiteManager && (
+                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium">
+                    <Mail className="h-2.5 w-2.5 opacity-60" />
+                    {row.original.email}
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-        ),
-      },
-      {
-        accessorKey: 'phoneNumber',
-        header: 'Contact',
-        cell: ({ row }) => (
-          <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground/80 tracking-tight">
-            <Phone className="h-3.5 w-3.5 opacity-40" />
-            {row.getValue('phoneNumber') || 'N/A'}
-          </div>
-        ),
-      },
-      {
-        accessorKey: 'isActive',
-        header: 'Status',
-        cell: ({ row }) => {
-          const isActive = row.original.isActive;
-
-          if (!isActive) return (
-            <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20 font-bold px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-widest flex items-center gap-1 w-fit">
-              <XCircle className="h-3 w-3" />
-              Inactive
-            </Badge>
-          );
-
-          return (
-            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 font-bold px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-widest flex items-center gap-1 w-fit">
-              <CheckCircle2 className="h-3 w-3" />
-              Active
-            </Badge>
-          );
+          ),
         },
-      },
-      {
-        accessorKey: 'createdAt',
-        header: 'Registration',
-        cell: ({ row }) => (
-          <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground/80 tracking-tight">
-            <Calendar className="h-3.5 w-3.5 opacity-40" />
-            {formatDate(row.getValue('createdAt'))}
-          </div>
-        ),
-      },
-      {
-        id: 'actions',
-        header: 'Sessions',
-        cell: ({ row }) => (
-          <ActionIconButton
-            tooltip="View Sessions"
-            tone="primary"
-            onClick={() =>
-              router.push(
-                `${FRONTEND_ROUTES.DRIVER_DETAILS(row.original.id)}?name=${encodeURIComponent(
-                  `${row.original.firstName} ${row.original.lastName}`
-                )}`
-              )
-            }
-            icon={<History className="h-3 w-3" />}
-          />
-        ),
-      },
-    ],
-    []
+        ...(!isSiteManager ? [
+          {
+            accessorKey: 'phoneNumber',
+            header: 'Contact',
+            cell: ({ row }) => (
+              <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground/80 tracking-tight">
+                <Phone className="h-3.5 w-3.5 opacity-40" />
+                {row.getValue('phoneNumber') || 'N/A'}
+              </div>
+            ),
+          } as ColumnDef<Driver>
+        ] : []),
+        {
+          accessorKey: 'isActive',
+          header: 'Status',
+          cell: ({ row }) => {
+            const isActive = row.original.isActive;
+
+            if (!isActive) return (
+              <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20 font-bold px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-widest flex items-center gap-1 w-fit">
+                <XCircle className="h-3 w-3" />
+                Inactive
+              </Badge>
+            );
+
+            return (
+              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 font-bold px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-widest flex items-center gap-1 w-fit">
+                <CheckCircle2 className="h-3 w-3" />
+                Active
+              </Badge>
+            );
+          },
+        },
+        {
+          accessorKey: 'createdAt',
+          header: 'Registration',
+          cell: ({ row }) => (
+            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground/80 tracking-tight">
+              <Calendar className="h-3.5 w-3.5 opacity-40" />
+              {formatDate(row.getValue('createdAt'))}
+            </div>
+          ),
+        },
+        {
+          id: 'actions',
+          header: 'Sessions',
+          cell: ({ row }) => (
+            <ActionIconButton
+              tooltip="View Sessions"
+              tone="primary"
+              onClick={() =>
+                router.push(
+                  `${FRONTEND_ROUTES.DRIVER_DETAILS(row.original.id)}?name=${encodeURIComponent(
+                    `${row.original.firstName} ${row.original.lastName}`
+                  )}`
+                )
+              }
+              icon={<History className="h-3 w-3" />}
+            />
+          ),
+        },
+      ];
+      return cols;
+    },
+    [isSiteManager, router]
   );
 
   if (error) {
@@ -284,10 +297,12 @@ export function DriversContainer() {
                           <span className="font-bold text-foreground">
                             {`${driver.firstName} ${driver.lastName}`.trim()}
                           </span>
-                          <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 mt-0.5">
-                            <Mail className="h-2.5 w-2.5" />
-                            {driver.email}
-                          </span>
+                          {!isSiteManager && (
+                            <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 mt-0.5">
+                              <Mail className="h-2.5 w-2.5" />
+                              {driver.email}
+                            </span>
+                          )}
                         </div>
                       </div>
                       <Badge
@@ -303,13 +318,15 @@ export function DriversContainer() {
                       </Badge>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 py-1">
-                      <div className="space-y-1">
-                        <span className="text-[9px] font-bold uppercase text-muted-foreground/50 tracking-wider flex items-center gap-1">
-                          <Phone className="h-2.5 w-2.5" /> Contact
-                        </span>
-                        <p className="text-sm font-semibold">{driver.phoneNumber || 'N/A'}</p>
-                      </div>
+                    <div className={cn("grid gap-4 py-1", isSiteManager ? "grid-cols-1" : "grid-cols-2")}>
+                      {!isSiteManager && (
+                        <div className="space-y-1">
+                          <span className="text-[9px] font-bold uppercase text-muted-foreground/50 tracking-wider flex items-center gap-1">
+                            <Phone className="h-2.5 w-2.5" /> Contact
+                          </span>
+                          <p className="text-sm font-semibold">{driver.phoneNumber || 'N/A'}</p>
+                        </div>
+                      )}
                       <div className="space-y-1">
                         <span className="text-[9px] font-bold uppercase text-muted-foreground/50 tracking-wider flex items-center gap-1">
                           <Calendar className="h-2.5 w-2.5" /> Joined

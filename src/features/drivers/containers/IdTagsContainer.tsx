@@ -52,17 +52,8 @@ export function IdTagsContainer() {
   const [selectedIdTag, setSelectedIdTag] = useState<IdTag | null>(null);
   const [idTagToDelete, setIdTagToDelete] = useState<string | null>(null);
 
-  const idTagsList = useMemo(() => {
-    if (!idTags) return [];
-    if (Array.isArray(idTags)) return idTags;
-    return idTags.data || [];
-  }, [idTags]);
-
-  const totalCount = useMemo(() => {
-    if (!idTags) return 0;
-    if (Array.isArray(idTags)) return idTags.length;
-    return idTags.meta?.total ?? idTagsList.length;
-  }, [idTags, idTagsList]);
+  const idTagsList = useMemo(() => idTags || [], [idTags]);
+  const totalCount = idTags?.meta?.total ?? idTagsList.length;
 
   const stats = useMemo(() => {
     return {

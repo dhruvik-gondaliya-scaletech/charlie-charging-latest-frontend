@@ -14,7 +14,7 @@ import { useInviteUser } from '@/hooks/post/useAuthMutations';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Mail, Shield, Loader2 } from 'lucide-react';
 import { useRoles } from '@/hooks/get/useRbac';
-import { Location, LocationEnv } from '@/types';
+import { Location, LocationEnv, AppRole } from '@/types';
 import { useQuery } from '@tanstack/react-query';
 import { Environment } from '@/constants/constants';
 import { locationService } from '@/services/location.service';
@@ -80,7 +80,7 @@ export function UserInvitationModal({ isOpen, onClose }: UserInvitationModalProp
 
     // Check if the selected role is SITE_MANAGER
     const selectedRole = allRoles?.find((r) => r.id === selectedRoleId);
-    const isSiteManager = selectedRole?.name === 'SITE_MANAGER';
+    const isSiteManager = selectedRole?.name === AppRole.SITE_MANAGER;
 
     // Clear locationIds if the role is changed from SITE_MANAGER
     React.useEffect(() => {

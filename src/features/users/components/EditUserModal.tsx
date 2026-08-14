@@ -15,7 +15,7 @@ import { Mail, Shield, Loader2, User as UserIcon } from 'lucide-react';
 import { useRoles } from '@/hooks/get/useRbac';
 import { useUpdateUser } from '@/hooks/patch/useUpdateUser';
 import { UpdateUserRoleLocationDto } from '@/services/rbac.service';
-import { Location, LocationEnv, User } from '@/types';
+import { Location, LocationEnv, User, AppRole } from '@/types';
 import { useQuery } from '@tanstack/react-query';
 import { Environment } from '@/constants/constants';
 import { locationService } from '@/services/location.service';
@@ -86,13 +86,13 @@ export function EditUserModal({ isOpen, onClose, user }: EditUserModalProps) {
 
     // Check if the selected role is SITE_MANAGER
     const selectedRole = allRoles?.find((r) => r.id === selectedRoleId);
-    const isSiteManager = selectedRole?.name === 'SITE_MANAGER';
+    const isSiteManager = selectedRole?.name === AppRole.SITE_MANAGER;
 
     // Reset default values when user or roles load, or when modal opens
     React.useEffect(() => {
         if (isOpen && user && allRoles) {
-            const mappedRoleName = user.role === 'super_admin' ? 'SUPER_ADMIN' :
-                user.role === 'operator' ? 'SITE_MANAGER' : 'ADMIN';
+            const mappedRoleName = user.role === 'super_admin' ? AppRole.SUPER_ADMIN :
+                user.role === 'operator' ? AppRole.SITE_MANAGER : AppRole.ADMIN;
             const targetRoleId = allRoles.find((r) => r.name === mappedRoleName)?.id || '';
 
             reset({

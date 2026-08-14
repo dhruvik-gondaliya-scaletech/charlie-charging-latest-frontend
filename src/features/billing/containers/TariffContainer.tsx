@@ -8,6 +8,8 @@ import { useTariffs } from '@/hooks/get/useBilling';
 import { useCreateTariff, useDeleteTariff, useUpdateTariff } from '@/hooks/post/useBillingMutations';
 import { Tariff } from '@/services/billing.service';
 import { TariffFormData } from '@/lib/validations/billing.schema';
+import { useDebounce } from '@/hooks/use-debounce';
+import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { formatDate } from '@/lib/date';
 import { cn } from '@/lib/utils';
@@ -21,7 +23,20 @@ import { DeleteTariffModal } from '@/features/billing/components/DeleteTariffMod
 import { ActionIconButton } from '@/components/shared/ActionIconButton';
 
 export function TariffContainer() {
-  const { data, isLoading, isError, refetch, isFetching } = useTariffs();
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const debouncedSearch = useDebounce(search, 400);
+
+  const { data, isLoading, isError, refetch, isFetching } = useTariffs({
+    search: debouncedSearch || undefined,
+    page,
+    limit: pageSize,
+  });
+
+  const tariffsList = data || [];
+  const totalCount = data?.meta?.total ?? tariffsList.length;
+
   const createTariff = useCreateTariff();
   const updateTariff = useUpdateTariff();
   const deleteTariff = useDeleteTariff();
@@ -236,12 +251,26 @@ export function TariffContainer() {
         )}
       >
         <Table<Tariff>
-          data={data ?? []}
+          data={tariffsList}
           columns={columns}
           isLoading={isLoading}
           loadingRowCount={5}
-          showSearch={false}
-          pageSize={25}
+          showSearch={true}
+          searchPosition="end"
+          onSearch={(value: string) => {
+            setSearch(value);
+            setPage(1);
+          }}
+          manualPagination={true}
+          manualSearching={true}
+          totalCount={totalCount}
+          pageIndex={page - 1}
+          pageSize={pageSize}
+          onPageChange={(newPage: number) => setPage(newPage + 1)}
+          onPageSizeChange={(newSize: number) => {
+            setPageSize(newSize);
+            setPage(1);
+          }}
           maxHeight="650px"
           renderMobileCard={(tariff) => (
             <div className="bg-card border border-border rounded-[1.5rem] p-5 shadow-sm space-y-4">

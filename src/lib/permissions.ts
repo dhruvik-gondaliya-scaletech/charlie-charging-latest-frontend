@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
-import { AppPermission } from '@/types';
+import { AppPermission, AppRole } from '@/types';
 
 // ─── Permission Codes ────────────────────────────────────────────────────────
 
@@ -14,10 +14,10 @@ export { AppPermission };
 // ─── Roles ───────────────────────────────────────────────────────────────────
 
 export const ROLES = {
-  SUPER_ADMIN: 'SUPER_ADMIN',
-  ADMIN: 'ADMIN',
-  SITE_MANAGER: 'SITE_MANAGER',
-  VIEWER: 'VIEWER',
+  SUPER_ADMIN: AppRole.SUPER_ADMIN,
+  ADMIN: AppRole.ADMIN,
+  SITE_MANAGER: AppRole.SITE_MANAGER,
+  VIEWER: AppRole.VIEWER,
 } as const;
 
 export type RoleName = (typeof ROLES)[keyof typeof ROLES];

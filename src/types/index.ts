@@ -254,6 +254,13 @@ export enum AppPermission {
   TENANTS_READ = 'tenants.read',
 }
 
+export enum AppRole {
+  SUPER_ADMIN = 'SUPER_ADMIN',
+  ADMIN = 'ADMIN',
+  SITE_MANAGER = 'SITE_MANAGER',
+  VIEWER = 'VIEWER',
+}
+
 export interface Permission {
   id: string;
   module: string;

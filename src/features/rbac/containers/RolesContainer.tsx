@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Plus, RefreshCw, Shield, Pencil, Trash2, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { ColumnDef } from '@tanstack/react-table';
-import { Role } from '@/types';
+import { Role, AppRole } from '@/types';
 import { useRoles } from '@/hooks/get/useRbac';
 import { RoleDeleteDialog } from '@/features/rbac/components/RoleDeleteDialog';
 import { Button } from '@/components/ui/button';
@@ -105,7 +105,7 @@ export function RolesContainer() {
         }
         return (
           <div className="flex items-center gap-1">
-            <ProtectedAction role="SUPER_ADMIN">
+            <ProtectedAction role={AppRole.SUPER_ADMIN}>
               <ActionIconButton
                 tooltip="Edit"
                 tone="primary"
