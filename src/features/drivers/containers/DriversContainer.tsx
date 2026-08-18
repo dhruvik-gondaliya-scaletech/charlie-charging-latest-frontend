@@ -28,7 +28,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
 import { DriverFormModal } from '../components/DriverFormModal';
 
-import { Settings, Users as UsersListIcon, History } from 'lucide-react';
+import { Settings, Users as UsersListIcon, History, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { FRONTEND_ROUTES } from '@/constants/constants';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -36,6 +36,8 @@ import { DriverAppConfig } from '../components/DriverAppConfig';
 import { ActionIconButton } from '@/components/shared/ActionIconButton';
 import { ProtectedAction } from '@/components/shared/ProtectedAction';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDeleteDriver } from '@/hooks/delete/useDeleteDriver';
+import { DeleteDriverModal } from '../components/DeleteDriverModal';
 
 
 export function DriversContainer() {
@@ -63,6 +65,8 @@ export function DriversContainer() {
   });
 
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [driverToDelete, setDriverToDelete] = useState<Driver | null>(null);
+  const deleteDriverMutation = useDeleteDriver();
 
   const driversList: Driver[] = drivers || [];
   const totalCount = drivers?.meta?.total ?? driversList.length;
@@ -144,20 +148,30 @@ export function DriversContainer() {
         },
         {
           id: 'actions',
-          header: 'Sessions',
+          header: 'Actions',
           cell: ({ row }) => (
-            <ActionIconButton
-              tooltip="View Sessions"
-              tone="primary"
-              onClick={() =>
-                router.push(
-                  `${FRONTEND_ROUTES.DRIVER_DETAILS(row.original.id)}?name=${encodeURIComponent(
-                    `${row.original.firstName} ${row.original.lastName}`
-                  )}`
-                )
-              }
-              icon={<History className="h-3 w-3" />}
-            />
+            <div className="flex items-center gap-1.5">
+              <ActionIconButton
+                tooltip="View Sessions"
+                tone="primary"
+                onClick={() =>
+                  router.push(
+                    `${FRONTEND_ROUTES.DRIVER_DETAILS(row.original.id)}?name=${encodeURIComponent(
+                      `${row.original.firstName} ${row.original.lastName}`
+                    )}`
+                  )
+                }
+                icon={<History className="h-3.5 w-3.5" />}
+              />
+              <ProtectedAction permission={AppPermission.DRIVER_DELETE}>
+                <ActionIconButton
+                  tooltip="Delete Driver"
+                  tone="destructive"
+                  onClick={() => setDriverToDelete(row.original)}
+                  icon={<Trash2 className="h-3.5 w-3.5" />}
+                />
+              </ProtectedAction>
+            </div>
           ),
         },
       ];
@@ -339,7 +353,7 @@ export function DriversContainer() {
                       <Button
                         variant="secondary"
                         size="sm"
-                        className="h-8 px-4 rounded-xl font-bold text-xs w-full"
+                        className="h-8 px-4 rounded-xl font-bold text-xs flex-1"
                         onClick={() =>
                           router.push(
                             `${FRONTEND_ROUTES.DRIVER_DETAILS(driver.id)}?name=${encodeURIComponent(
@@ -351,6 +365,17 @@ export function DriversContainer() {
                         <History className="h-3.5 w-3.5 mr-1.5" />
                         Charging History
                       </Button>
+                      <ProtectedAction permission={AppPermission.DRIVER_DELETE}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 px-3 rounded-xl font-bold text-xs text-destructive hover:bg-destructive/10 border-destructive/20"
+                          onClick={() => setDriverToDelete(driver)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                          Delete
+                        </Button>
+                      </ProtectedAction>
                     </div>
                   </div>
                 )}
@@ -383,6 +408,20 @@ export function DriversContainer() {
         <DriverFormModal
           isOpen={isFormModalOpen}
           onClose={() => setIsFormModalOpen(false)}
+        />
+
+        <DeleteDriverModal
+          isOpen={!!driverToDelete}
+          onClose={() => setDriverToDelete(null)}
+          driver={driverToDelete}
+          isLoading={deleteDriverMutation.isPending}
+          onConfirm={() => {
+            if (driverToDelete) {
+              deleteDriverMutation.mutate(driverToDelete.id, {
+                onSuccess: () => setDriverToDelete(null),
+              });
+            }
+          }}
         />
       </motion.div>
     </TooltipProvider>

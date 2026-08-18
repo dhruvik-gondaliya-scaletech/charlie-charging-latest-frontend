@@ -198,6 +198,7 @@ export enum AppPermission {
   DRIVER_UPDATE = 'driver.update',
   DRIVER_CREATE = 'driver.create',
   DRIVER_READ = 'driver.read',
+  DRIVER_DELETE = 'driver.delete',
 
   // Webhook
   WEBHOOK_READ = 'webhook.read',
