@@ -52,6 +52,7 @@ export const API_CONFIG = {
             sessionStats: (env: string, id: string) => `/stations/${id}/sessions/stats?env=${env}`,
             chargingProfile: (id: string) => `/stations/${id}/charging-profile`,
             liveChargingProfile: (id: string) => `/stations/${id}/live-profile`,
+            freeCharge: (env: string, id: string) => `/stations/${id}/free-charge?env=${env}`,
         },
         locations: {
             create: (env: string) => `/locations?env=${env}`,

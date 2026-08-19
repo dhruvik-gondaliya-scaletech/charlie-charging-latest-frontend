@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { FRONTEND_ROUTES } from '@/constants/constants';
 
 interface ProtectedRouteProps {
   /** Required role — redirects to /unauthorized if user lacks it */
@@ -29,11 +30,21 @@ export function ProtectedRoute({
   redirectTo = '/unauthorized',
   children,
 }: ProtectedRouteProps) {
-  const { hasRole, hasPermission, loading } = useAuth();
+  const { user, hasRole, hasPermission, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     if (loading) return;
+
+    if (!user) {
+      const currentUrl = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : '');
+      const loginUrl = `${FRONTEND_ROUTES.LOGIN}?redirect=${encodeURIComponent(currentUrl)}`;
+      router.replace(loginUrl);
+      return;
+    }
+
     if (requiredRole && !hasRole(requiredRole)) {
       router.replace(redirectTo);
       return;
@@ -41,10 +52,10 @@ export function ProtectedRoute({
     if (requiredPermission && !hasPermission(requiredPermission)) {
       router.replace(redirectTo);
     }
-  }, [loading, requiredRole, requiredPermission, hasRole, hasPermission, router, redirectTo]);
+  }, [loading, user, requiredRole, requiredPermission, hasRole, hasPermission, router, redirectTo, pathname, searchParams]);
 
   // Don't flash content while loading
-  if (loading) return null;
+  if (loading || !user) return null;
 
   const allowed =
     (!requiredRole || hasRole(requiredRole)) &&

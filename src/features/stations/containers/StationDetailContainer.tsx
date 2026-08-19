@@ -42,7 +42,7 @@ import { ProtectedAction } from '@/components/shared/ProtectedAction';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import WebSocketUrlDisplay from '@/components/shared/WebSocketUrlDisplay';
 import { toast } from 'sonner';
-import { FRONTEND_ROUTES } from '@/constants/constants';
+import { FRONTEND_ROUTES, Environment } from '@/constants/constants';
 import { SessionStatus } from '@/types';
 import { BackButton } from '@/components/shared/BackButton';
 import { useWebSocketConnection, useRealTimeEvent } from '@/hooks/useRealTime';
@@ -66,7 +66,7 @@ export function StationDetailContainer() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const queryClient = useQueryClient();
-    const { environment } = useEnvironment();
+    const { environment, setEnvironment } = useEnvironment();
     const { user, tenant } = useAuth();
     const { data: station, isLoading, error } = useStation(id as string);
     const { data: tariffs } = useTariffs();
@@ -141,13 +141,24 @@ export function StationDetailContainer() {
     useEffect(() => {
         const tabParam = searchParams ? searchParams.get('tab') : null;
         const sessionIdParam = searchParams ? searchParams.get('sessionId') : null;
-        if (tabParam) {
-            setActiveTab(tabParam);
+        const envParam = searchParams ? searchParams.get('env') || searchParams.get('environment') : null;
+
+        if (envParam) {
+            const lowerEnv = envParam.toLowerCase();
+            if (lowerEnv === 'dev' && environment !== Environment.DEV) {
+                setEnvironment(Environment.DEV);
+            } else if (lowerEnv === 'prod' && environment !== Environment.PROD) {
+                setEnvironment(Environment.PROD);
+            }
         }
+
         if (sessionIdParam) {
             setFilterSessionId(sessionIdParam);
+            setActiveTab('logs');
+        } else if (tabParam) {
+            setActiveTab(tabParam);
         }
-    }, [searchParams]);
+    }, [searchParams, environment, setEnvironment]);
 
     const fromLocationId = searchParams ? searchParams.get('fromLocation') : null;
     const backHref = fromLocationId
@@ -162,6 +173,23 @@ export function StationDetailContainer() {
     const handleViewSessionLogs = (sessionId: string) => {
         setFilterSessionId(sessionId);
         setActiveTab('logs');
+        if (searchParams) {
+            const params = new URLSearchParams(searchParams.toString());
+            params.set('tab', 'logs');
+            params.set('sessionId', sessionId);
+            router.replace(`/stations/${id}?${params.toString()}`, { scroll: false });
+        }
+    };
+
+    const handleClearSessionLogs = () => {
+        setFilterSessionId(undefined);
+        if (searchParams?.get('sessionId')) {
+            const params = new URLSearchParams(searchParams.toString());
+            params.delete('sessionId');
+            const newQuery = params.toString();
+            const newUrl = newQuery ? `/stations/${id}?${newQuery}` : `/stations/${id}`;
+            router.replace(newUrl, { scroll: false });
+        }
     };
 
     // Establish WebSocket connection
@@ -460,7 +488,7 @@ export function StationDetailContainer() {
                         <ShieldCheck className="h-10 w-10" />
                     </div>
                     <h2 className="text-2xl font-bold">Station Not Found</h2>
-                    <p className="text-muted-foreground">The requested charging station could not be found or you don&apos;t have permission to access it.</p>
+                    <p className="text-muted-foreground">The requested charging station could not be found in current Environment.Please Switch to other Environment.(dev/prod)</p>
                     <BackButton
                         href={FRONTEND_ROUTES.STATIONS}
                         label="Back to Stations"
@@ -744,7 +772,7 @@ export function StationDetailContainer() {
                                 <StationLogs
                                     stationId={station.id}
                                     sessionId={filterSessionId}
-                                    onClearSessionId={() => setFilterSessionId(undefined)}
+                                    onClearSessionId={handleClearSessionLogs}
                                 />
                             </CardContent>
                         </Card>

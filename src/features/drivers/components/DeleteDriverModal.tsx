@@ -63,7 +63,7 @@ export function DeleteDriverModal({
           <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />
           <div className="space-y-1 text-sm">
             <p className="font-bold">
-              Warning: This action will delete the driver and their access of id-tags
+              Warning: This action will only delete the driver but it will not delete or block the id-tag associated with the driver.
             </p>
             <p className="text-xs text-destructive/80 font-medium">
               You are about to delete <strong className="font-extrabold">{driverName}</strong> ({driver.email}).
@@ -75,6 +75,7 @@ export function DeleteDriverModal({
         <div className="rounded-2xl border border-border/60 bg-muted/20 p-4 space-y-2 text-xs font-medium text-muted-foreground">
           <p className="font-bold text-foreground text-xs uppercase tracking-wider">Deletion impacts:</p>
           <ul className="list-disc list-inside space-y-1 text-[11px] leading-relaxed">
+            <li>Deletes the driver</li>
             <li>Unassigns and detaches any ID tags currently linked to this driver</li>
           </ul>
         </div>

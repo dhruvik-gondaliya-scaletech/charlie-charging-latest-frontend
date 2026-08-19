@@ -94,7 +94,8 @@ class HttpService {
       document.cookie = `${AUTH_CONFIG.tenantKey}=; path=/; max-age=0`;
 
       if (window.location.pathname !== FRONTEND_ROUTES.LOGIN) {
-        window.location.href = `${FRONTEND_ROUTES.LOGIN}?expired=true`;
+        const fullUrl = window.location.pathname + window.location.search;
+        window.location.href = `${FRONTEND_ROUTES.LOGIN}?expired=true&redirect=${encodeURIComponent(fullUrl)}`;
       }
     }
   }
@@ -112,7 +113,8 @@ class HttpService {
       document.cookie = `${AUTH_CONFIG.tenantKey}=; path=/; max-age=0`;
 
       if (window.location.pathname !== FRONTEND_ROUTES.LOGIN) {
-        window.location.href = FRONTEND_ROUTES.LOGIN;
+        const fullUrl = window.location.pathname + window.location.search;
+        window.location.href = `${FRONTEND_ROUTES.LOGIN}?redirect=${encodeURIComponent(fullUrl)}`;
       }
     }
   }

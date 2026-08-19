@@ -60,6 +60,7 @@ export interface Station {
   visibility: 'public' | 'private';
   connectorCount: number;
   ocppConfiguration?: Record<string, unknown>;
+  isFreeCharge?: boolean;
   connectors: Connector[];
   createdAt?: string;
   updatedAt?: string;
@@ -599,3 +600,20 @@ export interface PaginationParams {
   page?: number;
   limit?: number;
 }
+
+export interface FreeChargeKeyResult {
+  key: string;
+  value: string;
+  status: 'Accepted' | 'Rejected' | string;
+  message?: string;
+}
+
+export interface SetFreeChargeResponse {
+  success: boolean;
+  enabled: boolean;
+  isFreeCharge?: boolean;
+  manufacturer: string;
+  configurationsUpdated: FreeChargeKeyResult[];
+  summary: string;
+}
+

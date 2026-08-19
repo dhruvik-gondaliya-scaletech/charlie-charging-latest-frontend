@@ -109,6 +109,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     initAuth();
   }, []);
 
+  const getRedirectTarget = (): string => {
+    if (typeof window === 'undefined') return FRONTEND_ROUTES.DASHBOARD;
+    const searchParams = new URLSearchParams(window.location.search);
+    const redirectParam = searchParams.get('redirect');
+    if (redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//')) {
+      return redirectParam;
+    }
+    return FRONTEND_ROUTES.DASHBOARD;
+  };
+
   const login = async (email: string, password: string) => {
     try {
       const { access_token, tenant } = await authService.login(email, password);
@@ -128,7 +138,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(fullUser);
       setTenant(tenant);
       toast.success('Login successful!');
-      router.push(FRONTEND_ROUTES.DASHBOARD);
+      router.push(getRedirectTarget());
     } catch (error) {
       localStorage.removeItem(AUTH_CONFIG.tokenKey);
       document.cookie = `${AUTH_CONFIG.tokenKey}=; path=/; max-age=0`;
@@ -155,7 +165,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(fullUser);
       setTenant(tenant);
       toast.success('Google Login successful!');
-      router.push(FRONTEND_ROUTES.DASHBOARD);
+      router.push(getRedirectTarget());
     } catch (error) {
       localStorage.removeItem(AUTH_CONFIG.tokenKey);
       document.cookie = `${AUTH_CONFIG.tokenKey}=; path=/; max-age=0`;

@@ -15,10 +15,32 @@ export const EnvironmentProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    // Safely access localStorage on the client side
-    const savedEnv = localStorage.getItem('active_environment') as Environment;
-    if (savedEnv === Environment.DEV || savedEnv === Environment.PROD) {
-      setEnvironmentState(savedEnv);
+    // Safely access localStorage & URL search params on the client side
+    let activeEnv: Environment | null = null;
+
+    if (typeof window !== 'undefined') {
+      const searchParams = new URLSearchParams(window.location.search);
+      const envParam = searchParams.get('env') || searchParams.get('environment');
+      if (envParam) {
+        const lower = envParam.toLowerCase();
+        if (lower === 'dev' || lower === Environment.DEV) {
+          activeEnv = Environment.DEV;
+        } else if (lower === 'prod' || lower === Environment.PROD) {
+          activeEnv = Environment.PROD;
+        }
+      }
+
+      if (!activeEnv) {
+        const savedEnv = localStorage.getItem('active_environment') as Environment;
+        if (savedEnv === Environment.DEV || savedEnv === Environment.PROD) {
+          activeEnv = savedEnv;
+        }
+      }
+    }
+
+    if (activeEnv) {
+      setEnvironmentState(activeEnv);
+      localStorage.setItem('active_environment', activeEnv);
     }
     setIsInitialized(true);
   }, []);

@@ -76,12 +76,17 @@ export function proxy(request: NextRequest) {
   }
 
   if (isAuthRoute && isAuthenticated) {
-    return NextResponse.redirect(new URL(FRONTEND_ROUTES.DASHBOARD, request.url));
+    const redirectParam = request.nextUrl.searchParams.get('redirect');
+    const targetUrl = redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//')
+      ? redirectParam
+      : FRONTEND_ROUTES.DASHBOARD;
+    return NextResponse.redirect(new URL(targetUrl, request.url));
   }
 
   if (!isPublicRoute && !isAuthenticated) {
     const loginUrl = new URL(FRONTEND_ROUTES.LOGIN, request.url);
-    loginUrl.searchParams.set('redirect', pathname);
+    const fullPath = request.nextUrl.pathname + request.nextUrl.search;
+    loginUrl.searchParams.set('redirect', fullPath);
     return NextResponse.redirect(loginUrl);
   }
 
