@@ -6,7 +6,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { useLocations } from '@/hooks/get/useLocations';
 import { useDeleteLocation } from '@/hooks/delete/useLocationMutations';
 import { useTransferLocation } from '@/hooks/post/useLocationMutations';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ActionIconButton } from '@/components/shared/ActionIconButton';
@@ -32,19 +32,13 @@ const SERVER_PAGE_SIZE = 25;
 export function LocationsContainer() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
 
-  // Server-side search + pagination state
-  const [search, setSearch] = useState(() => {
-    const fromUrl = searchParams.get('search') || searchParams.get('name');
-    if (fromUrl !== null) return fromUrl;
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('locations_search') || '';
-    }
-    return '';
-  });
+  // Server-side search + pagination state (Fully URL-based)
+  const [search, setSearch] = useState(() => searchParams.get('search') || searchParams.get('name') || '');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(SERVER_PAGE_SIZE);
   const debouncedSearch = useDebounce(search, 500);
@@ -54,13 +48,9 @@ export function LocationsContainer() {
     if (debouncedSearch) params.set('search', debouncedSearch);
 
     const queryString = params.toString();
-    const newPath = `${window.location.pathname}${queryString ? `?${queryString}` : ''}`;
-    window.history.replaceState(null, '', newPath);
-
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('locations_search', search);
-    }
-  }, [debouncedSearch, search]);
+    const newPath = queryString ? `${pathname}?${queryString}` : pathname;
+    router.replace(newPath, { scroll: false });
+  }, [debouncedSearch, pathname, router]);
 
   // Reset to page 1 whenever the search changes
   const handleSearchChange = useCallback((value: string) => {

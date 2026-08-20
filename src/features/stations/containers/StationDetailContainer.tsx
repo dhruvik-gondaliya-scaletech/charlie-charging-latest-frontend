@@ -154,9 +154,14 @@ export function StationDetailContainer() {
 
         if (sessionIdParam) {
             setFilterSessionId(sessionIdParam);
-            setActiveTab('logs');
-        } else if (tabParam) {
+        } else {
+            setFilterSessionId(undefined);
+        }
+
+        if (tabParam) {
             setActiveTab(tabParam);
+        } else if (sessionIdParam) {
+            setActiveTab('sessions');
         }
     }, [searchParams, environment, setEnvironment]);
 

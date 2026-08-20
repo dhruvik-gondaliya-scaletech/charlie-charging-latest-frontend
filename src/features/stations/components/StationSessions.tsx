@@ -80,7 +80,7 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
         const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://scaleev.scaletech.xyz';
         const dateParam = dateStr ? `&date=${encodeURIComponent(dateStr)}` : '';
         const envParam = environment ? `&env=${encodeURIComponent(environment.toLowerCase())}` : '';
-        const shareUrl = `${baseUrl}/stations/${stationId}?tab=sessions${dateParam}&sessionId=${session.id}${envParam}`;
+        const shareUrl = `${baseUrl}/stations/${stationId}?tab=logs${dateParam}&sessionId=${session.id}${envParam}`;
 
         try {
             navigator.clipboard.writeText(shareUrl);

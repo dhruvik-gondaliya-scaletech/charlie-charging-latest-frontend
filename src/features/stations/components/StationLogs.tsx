@@ -583,7 +583,7 @@ export function StationLogs({ stationId, sessionId, onClearSessionId, className 
                                     const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://scaleev.scaletech.xyz';
                                     const dateParam = selectedDateParam ? `&date=${encodeURIComponent(selectedDateParam)}` : '';
                                     const envParam = environment ? `&env=${encodeURIComponent(environment.toLowerCase())}` : '';
-                                    const shareUrl = `${baseUrl}/stations/${stationId}?tab=sessions${dateParam}&sessionId=${sessionId}${envParam}`;
+                                    const shareUrl = `${baseUrl}/stations/${stationId}?tab=logs${dateParam}&sessionId=${sessionId}${envParam}`;
                                     try {
                                         navigator.clipboard.writeText(shareUrl);
                                         toast.success('Session logs share link copied to clipboard!');

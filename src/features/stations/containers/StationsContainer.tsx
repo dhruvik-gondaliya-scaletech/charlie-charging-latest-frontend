@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ColumnDef } from '@tanstack/react-table';
 import { useStations, useStationStats } from '@/hooks/get/useStations';
@@ -50,48 +50,18 @@ import { Separator } from '@/components/ui/separator';
 export function StationsContainer() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const queryClient = useQueryClient();
 
-  // Filter States
-  const [search, setSearch] = useState(() => {
-    const fromUrl = searchParams.get('name');
-    if (fromUrl !== null) return fromUrl;
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('stations_search') || '';
-    }
-    return '';
-  });
-
-  const [status, setStatus] = useState<string>(() => {
-    const fromUrl = searchParams.get('status');
-    if (fromUrl !== null) return fromUrl;
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('stations_status') || 'ALL';
-    }
-    return 'ALL';
-  });
-
-  const [type, setType] = useState<string>(() => {
-    const fromUrl = searchParams.get('type');
-    if (fromUrl !== null) return fromUrl;
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('stations_type') || 'ALL';
-    }
-    return 'ALL';
-  });
-
-  const [visibility, setVisibility] = useState<string>(() => {
-    const fromUrl = searchParams.get('visibility');
-    if (fromUrl !== null) return fromUrl;
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('stations_visibility') || 'ALL';
-    }
-    return 'ALL';
-  });
+  // Filter States (Fully URL-based)
+  const [search, setSearch] = useState(() => searchParams.get('name') || '');
+  const [status, setStatus] = useState<string>(() => searchParams.get('status') || 'ALL');
+  const [type, setType] = useState<string>(() => searchParams.get('type') || 'ALL');
+  const [visibility, setVisibility] = useState<string>(() => searchParams.get('visibility') || 'ALL');
 
   const debouncedSearch = useDebounce(search, 500);
 
-  // Sync filters to URL and localStorage
+  // Sync filters to URL
   useEffect(() => {
     const params = new URLSearchParams();
     if (debouncedSearch) params.set('name', debouncedSearch);
@@ -100,18 +70,10 @@ export function StationsContainer() {
     if (visibility !== 'ALL') params.set('visibility', visibility);
 
     const queryString = params.toString();
-    const newPath = `${window.location.pathname}${queryString ? `?${queryString}` : ''}`;
+    const newPath = queryString ? `${pathname}?${queryString}` : pathname;
 
-    // Use window.history.replaceState to avoid adding to history stack on every keystroke
-    window.history.replaceState(null, '', newPath);
-
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('stations_search', search);
-      localStorage.setItem('stations_status', status);
-      localStorage.setItem('stations_type', type);
-      localStorage.setItem('stations_visibility', visibility);
-    }
-  }, [debouncedSearch, search, status, type, visibility]);
+    router.replace(newPath, { scroll: false });
+  }, [debouncedSearch, status, type, visibility, pathname, router]);
 
   // Pagination state
   const [page, setPage] = useState(1);
@@ -178,12 +140,7 @@ export function StationsContainer() {
     setStatus('ALL');
     setType('ALL');
     setVisibility('ALL');
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('stations_search');
-      localStorage.removeItem('stations_status');
-      localStorage.removeItem('stations_type');
-      localStorage.removeItem('stations_visibility');
-    }
+    router.replace(pathname, { scroll: false });
   };
 
   const isFiltered = search !== '' || status !== 'ALL' || type !== 'ALL' || visibility !== 'ALL';

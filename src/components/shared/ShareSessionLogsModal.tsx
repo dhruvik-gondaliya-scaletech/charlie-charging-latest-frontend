@@ -30,11 +30,11 @@ export function ShareSessionLogsModal({
     const { environment } = useEnvironment();
 
     // Build the shareable URL matching requirement:
-    // https://scaleev.scaletech.xyz/stations/<stationId>?tab=sessions&date=<date>&sessionId=<sessionId>&env=<env>
+    // https://scaleev.scaletech.xyz/stations/<stationId>?tab=logs&date=<date>&sessionId=<sessionId>&env=<env>
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://scaleev.scaletech.xyz';
     const dateParam = date ? `&date=${encodeURIComponent(date)}` : '';
     const envParam = environment ? `&env=${encodeURIComponent(environment.toLowerCase())}` : '';
-    const shareUrl = `${baseUrl}/stations/${stationId}?tab=sessions${dateParam}&sessionId=${sessionId}${envParam}`;
+    const shareUrl = `${baseUrl}/stations/${stationId}?tab=logs${dateParam}&sessionId=${sessionId}${envParam}`;
 
     const handleCopy = async () => {
         try {
