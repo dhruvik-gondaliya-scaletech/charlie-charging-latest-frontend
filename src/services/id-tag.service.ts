@@ -11,7 +11,7 @@ export interface IdTagQueryParams {
 }
 
 export interface PaginatedIdTagsResponse {
-  data: IdTag[];
+  items: IdTag[];
   meta: {
     total: number;
     page: number;

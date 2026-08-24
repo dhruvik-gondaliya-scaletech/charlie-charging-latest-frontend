@@ -1,5 +1,7 @@
 import { LocationCreateContainer } from '@/features/locations/containers/LocationCreateContainer';
 import type { Metadata } from 'next';
+import { ProtectedRoute } from '@/components/shared/ProtectedRoute';
+import { AppPermission } from '@/types';
 
 export const metadata: Metadata = {
   title: 'Define Strategic Site',
@@ -7,5 +9,9 @@ export const metadata: Metadata = {
 };
 
 export default function LocationCreatePage() {
-    return <LocationCreateContainer />;
+    return (
+        <ProtectedRoute requiredPermission={AppPermission.LOCATION_CREATE}>
+            <LocationCreateContainer />
+        </ProtectedRoute>
+    );
 }

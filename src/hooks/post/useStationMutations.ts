@@ -86,3 +86,22 @@ export const useSetSingleStationConfiguration = () => {
     },
   });
 };
+
+export const useSetFreeCharge = () => {
+  const queryClient = useQueryClient();
+  const { environment } = useEnvironment();
+
+  return useMutation({
+    mutationFn: ({ stationId, enabled }: { stationId: string; enabled: boolean }) =>
+      stationService.setFreeCharge(environment, stationId, enabled),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['station-configuration', environment, variables.stationId] });
+      queryClient.invalidateQueries({ queryKey: ['station', environment, variables.stationId] });
+      toast.success(data.summary || `Free Charge ${variables.enabled ? 'enabled' : 'disabled'} successfully`);
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to update Free Charge configuration');
+    },
+  });
+};
+

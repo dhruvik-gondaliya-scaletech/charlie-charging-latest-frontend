@@ -1,0 +1,159 @@
+'use client';
+
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2 } from 'lucide-react';
+import {
+  createRoleSchema,
+  CreateRoleFormValues,
+  UpdateRoleFormValues,
+} from '@/lib/validations/rbac';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { usePermissions } from '@/hooks/get/useRbac';
+import { PermissionMatrix } from './PermissionMatrix';
+
+interface RoleFormProps {
+  mode: 'create' | 'edit';
+  defaultValues?: UpdateRoleFormValues & { permissionCodes?: string[] };
+  onSubmit: (values: CreateRoleFormValues) => void;
+  isLoading?: boolean;
+}
+
+export function RoleForm({ mode, defaultValues, onSubmit, isLoading }: RoleFormProps) {
+  const form = useForm<CreateRoleFormValues>({
+    resolver: zodResolver(createRoleSchema),
+    defaultValues: {
+      name: defaultValues?.name ?? '',
+      description: defaultValues?.description ?? '',
+      permissionCodes: defaultValues?.permissionCodes ?? [],
+    },
+  });
+
+  const { data: allPermissions, isLoading: permsLoading } = usePermissions();
+
+  const renderFields = () => (
+    <div className="space-y-5">
+      <FormField
+        control={form.control}
+        name="name"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="text-muted-foreground ml-1">Role Name</FormLabel>
+            <FormControl>
+              <Input
+                {...field}
+                placeholder="e.g. Billing Manager"
+                className="bg-secondary/20 dark:bg-white/5 border-border dark:border-white/10 text-foreground placeholder:text-muted-foreground/30 focus:border-primary/60"
+                aria-invalid={!!form.formState.errors.name}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="description"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="text-muted-foreground ml-1">
+              Description{' '}
+              <span className="text-muted-foreground/50 font-normal">(optional)</span>
+            </FormLabel>
+            <FormControl>
+              <Textarea
+                {...field}
+                placeholder="Describe what this role can do…"
+                rows={3}
+                className="bg-secondary/20 dark:bg-white/5 border-border dark:border-white/10 text-foreground placeholder:text-muted-foreground/30 focus:border-primary/60 resize-none"
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </div>
+  );
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8" noValidate>
+        {mode === 'create' ? (
+          <div className="space-y-8">
+            {/* Role Details Card */}
+            <div className="rounded-xl border border-border bg-card/30 backdrop-blur-sm p-6 space-y-6">
+              <h2 className="text-sm font-semibold text-foreground/70">Role Details</h2>
+              <div className="space-y-5">
+                {renderFields()}
+              </div>
+            </div>
+
+            {/* Permissions selection Card */}
+            <div className="rounded-xl border border-border bg-card/30 backdrop-blur-sm p-6 space-y-6">
+              <div>
+                <h2 className="text-sm font-semibold text-foreground/70 mb-1">Permissions</h2>
+                <p className="text-xs text-muted-foreground">Select the permissions that will be assigned to this role</p>
+              </div>
+              {permsLoading ? (
+                <div className="flex items-center justify-center py-8 text-muted-foreground/40">
+                  <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                  Loading permissions...
+                </div>
+              ) : (
+                <FormField
+                  control={form.control}
+                  name="permissionCodes"
+                  render={({ field }) => (
+                    <PermissionMatrix
+                      allPermissions={allPermissions ?? []}
+                      selected={field.value ?? []}
+                      editable={true}
+                      onChange={field.onChange}
+                    />
+                  )}
+                />
+              )}
+            </div>
+
+            <div className="flex justify-end pt-4">
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full sm:w-auto px-8 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-md transition-all uppercase tracking-widest text-xs py-3"
+              >
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Create Role
+              </Button>
+            </div>
+          </div>
+        ) : (
+          /* Edit mode - rendered fields directly, styling is handled by the parent page wrapper */
+          <>
+            <div className="space-y-5">
+              {renderFields()}
+            </div>
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Save Changes
+            </Button>
+          </>
+        )}
+      </form>
+    </Form>
+  );
+}

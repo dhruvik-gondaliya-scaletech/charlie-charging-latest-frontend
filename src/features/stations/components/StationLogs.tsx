@@ -23,8 +23,13 @@ import {
     Clock,
     Download,
     ChevronsLeft,
-    ChevronsRight
+    ChevronsRight,
+    Share2
 } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { toast } from 'sonner';
+import { useEnvironment } from '@/contexts/EnvironmentContext';
+import { ShareSessionLogsModal } from '@/components/shared/ShareSessionLogsModal';
 import { OcppLog } from '@/types';
 import { ExportLogsModal } from './ExportLogsModal';
 import {
@@ -93,7 +98,11 @@ const OCPP_MESSAGE_TYPES = [
 ];
 
 export function StationLogs({ stationId, sessionId, onClearSessionId, className }: StationLogsProps) {
+    const searchParams = useSearchParams();
+    const { environment } = useEnvironment();
+    const selectedDateParam = searchParams ? searchParams.get('date') : null;
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [directionFilter, setDirectionFilter] = useState<string>('all');
     const [messageTypeFilter, setMessageTypeFilter] = useState<string[]>([]);
     const [searchQuery, setSearchQuery] = useState<string>('');
@@ -103,6 +112,21 @@ export function StationLogs({ stationId, sessionId, onClearSessionId, className 
     });
     const [pageIndex, setPageIndex] = useState<number>(0);
     const [pageSize, setPageSize] = useState<number>(25);
+
+    useEffect(() => {
+        if (selectedDateParam) {
+            const parts = selectedDateParam.split('-');
+            if (parts.length === 3) {
+                const year = parseInt(parts[0], 10);
+                const month = parseInt(parts[1], 10) - 1;
+                const day = parseInt(parts[2], 10);
+                const parsedDate = new Date(year, month, day);
+                if (!isNaN(parsedDate.getTime())) {
+                    setDateRange({ from: startOfDay(parsedDate), to: endOfDay(parsedDate) });
+                }
+            }
+        }
+    }, [selectedDateParam]);
 
     // Reset page index when filters change
     useEffect(() => {
@@ -551,14 +575,37 @@ export function StationLogs({ stationId, sessionId, onClearSessionId, className 
                                 </p>
                             </div>
                         </div>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={onClearSessionId}
-                            className="h-10 text-xs font-bold hover:bg-primary/20 hover:text-primary transition-colors"
-                        >
-                            Clear Session Filter
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://scaleev.scaletech.xyz';
+                                    const dateParam = selectedDateParam ? `&date=${encodeURIComponent(selectedDateParam)}` : '';
+                                    const envParam = environment ? `&env=${encodeURIComponent(environment.toLowerCase())}` : '';
+                                    const shareUrl = `${baseUrl}/stations/${stationId}?tab=logs${dateParam}&sessionId=${sessionId}${envParam}`;
+                                    try {
+                                        navigator.clipboard.writeText(shareUrl);
+                                        toast.success('Session logs share link copied to clipboard!');
+                                    } catch (err) {
+                                        console.error('Failed to copy share link:', err);
+                                    }
+                                    setIsShareModalOpen(true);
+                                }}
+                                className="h-9 text-xs font-bold gap-1.5 border-primary/30 text-primary hover:bg-primary/10 transition-colors rounded-xl"
+                            >
+                                <Share2 className="h-3.5 w-3.5" />
+                                Share Logs
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={onClearSessionId}
+                                className="h-9 text-xs font-bold hover:bg-primary/20 hover:text-primary transition-colors rounded-xl"
+                            >
+                                Clear Session Filter
+                            </Button>
+                        </div>
                     </div>
                 )}
             </div>
@@ -819,6 +866,16 @@ export function StationLogs({ stationId, sessionId, onClearSessionId, className 
                 defaultSelectedEvents={messageTypeFilter}
                 defaultDateRange={dateRange}
             />
+
+            {sessionId && (
+                <ShareSessionLogsModal
+                    isOpen={isShareModalOpen}
+                    onClose={() => setIsShareModalOpen(false)}
+                    stationId={stationId}
+                    sessionId={sessionId}
+                    date={selectedDateParam || undefined}
+                />
+            )}
         </div>
     );
 }

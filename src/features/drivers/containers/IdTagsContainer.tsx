@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Table } from '@/components/shared/Table';
-import { IdTag, IdTagStatus } from '@/types';
+import { IdTag, IdTagStatus, AppPermission } from '@/types';
 import { formatDate } from '@/lib/date';
 import { StatCard } from '../../dashboard/components/StatCard';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -33,6 +33,7 @@ import { useDeleteIdTag } from '@/hooks/delete/useDeleteIdTag';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import { ActionIconButton } from '@/components/shared/ActionIconButton';
 import { useDebounce } from '@/hooks/use-debounce';
+import { ProtectedAction } from '@/components/shared/ProtectedAction';
 
 export function IdTagsContainer() {
   const [search, setSearch] = useState('');
@@ -51,17 +52,8 @@ export function IdTagsContainer() {
   const [selectedIdTag, setSelectedIdTag] = useState<IdTag | null>(null);
   const [idTagToDelete, setIdTagToDelete] = useState<string | null>(null);
 
-  const idTagsList = useMemo(() => {
-    if (!idTags) return [];
-    if (Array.isArray(idTags)) return idTags;
-    return idTags.data || [];
-  }, [idTags]);
-
-  const totalCount = useMemo(() => {
-    if (!idTags) return 0;
-    if (Array.isArray(idTags)) return idTags.length;
-    return idTags.meta?.total ?? idTagsList.length;
-  }, [idTags, idTagsList]);
+  const idTagsList = useMemo(() => idTags || [], [idTags]);
+  const totalCount = idTags?.meta?.total ?? idTagsList.length;
 
   const stats = useMemo(() => {
     return {
@@ -184,21 +176,25 @@ export function IdTagsContainer() {
         header: 'Actions',
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
-            <ActionIconButton
-              tone="primary"
-              tooltip="Edit"
-              icon={<Edit2 className="h-3.5 w-3.5" />}
-              onClick={() => {
-                setSelectedIdTag(row.original);
-                setIsFormModalOpen(true);
-              }}
-            />
-            <ActionIconButton
-              tone="destructive"
-              tooltip="Delete"
-              icon={<Trash2 className="h-3.5 w-3.5" />}
-              onClick={() => setIdTagToDelete(row.original.idTag)}
-            />
+            <ProtectedAction permission={AppPermission.ID_TAG_UPDATE}>
+              <ActionIconButton
+                tone="primary"
+                tooltip="Edit"
+                icon={<Edit2 className="h-3.5 w-3.5" />}
+                onClick={() => {
+                  setSelectedIdTag(row.original);
+                  setIsFormModalOpen(true);
+                }}
+              />
+            </ProtectedAction>
+            <ProtectedAction permission={AppPermission.ID_TAG_DELETE}>
+              <ActionIconButton
+                tone="destructive"
+                tooltip="Delete"
+                icon={<Trash2 className="h-3.5 w-3.5" />}
+                onClick={() => setIdTagToDelete(row.original.idTag)}
+              />
+            </ProtectedAction>
           </div>
         ),
       },
@@ -288,16 +284,18 @@ export function IdTagsContainer() {
               setPage(1);
             }}
             appendWithSearch={
-              <Button
-                onClick={() => {
-                  setSelectedIdTag(null);
-                  setIsFormModalOpen(true);
-                }}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
-              >
-                <Plus className="h-4 w-4" />
-                Enroll New Tag
-              </Button>
+              <ProtectedAction permission={AppPermission.ID_TAG_CREATE}>
+                <Button
+                  onClick={() => {
+                    setSelectedIdTag(null);
+                    setIsFormModalOpen(true);
+                  }}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
+                >
+                  <Plus className="h-4 w-4" />
+                  Enroll New Tag
+                </Button>
+              </ProtectedAction>
             }
             maxHeight="700px"
             className="border-none shadow-none"
@@ -358,27 +356,31 @@ export function IdTagsContainer() {
                   </div>
 
                   <div className="flex items-center justify-end gap-2 pt-1 border-t border-border/50">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="h-8 px-3 rounded-xl font-bold text-xs"
-                      onClick={() => {
-                        setSelectedIdTag(tag);
-                        setIsFormModalOpen(true);
-                      }}
-                    >
-                      <Edit2 className="h-3.5 w-3.5 mr-1.5" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 px-3 rounded-xl font-bold text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
-                      onClick={() => setIdTagToDelete(tag.idTag)}
-                    >
-                      <Trash2 className="h-4 w-4 mr-1.5" />
-                      Revoke
-                    </Button>
+                    <ProtectedAction permission={AppPermission.ID_TAG_UPDATE}>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="h-8 px-3 rounded-xl font-bold text-xs"
+                        onClick={() => {
+                          setSelectedIdTag(tag);
+                          setIsFormModalOpen(true);
+                        }}
+                      >
+                        <Edit2 className="h-3.5 w-3.5 mr-1.5" />
+                        Edit
+                      </Button>
+                    </ProtectedAction>
+                    <ProtectedAction permission={AppPermission.ID_TAG_DELETE}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-3 rounded-xl font-bold text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+                        onClick={() => setIdTagToDelete(tag.idTag)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-1.5" />
+                        Revoke
+                      </Button>
+                    </ProtectedAction>
                   </div>
                 </div>
               );
@@ -394,15 +396,17 @@ export function IdTagsContainer() {
                     No access tokens detected. Register your first RFID tag to enable driver authentication.
                   </p>
                 </div>
-                <Button
-                  onClick={() => {
-                    setSelectedIdTag(null);
-                    setIsFormModalOpen(true);
-                  }}
-                  className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 font-black px-8 mt-4 uppercase tracking-widest text-[10px]"
-                >
-                  Enroll First Tag
-                </Button>
+                <ProtectedAction permission={AppPermission.ID_TAG_CREATE}>
+                  <Button
+                    onClick={() => {
+                      setSelectedIdTag(null);
+                      setIsFormModalOpen(true);
+                    }}
+                    className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 font-black px-8 mt-4 uppercase tracking-widest text-[10px]"
+                  >
+                    Enroll First Tag
+                  </Button>
+                </ProtectedAction>
               </div>
             }
           />

@@ -20,7 +20,8 @@ export interface InviteUserData {
   email: string;
   firstName?: string;
   lastName?: string;
-  role: string;
+  roleId: string;
+  locationIds?: string[];
 }
 
 export interface AcceptInvitationData {
@@ -70,6 +71,10 @@ class AuthService {
 
   async resetPassword(data: ResetPasswordData) {
     return httpService.post(API_CONFIG.endpoints.auth.resetPassword, data);
+  }
+
+  async getMe() {
+    return httpService.get<User>(API_CONFIG.endpoints.auth.me);
   }
 
   async logout() {

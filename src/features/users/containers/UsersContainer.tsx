@@ -18,26 +18,36 @@ import {
   ShieldAlert,
   Loader2,
   Trash2,
+  Key,
+  Pencil,
 } from 'lucide-react';
+import Link from 'next/link';
 import { useInviteUser } from '@/hooks/post/useAuthMutations';
 import { useDeleteUser } from '@/hooks/delete/useUserMutations';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Table } from '@/components/shared/Table';
-import { User } from '@/types';
+import { AppPermission, User, AppRole } from '@/types';
+import { ProtectedAction } from '@/components/shared/ProtectedAction';
 import { formatDate } from '@/lib/date';
 import { UserInvitationModal } from '../components/UserInvitationModal';
+import { EditUserModal } from '../components/EditUserModal';
 import { StatCard } from '../../dashboard/components/StatCard';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
+import { DEFAULT_PAGE_SIZE, FRONTEND_ROUTES } from '@/constants/constants';
 import { ActionIconButton } from '@/components/shared/ActionIconButton';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRoles } from '@/hooks/get/useRbac';
 
 export function UsersContainer() {
+  const { isSuperAdmin } = useAuth();
   const { data: users, isLoading, error } = useUsers();
   const inviteUser = useInviteUser();
   const deleteUser = useDeleteUser();
+  const { data: allRoles } = useRoles();
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
+  const [editTarget, setEditTarget] = useState<User | null>(null);
 
   const stats = useMemo(() => {
     if (!users) return { total: 0, active: 0, pending: 0 };
@@ -118,12 +128,15 @@ export function UsersContainer() {
       {
         accessorKey: 'createdAt',
         header: 'Onboarding Date',
-        cell: ({ row }) => (
-          <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground/80 tracking-tight">
-            <Calendar className="h-3.5 w-3.5 opacity-40" />
-            {formatDate(row.getValue('createdAt'))}
-          </div>
-        ),
+        cell: ({ row }) => {
+          const val = row.getValue('createdAt') as string | undefined;
+          return (
+            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground/80 tracking-tight">
+              <Calendar className="h-3.5 w-3.5 opacity-40" />
+              {val ? formatDate(val) : 'N/A'}
+            </div>
+          );
+        },
       },
       {
         id: 'actions',
@@ -134,34 +147,66 @@ export function UsersContainer() {
 
           return (
             <div className="flex items-center gap-2">
-              <ActionIconButton
-                tooltip="Resend Invitation"
-                tone="primary"
-                disabled={!isPending || inviteUser.isPending}
-                onClick={() => {
-                  inviteUser.mutate({
-                    email: user.email,
-                    role: 'admin',
-                  });
-                }}
-                icon={inviteUser.isPending ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : (
-                  <Mail className="h-3 w-3" />
-                )}
-              />
-              <ActionIconButton
-                tooltip="Delete User"
-                tone="destructive"
-                onClick={() => setDeleteTarget(user)}
-                icon={<Trash2 className="h-3 w-3" />}
-              />
+              {isSuperAdmin && (
+                <Link href={FRONTEND_ROUTES.RBAC_USER(user.id)}>
+                  <ActionIconButton
+                    tooltip="Access Control"
+                    tone="primary"
+                    icon={<Key className="h-3 w-3" />}
+                  />
+                </Link>
+              )}
+              <ProtectedAction permission={AppPermission.USERS_INVITE}>
+                <ActionIconButton
+                  tooltip="Resend Invitation"
+                  tone="primary"
+                  disabled={!isPending || inviteUser.isPending}
+                  onClick={() => {
+                    const roleStr = String(user.role || '').toUpperCase();
+                    const userRoleName = 
+                        roleStr === 'SUPER_ADMIN' || roleStr === 'SUPERADMIN' ? AppRole.SUPER_ADMIN : 
+                        roleStr === 'SITE_MANAGER' || roleStr === 'SITEMANAGER' || roleStr === 'OPERATOR' ? AppRole.SITE_MANAGER : 
+                        roleStr === 'VIEWER' ? AppRole.VIEWER :
+                        AppRole.ADMIN;
+                    const targetRoleId = allRoles?.find(
+                      r => r.name === userRoleName ||
+                           r.name.toUpperCase().replace('_', '').replace(' ', '') === userRoleName.replace('_', '')
+                    )?.id || '';
+
+                    inviteUser.mutate({
+                      email: user.email,
+                      roleId: targetRoleId,
+                    });
+                  }}
+                  icon={inviteUser.isPending ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <Mail className="h-3 w-3" />
+                  )}
+                />
+              </ProtectedAction>
+              <ProtectedAction permission={AppPermission.USERS_UPDATE}>
+                <ActionIconButton
+                  tooltip="Edit User"
+                  tone="default"
+                  onClick={() => setEditTarget(user)}
+                  icon={<Pencil className="h-3 w-3" />}
+                />
+              </ProtectedAction>
+              <ProtectedAction permission={AppPermission.USERS_DELETE}>
+                <ActionIconButton
+                  tooltip="Delete User"
+                  tone="destructive"
+                  onClick={() => setDeleteTarget(user)}
+                  icon={<Trash2 className="h-3 w-3" />}
+                />
+              </ProtectedAction>
             </div>
           );
         },
       },
     ],
-    [inviteUser]
+    [inviteUser, isSuperAdmin, allRoles]
   );
 
   if (error) {
@@ -234,13 +279,15 @@ export function UsersContainer() {
             showSearch
             searchPosition="end"
             appendWithSearch={
-              <Button
-                onClick={() => setIsInviteModalOpen(true)}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
-              >
-                <UserPlus className="h-4 w-4" />
-                Invite Operator
-              </Button>
+              <ProtectedAction permission={AppPermission.USERS_INVITE}>
+                <Button
+                  onClick={() => setIsInviteModalOpen(true)}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  Invite Operator
+                </Button>
+              </ProtectedAction>
             }
             pageSize={DEFAULT_PAGE_SIZE}
             maxHeight="700px"
@@ -297,39 +344,54 @@ export function UsersContainer() {
                     </div>
                     <div className="space-y-1">
                       <span className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Added</span>
-                      <p className="text-sm font-semibold">{formatDate(user.createdAt)}</p>
+                      <p className="text-sm font-semibold">{user.createdAt ? formatDate(user.createdAt) : 'N/A'}</p>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-end gap-2 pt-1 border-t border-border/50">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      disabled={!isPending || inviteUser.isPending}
-                      className="h-8 px-3 rounded-xl font-bold text-xs"
-                      onClick={() => {
-                        inviteUser.mutate({
-                          email: user.email,
-                          role: 'admin',
-                        });
-                      }}
-                    >
-                      {inviteUser.isPending ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
-                      ) : (
-                        <Mail className="h-3.5 w-3.5 mr-1.5" />
-                      )}
-                      Re-invite
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 px-3 rounded-xl font-bold text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
-                      onClick={() => setDeleteTarget(user)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                      Delete
-                    </Button>
+                    <ProtectedAction permission={AppPermission.USERS_INVITE}>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        disabled={!isPending || inviteUser.isPending}
+                        className="h-8 px-3 rounded-xl font-bold text-xs"
+                        onClick={() => {
+                           const roleStr = String(user.role || '').toUpperCase();
+                           const userRoleName = 
+                               roleStr === 'SUPER_ADMIN' || roleStr === 'SUPERADMIN' ? AppRole.SUPER_ADMIN : 
+                               roleStr === 'SITE_MANAGER' || roleStr === 'SITEMANAGER' || roleStr === 'OPERATOR' ? AppRole.SITE_MANAGER : 
+                               roleStr === 'VIEWER' ? AppRole.VIEWER :
+                               AppRole.ADMIN;
+                           const targetRoleId = allRoles?.find(
+                             r => r.name === userRoleName ||
+                                  r.name.toUpperCase().replace('_', '').replace(' ', '') === userRoleName.replace('_', '')
+                           )?.id || '';
+
+                          inviteUser.mutate({
+                            email: user.email,
+                            roleId: targetRoleId,
+                          });
+                        }}
+                      >
+                        {inviteUser.isPending ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                        ) : (
+                          <Mail className="h-3.5 w-3.5 mr-1.5" />
+                        )}
+                        Re-invite
+                      </Button>
+                    </ProtectedAction>
+                    <ProtectedAction permission={AppPermission.USERS_DELETE}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-3 rounded-xl font-bold text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+                        onClick={() => setDeleteTarget(user)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                        Delete
+                      </Button>
+                    </ProtectedAction>
                   </div>
                 </div>
               );
@@ -345,12 +407,14 @@ export function UsersContainer() {
                     No personnel detected in the system. Start by inviting your first enterprise operator.
                   </p>
                 </div>
-                <Button
-                  onClick={() => setIsInviteModalOpen(true)}
-                  className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 font-black px-8 mt-4 uppercase tracking-widest text-[10px]"
-                >
-                  Onboard First User
-                </Button>
+                <ProtectedAction permission={AppPermission.USERS_INVITE}>
+                  <Button
+                    onClick={() => setIsInviteModalOpen(true)}
+                    className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 font-black px-8 mt-4 uppercase tracking-widest text-[10px]"
+                  >
+                    Onboard First User
+                  </Button>
+                </ProtectedAction>
               </div>
             }
           />
@@ -359,6 +423,12 @@ export function UsersContainer() {
         <UserInvitationModal
           isOpen={isInviteModalOpen}
           onClose={() => setIsInviteModalOpen(false)}
+        />
+
+        <EditUserModal
+          isOpen={!!editTarget}
+          onClose={() => setEditTarget(null)}
+          user={editTarget}
         />
 
         {/* Delete Confirmation Modal */}

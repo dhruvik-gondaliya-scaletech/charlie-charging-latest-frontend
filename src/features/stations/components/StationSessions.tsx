@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useEnvironment } from '@/contexts/EnvironmentContext';
 import { useStationSessions } from '@/hooks/get/useStations';
 import { Table } from '@/components/shared/Table';
 import { ColumnDef } from '@tanstack/react-table';
@@ -24,10 +25,13 @@ import {
     RefreshCw,
     Terminal,
     RotateCcw,
-    Leaf
+    Leaf,
+    Share2
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import { ShareSessionLogsModal } from '@/components/shared/ShareSessionLogsModal';
 import {
     Select,
     SelectContent,
@@ -53,6 +57,44 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
         from: undefined,
         to: undefined,
     });
+
+    const { environment } = useEnvironment();
+    const [shareModal, setShareModal] = useState<{ isOpen: boolean; sessionId: string; date?: string }>({
+        isOpen: false,
+        sessionId: '',
+        date: undefined,
+    });
+
+    const handleShareSession = (session: Session) => {
+        const dateVal = session.startTime || session.pluggedAt;
+        let dateStr: string | undefined;
+        if (dateVal) {
+            const d = new Date(dateVal);
+            if (!isNaN(d.getTime())) {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                dateStr = `${year}-${month}-${day}`;
+            }
+        }
+        const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://scaleev.scaletech.xyz';
+        const dateParam = dateStr ? `&date=${encodeURIComponent(dateStr)}` : '';
+        const envParam = environment ? `&env=${encodeURIComponent(environment.toLowerCase())}` : '';
+        const shareUrl = `${baseUrl}/stations/${stationId}?tab=logs${dateParam}&sessionId=${session.id}${envParam}`;
+
+        try {
+            navigator.clipboard.writeText(shareUrl);
+            toast.success('Session logs link copied to clipboard!');
+        } catch (e) {
+            console.error('Copy failed:', e);
+        }
+
+        setShareModal({
+            isOpen: true,
+            sessionId: session.id,
+            date: dateStr,
+        });
+    };
 
     useEffect(() => {
         if (selectedDateParam) {
@@ -114,7 +156,7 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
                 cell: ({ row }) => {
                     const firstName = row.original.userFirstName;
                     const lastName = row.original.userLastName;
-                    const fullName = firstName && lastName ? `${firstName} ${lastName}` : 'Guest User';
+                    const fullName = firstName && lastName ? `${firstName} ${lastName}` : 'ChargePoint';
                     const useMode = row.original.useMode;
 
                     return (
@@ -369,25 +411,38 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
             {
                 id: 'actions',
                 header: 'Actions',
+                size: 210,
                 cell: ({ row }) => {
                     const transactionId = row.original.transactionId;
                     if (!transactionId) return null;
 
                     return (
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => onViewLogs?.(row.original.id)}
-                            className="h-8 px-2 text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary/10"
-                        >
-                            <Terminal className="h-3.5 w-3.5 mr-1.5" />
-                            View Logs
-                        </Button>
+                        <div className="flex items-center justify-end gap-1.5 whitespace-nowrap min-w-[190px]">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => onViewLogs?.(row.original.id)}
+                                className="h-8 px-2 text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary/10 transition-colors"
+                            >
+                                <Terminal className="h-3.5 w-3.5 mr-1.5" />
+                                View Logs
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleShareSession(row.original)}
+                                className="h-8 px-2 text-[10px] font-black uppercase tracking-widest text-emerald-500 hover:bg-emerald-500/10 hover:text-emerald-500 transition-colors"
+                                title="Share Session Logs Link"
+                            >
+                                <Share2 className="h-3.5 w-3.5 mr-1.5" />
+                                Share Logs
+                            </Button>
+                        </div>
                     );
                 },
             },
         ],
-        [onViewLogs]
+        [onViewLogs, stationId]
     );
 
     if (isLoading && !sessions) {
@@ -520,7 +575,7 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
                     else if (status?.toLowerCase().includes('progress')) colorClasses = "bg-blue-500/10 text-blue-500 border-blue-500/20";
                     else colorClasses = "bg-destructive/10 text-destructive border-destructive/20";
 
-                    const fullName = session.userFirstName && session.userLastName ? `${session.userFirstName} ${session.userLastName}` : 'Guest User';
+                    const fullName = session.userFirstName && session.userLastName ? `${session.userFirstName} ${session.userLastName}` : 'ChargePoint';
 
                     return (
                         <div className={cn(
@@ -590,15 +645,26 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
                                         {session.startTime ? formatDurationUtil(session.startTime, session.endTime) : '-'}
                                     </span>
                                 </div>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => onViewLogs?.(session.id)}
-                                    className="h-9 rounded-xl text-[10px] font-black uppercase tracking-widest text-primary bg-primary/5 hover:bg-primary/10"
-                                >
-                                    <Terminal className="h-3.5 w-3.5 mr-1.5" />
-                                    Logs
-                                </Button>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => handleShareSession(session)}
+                                        className="h-9 rounded-xl text-[10px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 hover:bg-emerald-500/20"
+                                    >
+                                        <Share2 className="h-3.5 w-3.5 mr-1.5" />
+                                        Share Logs
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => onViewLogs?.(session.id)}
+                                        className="h-9 rounded-xl text-[10px] font-black uppercase tracking-widest text-primary bg-primary/5 hover:bg-primary/10"
+                                    >
+                                        <Terminal className="h-3.5 w-3.5 mr-1.5" />
+                                        Logs
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     );
@@ -614,6 +680,14 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
                         </div>
                     </div>
                 }
+            />
+
+            <ShareSessionLogsModal
+                isOpen={shareModal.isOpen}
+                onClose={() => setShareModal(prev => ({ ...prev, isOpen: false }))}
+                stationId={stationId}
+                sessionId={shareModal.sessionId}
+                date={shareModal.date}
             />
         </div>
     );

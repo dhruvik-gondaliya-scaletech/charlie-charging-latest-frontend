@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { userInvitationSchema, UserInvitationData } from '@/lib/validations/user.schema';
@@ -10,7 +11,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useInviteUser } from '@/hooks/post/useAuthMutations';
-import { Mail, User, Shield, Loader2 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Mail, Shield, Loader2 } from 'lucide-react';
+import { useRoles } from '@/hooks/get/useRbac';
+import { Location, LocationEnv, AppRole } from '@/types';
+import { useQuery } from '@tanstack/react-query';
+import { Environment } from '@/constants/constants';
+import { locationService } from '@/services/location.service';
 
 interface UserInvitationModalProps {
     isOpen: boolean;
@@ -19,20 +26,71 @@ interface UserInvitationModalProps {
 
 export function UserInvitationModal({ isOpen, onClose }: UserInvitationModalProps) {
     const inviteUser = useInviteUser();
+    const { data: allRoles, isLoading: rolesLoading } = useRoles();
+    const { data: devLocationsResponse, isLoading: devLoading } = useQuery({
+        queryKey: ['locations', Environment.DEV],
+        queryFn: () => locationService.getAllLocations(Environment.DEV),
+        staleTime: 60000,
+    });
+
+    const { data: prodLocationsResponse, isLoading: prodLoading } = useQuery({
+        queryKey: ['locations', Environment.PROD],
+        queryFn: () => locationService.getAllLocations(Environment.PROD),
+        staleTime: 60000,
+    });
+
+    const locationsLoading = devLoading || prodLoading;
+
+    const devLocations = React.useMemo(() => {
+        const locations = Array.isArray(devLocationsResponse)
+            ? (devLocationsResponse as Location[])
+            : ((devLocationsResponse as { data?: Location[] } | undefined)?.data ?? []);
+        return locations.filter((loc) => loc.locationEnv === LocationEnv.DEVELOPMENT || !loc.locationEnv);
+    }, [devLocationsResponse]);
+
+    const prodLocations = React.useMemo(() => {
+        const locations = Array.isArray(prodLocationsResponse)
+            ? (prodLocationsResponse as Location[])
+            : ((prodLocationsResponse as { data?: Location[] } | undefined)?.data ?? []);
+        return locations.filter((loc) => loc.locationEnv === LocationEnv.PRODUCTION);
+    }, [prodLocationsResponse]);
+
+    const allLocations = React.useMemo(() => {
+        return [...devLocations, ...prodLocations];
+    }, [devLocations, prodLocations]);
+
     const {
         register,
         handleSubmit,
         control,
         reset,
+        watch,
+        setValue,
         formState: { errors },
     } = useForm<UserInvitationData>({
         resolver: zodResolver(userInvitationSchema),
         defaultValues: {
-            role: 'admin',
+            roleId: '',
+            locationIds: [],
         }
     });
 
+    const selectedRoleId = watch('roleId');
+    const selectedLocationIds = watch('locationIds') || [];
+
+    // Check if the selected role is SITE_MANAGER
+    const selectedRole = allRoles?.find((r) => r.id === selectedRoleId);
+    const isSiteManager = selectedRole?.name === AppRole.SITE_MANAGER;
+
+    // Clear locationIds if the role is changed from SITE_MANAGER
+    React.useEffect(() => {
+        if (!isSiteManager && selectedLocationIds.length > 0) {
+            setValue('locationIds', []);
+        }
+    }, [isSiteManager, setValue, selectedLocationIds.length]);
+
     const onSubmit = (data: UserInvitationData) => {
+        // Send the formatted payload containing roleId and optional locationIds
         inviteUser.mutate(data, {
             onSuccess: () => {
                 reset();
@@ -68,6 +126,149 @@ export function UserInvitationModal({ isOpen, onClose }: UserInvitationModalProp
                     </div>
                     {errors.email && <p className="text-[10px] font-bold text-destructive uppercase tracking-widest ml-1">{errors.email.message}</p>}
                 </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="roleId" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Assign Role</Label>
+                    <div className="relative">
+                        <Shield className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50 z-10" />
+                        <Controller
+                            name="roleId"
+                            control={control}
+                            render={({ field }) => (
+                                <Select
+                                    onValueChange={field.onChange}
+                                    value={field.value}
+                                    disabled={rolesLoading}
+                                >
+                                    <SelectTrigger className="pl-10 h-11 bg-muted/20 border-border/40 focus:ring-primary/20 rounded-xl font-bold">
+                                        <SelectValue placeholder={rolesLoading ? "Loading roles..." : "Select a role"} />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-card border-border/40">
+                                        {allRoles?.map((r) => (
+                                            <SelectItem key={r.id} value={r.id}>
+                                                {r.name.replace('_', ' ')}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            )}
+                        />
+                    </div>
+                    {errors.roleId && <p className="text-[10px] font-bold text-destructive uppercase tracking-widest ml-1">{errors.roleId.message}</p>}
+                </div>
+
+                <AnimatePresence initial={false}>
+                    {isSiteManager && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.25, ease: 'easeInOut' }}
+                            className="space-y-2 overflow-hidden"
+                        >
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
+                                Scope Locations
+                            </Label>
+                            {locationsLoading ? (
+                                <div className="flex items-center text-xs text-white/40 ml-1">
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                                    Loading locations...
+                                </div>
+                            ) : allLocations.length === 0 ? (
+                                <p className="text-xs text-white/40 ml-1">No locations configured in system.</p>
+                            ) : (
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 ml-1">
+                                            dev
+                                        </span>
+                                        <div className="max-h-40 overflow-y-auto border border-border/40 bg-muted/10 rounded-xl p-3 space-y-2">
+                                            {devLocations.length === 0 ? (
+                                                <p className="text-[10px] text-white/40 p-1">No dev locations</p>
+                                            ) : (
+                                                devLocations.map((loc) => {
+                                                    const isChecked = selectedLocationIds.includes(loc.id);
+                                                    return (
+                                                        <div
+                                                            key={loc.id}
+                                                            className="flex items-center gap-2.5 px-1 py-0.5"
+                                                        >
+                                                            <Checkbox
+                                                                id={`loc-${loc.id}`}
+                                                                checked={isChecked}
+                                                                onCheckedChange={(checked) => {
+                                                                    if (checked === true) {
+                                                                        setValue('locationIds', [...selectedLocationIds, loc.id], { shouldValidate: true });
+                                                                    } else {
+                                                                        setValue(
+                                                                            'locationIds',
+                                                                            selectedLocationIds.filter((id) => id !== loc.id),
+                                                                            { shouldValidate: true }
+                                                                        );
+                                                                    }
+                                                                }}
+                                                            />
+                                                            <Label
+                                                                htmlFor={`loc-${loc.id}`}
+                                                                className="text-xs font-bold text-white/80 cursor-pointer hover:text-white transition-colors truncate"
+                                                            >
+                                                                {loc.name}
+                                                            </Label>
+                                                        </div>
+                                                    );
+                                                })
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 ml-1">
+                                            Prod
+                                        </span>
+                                        <div className="max-h-40 overflow-y-auto border border-border/40 bg-muted/10 rounded-xl p-3 space-y-2">
+                                            {prodLocations.length === 0 ? (
+                                                <p className="text-[10px] text-white/40 p-1">No prod locations</p>
+                                            ) : (
+                                                prodLocations.map((loc) => {
+                                                    const isChecked = selectedLocationIds.includes(loc.id);
+                                                    return (
+                                                        <div
+                                                            key={loc.id}
+                                                            className="flex items-center gap-2.5 px-1 py-0.5"
+                                                        >
+                                                            <Checkbox
+                                                                id={`loc-${loc.id}`}
+                                                                checked={isChecked}
+                                                                onCheckedChange={(checked) => {
+                                                                    if (checked === true) {
+                                                                        setValue('locationIds', [...selectedLocationIds, loc.id], { shouldValidate: true });
+                                                                    } else {
+                                                                        setValue(
+                                                                            'locationIds',
+                                                                            selectedLocationIds.filter((id) => id !== loc.id),
+                                                                            { shouldValidate: true }
+                                                                        );
+                                                                    }
+                                                                }}
+                                                            />
+                                                            <Label
+                                                                htmlFor={`loc-${loc.id}`}
+                                                                className="text-xs font-bold text-white/80 cursor-pointer hover:text-white transition-colors truncate"
+                                                            >
+                                                                {loc.name}
+                                                            </Label>
+                                                        </div>
+                                                    );
+                                                })
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            {errors.locationIds && <p className="text-[10px] font-bold text-destructive uppercase tracking-widest ml-1">{errors.locationIds.message}</p>}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
                 <div className="flex gap-3 pt-2">
                     <Button
                         type="button"

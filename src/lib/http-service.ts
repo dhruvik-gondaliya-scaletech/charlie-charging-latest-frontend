@@ -1,4 +1,4 @@
-import { API_CONFIG, AUTH_CONFIG } from "@/constants/constants";
+import { API_CONFIG, AUTH_CONFIG, FRONTEND_ROUTES } from "@/constants/constants";
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
 class HttpService {
@@ -19,11 +19,11 @@ class HttpService {
         if (typeof window !== 'undefined') {
           const url = config.url || '';
           const isPublicAuthRoute =
-            url.includes('/auth/login') ||
-            url.includes('/auth/register') ||
-            url.includes('/auth/forgot-password') ||
-            url.includes('/auth/reset-password') ||
-            url.includes('/auth/verify-email');
+            url.includes(API_CONFIG.endpoints.auth.login) ||
+            url.includes(API_CONFIG.endpoints.auth.register) ||
+            url.includes(API_CONFIG.endpoints.auth.forgotPassword) ||
+            url.includes(API_CONFIG.endpoints.auth.resetPassword) ||
+            url.includes(API_CONFIG.endpoints.auth.verifyEmail);
 
           if (!isPublicAuthRoute) {
             const token = localStorage.getItem(AUTH_CONFIG.tokenKey);
@@ -55,11 +55,15 @@ class HttpService {
       (error) => {
         if (error.response?.status === 401) {
           const url = error.config?.url || '';
-          const isLoginRequest = url.includes('/auth/login');
+          const isLoginRequest = url.includes(API_CONFIG.endpoints.auth.login);
 
           // If it's a 401 and NOT a login request, we should logout as the token is invalid/expired
           if (!isLoginRequest && typeof window !== 'undefined') {
             this.handleUnauthorized();
+          }
+        } else if (error.response?.status === 403) {
+          if (typeof window !== 'undefined') {
+            window.location.href = FRONTEND_ROUTES.UNAUTHORIZED;
           }
         }
         return Promise.reject(error);
@@ -89,8 +93,9 @@ class HttpService {
       document.cookie = `${AUTH_CONFIG.userKey}=; path=/; max-age=0`;
       document.cookie = `${AUTH_CONFIG.tenantKey}=; path=/; max-age=0`;
 
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login?expired=true';
+      if (window.location.pathname !== FRONTEND_ROUTES.LOGIN) {
+        const fullUrl = window.location.pathname + window.location.search;
+        window.location.href = `${FRONTEND_ROUTES.LOGIN}?expired=true&redirect=${encodeURIComponent(fullUrl)}`;
       }
     }
   }
@@ -107,8 +112,9 @@ class HttpService {
       document.cookie = `${AUTH_CONFIG.userKey}=; path=/; max-age=0`;
       document.cookie = `${AUTH_CONFIG.tenantKey}=; path=/; max-age=0`;
 
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+      if (window.location.pathname !== FRONTEND_ROUTES.LOGIN) {
+        const fullUrl = window.location.pathname + window.location.search;
+        window.location.href = `${FRONTEND_ROUTES.LOGIN}?redirect=${encodeURIComponent(fullUrl)}`;
       }
     }
   }

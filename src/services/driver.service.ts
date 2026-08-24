@@ -24,6 +24,10 @@ class DriverService {
       DriverSession[] | { data: DriverSession[]; meta: { total: number; page: number; limit: number; totalPages: number } }
     >(API_CONFIG.endpoints.drivers.sessions(id), { params });
   }
+
+  async deleteDriver(id: string) {
+    return httpService.delete<{ message: string }>(API_CONFIG.endpoints.drivers.byId(id));
+  }
 }
 
 export const driverService = new DriverService();

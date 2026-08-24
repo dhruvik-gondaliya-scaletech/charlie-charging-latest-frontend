@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeInUp, staggerContainer } from '@/lib/motion';
-import { ChargingStatus, LocationEnv } from '@/types';
+import { ChargingStatus, LocationEnv, AppPermission } from '@/types';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -37,10 +37,12 @@ import { ConnectorCard } from '../components/ConnectorCard';
 import { StationSmartCharging } from '../components/StationSmartCharging';
 import { useRemoteStart, useRemoteStop, useResetStation, useChangeAvailability, useUnlockConnector } from '@/hooks/delete/useStationMutations';
 import { useAuth } from '@/contexts/AuthContext';
+import { ProtectedRoute } from '@/components/shared/ProtectedRoute';
+import { ProtectedAction } from '@/components/shared/ProtectedAction';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import WebSocketUrlDisplay from '@/components/shared/WebSocketUrlDisplay';
 import { toast } from 'sonner';
-import { FRONTEND_ROUTES } from '@/constants/constants';
+import { FRONTEND_ROUTES, Environment } from '@/constants/constants';
 import { SessionStatus } from '@/types';
 import { BackButton } from '@/components/shared/BackButton';
 import { useWebSocketConnection, useRealTimeEvent } from '@/hooks/useRealTime';
@@ -64,7 +66,7 @@ export function StationDetailContainer() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const queryClient = useQueryClient();
-    const { environment } = useEnvironment();
+    const { environment, setEnvironment } = useEnvironment();
     const { user, tenant } = useAuth();
     const { data: station, isLoading, error } = useStation(id as string);
     const { data: tariffs } = useTariffs();
@@ -139,13 +141,29 @@ export function StationDetailContainer() {
     useEffect(() => {
         const tabParam = searchParams ? searchParams.get('tab') : null;
         const sessionIdParam = searchParams ? searchParams.get('sessionId') : null;
-        if (tabParam) {
-            setActiveTab(tabParam);
+        const envParam = searchParams ? searchParams.get('env') || searchParams.get('environment') : null;
+
+        if (envParam) {
+            const lowerEnv = envParam.toLowerCase();
+            if (lowerEnv === 'dev' && environment !== Environment.DEV) {
+                setEnvironment(Environment.DEV);
+            } else if (lowerEnv === 'prod' && environment !== Environment.PROD) {
+                setEnvironment(Environment.PROD);
+            }
         }
+
         if (sessionIdParam) {
             setFilterSessionId(sessionIdParam);
+        } else {
+            setFilterSessionId(undefined);
         }
-    }, [searchParams]);
+
+        if (tabParam) {
+            setActiveTab(tabParam);
+        } else if (sessionIdParam) {
+            setActiveTab('sessions');
+        }
+    }, [searchParams, environment, setEnvironment]);
 
     const fromLocationId = searchParams ? searchParams.get('fromLocation') : null;
     const backHref = fromLocationId
@@ -160,6 +178,23 @@ export function StationDetailContainer() {
     const handleViewSessionLogs = (sessionId: string) => {
         setFilterSessionId(sessionId);
         setActiveTab('logs');
+        if (searchParams) {
+            const params = new URLSearchParams(searchParams.toString());
+            params.set('tab', 'logs');
+            params.set('sessionId', sessionId);
+            router.replace(`/stations/${id}?${params.toString()}`, { scroll: false });
+        }
+    };
+
+    const handleClearSessionLogs = () => {
+        setFilterSessionId(undefined);
+        if (searchParams?.get('sessionId')) {
+            const params = new URLSearchParams(searchParams.toString());
+            params.delete('sessionId');
+            const newQuery = params.toString();
+            const newUrl = newQuery ? `/stations/${id}?${newQuery}` : `/stations/${id}`;
+            router.replace(newUrl, { scroll: false });
+        }
     };
 
     // Establish WebSocket connection
@@ -458,7 +493,7 @@ export function StationDetailContainer() {
                         <ShieldCheck className="h-10 w-10" />
                     </div>
                     <h2 className="text-2xl font-bold">Station Not Found</h2>
-                    <p className="text-muted-foreground">The requested charging station could not be found or you don&apos;t have permission to access it.</p>
+                    <p className="text-muted-foreground">The requested charging station could not be found in current Environment.Please Switch to other Environment.(dev/prod)</p>
                     <BackButton
                         href={FRONTEND_ROUTES.STATIONS}
                         label="Back to Stations"
@@ -470,7 +505,8 @@ export function StationDetailContainer() {
     }
 
     return (
-        <motion.div
+        <ProtectedRoute requiredPermission={AppPermission.STATION_READ}>
+            <motion.div
             variants={staggerContainer}
             initial="initial"
             animate="animate"
@@ -522,20 +558,24 @@ export function StationDetailContainer() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-                    <Button
-                        variant="outline"
-                        onClick={() => setIsRebootModalOpen(true)}
-                        className="font-bold border-orange-500/30 text-orange-500 hover:bg-orange-500/10 hover:text-orange-500 h-12 px-6 rounded-xl flex-1 sm:flex-initial"
-                    >
-                        <History className="mr-2.5 h-4.5 w-4.5 text-orange-500" /> Reboot System
-                    </Button>
-                    <Button
-                        variant="outline"
-                        onClick={() => setIsAvailabilityModalOpen(true)}
-                        className="font-bold border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10 hover:text-emerald-500 h-12 px-6 rounded-xl flex-1 sm:flex-initial"
-                    >
-                        <ShieldCheck className="mr-2.5 h-4.5 w-4.5 text-emerald-500" /> Availability Matrix
-                    </Button>
+                    <ProtectedAction permission={AppPermission.OCPP_RESET}>
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsRebootModalOpen(true)}
+                            className="font-bold border-orange-500/30 text-orange-500 hover:bg-orange-500/10 hover:text-orange-500 h-12 px-6 rounded-xl flex-1 sm:flex-initial"
+                        >
+                            <History className="mr-2.5 h-4.5 w-4.5 text-orange-500" /> Reboot System
+                        </Button>
+                    </ProtectedAction>
+                    <ProtectedAction permission={AppPermission.OCPP_CHANGE_CONFIG}>
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsAvailabilityModalOpen(true)}
+                            className="font-bold border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10 hover:text-emerald-500 h-12 px-6 rounded-xl flex-1 sm:flex-initial"
+                        >
+                            <ShieldCheck className="mr-2.5 h-4.5 w-4.5 text-emerald-500" /> Availability Matrix
+                        </Button>
+                    </ProtectedAction>
                 </div>
             </motion.div>
 
@@ -570,8 +610,12 @@ export function StationDetailContainer() {
                         <TabsTrigger value="overview" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Overview</TabsTrigger>
                         <TabsTrigger value="qr-code" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">QR Code</TabsTrigger>
                         <TabsTrigger value="sessions" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Sessions</TabsTrigger>
-                        <TabsTrigger value="config" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Config</TabsTrigger>
-                        <TabsTrigger value="smart-charging" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Smart Charging</TabsTrigger>
+                        <ProtectedAction permission={AppPermission.OCPP_CHANGE_CONFIG}>
+                            <TabsTrigger value="config" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Config</TabsTrigger>
+                        </ProtectedAction>
+                        <ProtectedAction permission={AppPermission.OCPP_CHANGE_CONFIG}>
+                            <TabsTrigger value="smart-charging" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Smart Charging</TabsTrigger>
+                        </ProtectedAction>
                         <TabsTrigger value="logs" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Live Logs</TabsTrigger>
                     </TabsList>
 
@@ -733,7 +777,7 @@ export function StationDetailContainer() {
                                 <StationLogs
                                     stationId={station.id}
                                     sessionId={filterSessionId}
-                                    onClearSessionId={() => setFilterSessionId(undefined)}
+                                    onClearSessionId={handleClearSessionLogs}
                                 />
                             </CardContent>
                         </Card>
@@ -960,5 +1004,6 @@ export function StationDetailContainer() {
                 </div>
             </AnimatedModal>
         </motion.div>
+        </ProtectedRoute>
     );
 }

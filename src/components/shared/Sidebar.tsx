@@ -17,7 +17,8 @@ import {
   LogOut,
   Share2,
   Globe,
-  FileText
+  FileText,
+  Shield,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
@@ -32,35 +33,40 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { AnimatedModal } from './AnimatedModal';
 import { BrandLogo } from './BrandLogo';
+import { AppPermission } from '@/types';
 
 const navItems = [
-  { href: FRONTEND_ROUTES.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard, roles: ['user', 'admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.STATIONS, label: 'Stations', icon: Zap, roles: ['user', 'admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.LOCATIONS, label: 'Locations', icon: MapPin, roles: ['user', 'admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.USERS, label: 'Operators', icon: Users, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.DRIVERS, label: 'Drivers', icon: User, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.ID_TAGS, label: 'ID Tags', icon: CreditCard, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.TARIFF, label: 'Tariff', icon: Coins, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.REPORTS, label: 'Reports', icon: FileText, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.OCPI, label: 'OCPI Roaming', icon: Globe, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.WEBHOOKS, label: 'Webhooks', icon: Webhook, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.API_DOCS, label: 'API Docs', icon: Share2, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.TENANTS, label: 'Tenants', icon: Building2, roles: ['super_admin'] },
+  { href: FRONTEND_ROUTES.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard },
+  { href: FRONTEND_ROUTES.STATIONS, label: 'Stations', icon: Zap, permission: AppPermission.STATION_READ },
+  { href: FRONTEND_ROUTES.LOCATIONS, label: 'Locations', icon: MapPin, permission: AppPermission.LOCATION_READ },
+  { href: FRONTEND_ROUTES.USERS, label: 'Operators', icon: Users, permission: AppPermission.USERS_READ },
+  { href: FRONTEND_ROUTES.DRIVERS, label: 'Drivers', icon: User, permission: AppPermission.DRIVER_READ },
+  { href: FRONTEND_ROUTES.ID_TAGS, label: 'ID Tags', icon: CreditCard, permission: AppPermission.ID_TAG_READ },
+  { href: FRONTEND_ROUTES.TARIFF, label: 'Tariff', icon: Coins, permission: AppPermission.TARIFF_READ },
+  { href: FRONTEND_ROUTES.REPORTS, label: 'Reports', icon: FileText, permission: AppPermission.REPORTS_READ },
+  { href: FRONTEND_ROUTES.OCPI, label: 'OCPI Roaming', icon: Globe, permission: AppPermission.OCPI_READ },
+  { href: FRONTEND_ROUTES.WEBHOOKS, label: 'Webhooks', icon: Webhook, permission: AppPermission.WEBHOOK_READ },
+  { href: FRONTEND_ROUTES.RBAC_ROLES, label: 'Access Control', icon: Shield, permission: AppPermission.RBAC_READ, superAdminOnly: true },
+  { href: FRONTEND_ROUTES.API_DOCS, label: 'API Docs', icon: Share2, permission: AppPermission.API_DOCS_READ },
+  { href: FRONTEND_ROUTES.TENANTS, label: 'Tenants', icon: Building2, permission: AppPermission.TENANTS_READ, superAdminOnly: true },
 ];
 
 export function Sidebar() {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = React.useState(false);
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user, logout, hasPermission, isSuperAdmin } = useAuth();
 
   const getInitials = (firstName?: string | null, lastName?: string | null) => {
     if (!firstName || !lastName) return 'U';
     return `${firstName[0]}${lastName[0]}`.toUpperCase();
   };
 
-  const canAccessRoute = (requiredRoles: string[]) => {
-    if (!user?.role) return false;
-    return requiredRoles.includes(user.role);
+  const canAccessRoute = (item: typeof navItems[number]) => {
+    if ('superAdminOnly' in item && item.superAdminOnly) {
+      return isSuperAdmin;
+    }
+    if (!item.permission) return true;
+    return hasPermission(item.permission);
   };
 
   return (
@@ -73,7 +79,7 @@ export function Sidebar() {
 
       <nav className="flex-1 p-4 space-y-2">
         {navItems.map((item) => {
-          if (!canAccessRoute(item.roles)) return null;
+          if (!canAccessRoute(item)) return null;
 
           const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;
