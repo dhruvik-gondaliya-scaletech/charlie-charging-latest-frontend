@@ -20,24 +20,22 @@ export function Header() {
           <div className="md:hidden">
             <BrandLogo width={120} height={40} />
           </div>
-          <div className="hidden md:block">
+          <div className="hidden md:flex items-center gap-3">
             <Breadcrumbs />
           </div>
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="md:hidden">
-            <Breadcrumbs />
-          </div>
-
           <div className="relative flex items-center bg-muted rounded-full p-0.5 h-8 md:h-9 text-[10px] md:text-xs font-bold select-none border">
             <Button
               variant={null}
               size={null}
               onClick={() => setEnvironment(Environment.DEV)}
-              className={cn('relative z-10 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold transition-colors duration-200 cursor-pointer', environment === Environment.DEV
-                ? 'text-white'
-                : 'text-muted-foreground hover:text-foreground'
+              className={cn(
+                'relative z-10 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold transition-colors duration-200 cursor-pointer',
+                environment === Environment.DEV
+                  ? 'text-white'
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
               DEV
@@ -46,9 +44,11 @@ export function Header() {
               variant={null}
               size={null}
               onClick={() => setEnvironment(Environment.PROD)}
-              className={cn('relative z-10 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold transition-colors duration-200 cursor-pointer', environment === Environment.PROD
-                ? 'text-white'
-                : 'text-muted-foreground hover:text-foreground'
+              className={cn(
+                'relative z-10 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold transition-colors duration-200 cursor-pointer',
+                environment === Environment.PROD
+                  ? 'text-white'
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
               PROD

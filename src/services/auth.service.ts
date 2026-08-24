@@ -1,12 +1,20 @@
 import httpService from '@/lib/http-service';
 import { API_CONFIG, AUTH_CONFIG } from '@/constants/constants';
-import { User, Tenant } from '@/types';
+import { User, Tenant, TenantMembership } from '@/types';
 
 export interface LoginResponse {
-  success: boolean;
-  access_token: string;
-  user: User;
-  tenant: Tenant;
+  success?: boolean;
+  access_token?: string;
+  user?: User;
+  tenant?: Tenant;
+  requiresTenantSelection?: boolean;
+  tenants?: TenantMembership[];
+}
+
+export interface SelectTenantData {
+  email: string;
+  password: string;
+  tenantId: string;
 }
 
 export interface RegisterData {
@@ -43,6 +51,14 @@ class AuthService {
 
   async googleLogin(idToken: string) {
     return httpService.post<LoginResponse>(API_CONFIG.endpoints.auth.googleLogin, { idToken });
+  }
+
+  async selectTenant(data: SelectTenantData) {
+    return httpService.post<LoginResponse>(API_CONFIG.endpoints.auth.selectTenant, data);
+  }
+
+  async switchTenant(tenantId: string) {
+    return httpService.post<LoginResponse>(API_CONFIG.endpoints.auth.switchTenant, { tenantId });
   }
 
   async register(data: RegisterData) {

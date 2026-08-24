@@ -299,6 +299,14 @@ export interface UserEffectivePermissions {
   permissions: AppPermission[];
 }
 
+export interface TenantMembership {
+  tenantId: string;
+  tenantName: string;
+  tenantSlug: string;
+  role: string;
+  isMain: boolean;
+}
+
 // ─── User ─────────────────────────────────────────────────────────────────────
 
 export interface User {
@@ -313,6 +321,7 @@ export interface User {
   createdAt?: string;
   tenantId?: string;
   tenant?: Tenant;
+  memberships?: TenantMembership[];
   // RBAC JWT fields (populated from token payload)
   roles?: string[];        // e.g. ['ADMIN']
   permissions?: AppPermission[];  // e.g. ['station.read', 'session.read']

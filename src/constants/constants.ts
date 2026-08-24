@@ -5,6 +5,8 @@ export const API_CONFIG = {
         auth: {
             login: "/auth/login",
             googleLogin: "/auth/google-login",
+            selectTenant: "/auth/select-tenant",
+            switchTenant: "/auth/switch-tenant",
             register: "/auth/register",
             verifyEmail: "/auth/verify-email",
             resendVerification: "/auth/resend-verification",

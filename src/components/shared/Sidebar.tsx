@@ -33,6 +33,7 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { AnimatedModal } from './AnimatedModal';
 import { BrandLogo } from './BrandLogo';
+import { TenantSwitcher } from './TenantSwitcher';
 import { AppPermission } from '@/types';
 
 const navItems = [
@@ -122,7 +123,9 @@ export function Sidebar() {
 
       <Separator />
 
-      <div className="p-4 mt-auto">
+      <div className="p-4 mt-auto space-y-3">
+        <TenantSwitcher className="w-full" side="right" align="end" />
+
         <Popover>
           <PopoverTrigger asChild>
             <button className="flex items-center gap-3 w-full p-2 rounded-xl hover:bg-accent transition-colors text-left group">
