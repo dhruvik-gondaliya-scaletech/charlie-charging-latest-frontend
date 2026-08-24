@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { ConfigurationKey } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { FreeChargeCard } from './FreeChargeCard';
 
 interface ConfigurationManagerProps {
     stationId: string;
@@ -110,6 +111,9 @@ export function ConfigurationManager({ stationId }: ConfigurationManagerProps) {
                     TLS 1.2 Encrypted
                 </Badge>
             </div>
+
+            {/* Free Charge Manufacturer-Based Section */}
+            <FreeChargeCard stationId={stationId} />
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-muted/20 backdrop-blur-sm p-4 rounded-2xl border border-border/40 shadow-sm">
                 <div className="relative flex-1">

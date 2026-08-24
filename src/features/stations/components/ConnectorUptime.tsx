@@ -49,6 +49,8 @@ import {
   DowntimeReasonCode,
 } from '@/services/compliance.service';
 import { cn } from '@/lib/utils';
+import { ProtectedAction } from '@/components/shared/ProtectedAction';
+import { AppPermission } from '@/types';
 
 interface ReportItem {
   date?: string;
@@ -292,15 +294,17 @@ export function ConnectorUptime({
       header: 'Actions',
       cell: ({ row }) => (
         <div className="flex justify-start">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="font-bold text-xs text-primary hover:text-primary hover:bg-primary/10 rounded-xl"
-            onClick={() => handleOpenOverride(row.original)}
-          >
-            Reclassify
-          </Button>
+          <ProtectedAction permission={AppPermission.REPORTS_UPDATE}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="font-bold text-xs text-primary hover:text-primary hover:bg-primary/10 rounded-xl"
+              onClick={() => handleOpenOverride(row.original)}
+            >
+              Reclassify
+            </Button>
+          </ProtectedAction>
         </div>
       )
     }

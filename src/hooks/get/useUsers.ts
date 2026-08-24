@@ -16,3 +16,12 @@ export const useUserProfile = () => {
     staleTime: 60000,
   });
 };
+
+export const useUser = (id: string | null) => {
+  return useQuery({
+    queryKey: ['user', id],
+    queryFn: () => (id ? userService.getUserById(id) : null),
+    enabled: !!id,
+    staleTime: 30000,
+  });
+};

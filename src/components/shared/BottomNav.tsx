@@ -17,7 +17,8 @@ import {
   LogOut,
   UserCircle,
   Globe,
-  FileText
+  FileText,
+  Shield,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { FRONTEND_ROUTES } from '@/constants/constants';
@@ -34,38 +35,43 @@ import {
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
+import { AppPermission } from '@/types';
 
 const mainNavItems = [
   { href: FRONTEND_ROUTES.DASHBOARD, label: 'Home', icon: LayoutDashboard },
-  { href: FRONTEND_ROUTES.STATIONS, label: 'Stations', icon: Zap },
-  { href: FRONTEND_ROUTES.LOCATIONS, label: 'Locations', icon: MapPin },
+  { href: FRONTEND_ROUTES.STATIONS, label: 'Stations', icon: Zap, permission: AppPermission.STATION_READ },
+  { href: FRONTEND_ROUTES.LOCATIONS, label: 'Locations', icon: MapPin, permission: AppPermission.LOCATION_READ },
   { href: FRONTEND_ROUTES.PROFILE, label: 'Profile', icon: UserCircle },
 ];
 
 const moreNavItems = [
-  { href: FRONTEND_ROUTES.REPORTS, label: 'Reports', icon: FileText, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.USERS, label: 'Operators', icon: Users, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.DRIVERS, label: 'Drivers', icon: User, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.ID_TAGS, label: 'ID Tags', icon: CreditCard, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.TARIFF, label: 'Tariff', icon: Coins, roles: ['admin', 'super_admin'] },
-  // { href: FRONTEND_ROUTES.OCPI, label: 'OCPI Roaming', icon: Globe, roles: ['admin', 'super_admin'] },
-  { href: FRONTEND_ROUTES.WEBHOOKS, label: 'Webhooks', icon: Webhook, roles: ['admin', 'super_admin'] },
+  { href: FRONTEND_ROUTES.REPORTS, label: 'Reports', icon: FileText, permission: AppPermission.REPORTS_READ },
+  { href: FRONTEND_ROUTES.USERS, label: 'Operators', icon: Users, permission: AppPermission.USERS_READ },
+  { href: FRONTEND_ROUTES.DRIVERS, label: 'Drivers', icon: User, permission: AppPermission.DRIVER_READ },
+  { href: FRONTEND_ROUTES.ID_TAGS, label: 'ID Tags', icon: CreditCard, permission: AppPermission.ID_TAG_READ },
+  { href: FRONTEND_ROUTES.TARIFF, label: 'Tariff', icon: Coins, permission: AppPermission.TARIFF_READ },
+  { href: FRONTEND_ROUTES.WEBHOOKS, label: 'Webhooks', icon: Webhook, permission: AppPermission.WEBHOOK_READ },
+  { href: FRONTEND_ROUTES.RBAC_ROLES, label: 'Access Control', icon: Shield, permission: AppPermission.RBAC_READ, superAdminOnly: true },
 ];
 
 export function BottomNav() {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user, logout, hasPermission, isSuperAdmin } = useAuth();
   const [isMoreOpen, setIsMoreOpen] = React.useState(false);
 
-  const canAccessRoute = (requiredRoles: string[]) => {
-    if (!user?.role) return false;
-    return requiredRoles.includes(user.role);
-  };
+  const canAccessRoute = React.useCallback((item: { permission?: AppPermission; superAdminOnly?: boolean }) => {
+    if (item.superAdminOnly) {
+      return isSuperAdmin;
+    }
+    if (!item.permission) return true;
+    return hasPermission(item.permission);
+  }, [hasPermission, isSuperAdmin]);
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t pb-safe">
       <div className="flex items-center justify-around h-16 pointer-events-auto">
         {mainNavItems.map((item) => {
+          if (!canAccessRoute(item)) return null;
           const isActive = pathname === item.href || (item.href !== FRONTEND_ROUTES.DASHBOARD && pathname.startsWith(item.href));
           const Icon = item.icon;
 
@@ -110,7 +116,7 @@ export function BottomNav() {
               </DrawerHeader>
               <div className="p-4 grid grid-cols-3 gap-4">
                 {moreNavItems.map((item) => {
-                  if (!canAccessRoute(item.roles)) return null;
+                  if (!canAccessRoute(item)) return null;
                   const Icon = item.icon;
                   const isActive = pathname.startsWith(item.href);
 

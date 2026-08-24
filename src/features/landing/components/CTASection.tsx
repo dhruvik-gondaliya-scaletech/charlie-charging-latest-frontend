@@ -1,42 +1,84 @@
 'use client';
 
+import React from 'react';
 import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { ArrowRight, Sparkles } from 'lucide-react';
+import BookADemo from './BookADemo';
 
 export function CTASection() {
-  return (
-    <section className="py-24 px-8 bg-background">
-      <div className="max-w-5xl mx-auto text-center py-24 px-8 rounded-[3rem] bg-muted/30 border border-border relative overflow-hidden shadow-none">
-        <div className="absolute top-0 left-0 w-full h-full opacity-[0.05] pointer-events-none dark:opacity-[0.03]">
-          <svg height="100%" width="100%" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="1" className="text-foreground" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-          </svg>
-        </div>
+  const videoRef = React.useRef<HTMLVideoElement>(null);
 
+  React.useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.play().catch((err) => {
+        console.log("Autoplay check:", err);
+      });
+    }
+  }, []);
+
+  return (
+    <section id="cta" className="py-24 bg-background relative overflow-hidden">
+      {/* Background Video & Legibility Overlays */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <video
+          ref={videoRef}
+          src="https://d39uw1u176mxxs.cloudfront.net/branding-videos/scaleev-brnading2.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover opacity-75 dark:opacity-40 brightness-[1.0] dark:brightness-[1.0]"
+        />
+      </div>
+
+      {/* Grid Pattern Overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none z-0" />
+
+      <div className="max-w-5xl mx-auto px-6 relative z-10">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="relative rounded-[2.5rem] bg-black/50 backdrop-blur-xl border border-white/10 text-white overflow-hidden px-8 py-16 md:px-16 md:py-20 shadow-2xl"
         >
-          <h2 className="text-5xl lg:text-7xl font-bold tracking-tighter mb-8 text-foreground">
-            Ready to power <br />the future?
-          </h2>
-          <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto font-medium">
-            Join the world&apos;s most advanced charging networks. Set up your first station in under 10 minutes.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
-            <Button size="lg" className="bg-primary text-primary-foreground px-10 py-7 h-auto rounded-2xl text-lg font-bold hover:bg-primary/90 hover:scale-[1.02] transition-all shadow-2xl shadow-primary/20 hover:shadow-primary/30">
-              Get Started Now
-            </Button>
-            <Button size="lg" variant="outline" asChild className="bg-background text-foreground px-10 py-7 h-auto rounded-2xl text-lg font-bold border-border hover:border-foreground hover:bg-accent hover:scale-[1.02] transition-all cursor-pointer">
-              <Link href="#contact" prefetch={false}>Contact Sales</Link>
-            </Button>
+          <div className="relative z-10 flex flex-col items-center text-center max-w-2xl mx-auto space-y-6">
+            
+            {/* Promo badge */}
+            <div className="inline-flex items-center space-x-2 bg-white/10 border border-white/10 px-3 py-1 rounded-full">
+              <Sparkles className="w-3.5 h-3.5 text-primary" />
+              <span className="text-xs font-bold uppercase tracking-wider text-white/90">
+                Ready to Deploy
+              </span>
+            </div>
+
+            {/* Headline */}
+            <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white leading-tight">
+              Ready to Build Your EV Charging Network?
+            </h2>
+
+            {/* Description */}
+            <p className="text-white/80 text-base font-semibold leading-relaxed">
+              Join companies worldwide that trust ScaleEV to power their charging infrastructure. Book a demo to speak with our experts.
+            </p>
+
+            {/* Action buttons */}
+            <div className="flex items-center justify-center w-full pt-4">
+              <BookADemo>
+                <button className="w-full sm:w-auto bg-primary text-primary-foreground hover:scale-[1.03] active:scale-[0.98] transition-all rounded-full px-8 py-6 text-base font-bold shadow-lg shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer">
+                  <span>Book a Demo</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </BookADemo>
+            </div>
+
+            {/* Value indicators */}
+            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 pt-6 text-xs font-bold text-white/70 uppercase tracking-widest">
+              <div>✓ OCPP 1.6J/2.0.1 Compliant</div>
+              <div>✓ White-Label Platform</div>
+              <div>✓ Enterprise Scale Ready</div>
+            </div>
+
           </div>
         </motion.div>
       </div>

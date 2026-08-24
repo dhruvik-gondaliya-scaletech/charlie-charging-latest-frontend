@@ -14,7 +14,8 @@ import { useDeleteWebhook } from '@/hooks/delete/useWebhookMutations';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table } from '@/components/shared/Table';
-import { WebhookConfiguration, WebhookEvent, AppEnvironment } from '@/types';
+import { WebhookConfiguration, WebhookEvent, AppEnvironment, AppPermission } from '@/types';
+import { ProtectedAction } from '@/components/shared/ProtectedAction';
 import { formatDate } from '@/lib/date';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import {
@@ -292,29 +293,35 @@ export function WebhooksContainer() {
               }}
             />
 
-            <ActionIconButton
-              tone="primary"
-              tooltip="Modify Settings"
-              icon={<Edit className="h-4 w-4" />}
-              onClick={() => {
-                setSelectedWebhook(row.original);
-                setIsFormOpen(true);
-              }}
-            />
+            <ProtectedAction permission={AppPermission.WEBHOOK_UPDATE}>
+              <ActionIconButton
+                tone="primary"
+                tooltip="Modify Settings"
+                icon={<Edit className="h-4 w-4" />}
+                onClick={() => {
+                  setSelectedWebhook(row.original);
+                  setIsFormOpen(true);
+                }}
+              />
+            </ProtectedAction>
 
-            <ActionIconButton
-              tone={row.original.isActive ? 'warning' : 'success'}
-              tooltip={row.original.isActive ? 'Pause Integration' : 'Resume Integration'}
-              icon={row.original.isActive ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
-              onClick={() => handleToggleStatus(row.original)}
-            />
+            <ProtectedAction permission={AppPermission.WEBHOOK_UPDATE}>
+              <ActionIconButton
+                tone={row.original.isActive ? 'warning' : 'success'}
+                tooltip={row.original.isActive ? 'Pause Integration' : 'Resume Integration'}
+                icon={row.original.isActive ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
+                onClick={() => handleToggleStatus(row.original)}
+              />
+            </ProtectedAction>
 
-            <ActionIconButton
-              tone="destructive"
-              tooltip="Delete Webhook"
-              icon={<Trash2 className="h-4 w-4" />}
-              onClick={() => handleDelete(row.original)}
-            />
+            <ProtectedAction permission={AppPermission.WEBHOOK_DELETE}>
+              <ActionIconButton
+                tone="destructive"
+                tooltip="Delete Webhook"
+                icon={<Trash2 className="h-4 w-4" />}
+                onClick={() => handleDelete(row.original)}
+              />
+            </ProtectedAction>
           </div>
         ),
         meta: { headerAlign: 'center' }
@@ -378,16 +385,18 @@ export function WebhooksContainer() {
             showSearch
             searchPosition="end"
             appendWithSearch={
-              <Button
-                onClick={() => {
-                  setSelectedWebhook(null);
-                  setIsFormOpen(true);
-                }}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
-              >
-                <Plus className="h-4 w-4" />
-                New Integration
-              </Button>
+              <ProtectedAction permission={AppPermission.WEBHOOK_CREATE}>
+                <Button
+                  onClick={() => {
+                    setSelectedWebhook(null);
+                    setIsFormOpen(true);
+                  }}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all font-bold shrink-0"
+                >
+                  <Plus className="h-4 w-4" />
+                  New Integration
+                </Button>
+              </ProtectedAction>
             }
             pageSize={DEFAULT_PAGE_SIZE}
             maxHeight="700px"
@@ -474,38 +483,44 @@ export function WebhooksContainer() {
                   >
                     <Key className="h-4 w-4" />
                   </Button>
-                  <Button
-                    variant="secondary"
-                    size="icon"
-                    className="h-8 w-8 rounded-xl bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
-                    onClick={() => {
-                      setSelectedWebhook(webhook);
-                      setIsFormOpen(true);
-                    }}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="icon"
-                    className={cn(
-                      "h-8 w-8 rounded-xl border-2 hover:opacity-80 transition-opacity",
-                      webhook.isActive
-                        ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                        : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                    )}
-                    onClick={() => handleToggleStatus(webhook)}
-                  >
-                    {webhook.isActive ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive"
-                    onClick={() => handleDelete(webhook)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <ProtectedAction permission={AppPermission.WEBHOOK_UPDATE}>
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="h-8 w-8 rounded-xl bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
+                      onClick={() => {
+                        setSelectedWebhook(webhook);
+                        setIsFormOpen(true);
+                      }}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  </ProtectedAction>
+                  <ProtectedAction permission={AppPermission.WEBHOOK_UPDATE}>
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className={cn(
+                        "h-8 w-8 rounded-xl border-2 hover:opacity-80 transition-opacity",
+                        webhook.isActive
+                          ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                          : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                      )}
+                      onClick={() => handleToggleStatus(webhook)}
+                    >
+                      {webhook.isActive ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
+                    </Button>
+                  </ProtectedAction>
+                  <ProtectedAction permission={AppPermission.WEBHOOK_DELETE}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive"
+                      onClick={() => handleDelete(webhook)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </ProtectedAction>
                 </div>
               </div>
             )}

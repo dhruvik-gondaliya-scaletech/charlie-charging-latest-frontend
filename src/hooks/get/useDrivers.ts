@@ -11,10 +11,17 @@ export const useDrivers = (params?: { search?: string; name?: string; page?: num
     queryKey: ['drivers', params],
     queryFn: async (): Promise<PaginatedDrivers> => {
       const res = await driverService.getAllDrivers(params);
-      if (res && typeof res === 'object' && 'data' in res && Array.isArray((res as any).data)) {
-        const list = [...(res as any).data] as PaginatedDrivers;
-        list.meta = (res as any).meta;
-        return list;
+      if (res && typeof res === 'object') {
+        if ('items' in res && Array.isArray((res as any).items)) {
+          const list = [...(res as any).items] as PaginatedDrivers;
+          list.meta = (res as any).meta;
+          return list;
+        }
+        if ('data' in res && Array.isArray((res as any).data)) {
+          const list = [...(res as any).data] as PaginatedDrivers;
+          list.meta = (res as any).meta;
+          return list;
+        }
       }
       return (res || []) as PaginatedDrivers;
     },

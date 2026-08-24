@@ -1,5 +1,5 @@
-import LandingFourContainer from '@/features/landing-four/container/LandingFourContainer';
+import LandingContainer from '@/features/landing/container/LandingFourContainer';
 
 export default function Home() {
-  return <LandingFourContainer />;
+  return <LandingContainer />;
 }

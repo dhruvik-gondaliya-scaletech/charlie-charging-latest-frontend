@@ -25,7 +25,8 @@ import { LocationSessions } from '../components/LocationSessions';
 import { FRONTEND_ROUTES } from '@/constants/constants';
 import { BackButton } from '@/components/shared/BackButton';
 import { ApplyTariffModal } from '../components/ApplyTariffModal';
-import { LocationEnv } from '@/types';
+import { LocationEnv, AppPermission } from '@/types';
+import { ProtectedAction } from '@/components/shared/ProtectedAction';
 
 export function LocationDetailContainer() {
     const { id } = useParams();
@@ -157,12 +158,14 @@ export function LocationDetailContainer() {
                 </div>
                 
                 <div className="flex items-center gap-3 mt-4 md:mt-0">
-                    <Button 
-                        onClick={() => setIsTariffModalOpen(true)}
-                        className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-md transition-all uppercase tracking-widest text-xs px-6 py-2"
-                    >
-                        Apply Tariff
-                    </Button>
+                    <ProtectedAction permission={AppPermission.LOCATION_UPDATE}>
+                        <Button 
+                            onClick={() => setIsTariffModalOpen(true)}
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-md transition-all uppercase tracking-widest text-xs px-6 py-2"
+                        >
+                            Apply Tariff
+                        </Button>
+                    </ProtectedAction>
                 </div>
             </motion.div>
 

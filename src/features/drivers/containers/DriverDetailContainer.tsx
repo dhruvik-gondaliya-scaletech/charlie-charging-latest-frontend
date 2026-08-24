@@ -41,16 +41,15 @@ export function DriverSessionsContainer() {
     error,
   } = useDriverSessions(id as string, { search: debouncedSearch, page, limit: pageSize });
 
-  const isPaginated = sessionsResponse && typeof sessionsResponse === 'object' && 'data' in sessionsResponse;
+  const isPaginated = sessionsResponse && typeof sessionsResponse === 'object' && ('data' in sessionsResponse || 'items' in sessionsResponse || 'meta' in sessionsResponse);
   const sessions: DriverSession[] = useMemo(() => {
     if (!sessionsResponse) return [];
-    if (isPaginated) return (sessionsResponse as any).data || [];
+    if (isPaginated) return (sessionsResponse as any).items || (sessionsResponse as any).data || [];
     if (Array.isArray(sessionsResponse)) return sessionsResponse;
     return [];
   }, [sessionsResponse, isPaginated]);
 
   const totalCount = isPaginated ? (sessionsResponse as any).meta?.total || 0 : sessions.length;
-  const totalPages = isPaginated ? (sessionsResponse as any).meta?.totalPages || 1 : Math.ceil((sessions.length || 1) / pageSize);
 
   const stats = useMemo(() => {
     if (!sessions) return { totalEnergy: 0, totalDuration: 0, totalCost: 0, count: 0 };

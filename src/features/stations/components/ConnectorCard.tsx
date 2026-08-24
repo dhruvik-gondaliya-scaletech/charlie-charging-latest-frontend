@@ -6,8 +6,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Zap, Play, Square, Loader2, Unlock, Activity } from 'lucide-react';
-import { ChargingStatus, Connector } from '@/types';
+import { ChargingStatus, Connector, AppPermission } from '@/types';
 import { cn } from '@/lib/utils';
+import { ProtectedAction } from '@/components/shared/ProtectedAction';
 
 interface ConnectorCardProps {
     connector: Connector;
@@ -90,48 +91,54 @@ export function ConnectorCard({
 
                 <div className="pt-4 border-t border-border/10 flex flex-col gap-2">
                     {isCharging ? (
-                        <Button
-                            variant="destructive"
-                            onClick={() => onStop(connector.connectorId)}
-                            disabled={disabled || isStopping}
-                            className="w-full shadow-lg shadow-destructive/20 font-bold rounded-xl h-11 transition-all active:scale-95"
-                        >
-                            {isStopping ? (
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            ) : (
-                                <Square className="h-4 w-4 mr-2 fill-current" />
-                            )}
-                            Stop Charging
-                        </Button>
+                        <ProtectedAction permission={AppPermission.OCPP_REMOTE_STOP}>
+                            <Button
+                                variant="destructive"
+                                onClick={() => onStop(connector.connectorId)}
+                                disabled={disabled || isStopping}
+                                className="w-full shadow-lg shadow-destructive/20 font-bold rounded-xl h-11 transition-all active:scale-95"
+                            >
+                                {isStopping ? (
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                ) : (
+                                    <Square className="h-4 w-4 mr-2 fill-current" />
+                                )}
+                                Stop Charging
+                            </Button>
+                        </ProtectedAction>
                     ) : (
-                        <Button
-                            onClick={() => onStart(connector.connectorId)}
-                            disabled={disabled || isStarting || !canStart}
-                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20 font-bold rounded-xl h-11 transition-all active:scale-95"
-                        >
-                            {isStarting ? (
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            ) : (
-                                <Play className="h-4 w-4 mr-2 fill-current" />
-                            )}
-                            Start Charging
-                        </Button>
+                        <ProtectedAction permission={AppPermission.OCPP_REMOTE_START}>
+                            <Button
+                                onClick={() => onStart(connector.connectorId)}
+                                disabled={disabled || isStarting || !canStart}
+                                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/20 font-bold rounded-xl h-11 transition-all active:scale-95"
+                            >
+                                {isStarting ? (
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                ) : (
+                                    <Play className="h-4 w-4 mr-2 fill-current" />
+                                )}
+                                Start Charging
+                            </Button>
+                        </ProtectedAction>
                     )}
 
                     <div className="flex gap-2 w-full">
-                        <Button
-                            variant="outline"
-                            onClick={() => onUnlock(connector.connectorId)}
-                            disabled={disabled || isUnlocking}
-                            className="flex-1 border-border/40 hover:bg-muted/40 font-bold rounded-xl h-11 transition-all active:scale-95 flex items-center justify-center gap-1.5 text-xs px-2"
-                        >
-                            {isUnlocking ? (
-                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            ) : (
-                                <Unlock className="h-3.5 w-3.5" />
-                            )}
-                            Unlock Cable
-                        </Button>
+                        <ProtectedAction permission={AppPermission.OCPP_UNLOCK_CONNECTOR}>
+                            <Button
+                                variant="outline"
+                                onClick={() => onUnlock(connector.connectorId)}
+                                disabled={disabled || isUnlocking}
+                                className="flex-1 border-border/40 hover:bg-muted/40 font-bold rounded-xl h-11 transition-all active:scale-95 flex items-center justify-center gap-1.5 text-xs px-2"
+                            >
+                                {isUnlocking ? (
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                    <Unlock className="h-3.5 w-3.5" />
+                                )}
+                                Unlock Cable
+                            </Button>
+                        </ProtectedAction>
 
                         <Button
                             variant="outline"

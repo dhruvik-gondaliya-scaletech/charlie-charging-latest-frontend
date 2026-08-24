@@ -14,6 +14,7 @@ export const API_CONFIG = {
             resetPassword: "/auth/reset-password",
             getCredentials: "/auth/get-credentials",
             documentationToken: "/auth/documentation-token",
+            me: "/auth/me",
         },
         users: {
             base: "/users",
@@ -51,6 +52,7 @@ export const API_CONFIG = {
             sessionStats: (env: string, id: string) => `/stations/${id}/sessions/stats?env=${env}`,
             chargingProfile: (id: string) => `/stations/${id}/charging-profile`,
             liveChargingProfile: (id: string) => `/stations/${id}/live-profile`,
+            freeCharge: (env: string, id: string) => `/stations/${id}/free-charge?env=${env}`,
         },
         locations: {
             create: (env: string) => `/locations?env=${env}`,
@@ -145,9 +147,20 @@ export const API_CONFIG = {
             update: (env: string, id: string) => `/billing/tariffs/${id}?env=${env}`,
             delete: (id: string) => `/billing/tariffs/${id}`,
             estimate: "/billing/estimate",
-            calculateSessionCost: (id: string) => `/billing/sessions/${id}/calculate`,
         },
         contact: "/contact",
+        rbac: {
+            roles: '/rbac/roles',
+            roleById: (id: string) => `/rbac/roles/${id}`,
+            rolePermissions: (id: string) => `/rbac/roles/${id}/permissions`,
+            permissions: '/rbac/permissions',
+            userRoles: (userId: string) => `/rbac/users/${userId}/roles`,
+            userRoleById: (userId: string, roleId: string) => `/rbac/users/${userId}/roles/${roleId}`,
+            userRole: (userId: string) => `/rbac/users/${userId}/role`,
+            userLocations: (userId: string) => `/rbac/users/${userId}/locations`,
+            userLocationById: (userId: string, locationId: string) => `/rbac/users/${userId}/locations/${locationId}`,
+            userPermissions: (userId: string) => `/rbac/users/${userId}/permissions`,
+        },
         partner: {
             auth: {
                 token: "/partner/auth/token",
@@ -218,6 +231,12 @@ export const FRONTEND_ROUTES = {
     LANDING_PAGE_FOUR: "/landing-four",
     API_DOCS: "/docs",
     REPORTS: "/reports",
+    RBAC_ROLES: "/roles",
+    RBAC_ROLE_NEW: "/roles/new",
+    RBAC_ROLE_EDIT: (id: string) => `/roles/${id}/edit`,
+    RBAC_ROLE_DETAIL: (id: string) => `/roles/${id}`,
+    RBAC_USER: (userId: string) => `/users/${userId}`,
+    UNAUTHORIZED: "/unauthorized",
 }
 
 export const AUTH_CONFIG = {

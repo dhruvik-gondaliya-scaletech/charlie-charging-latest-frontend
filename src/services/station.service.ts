@@ -1,6 +1,6 @@
 import httpService from '@/lib/http-service';
 import { API_CONFIG } from '@/constants/constants';
-import { Station, OcppLogResponse, GetConfigurationResponse, ChargingStatus, ConnectorType, Session, SessionFilterParams, StationChargingProfile, SessionStats, PaginatedResponse, PaginationParams } from '@/types';
+import { Station, OcppLogResponse, GetConfigurationResponse, ChargingStatus, ConnectorType, Session, SessionFilterParams, StationChargingProfile, SessionStats, PaginatedResponse, PaginationParams, SetFreeChargeResponse } from '@/types';
 
 export interface CreateStationData {
   name: string;
@@ -187,6 +187,12 @@ class StationService {
 
   async removeStationChargingLimit(stationId: string) {
     return httpService.delete(API_CONFIG.endpoints.stations.chargingProfile(stationId));
+  }
+
+  async setFreeCharge(env: string, stationId: string, enabled: boolean): Promise<SetFreeChargeResponse> {
+    return httpService.post<SetFreeChargeResponse>(API_CONFIG.endpoints.stations.freeCharge(env, stationId), {
+      enabled,
+    });
   }
 }
 

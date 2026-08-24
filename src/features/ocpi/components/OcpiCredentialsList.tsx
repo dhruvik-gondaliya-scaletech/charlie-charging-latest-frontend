@@ -11,6 +11,8 @@ import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
 import { cn } from '@/lib/utils';
 import { useOcpiCredentials } from '@/hooks/get/useOcpi';
 import { useDeleteOcpiCredential } from '@/hooks/post/useOcpiMutations';
+import { AppPermission } from '@/types';
+import { ProtectedAction } from '@/components/shared/ProtectedAction';
 import { ActionIconButton } from '@/components/shared/ActionIconButton';
 import { CopyButton } from '@/components/shared/CopyButton';
 
@@ -160,12 +162,14 @@ export function OcpiCredentialsList() {
                         icon={<Info className="h-4 w-4" />}
                         onClick={() => handleViewDetails(row.original)}
                     />
-                    <ActionIconButton
-                        tone="destructive"
-                        tooltip="Delete Connection"
-                        icon={<Trash2 className="h-4 w-4" />}
-                        onClick={() => onDelete(row.original.id)}
-                    />
+                    <ProtectedAction permission={AppPermission.OCPI_MANAGE}>
+                        <ActionIconButton
+                            tone="destructive"
+                            tooltip="Delete Connection"
+                            icon={<Trash2 className="h-4 w-4" />}
+                            onClick={() => onDelete(row.original.id)}
+                        />
+                    </ProtectedAction>
                 </div>
             ),
         },
@@ -226,12 +230,14 @@ export function OcpiCredentialsList() {
                             icon={<Info className="h-4 w-4" />}
                             onClick={() => handleViewDetails(item)}
                         />
-                        <ActionIconButton
-                            tone="destructive"
-                            tooltip="Delete Connection"
-                            icon={<Trash2 className="h-4 w-4" />}
-                            onClick={() => onDelete(item.id)}
-                        />
+                        <ProtectedAction permission={AppPermission.OCPI_MANAGE}>
+                            <ActionIconButton
+                                tone="destructive"
+                                tooltip="Delete Connection"
+                                icon={<Trash2 className="h-4 w-4" />}
+                                onClick={() => onDelete(item.id)}
+                            />
+                        </ProtectedAction>
                     </div>
                 </div>
             </div>

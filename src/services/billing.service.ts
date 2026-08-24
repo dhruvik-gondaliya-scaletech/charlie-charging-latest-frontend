@@ -54,8 +54,13 @@ export interface EstimateCostResponse {
 }
 
 class BillingService {
-  async getTariffs(env: string) {
-    return httpService.get<Tariff[]>(API_CONFIG.endpoints.billing.tariffs(env));
+  async getTariffs(
+    env: string,
+    params?: { search?: string; page?: number; limit?: number; locationId?: string }
+  ) {
+    return httpService.get<
+      Tariff[] | { items: Tariff[]; meta: { total: number; page: number; limit: number; totalPages: number } }
+    >(API_CONFIG.endpoints.billing.tariffs(env), { params });
   }
 
   async getTariffById(env: string, id: string) {

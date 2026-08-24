@@ -146,7 +146,7 @@ export function LocationSessions({ locationId, env, onViewLogs }: LocationSessio
                 cell: ({ row }) => {
                     const firstName = row.original.userFirstName;
                     const lastName = row.original.userLastName;
-                    const fullName = firstName && lastName ? `${firstName} ${lastName}` : 'Guest User';
+                    const fullName = firstName && lastName ? `${firstName} ${lastName}` : 'ChargePoint';
                     const useMode = row.original.useMode;
 
                     return (
@@ -445,7 +445,7 @@ export function LocationSessions({ locationId, env, onViewLogs }: LocationSessio
                     else if (status?.toLowerCase().includes('progress')) colorClasses = "bg-blue-500/10 text-blue-500 border-blue-500/20";
                     else colorClasses = "bg-destructive/10 text-destructive border-destructive/20";
 
-                    const fullName = session.userFirstName && session.userLastName ? `${session.userFirstName} ${session.userLastName}` : 'Guest User';
+                    const fullName = session.userFirstName && session.userLastName ? `${session.userFirstName} ${session.userLastName}` : 'ChargePoint';
                     const useMode = session.useMode;
 
                     return (
