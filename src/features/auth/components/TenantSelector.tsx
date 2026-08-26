@@ -5,7 +5,6 @@ import { TenantMembership } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Building2, ChevronRight, ArrowLeft } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 interface TenantSelectorProps {
   tenants: TenantMembership[];
@@ -57,11 +56,7 @@ export function TenantSelector({
         {tenants.map((t) => {
           const isPending = isLoading && selectedId === t.tenantId;
           return (
-            <motion.div
-              key={t.tenantId}
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
-            >
+            <div key={t.tenantId}>
               <button
                 type="button"
                 disabled={isLoading}
@@ -98,7 +93,7 @@ export function TenantSelector({
                   <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${isPending ? 'animate-spin' : ''}`} />
                 </div>
               </button>
-            </motion.div>
+            </div>
           );
         })}
       </div>
