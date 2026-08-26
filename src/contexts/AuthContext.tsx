@@ -19,7 +19,7 @@ interface AuthContextType {
   tenant: Tenant | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<LoginResult | void>;
-  googleLogin: (idToken: string) => Promise<LoginResult | void>;
+  googleLogin: (idToken: string, tenantId?: string) => Promise<LoginResult | void>;
   selectTenant: (email: string, password: string, tenantId: string) => Promise<void>;
   switchTenant: (tenantId: string) => Promise<void>;
   logout: () => void;
@@ -165,9 +165,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const googleLogin = async (idToken: string): Promise<LoginResult | void> => {
+  const googleLogin = async (idToken: string, tenantId?: string): Promise<LoginResult | void> => {
     try {
-      const res = await authService.googleLogin(idToken);
+      const res = await authService.googleLogin(idToken, tenantId);
 
       if (res.requiresTenantSelection && res.tenants) {
         return { requiresTenantSelection: true, tenants: res.tenants };

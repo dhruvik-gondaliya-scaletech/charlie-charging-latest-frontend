@@ -21,6 +21,7 @@ export function LoginContainer() {
   // Multi-tenant state
   const [tenantsToSelect, setTenantsToSelect] = useState<TenantMembership[] | null>(null);
   const [pendingCredentials, setPendingCredentials] = useState<{ email: string; password: string } | null>(null);
+  const [pendingGoogleToken, setPendingGoogleToken] = useState<string | null>(null);
 
   const { login, googleLogin, selectTenant } = useAuth();
   const searchParams = useSearchParams();
@@ -76,11 +77,15 @@ export function LoginContainer() {
   };
 
   const handleSelectTenant = async (tenantId: string) => {
-    if (!pendingCredentials) return;
+    if (!pendingCredentials && !pendingGoogleToken) return;
     setIsLoading(true);
     setAlertMessage(null);
     try {
-      await selectTenant(pendingCredentials.email, pendingCredentials.password, tenantId);
+      if (pendingGoogleToken) {
+        await googleLogin(pendingGoogleToken, tenantId);
+      } else if (pendingCredentials) {
+        await selectTenant(pendingCredentials.email, pendingCredentials.password, tenantId);
+      }
     } catch (error: any) {
       console.error('Tenant selection failed:', error);
       let message = error.response?.data?.message || error.message || 'Failed to select tenant. Please try again.';
@@ -102,10 +107,8 @@ export function LoginContainer() {
       const res = await googleLogin(idToken);
 
       if (res?.requiresTenantSelection && res.tenants) {
-        setAlertMessage({
-          type: 'warning',
-          message: 'Multi-tenant Google sign-in is not configured yet. Please log in using email and password.',
-        });
+        setPendingGoogleToken(idToken);
+        setTenantsToSelect(res.tenants);
       }
     } catch (error: any) {
       console.error('Google Sign-In failed:', error);
@@ -126,6 +129,7 @@ export function LoginContainer() {
   const handleBackToLogin = () => {
     setTenantsToSelect(null);
     setPendingCredentials(null);
+    setPendingGoogleToken(null);
   };
 
   return (

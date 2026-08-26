@@ -49,8 +49,8 @@ class AuthService {
     return httpService.post<LoginResponse>(API_CONFIG.endpoints.auth.login, { email, password });
   }
 
-  async googleLogin(idToken: string) {
-    return httpService.post<LoginResponse>(API_CONFIG.endpoints.auth.googleLogin, { idToken });
+  async googleLogin(idToken: string, tenantId?: string) {
+    return httpService.post<LoginResponse>(API_CONFIG.endpoints.auth.googleLogin, { idToken, tenantId });
   }
 
   async selectTenant(data: SelectTenantData) {
