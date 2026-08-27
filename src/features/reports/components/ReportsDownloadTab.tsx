@@ -23,9 +23,11 @@ import {
   Clock,
   BarChart2,
   FileSpreadsheet,
+  CheckCircle2,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useEnvironment } from '@/contexts/EnvironmentContext';
+import { useEnvironment, isSiteManagerUser } from '@/contexts/EnvironmentContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { reportingService } from '@/services/reporting.service';
 import { stationService } from '@/services/station.service';
 import { locationService } from '@/services/location.service';
@@ -34,6 +36,22 @@ import { locationService } from '@/services/location.service';
 import { ReportTypeSelector, Step as DownloadStep } from '@/features/dashboard/components/reports/ReportTypeSelector';
 import { LocationStationTree } from '@/features/dashboard/components/reports/LocationStationTree';
 import { ColumnsSelector } from '@/features/dashboard/components/reports/ColumnsSelector';
+
+const SITE_MANAGER_COLUMNS = [
+  'id',
+  'stationName',
+  'locationName',
+  'connectorId',
+  'pluggedAt',
+  'startTime',
+  'endTime',
+  'unpluggedAt',
+  'durationMinutes',
+  'energyDeliveredKwh',
+  'currentSpeed',
+  'peakKwh',
+  'status',
+];
 
 const AVAILABLE_COLUMNS = [
   { id: 'id', label: 'Charge event ID' },
@@ -150,6 +168,8 @@ const DEFAULT_INTERVAL_COLUMNS = [
 
 export function ReportsDownloadTab() {
   const { environment } = useEnvironment();
+  const { user } = useAuth();
+  const isSiteManager = isSiteManagerUser(user);
 
   // Tab 1 (Report Downloading) logic states
   const [downloadStep, setDownloadStep] = useState<DownloadStep>('select-type');
@@ -254,7 +274,9 @@ export function ReportsDownloadTab() {
   };
 
   const handleExportSessions = async () => {
-    if (selectedColumns.length === 0) {
+    const columnsToExport = isSiteManager ? SITE_MANAGER_COLUMNS : selectedColumns;
+
+    if (columnsToExport.length === 0) {
       toast.error('Please select at least one column to export.');
       return;
     }
@@ -269,7 +291,7 @@ export function ReportsDownloadTab() {
       const params = {
         startFrom: dateRange.from ? startOfDay(dateRange.from).toISOString() : undefined,
         startTo: dateRange.to ? endOfDay(dateRange.to).toISOString() : undefined,
-        columns: selectedColumns,
+        columns: columnsToExport,
         env: environment,
         locationIds: locationIdsParam || undefined,
         stationIds: stationIdsParam || undefined,
@@ -827,59 +849,88 @@ export function ReportsDownloadTab() {
 
             {/* Right Column */}
             <div className="h-full flex flex-col gap-4">
-              {/* Preset Switcher */}
-              <div className="rounded-xl border border-border bg-muted/5 p-3 space-y-3">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="space-y-0.5">
-                    <Label className="text-xs font-semibold text-foreground/90">
-                      Export for specific recipient
+              {isSiteManager ? (
+                <div className="flex-1 rounded-xl border border-border bg-muted/10 p-4 flex flex-col gap-3 min-h-[300px]">
+                  <div className="flex items-center justify-between pb-2 border-b border-border/50">
+                    <Label className="text-xs font-semibold text-foreground/90 flex items-center gap-2">
+                      <FileSpreadsheet className="h-4 w-4 text-primary" /> Included Export Fields ({SITE_MANAGER_COLUMNS.length})
                     </Label>
-                    <p className="text-[11px] text-muted-foreground">
-                      Pre-selects required columns for compliance.
-                    </p>
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                      Standard Export
+                    </span>
                   </div>
-                  <Switch
-                    checked={exportForRecipient}
-                    onCheckedChange={handleExportForRecipientToggle}
-                  />
+                  <p className="text-xs text-muted-foreground">
+                    The following fixed fields will be included in your CSV export:
+                  </p>
+                  <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 max-h-[320px] custom-scrollbar">
+                    {SITE_MANAGER_COLUMNS.map((colId) => {
+                      const colDef = AVAILABLE_COLUMNS.find((c) => c.id === colId);
+                      return (
+                        <div key={colId} className="flex items-center gap-2 text-xs py-1.5 px-2.5 rounded-lg bg-card border border-border/60">
+                          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                          <span className="font-medium text-foreground">{colDef?.label || colId}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
+              ) : (
+                <>
+                  {/* Preset Switcher */}
+                  <div className="rounded-xl border border-border bg-muted/5 p-3 space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="space-y-0.5">
+                        <Label className="text-xs font-semibold text-foreground/90">
+                          Export for specific recipient
+                        </Label>
+                        <p className="text-[11px] text-muted-foreground">
+                          Pre-selects required columns for compliance.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={exportForRecipient}
+                        onCheckedChange={handleExportForRecipientToggle}
+                      />
+                    </div>
 
-                {exportForRecipient && (
-                  <div className="flex items-center gap-2 pt-1 border-t border-border/50">
-                    <Label className="text-xs text-muted-foreground whitespace-nowrap">
-                      Recipient:
-                    </Label>
-                    <Select
-                      value={selectedRecipient}
-                      onValueChange={handleRecipientChange}
-                    >
-                      <SelectTrigger className="w-full h-8 text-xs bg-muted/20 border-border/60 hover:bg-muted/40">
-                        <SelectValue placeholder="Select Recipient" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="calstart">CALSTART</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    {exportForRecipient && (
+                      <div className="flex items-center gap-2 pt-1 border-t border-border/50">
+                        <Label className="text-xs text-muted-foreground whitespace-nowrap">
+                          Recipient:
+                        </Label>
+                        <Select
+                          value={selectedRecipient}
+                          onValueChange={handleRecipientChange}
+                        >
+                          <SelectTrigger className="w-full h-8 text-xs bg-muted/20 border-border/60 hover:bg-muted/40">
+                            <SelectValue placeholder="Select Recipient" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="calstart">CALSTART</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
 
-              <div className="flex-1 min-h-0">
-                <ColumnsSelector
-                  availableColumns={AVAILABLE_COLUMNS}
-                  selectedColumns={selectedColumns}
-                  onColumnToggle={(colId, checked) => {
-                    if (checked) {
-                      setSelectedColumns((prev) => [...prev, colId]);
-                    } else {
-                      setSelectedColumns((prev) => prev.filter((id) => id !== colId));
-                    }
-                  }}
-                  onSelectAll={() => setSelectedColumns(AVAILABLE_COLUMNS.map(c => c.id))}
-                  onDeselectAll={() => setSelectedColumns([])}
-                  disabled={exportForRecipient}
-                />
-              </div>
+                  <div className="flex-1 min-h-0">
+                    <ColumnsSelector
+                      availableColumns={AVAILABLE_COLUMNS}
+                      selectedColumns={selectedColumns}
+                      onColumnToggle={(colId, checked) => {
+                        if (checked) {
+                          setSelectedColumns((prev) => [...prev, colId]);
+                        } else {
+                          setSelectedColumns((prev) => prev.filter((id) => id !== colId));
+                        }
+                      }}
+                      onSelectAll={() => setSelectedColumns(AVAILABLE_COLUMNS.map(c => c.id))}
+                      onDeselectAll={() => setSelectedColumns([])}
+                      disabled={exportForRecipient}
+                    />
+                  </div>
+                </>
+              )}
             </div>
           </div>
 

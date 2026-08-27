@@ -5,13 +5,16 @@ import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Breadcrumbs } from './Breadcrumbs';
 import { BrandLogo } from './BrandLogo';
-import { useEnvironment } from '@/contexts/EnvironmentContext';
+import { useEnvironment, isSiteManagerUser } from '@/contexts/EnvironmentContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { Environment } from '@/constants/constants';
 
 export function Header() {
   const { theme, setTheme } = useTheme();
   const { environment, setEnvironment } = useEnvironment();
+  const { user } = useAuth();
+  const isSiteManager = isSiteManagerUser(user);
 
   return (
     <header className="border-b bg-card h-16 md:h-[101px] flex items-center shrink-0">
@@ -26,41 +29,43 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="relative flex items-center bg-muted rounded-full p-0.5 h-8 md:h-9 text-[10px] md:text-xs font-bold select-none border">
-            <Button
-              variant={null}
-              size={null}
-              onClick={() => setEnvironment(Environment.DEV)}
-              className={cn(
-                'relative z-10 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold transition-colors duration-200 cursor-pointer',
-                environment === Environment.DEV
-                  ? 'text-white'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              DEV
-            </Button>
-            <Button
-              variant={null}
-              size={null}
-              onClick={() => setEnvironment(Environment.PROD)}
-              className={cn(
-                'relative z-10 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold transition-colors duration-200 cursor-pointer',
-                environment === Environment.PROD
-                  ? 'text-white'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              PROD
-            </Button>
-            <div
-              className="absolute top-0.5 bottom-0.5 rounded-full bg-primary transition-all duration-200 ease-in-out"
-              style={{
-                left: environment === Environment.DEV ? '2px' : '50%',
-                width: 'calc(50% - 2px)',
-              }}
-            />
-          </div>
+          {!isSiteManager && (
+            <div className="relative flex items-center bg-muted rounded-full p-0.5 h-8 md:h-9 text-[10px] md:text-xs font-bold select-none border">
+              <Button
+                variant={null}
+                size={null}
+                onClick={() => setEnvironment(Environment.DEV)}
+                className={cn(
+                  'relative z-10 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold transition-colors duration-200 cursor-pointer',
+                  environment === Environment.DEV
+                    ? 'text-white'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                DEV
+              </Button>
+              <Button
+                variant={null}
+                size={null}
+                onClick={() => setEnvironment(Environment.PROD)}
+                className={cn(
+                  'relative z-10 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold transition-colors duration-200 cursor-pointer',
+                  environment === Environment.PROD
+                    ? 'text-white'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                PROD
+              </Button>
+              <div
+                className="absolute top-0.5 bottom-0.5 rounded-full bg-primary transition-all duration-200 ease-in-out"
+                style={{
+                  left: environment === Environment.DEV ? '2px' : '50%',
+                  width: 'calc(50% - 2px)',
+                }}
+              />
+            </div>
+          )}
 
           <Button
             variant="ghost"

@@ -143,6 +143,7 @@ export interface RecentActivity {
   stationId?: string;
   startDate?: string;
   useMode?: SessionUseMode | null;
+  cost?: number;
 }
 
 export interface DashboardData {
@@ -188,6 +189,7 @@ export enum AppPermission {
   OCPP_REMOTE_STOP = 'ocpp.remote_stop',
   OCPP_UNLOCK_CONNECTOR = 'ocpp.unlock_connector',
   OCPP_CHANGE_CONFIG = 'ocpp.change_config',
+  OCPP_LOGS_READ = 'ocpp_logs.read',
 
   // ID Tag
   ID_TAG_UPDATE = 'id_tag.update',
@@ -538,6 +540,8 @@ export interface Session {
   durationMinutes?: number;
   currentSpeed?: number;
   peakKwh?: number;
+  totalCost?: number | null;
+  cost?: number | null;
   useMode?: SessionUseMode | null;
   createdAt: string;
   updatedAt: string;

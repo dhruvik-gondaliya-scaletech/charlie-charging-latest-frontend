@@ -17,6 +17,7 @@ import {
   Calendar,
   ShieldAlert,
   Zap,
+  ClipboardClock,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { staggerContainer, staggerItem } from '@/lib/motion';
@@ -28,7 +29,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
 import { DriverFormModal } from '../components/DriverFormModal';
 
-import { Settings, Users as UsersListIcon, History, Trash2 } from 'lucide-react';
+import { Settings, Users as UsersListIcon, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { FRONTEND_ROUTES } from '@/constants/constants';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -161,7 +162,7 @@ export function DriversContainer() {
                     )}`
                   )
                 }
-                icon={<History className="h-3.5 w-3.5" />}
+                icon={<ClipboardClock className="h-3.5 w-3.5" />}
               />
               <ProtectedAction permission={AppPermission.DRIVER_DELETE}>
                 <ActionIconButton
@@ -362,7 +363,7 @@ export function DriversContainer() {
                           )
                         }
                       >
-                        <History className="h-3.5 w-3.5 mr-1.5" />
+                        <ClipboardClock className="h-3.5 w-3.5 mr-1.5" />
                         Charging History
                       </Button>
                       <ProtectedAction permission={AppPermission.DRIVER_DELETE}>

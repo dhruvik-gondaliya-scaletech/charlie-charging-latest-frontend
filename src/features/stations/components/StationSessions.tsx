@@ -26,7 +26,8 @@ import {
     Terminal,
     RotateCcw,
     Leaf,
-    Share2
+    Share2,
+    DollarSign
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -41,6 +42,10 @@ import {
 } from '@/components/ui/select';
 import { DatePicker } from '@/components/shared/DatePicker';
 import { startOfDay, endOfDay, format } from 'date-fns';
+import { AppPermission } from '@/types';
+import { ProtectedAction } from '@/components/shared/ProtectedAction';
+import { useAuth } from '@/contexts/AuthContext';
+import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
 
 interface StationSessionsProps {
     stationId: string;
@@ -118,7 +123,7 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
 
     // Server-side pagination state
     const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState(10);
+    const [limit, setLimit] = useState(DEFAULT_PAGE_SIZE);
 
     const handleResetFilters = () => {
         setStatusFilter('all');
@@ -148,8 +153,12 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
     const sessionsMeta = isPaginatedData ? (rawData as PaginatedResponse<Session>).meta : null;
     const totalSessionCount = sessionsMeta?.total ?? sessions.length;
 
+    const { hasPermission } = useAuth();
+    const canViewLogs = hasPermission(AppPermission.OCPP_LOGS_READ);
+
     const columns: ColumnDef<Session>[] = useMemo(
-        () => [
+        () => {
+            const cols: ColumnDef<Session>[] = [
             {
                 accessorKey: 'user',
                 header: 'User',
@@ -341,6 +350,19 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
                 },
             },
             {
+                id: 'cost',
+                header: 'Cost',
+                cell: ({ row }) => {
+                    const cost = row.original.totalCost ?? row.original.cost ?? 0;
+                    return (
+                        <div className="flex items-center gap-1.5 font-black text-foreground">
+                            <DollarSign className="h-3.5 w-3.5 text-emerald-500" />
+                            <span>{cost.toFixed(2)}</span>
+                        </div>
+                    );
+                },
+            },
+            {
                 id: 'co2Emitted',
                 header: 'CO2 Emitted',
                 cell: ({ row }) => {
@@ -408,7 +430,10 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
                     );
                 },
             },
-            {
+        ];
+
+        if (canViewLogs) {
+            cols.push({
                 id: 'actions',
                 header: 'Actions',
                 size: 210,
@@ -440,10 +465,10 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
                         </div>
                     );
                 },
-            },
-        ],
-        [onViewLogs, stationId]
-    );
+            });
+        }
+        return cols;
+    }, [canViewLogs, onViewLogs, stationId]);
 
     if (isLoading && !sessions) {
         return (
@@ -645,26 +670,28 @@ export function StationSessions({ stationId, onViewLogs }: StationSessionsProps)
                                         {session.startTime ? formatDurationUtil(session.startTime, session.endTime) : '-'}
                                     </span>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => handleShareSession(session)}
-                                        className="h-9 rounded-xl text-[10px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 hover:bg-emerald-500/20"
-                                    >
-                                        <Share2 className="h-3.5 w-3.5 mr-1.5" />
-                                        Share Logs
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => onViewLogs?.(session.id)}
-                                        className="h-9 rounded-xl text-[10px] font-black uppercase tracking-widest text-primary bg-primary/5 hover:bg-primary/10"
-                                    >
-                                        <Terminal className="h-3.5 w-3.5 mr-1.5" />
-                                        Logs
-                                    </Button>
-                                </div>
+                                <ProtectedAction permission={AppPermission.OCPP_LOGS_READ}>
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => handleShareSession(session)}
+                                            className="h-9 rounded-xl text-[10px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 hover:bg-emerald-500/20"
+                                        >
+                                            <Share2 className="h-3.5 w-3.5 mr-1.5" />
+                                            Share Logs
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => onViewLogs?.(session.id)}
+                                            className="h-9 rounded-xl text-[10px] font-black uppercase tracking-widest text-primary bg-primary/5 hover:bg-primary/10"
+                                        >
+                                            <Terminal className="h-3.5 w-3.5 mr-1.5" />
+                                            Logs
+                                        </Button>
+                                    </div>
+                                </ProtectedAction>
                             </div>
                         </div>
                     );

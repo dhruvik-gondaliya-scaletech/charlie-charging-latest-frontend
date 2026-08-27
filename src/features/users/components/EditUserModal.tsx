@@ -11,15 +11,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Mail, Shield, Loader2, User as UserIcon } from 'lucide-react';
+import { Mail, Shield, Loader2, User as UserIcon, Search } from 'lucide-react';
 import { useRoles } from '@/hooks/get/useRbac';
 import { useUser } from '@/hooks/get/useUsers';
 import { useUpdateUser } from '@/hooks/patch/useUpdateUser';
 import { UpdateUserRoleLocationDto } from '@/services/rbac.service';
-import { Location, LocationEnv, User, AppRole } from '@/types';
+import { Location, User, AppRole } from '@/types';
 import { useQuery } from '@tanstack/react-query';
 import { Environment } from '@/constants/constants';
 import { locationService } from '@/services/location.service';
+import { useDebounce } from '@/hooks/use-debounce';
 
 interface EditUserModalProps {
     isOpen: boolean;
@@ -31,37 +32,21 @@ export function EditUserModal({ isOpen, onClose, user }: EditUserModalProps) {
     const updateUser = useUpdateUser();
     const { data: fetchedUser, isLoading: userLoading } = useUser(isOpen ? user?.id || null : null);
     const { data: allRoles, isLoading: rolesLoading } = useRoles();
-    const { data: devLocationsResponse, isLoading: devLoading } = useQuery({
-        queryKey: ['locations', Environment.DEV],
-        queryFn: () => locationService.getAllLocations(Environment.DEV),
+    const [locationSearch, setLocationSearch] = React.useState('');
+    const debouncedLocationSearch = useDebounce(locationSearch, 400);
+
+    const { data: prodLocationsResponse, isLoading: locationsLoading } = useQuery({
+        queryKey: ['locations', Environment.PROD, { search: debouncedLocationSearch }],
+        queryFn: () => locationService.getAllLocations(Environment.PROD, { search: debouncedLocationSearch || undefined }),
         staleTime: 60000,
     });
-
-    const { data: prodLocationsResponse, isLoading: prodLoading } = useQuery({
-        queryKey: ['locations', Environment.PROD],
-        queryFn: () => locationService.getAllLocations(Environment.PROD),
-        staleTime: 60000,
-    });
-
-    const locationsLoading = devLoading || prodLoading;
-
-    const devLocations = React.useMemo(() => {
-        const locations = Array.isArray(devLocationsResponse)
-            ? (devLocationsResponse as Location[])
-            : ((devLocationsResponse as { data?: Location[] } | undefined)?.data ?? []);
-        return locations.filter((loc) => loc.locationEnv === LocationEnv.DEVELOPMENT || !loc.locationEnv);
-    }, [devLocationsResponse]);
 
     const prodLocations = React.useMemo(() => {
         const locations = Array.isArray(prodLocationsResponse)
             ? (prodLocationsResponse as Location[])
             : ((prodLocationsResponse as { data?: Location[] } | undefined)?.data ?? []);
-        return locations.filter((loc) => loc.locationEnv === LocationEnv.PRODUCTION);
+        return locations;
     }, [prodLocationsResponse]);
-
-    const allLocations = React.useMemo(() => {
-        return [...devLocations, ...prodLocations];
-    }, [devLocations, prodLocations]);
 
     const {
         register,
@@ -296,99 +281,56 @@ export function EditUserModal({ isOpen, onClose, user }: EditUserModalProps) {
                             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
                                 Scope Locations
                             </Label>
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/50" />
+                                <Input
+                                    type="text"
+                                    placeholder="Search locations..."
+                                    value={locationSearch}
+                                    onChange={(e) => setLocationSearch(e.target.value)}
+                                    className="pl-9 h-9 bg-muted/20 border-border/40 focus:ring-primary/20 rounded-xl text-xs font-medium"
+                                />
+                            </div>
                             {locationsLoading ? (
                                 <div className="flex items-center text-xs text-white/40 ml-1">
                                     <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
                                     Loading locations...
                                 </div>
-                            ) : allLocations.length === 0 ? (
-                                <p className="text-xs text-white/40 ml-1">No locations configured in system.</p>
+                            ) : prodLocations.length === 0 ? (
+                                <p className="text-xs text-white/40 ml-1">No production locations configured in system.</p>
                             ) : (
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 ml-1">
-                                            dev
-                                        </span>
-                                        <div className="max-h-40 overflow-y-auto border border-border/40 bg-muted/10 rounded-xl p-3 space-y-2">
-                                            {devLocations.length === 0 ? (
-                                                <p className="text-[10px] text-white/40 p-1">No dev locations</p>
-                                            ) : (
-                                                devLocations.map((loc) => {
-                                                    const isChecked = selectedLocationIds.includes(loc.id);
-                                                    return (
-                                                        <div
-                                                            key={loc.id}
-                                                            className="flex items-center gap-2.5 px-1 py-0.5"
-                                                        >
-                                                            <Checkbox
-                                                                id={`loc-${loc.id}`}
-                                                                checked={isChecked}
-                                                                onCheckedChange={(checked) => {
-                                                                    if (checked === true) {
-                                                                        setValue('locationIds', [...selectedLocationIds, loc.id], { shouldValidate: true });
-                                                                    } else {
-                                                                        setValue(
-                                                                            'locationIds',
-                                                                            selectedLocationIds.filter((id) => id !== loc.id),
-                                                                            { shouldValidate: true }
-                                                                        );
-                                                                    }
-                                                                }}
-                                                            />
-                                                            <Label
-                                                                htmlFor={`loc-${loc.id}`}
-                                                                className="text-xs font-bold text-white/80 cursor-pointer hover:text-white transition-colors truncate"
-                                                            >
-                                                                {loc.name}
-                                                            </Label>
-                                                        </div>
-                                                    );
-                                                })
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 ml-1">
-                                            Prod
-                                        </span>
-                                        <div className="max-h-40 overflow-y-auto border border-border/40 bg-muted/10 rounded-xl p-3 space-y-2">
-                                            {prodLocations.length === 0 ? (
-                                                <p className="text-[10px] text-white/40 p-1">No prod locations</p>
-                                            ) : (
-                                                prodLocations.map((loc) => {
-                                                    const isChecked = selectedLocationIds.includes(loc.id);
-                                                    return (
-                                                        <div
-                                                            key={loc.id}
-                                                            className="flex items-center gap-2.5 px-1 py-0.5"
-                                                        >
-                                                            <Checkbox
-                                                                id={`loc-${loc.id}`}
-                                                                checked={isChecked}
-                                                                onCheckedChange={(checked) => {
-                                                                    if (checked === true) {
-                                                                        setValue('locationIds', [...selectedLocationIds, loc.id], { shouldValidate: true });
-                                                                    } else {
-                                                                        setValue(
-                                                                            'locationIds',
-                                                                            selectedLocationIds.filter((id) => id !== loc.id),
-                                                                            { shouldValidate: true }
-                                                                        );
-                                                                    }
-                                                                }}
-                                                            />
-                                                            <Label
-                                                                htmlFor={`loc-${loc.id}`}
-                                                                className="text-xs font-bold text-white/80 cursor-pointer hover:text-white transition-colors truncate"
-                                                            >
-                                                                {loc.name}
-                                                            </Label>
-                                                        </div>
-                                                    );
-                                                })
-                                            )}
-                                        </div>
-                                    </div>
+                                <div className="max-h-40 overflow-y-auto border border-border/40 bg-muted/10 rounded-xl p-3 space-y-2">
+                                    {prodLocations.map((loc) => {
+                                        const isChecked = selectedLocationIds.includes(loc.id);
+                                        return (
+                                            <div
+                                                key={loc.id}
+                                                className="flex items-center gap-2.5 px-1 py-0.5"
+                                            >
+                                                <Checkbox
+                                                    id={`loc-${loc.id}`}
+                                                    checked={isChecked}
+                                                    onCheckedChange={(checked) => {
+                                                        if (checked === true) {
+                                                            setValue('locationIds', [...selectedLocationIds, loc.id], { shouldValidate: true });
+                                                        } else {
+                                                            setValue(
+                                                                'locationIds',
+                                                                selectedLocationIds.filter((id) => id !== loc.id),
+                                                                { shouldValidate: true }
+                                                            );
+                                                        }
+                                                    }}
+                                                />
+                                                <Label
+                                                    htmlFor={`loc-${loc.id}`}
+                                                    className="text-xs font-bold text-white/80 cursor-pointer hover:text-white transition-colors truncate"
+                                                >
+                                                    {loc.name}
+                                                </Label>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             )}
                             {errors.locationIds && <p className="text-[10px] font-bold text-destructive uppercase tracking-widest ml-1">{errors.locationIds.message}</p>}

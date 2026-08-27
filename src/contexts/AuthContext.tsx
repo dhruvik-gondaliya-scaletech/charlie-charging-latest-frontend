@@ -2,12 +2,13 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { AUTH_CONFIG, FRONTEND_ROUTES } from '@/constants/constants';
+import { AUTH_CONFIG, FRONTEND_ROUTES, Environment } from '@/constants/constants';
 import { User, Tenant, AppPermission, AppRole, TenantMembership } from '@/types';
 import { authService } from '@/services/auth.service';
 import { toast } from 'sonner';
 import { useMe } from '@/hooks/get/useMe';
 import { flattenModulePermissions } from '@/lib/permissions';
+import { isSiteManagerUser, useEnvironment } from '@/contexts/EnvironmentContext';
 
 interface LoginResult {
   requiresTenantSelection?: boolean;
@@ -77,6 +78,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { setEnvironment } = useEnvironment();
 
   useEffect(() => {
     const initAuth = async () => {
@@ -93,6 +95,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
           const userData = JSON.parse(storedUser);
           const tenantData = JSON.parse(storedTenant);
+
+          if (isSiteManagerUser(userData)) {
+            localStorage.setItem('active_environment', Environment.PROD);
+            setEnvironment(Environment.PROD);
+          }
 
           // Sync cookies with localStorage for middleware
           document.cookie = `${AUTH_CONFIG.tokenKey}=${token}; path=/; max-age=86400; SameSite=Lax`;
@@ -116,7 +123,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     initAuth();
-  }, []);
+  }, [setEnvironment]);
 
   const getRedirectTarget = (): string => {
     if (typeof window === 'undefined') return FRONTEND_ROUTES.DASHBOARD;
@@ -132,6 +139,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem(AUTH_CONFIG.tokenKey, token);
     localStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(fullUser));
     localStorage.setItem(AUTH_CONFIG.tenantKey, JSON.stringify(tenantData));
+
+    if (isSiteManagerUser(fullUser)) {
+      localStorage.setItem('active_environment', Environment.PROD);
+      setEnvironment(Environment.PROD);
+    }
 
     document.cookie = `${AUTH_CONFIG.tokenKey}=${token}; path=/; max-age=86400; SameSite=Lax`;
     document.cookie = `${AUTH_CONFIG.userKey}=${encodeURIComponent(JSON.stringify(fullUser))}; path=/; max-age=86400; SameSite=Lax`;
@@ -254,10 +266,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (meUser) {
       setUser(meUser);
+      if (isSiteManagerUser(meUser)) {
+        localStorage.setItem('active_environment', Environment.PROD);
+        setEnvironment(Environment.PROD);
+      }
       localStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(meUser));
       document.cookie = `${AUTH_CONFIG.userKey}=${encodeURIComponent(JSON.stringify(meUser))}; path=/; max-age=86400; SameSite=Lax`;
     }
-  }, [meUser]);
+  }, [meUser, setEnvironment]);
 
   useEffect(() => {
     if (meError) {

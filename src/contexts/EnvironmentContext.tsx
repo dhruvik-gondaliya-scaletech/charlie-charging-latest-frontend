@@ -1,7 +1,21 @@
 'use client';
 
-import { Environment } from '@/constants/constants';
+import { Environment, AUTH_CONFIG } from '@/constants/constants';
 import React, { createContext, useContext, useState, useEffect } from 'react';
+
+export const isSiteManagerUser = (user: { roles?: string[]; role?: string } | null | undefined): boolean => {
+  if (!user) return false;
+  const userRoles = user.roles ?? (user.role ? [user.role] : []);
+  return userRoles.some((r) => {
+    if (!r) return false;
+    const normalized = r.toString().toUpperCase().replace(/[\s_]+/g, '');
+    return (
+      normalized === 'SITEMANAGER' ||
+      normalized === 'SITE_MANAGER' ||
+      normalized === 'OPERATOR'
+    );
+  });
+};
 
 interface EnvironmentContextType {
   environment: Environment;
@@ -19,14 +33,28 @@ export const EnvironmentProvider: React.FC<{ children: React.ReactNode }> = ({ c
     let activeEnv: Environment | null = null;
 
     if (typeof window !== 'undefined') {
-      const searchParams = new URLSearchParams(window.location.search);
-      const envParam = searchParams.get('env') || searchParams.get('environment');
-      if (envParam) {
-        const lower = envParam.toLowerCase();
-        if (lower === 'dev' || lower === Environment.DEV) {
-          activeEnv = Environment.DEV;
-        } else if (lower === 'prod' || lower === Environment.PROD) {
-          activeEnv = Environment.PROD;
+      try {
+        const storedUserStr = localStorage.getItem(AUTH_CONFIG.userKey);
+        if (storedUserStr) {
+          const storedUser = JSON.parse(storedUserStr);
+          if (isSiteManagerUser(storedUser)) {
+            activeEnv = Environment.PROD;
+          }
+        }
+      } catch (e) {
+        console.error('Error parsing stored user in EnvironmentContext:', e);
+      }
+
+      if (!activeEnv) {
+        const searchParams = new URLSearchParams(window.location.search);
+        const envParam = searchParams.get('env') || searchParams.get('environment');
+        if (envParam) {
+          const lower = envParam.toLowerCase();
+          if (lower === 'dev' || lower === Environment.DEV) {
+            activeEnv = Environment.DEV;
+          } else if (lower === 'prod' || lower === Environment.PROD) {
+            activeEnv = Environment.PROD;
+          }
         }
       }
 
@@ -46,8 +74,22 @@ export const EnvironmentProvider: React.FC<{ children: React.ReactNode }> = ({ c
   }, []);
 
   const setEnvironment = (env: Environment) => {
-    setEnvironmentState(env);
-    localStorage.setItem('active_environment', env);
+    let targetEnv = env;
+    if (typeof window !== 'undefined') {
+      try {
+        const storedUserStr = localStorage.getItem(AUTH_CONFIG.userKey);
+        if (storedUserStr) {
+          const storedUser = JSON.parse(storedUserStr);
+          if (isSiteManagerUser(storedUser)) {
+            targetEnv = Environment.PROD;
+          }
+        }
+      } catch (e) {
+        console.error('Error checking user role in setEnvironment:', e);
+      }
+    }
+    setEnvironmentState(targetEnv);
+    localStorage.setItem('active_environment', targetEnv);
   };
 
   // Prevent flash of incorrect default environment before initialization
