@@ -80,9 +80,6 @@ export function TenantSelector({
                         </Badge>
                       )}
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      Role: <span className="font-medium text-foreground">{t.role || 'Member'}</span>
-                    </div>
                   </div>
                 </div>
 

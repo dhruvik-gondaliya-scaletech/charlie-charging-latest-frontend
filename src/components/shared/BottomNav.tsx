@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/drawer";
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { TenantSwitcher } from './TenantSwitcher';
 import { useAuth } from '@/contexts/AuthContext';
 import { AppPermission } from '@/types';
 
@@ -114,6 +115,9 @@ export function BottomNav() {
                 <DrawerTitle>Menu</DrawerTitle>
                 <DrawerDescription>Access all management features</DrawerDescription>
               </DrawerHeader>
+              <div className="px-4 pb-2">
+                <TenantSwitcher className="w-full" side="top" align="center" />
+              </div>
               <div className="p-4 grid grid-cols-3 gap-4">
                 {moreNavItems.map((item) => {
                   if (!canAccessRoute(item)) return null;
