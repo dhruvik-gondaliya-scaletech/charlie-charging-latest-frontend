@@ -34,8 +34,10 @@ import {
 } from "@/components/ui/drawer";
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { TenantSwitcher } from './TenantSwitcher';
 import { useAuth } from '@/contexts/AuthContext';
 import { AppPermission } from '@/types';
+import { isSiteManagerUser } from '@/contexts/EnvironmentContext';
 
 const mainNavItems = [
   { href: FRONTEND_ROUTES.DASHBOARD, label: 'Home', icon: LayoutDashboard },
@@ -58,14 +60,18 @@ export function BottomNav() {
   const pathname = usePathname();
   const { user, logout, hasPermission, isSuperAdmin } = useAuth();
   const [isMoreOpen, setIsMoreOpen] = React.useState(false);
+  const isSiteManager = isSiteManagerUser(user);
 
-  const canAccessRoute = React.useCallback((item: { permission?: AppPermission; superAdminOnly?: boolean }) => {
+  const canAccessRoute = React.useCallback((item: { href?: string; permission?: AppPermission; superAdminOnly?: boolean }) => {
     if (item.superAdminOnly) {
       return isSuperAdmin;
     }
+    if (item.href === FRONTEND_ROUTES.REPORTS && isSiteManager) {
+      return false;
+    }
     if (!item.permission) return true;
     return hasPermission(item.permission);
-  }, [hasPermission, isSuperAdmin]);
+  }, [hasPermission, isSuperAdmin, isSiteManager]);
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t pb-safe">
@@ -114,6 +120,9 @@ export function BottomNav() {
                 <DrawerTitle>Menu</DrawerTitle>
                 <DrawerDescription>Access all management features</DrawerDescription>
               </DrawerHeader>
+              <div className="px-4 pb-2">
+                <TenantSwitcher className="w-full" side="top" align="center" />
+              </div>
               <div className="p-4 grid grid-cols-3 gap-4">
                 {moreNavItems.map((item) => {
                   if (!canAccessRoute(item)) return null;

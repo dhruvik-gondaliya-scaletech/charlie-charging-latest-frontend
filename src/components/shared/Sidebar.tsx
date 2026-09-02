@@ -33,7 +33,9 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { AnimatedModal } from './AnimatedModal';
 import { BrandLogo } from './BrandLogo';
+import { TenantSwitcher } from './TenantSwitcher';
 import { AppPermission } from '@/types';
+import { isSiteManagerUser } from '@/contexts/EnvironmentContext';
 
 const navItems = [
   { href: FRONTEND_ROUTES.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard },
@@ -55,6 +57,7 @@ export function Sidebar() {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = React.useState(false);
   const pathname = usePathname();
   const { user, logout, hasPermission, isSuperAdmin } = useAuth();
+  const isSiteManager = isSiteManagerUser(user);
 
   const getInitials = (firstName?: string | null, lastName?: string | null) => {
     if (!firstName || !lastName) return 'U';
@@ -64,6 +67,9 @@ export function Sidebar() {
   const canAccessRoute = (item: typeof navItems[number]) => {
     if ('superAdminOnly' in item && item.superAdminOnly) {
       return isSuperAdmin;
+    }
+    if (item.href === FRONTEND_ROUTES.REPORTS && isSiteManager) {
+      return false;
     }
     if (!item.permission) return true;
     return hasPermission(item.permission);
@@ -77,7 +83,7 @@ export function Sidebar() {
 
       <Separator />
 
-      <nav className="flex-1 p-4 space-y-2">
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         {navItems.map((item) => {
           if (!canAccessRoute(item)) return null;
 
@@ -122,7 +128,9 @@ export function Sidebar() {
 
       <Separator />
 
-      <div className="p-4 mt-auto">
+      <div className="p-4 mt-auto space-y-3">
+        <TenantSwitcher className="w-full" side="right" align="end" />
+
         <Popover>
           <PopoverTrigger asChild>
             <button className="flex items-center gap-3 w-full p-2 rounded-xl hover:bg-accent transition-colors text-left group">

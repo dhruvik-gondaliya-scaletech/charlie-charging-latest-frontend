@@ -5,6 +5,8 @@ export const API_CONFIG = {
         auth: {
             login: "/auth/login",
             googleLogin: "/auth/google-login",
+            selectTenant: "/auth/select-tenant",
+            switchTenant: "/auth/switch-tenant",
             register: "/auth/register",
             verifyEmail: "/auth/verify-email",
             resendVerification: "/auth/resend-verification",
@@ -305,7 +307,7 @@ export const CONNECTOR_OPTIONS = [
     }
 ]
 
-export const DEFAULT_PAGE_SIZE = 10;
+export const DEFAULT_PAGE_SIZE = 25;
 
 export const IMAGE_DOMAIN_URL = "https://d39uw1u176mxxs.cloudfront.net"
 

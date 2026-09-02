@@ -7,9 +7,13 @@ export const useInviteUser = () => {
 
   return useMutation({
     mutationFn: (data: InviteUserData) => authService.inviteUser(data),
-    onSuccess: () => {
+    onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
-      toast.success('Invitation sent successfully');
+      const message =
+        response?.data?.data?.message ||
+        response?.data?.message ||
+        'Invitation processed successfully';
+      toast.success(message);
     },
     onError: (error: any) => {
       const errorMessage = error.response?.data?.message || 'Failed to send invitation';
