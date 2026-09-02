@@ -24,14 +24,14 @@ import { DriverSession } from '@/types';
 import { formatDate, formatTime } from '@/lib/date';
 import { StatCard } from '../../dashboard/components/StatCard';
 import { BackButton } from '@/components/shared/BackButton';
-import { FRONTEND_ROUTES } from '@/constants/constants';
+import { FRONTEND_ROUTES, DEFAULT_PAGE_SIZE } from '@/constants/constants';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export function DriverSessionsContainer() {
   const { id } = useParams();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const debouncedSearch = useDebounce(search, 400);
 
   const { data: driver, isLoading: isLoadingDriver } = useDriver(id as string);

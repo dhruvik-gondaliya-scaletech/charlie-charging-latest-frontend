@@ -42,7 +42,7 @@ import { ProtectedAction } from '@/components/shared/ProtectedAction';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import WebSocketUrlDisplay from '@/components/shared/WebSocketUrlDisplay';
 import { toast } from 'sonner';
-import { FRONTEND_ROUTES, Environment } from '@/constants/constants';
+import { FRONTEND_ROUTES, DEFAULT_PAGE_SIZE, Environment } from '@/constants/constants';
 import { SessionStatus } from '@/types';
 import { BackButton } from '@/components/shared/BackButton';
 import { useWebSocketConnection, useRealTimeEvent } from '@/hooks/useRealTime';
@@ -70,7 +70,7 @@ export function StationDetailContainer() {
     const { user, tenant } = useAuth();
     const { data: station, isLoading, error } = useStation(id as string);
     const { data: tariffs } = useTariffs();
-    const { data: rawSessions } = useStationSessions(id as string, { page: 1, limit: 10 });
+    const { data: rawSessions } = useStationSessions(id as string, { page: 1, limit: DEFAULT_PAGE_SIZE });
     const sessions = Array.isArray(rawSessions) ? rawSessions : (rawSessions?.items || []);
     const { data: sessionStats, isLoading: isStatsLoading } = useStationSessionStats(id as string);
     const [activeTab, setActiveTab] = useState('connectors');
@@ -616,7 +616,9 @@ export function StationDetailContainer() {
                         <ProtectedAction permission={AppPermission.OCPP_CHANGE_CONFIG}>
                             <TabsTrigger value="smart-charging" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Smart Charging</TabsTrigger>
                         </ProtectedAction>
-                        <TabsTrigger value="logs" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Live Logs</TabsTrigger>
+                        <ProtectedAction permission={AppPermission.OCPP_LOGS_READ}>
+                            <TabsTrigger value="logs" className="rounded-xl font-bold px-6 py-2.5 min-w-fit data-[state=active]:bg-background data-[state=active]:shadow-sm">Live Logs</TabsTrigger>
+                        </ProtectedAction>
                     </TabsList>
 
                     <TabsContent value="connectors">
@@ -771,17 +773,19 @@ export function StationDetailContainer() {
                         </Card>
                     </TabsContent>
 
-                    <TabsContent value="logs">
-                        <Card className="border-border/40 bg-card/20 backdrop-blur-sm rounded-3xl overflow-hidden border">
-                            <CardContent className="p-6">
-                                <StationLogs
-                                    stationId={station.id}
-                                    sessionId={filterSessionId}
-                                    onClearSessionId={handleClearSessionLogs}
-                                />
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
+                    <ProtectedAction permission={AppPermission.OCPP_LOGS_READ}>
+                        <TabsContent value="logs">
+                            <Card className="border-border/40 bg-card/20 backdrop-blur-sm rounded-3xl overflow-hidden border">
+                                <CardContent className="p-6">
+                                    <StationLogs
+                                        stationId={station.id}
+                                        sessionId={filterSessionId}
+                                        onClearSessionId={handleClearSessionLogs}
+                                    />
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+                    </ProtectedAction>
                 </Tabs>
             </motion.div>
 

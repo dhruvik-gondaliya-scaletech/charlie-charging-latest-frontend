@@ -2,19 +2,27 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { AUTH_CONFIG, FRONTEND_ROUTES } from '@/constants/constants';
-import { User, Tenant, AppPermission, AppRole } from '@/types';
+import { AUTH_CONFIG, FRONTEND_ROUTES, Environment } from '@/constants/constants';
+import { User, Tenant, AppPermission, AppRole, TenantMembership } from '@/types';
 import { authService } from '@/services/auth.service';
 import { toast } from 'sonner';
 import { useMe } from '@/hooks/get/useMe';
 import { flattenModulePermissions } from '@/lib/permissions';
+import { isSiteManagerUser, useEnvironment } from '@/contexts/EnvironmentContext';
+
+interface LoginResult {
+  requiresTenantSelection?: boolean;
+  tenants?: TenantMembership[];
+}
 
 interface AuthContextType {
   user: User | null;
   tenant: Tenant | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  googleLogin: (idToken: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<LoginResult | void>;
+  googleLogin: (idToken: string, tenantId?: string) => Promise<LoginResult | void>;
+  selectTenant: (email: string, password: string, tenantId: string) => Promise<void>;
+  switchTenant: (tenantId: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
   // RBAC fields
@@ -33,6 +41,8 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   login: async () => {},
   googleLogin: async () => {},
+  selectTenant: async () => {},
+  switchTenant: async () => {},
   logout: () => {},
   isAuthenticated: false,
   roles: [],
@@ -68,6 +78,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { setEnvironment } = useEnvironment();
 
   useEffect(() => {
     const initAuth = async () => {
@@ -84,6 +95,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
           const userData = JSON.parse(storedUser);
           const tenantData = JSON.parse(storedTenant);
+
+          if (isSiteManagerUser(userData)) {
+            localStorage.setItem('active_environment', Environment.PROD);
+            setEnvironment(Environment.PROD);
+          }
 
           // Sync cookies with localStorage for middleware
           document.cookie = `${AUTH_CONFIG.tokenKey}=${token}; path=/; max-age=86400; SameSite=Lax`;
@@ -107,7 +123,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     initAuth();
-  }, []);
+  }, [setEnvironment]);
 
   const getRedirectTarget = (): string => {
     if (typeof window === 'undefined') return FRONTEND_ROUTES.DASHBOARD;
@@ -119,26 +135,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return FRONTEND_ROUTES.DASHBOARD;
   };
 
-  const login = async (email: string, password: string) => {
+  const storeSession = (token: string, fullUser: User, tenantData: Tenant) => {
+    localStorage.setItem(AUTH_CONFIG.tokenKey, token);
+    localStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(fullUser));
+    localStorage.setItem(AUTH_CONFIG.tenantKey, JSON.stringify(tenantData));
+
+    if (isSiteManagerUser(fullUser)) {
+      localStorage.setItem('active_environment', Environment.PROD);
+      setEnvironment(Environment.PROD);
+    }
+
+    document.cookie = `${AUTH_CONFIG.tokenKey}=${token}; path=/; max-age=86400; SameSite=Lax`;
+    document.cookie = `${AUTH_CONFIG.userKey}=${encodeURIComponent(JSON.stringify(fullUser))}; path=/; max-age=86400; SameSite=Lax`;
+    document.cookie = `${AUTH_CONFIG.tenantKey}=${encodeURIComponent(JSON.stringify(tenantData))}; path=/; max-age=86400; SameSite=Lax`;
+
+    setUser(fullUser);
+    setTenant(tenantData);
+  };
+
+  const login = async (email: string, password: string): Promise<LoginResult | void> => {
     try {
-      const { access_token, tenant } = await authService.login(email, password);
+      const res = await authService.login(email, password);
 
-      localStorage.setItem(AUTH_CONFIG.tokenKey, access_token);
-      document.cookie = `${AUTH_CONFIG.tokenKey}=${access_token}; path=/; max-age=86400; SameSite=Lax`;
+      if (res.requiresTenantSelection && res.tenants) {
+        return { requiresTenantSelection: true, tenants: res.tenants };
+      }
 
-      // Fetch the full profile details including roles & permissions
-      const fullUser = await authService.getMe();
+      if (res.access_token && res.tenant) {
+        localStorage.setItem(AUTH_CONFIG.tokenKey, res.access_token);
+        document.cookie = `${AUTH_CONFIG.tokenKey}=${res.access_token}; path=/; max-age=86400; SameSite=Lax`;
 
-      localStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(fullUser));
-      localStorage.setItem(AUTH_CONFIG.tenantKey, JSON.stringify(tenant));
-
-      document.cookie = `${AUTH_CONFIG.userKey}=${encodeURIComponent(JSON.stringify(fullUser))}; path=/; max-age=86400; SameSite=Lax`;
-      document.cookie = `${AUTH_CONFIG.tenantKey}=${encodeURIComponent(JSON.stringify(tenant))}; path=/; max-age=86400; SameSite=Lax`;
-
-      setUser(fullUser);
-      setTenant(tenant);
-      toast.success('Login successful!');
-      router.push(getRedirectTarget());
+        const fullUser = await authService.getMe();
+        storeSession(res.access_token, fullUser, res.tenant);
+        toast.success('Login successful!');
+        router.push(getRedirectTarget());
+      }
     } catch (error) {
       localStorage.removeItem(AUTH_CONFIG.tokenKey);
       document.cookie = `${AUTH_CONFIG.tokenKey}=; path=/; max-age=0`;
@@ -146,29 +177,67 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const googleLogin = async (idToken: string) => {
+  const googleLogin = async (idToken: string, tenantId?: string): Promise<LoginResult | void> => {
     try {
-      const { access_token, tenant } = await authService.googleLogin(idToken);
+      const res = await authService.googleLogin(idToken, tenantId);
 
-      localStorage.setItem(AUTH_CONFIG.tokenKey, access_token);
-      document.cookie = `${AUTH_CONFIG.tokenKey}=${access_token}; path=/; max-age=86400; SameSite=Lax`;
+      if (res.requiresTenantSelection && res.tenants) {
+        return { requiresTenantSelection: true, tenants: res.tenants };
+      }
 
-      // Fetch the full profile details including roles & permissions
-      const fullUser = await authService.getMe();
+      if (res.access_token && res.tenant) {
+        localStorage.setItem(AUTH_CONFIG.tokenKey, res.access_token);
+        document.cookie = `${AUTH_CONFIG.tokenKey}=${res.access_token}; path=/; max-age=86400; SameSite=Lax`;
 
-      localStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(fullUser));
-      localStorage.setItem(AUTH_CONFIG.tenantKey, JSON.stringify(tenant));
-
-      document.cookie = `${AUTH_CONFIG.userKey}=${encodeURIComponent(JSON.stringify(fullUser))}; path=/; max-age=86400; SameSite=Lax`;
-      document.cookie = `${AUTH_CONFIG.tenantKey}=${encodeURIComponent(JSON.stringify(tenant))}; path=/; max-age=86400; SameSite=Lax`;
-
-      setUser(fullUser);
-      setTenant(tenant);
-      toast.success('Google Login successful!');
-      router.push(getRedirectTarget());
+        const fullUser = await authService.getMe();
+        storeSession(res.access_token, fullUser, res.tenant);
+        toast.success('Google Login successful!');
+        router.push(getRedirectTarget());
+      }
     } catch (error) {
       localStorage.removeItem(AUTH_CONFIG.tokenKey);
       document.cookie = `${AUTH_CONFIG.tokenKey}=; path=/; max-age=0`;
+      throw error;
+    }
+  };
+
+  const selectTenant = async (email: string, password: string, tenantId: string) => {
+    try {
+      const res = await authService.selectTenant({ email, password, tenantId });
+
+      if (res.access_token && res.tenant) {
+        localStorage.setItem(AUTH_CONFIG.tokenKey, res.access_token);
+        document.cookie = `${AUTH_CONFIG.tokenKey}=${res.access_token}; path=/; max-age=86400; SameSite=Lax`;
+
+        const fullUser = await authService.getMe();
+        storeSession(res.access_token, fullUser, res.tenant);
+        toast.success('Tenant selected successfully!');
+        router.push(getRedirectTarget());
+      }
+    } catch (error) {
+      localStorage.removeItem(AUTH_CONFIG.tokenKey);
+      document.cookie = `${AUTH_CONFIG.tokenKey}=; path=/; max-age=0`;
+      throw error;
+    }
+  };
+
+  const switchTenant = async (tenantId: string) => {
+    try {
+      const res = await authService.switchTenant(tenantId);
+
+      if (res.access_token && res.tenant) {
+        localStorage.setItem(AUTH_CONFIG.tokenKey, res.access_token);
+        document.cookie = `${AUTH_CONFIG.tokenKey}=${res.access_token}; path=/; max-age=86400; SameSite=Lax`;
+
+        const fullUser = await authService.getMe();
+        storeSession(res.access_token, fullUser, res.tenant);
+        toast.success(`Switched to tenant ${res.tenant.name}`);
+
+        // Reload page to refresh all tenant queries and context cleanly
+        window.location.reload();
+      }
+    } catch (error) {
+      toast.error('Failed to switch tenant.');
       throw error;
     }
   };
@@ -197,10 +266,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (meUser) {
       setUser(meUser);
+      if (isSiteManagerUser(meUser)) {
+        localStorage.setItem('active_environment', Environment.PROD);
+        setEnvironment(Environment.PROD);
+      }
       localStorage.setItem(AUTH_CONFIG.userKey, JSON.stringify(meUser));
       document.cookie = `${AUTH_CONFIG.userKey}=${encodeURIComponent(JSON.stringify(meUser))}; path=/; max-age=86400; SameSite=Lax`;
     }
-  }, [meUser]);
+  }, [meUser, setEnvironment]);
 
   useEffect(() => {
     if (meError) {
@@ -239,6 +312,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         loading,
         login,
         googleLogin,
+        selectTenant,
+        switchTenant,
         logout,
         isAuthenticated: !!user,
         roles,

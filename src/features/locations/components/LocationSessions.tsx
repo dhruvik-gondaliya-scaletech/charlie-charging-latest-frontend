@@ -25,7 +25,8 @@ import {
     Terminal,
     RotateCcw,
     Leaf,
-    Building2
+    Building2,
+    DollarSign
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -38,9 +39,11 @@ import {
 } from '@/components/ui/select';
 import { DatePicker } from '@/components/shared/DatePicker';
 import { startOfDay, endOfDay, format } from 'date-fns';
-import { FRONTEND_ROUTES } from '@/constants/constants';
+import { FRONTEND_ROUTES, DEFAULT_PAGE_SIZE } from '@/constants/constants';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { StationLogs } from '@/features/stations/components/StationLogs';
+import { AppPermission } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface LocationSessionsProps {
     locationId: string;
@@ -59,7 +62,7 @@ export function LocationSessions({ locationId, env, onViewLogs }: LocationSessio
 
     // Server-side pagination state
     const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState(10);
+    const [limit, setLimit] = useState(DEFAULT_PAGE_SIZE);
 
     const handleResetFilters = () => {
         setStatusFilter('all');
@@ -90,14 +93,18 @@ export function LocationSessions({ locationId, env, onViewLogs }: LocationSessio
     const sessionsMeta = isPaginatedData ? (rawData as PaginatedResponse<Session>).meta : null;
     const totalSessionCount = sessionsMeta?.total ?? sessions.length;
 
+    const { hasPermission } = useAuth();
+    const canViewLogs = hasPermission(AppPermission.OCPP_LOGS_READ);
+
     const columns: ColumnDef<Session>[] = useMemo(
-        () => [
-            {
-                accessorKey: 'status',
-                header: 'Status',
-                cell: ({ row }) => {
-                    const status = row.getValue('status') as string;
-                    let colorClasses = "";
+        () => {
+            const cols: ColumnDef<Session>[] = [
+                {
+                    accessorKey: 'status',
+                    header: 'Status',
+                    cell: ({ row }) => {
+                        const status = row.getValue('status') as string;
+                        let colorClasses = "";
 
                     if (status === 'completed' || status === 'COMPLETED' || status === SessionStatus.COMPLETED) {
                         colorClasses = "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
@@ -280,6 +287,19 @@ export function LocationSessions({ locationId, env, onViewLogs }: LocationSessio
                 },
             },
             {
+                id: 'cost',
+                header: 'Cost',
+                cell: ({ row }) => {
+                    const cost = row.original.totalCost ?? row.original.cost ?? 0;
+                    return (
+                        <div className="flex items-center gap-1.5 font-black text-foreground">
+                            <DollarSign className="h-3.5 w-3.5 text-emerald-500" />
+                            <span>{cost.toFixed(2)}</span>
+                        </div>
+                    );
+                },
+            },
+            {
                 id: 'co2Emitted',
                 header: 'CO2 Saved',
                 cell: ({ row }) => {
@@ -294,7 +314,10 @@ export function LocationSessions({ locationId, env, onViewLogs }: LocationSessio
                     );
                 },
             },
-            {
+        ];
+
+        if (canViewLogs) {
+            cols.push({
                 id: 'actions',
                 header: 'Actions',
                 cell: ({ row }) => {
@@ -315,10 +338,13 @@ export function LocationSessions({ locationId, env, onViewLogs }: LocationSessio
                         </Button>
                     );
                 },
-            },
-        ],
-        [setViewLogsSession]
-    );
+            });
+        }
+
+        return cols;
+    },
+    [canViewLogs, router, setViewLogsSession]
+);
 
     if (isLoading && !sessions) {
         return (

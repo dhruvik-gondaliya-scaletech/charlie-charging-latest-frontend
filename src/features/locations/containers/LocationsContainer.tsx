@@ -24,10 +24,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { FRONTEND_ROUTES } from '@/constants/constants';
+import { FRONTEND_ROUTES, DEFAULT_PAGE_SIZE } from '@/constants/constants';
 import { useDebounce } from '@/hooks/use-debounce';
-
-const SERVER_PAGE_SIZE = 25;
 
 export function LocationsContainer() {
   const router = useRouter();
@@ -40,7 +38,7 @@ export function LocationsContainer() {
   // Server-side search + pagination state (Fully URL-based)
   const [search, setSearch] = useState(() => searchParams.get('search') || searchParams.get('name') || '');
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(SERVER_PAGE_SIZE);
+  const [limit, setLimit] = useState(DEFAULT_PAGE_SIZE);
   const debouncedSearch = useDebounce(search, 500);
 
   useEffect(() => {

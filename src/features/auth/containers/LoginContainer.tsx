@@ -3,20 +3,27 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { LoginFormData } from '@/lib/validations/auth.schema';
 import { LoginForm } from '../components/LoginForm';
+import { TenantSelector } from '../components/TenantSelector';
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, XCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
-import Link from 'next/link';
 import { signInWithPopup } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase';
+import { TenantMembership } from '@/types';
 
 export function LoginContainer() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [alertMessage, setAlertMessage] = useState<{ type: 'error' | 'warning' | 'info'; message: string } | null>(null);
-  const { login, googleLogin } = useAuth();
+  
+  // Multi-tenant state
+  const [tenantsToSelect, setTenantsToSelect] = useState<TenantMembership[] | null>(null);
+  const [pendingCredentials, setPendingCredentials] = useState<{ email: string; password: string } | null>(null);
+  const [pendingGoogleToken, setPendingGoogleToken] = useState<string | null>(null);
+
+  const { login, googleLogin, selectTenant } = useAuth();
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -46,7 +53,12 @@ export function LoginContainer() {
     setIsLoading(true);
     setAlertMessage(null);
     try {
-      await login(data.email, data.password);
+      const res = await login(data.email, data.password);
+
+      if (res?.requiresTenantSelection && res.tenants) {
+        setPendingCredentials({ email: data.email, password: data.password });
+        setTenantsToSelect(res.tenants);
+      }
     } catch (error: any) {
       console.error('Login failed:', error);
       let message = error.response?.data?.message || error.message || 'An unexpected error occurred. Please try again.';
@@ -64,16 +76,42 @@ export function LoginContainer() {
     }
   };
 
+  const handleSelectTenant = async (tenantId: string) => {
+    if (!pendingCredentials && !pendingGoogleToken) return;
+    setIsLoading(true);
+    setAlertMessage(null);
+    try {
+      if (pendingGoogleToken) {
+        await googleLogin(pendingGoogleToken, tenantId);
+      } else if (pendingCredentials) {
+        await selectTenant(pendingCredentials.email, pendingCredentials.password, tenantId);
+      }
+    } catch (error: any) {
+      console.error('Tenant selection failed:', error);
+      let message = error.response?.data?.message || error.message || 'Failed to select tenant. Please try again.';
+      setAlertMessage({
+        type: 'error',
+        message,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     setAlertMessage(null);
     try {
       const userCredential = await signInWithPopup(auth, googleProvider);
       const idToken = await userCredential.user.getIdToken();
-      await googleLogin(idToken);
+      const res = await googleLogin(idToken);
+
+      if (res?.requiresTenantSelection && res.tenants) {
+        setPendingGoogleToken(idToken);
+        setTenantsToSelect(res.tenants);
+      }
     } catch (error: any) {
       console.error('Google Sign-In failed:', error);
-      // Handle closed popups cleanly without showing red error alert if user canceled
       if (error.code === 'auth/popup-closed-by-user') {
         setIsGoogleLoading(false);
         return;
@@ -86,6 +124,12 @@ export function LoginContainer() {
     } finally {
       setIsGoogleLoading(false);
     }
+  };
+
+  const handleBackToLogin = () => {
+    setTenantsToSelect(null);
+    setPendingCredentials(null);
+    setPendingGoogleToken(null);
   };
 
   return (
@@ -122,12 +166,21 @@ export function LoginContainer() {
       )}
 
       <div className="bg-card/30 backdrop-blur-xl border border-border p-8 rounded-[2rem] shadow-2xl shadow-primary/5">
-        <LoginForm
-          onSubmit={handleSubmit}
-          onGoogleClick={handleGoogleSignIn}
-          isLoading={isLoading}
-          isGoogleLoading={isGoogleLoading}
-        />
+        {tenantsToSelect ? (
+          <TenantSelector
+            tenants={tenantsToSelect}
+            onSelectTenant={handleSelectTenant}
+            onBack={handleBackToLogin}
+            isLoading={isLoading}
+          />
+        ) : (
+          <LoginForm
+            onSubmit={handleSubmit}
+            onGoogleClick={handleGoogleSignIn}
+            isLoading={isLoading}
+            isGoogleLoading={isGoogleLoading}
+          />
+        )}
       </div>
     </>
   );
