@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { usePathname } from 'next/navigation';
@@ -33,7 +34,18 @@ export function Header() {
 
   const handleEnvSwitch = (targetEnv: Environment) => {
     if (!isSwitchAllowed) {
-      toast.warning('Environment selection cannot be changed on this page.');
+      toast.warning(
+        <span>
+          Environment selection cannot be changed on this page. If you want to change it, please{' '}
+          <Link
+            href={FRONTEND_ROUTES.DASHBOARD}
+            className="font-semibold underline underline-offset-2 hover:opacity-80 transition-opacity"
+          >
+            click here to go to Dashboard
+          </Link>
+          .
+        </span>
+      );
       return;
     }
     if (environment !== targetEnv) {
