@@ -25,12 +25,16 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { FRONTEND_ROUTES, DEFAULT_PAGE_SIZE } from '@/constants/constants';
+import { useAuth } from '@/contexts/AuthContext';
+import { isSiteManagerUser } from '@/contexts/EnvironmentContext';
 import { useDebounce } from '@/hooks/use-debounce';
 
 export function LocationsContainer() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const { user } = useAuth();
+  const isSiteManager = isSiteManagerUser(user);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
@@ -94,7 +98,8 @@ export function LocationsContainer() {
 
 
   const columns: ColumnDef<Location>[] = useMemo(
-    () => [
+    () => {
+      const allCols: ColumnDef<Location>[] = [
       {
         accessorKey: 'name',
         header: 'Name',
@@ -270,9 +275,14 @@ export function LocationsContainer() {
           </div>
         ),
       },
-    ],
-    [handleEdit, handleViewDetails, handleDelete]
-  );
+    ];
+
+    if (isSiteManager) {
+      return allCols.filter((col) => (col as any).accessorKey !== 'locationEnv' && col.id !== 'locationEnv');
+    }
+
+    return allCols;
+  }, [handleEdit, handleViewDetails, handleDelete, isSiteManager]);
 
   if (error) {
     return (
@@ -348,7 +358,7 @@ export function LocationsContainer() {
                       >
                         {location.name}
                       </h3>
-                      {location.locationEnv && (
+                      {!isSiteManager && location.locationEnv && (
                         <Badge
                           variant="outline"
                           className={cn(
