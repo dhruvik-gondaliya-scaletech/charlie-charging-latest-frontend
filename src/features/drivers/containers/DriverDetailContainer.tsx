@@ -100,7 +100,7 @@ export function DriverSessionsContainer() {
       },
       {
         accessorKey: 'startTime',
-        header: 'Time Horizon',
+        header: 'Start Time',
         cell: ({ row }) => {
           const val = row.original.startTime;
           if (!val) return <span className="text-muted-foreground text-xs font-bold">-</span>;
@@ -379,7 +379,7 @@ export function DriverSessionsContainer() {
 
                 <div className="space-y-1 col-span-2 sm:col-span-1">
                   <span className="text-[9px] font-black uppercase text-muted-foreground/40 tracking-widest flex items-center gap-1.5">
-                    <Calendar className="h-3 w-3" /> Time Horizon
+                    <Calendar className="h-3 w-3" /> Start Time
                   </span>
                   {session.startTime ? (
                     <div className="flex flex-col">

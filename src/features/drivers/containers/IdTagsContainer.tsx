@@ -32,10 +32,14 @@ import { IdTagFormModal } from '../components/IdTagFormModal';
 import { useDeleteIdTag } from '@/hooks/delete/useDeleteIdTag';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import { ActionIconButton } from '@/components/shared/ActionIconButton';
+import { useAuth } from '@/contexts/AuthContext';
+import { isSiteManagerUser } from '@/contexts/EnvironmentContext';
 import { useDebounce } from '@/hooks/use-debounce';
 import { ProtectedAction } from '@/components/shared/ProtectedAction';
 
 export function IdTagsContainer() {
+  const { user } = useAuth();
+  const isSiteManager = isSiteManagerUser(user);
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 400);
   const [page, setPage] = useState(1);
@@ -64,142 +68,156 @@ export function IdTagsContainer() {
   }, [totalCount, idTagsList]);
 
   const columns: ColumnDef<IdTag>[] = useMemo(
-    () => [
-      {
-        accessorKey: 'idTag',
-        header: 'RFID Tag ID',
-        cell: ({ row }) => (
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/5 text-primary border border-primary/10">
-              <CreditCard className="h-4 w-4" />
+    () => {
+      const allCols: ColumnDef<IdTag>[] = [
+        {
+          accessorKey: 'idTag',
+          header: 'RFID Tag ID',
+          cell: ({ row }) => (
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/5 text-primary border border-primary/10">
+                <CreditCard className="h-4 w-4" />
+              </div>
+              <span className="font-bold tracking-tight text-foreground uppercase">
+                {row.getValue('idTag')}
+              </span>
             </div>
-            <span className="font-bold tracking-tight text-foreground uppercase">
-              {row.getValue('idTag')}
-            </span>
-          </div>
-        ),
-      },
-      {
-        accessorKey: 'idTagType',
-        header: 'Tag Type',
-        cell: ({ row }) => (
-          <div className="flex items-center gap-1.5 text-xs font-bold text-foreground/90 tracking-tight">
-            <Tag className="h-3.5 w-3.5 text-primary/60" />
-            {row.original.idTagType || 'Driver RFID'}
-          </div>
-        ),
-      },
-      {
-        accessorKey: 'locations',
-        header: 'Allowed Locations',
-        cell: ({ row }) => {
-          const locs = row.original.locations || [];
-          if (locs.length === 0) {
+          ),
+        },
+        {
+          accessorKey: 'idTagType',
+          header: 'Tag Type',
+          cell: ({ row }) => (
+            <div className="flex items-center gap-1.5 text-xs font-bold text-foreground/90 tracking-tight">
+              <Tag className="h-3.5 w-3.5 text-primary/60" />
+              {row.original.idTagType || 'Driver RFID'}
+            </div>
+          ),
+        },
+        {
+          accessorKey: 'locations',
+          header: 'Allowed Locations',
+          cell: ({ row }) => {
+            const locs = row.original.locations || [];
+            if (locs.length === 0) {
+              return (
+                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 font-bold px-2 py-0.5 text-[10px]">
+                  All Locations
+                </Badge>
+              );
+            }
             return (
-              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 font-bold px-2 py-0.5 text-[10px]">
-                All Locations
+              <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                <MapPin className="h-3.5 w-3.5 text-primary/70" />
+                <span>{locs.length} {locs.length === 1 ? 'Location' : 'Locations'}</span>
+              </div>
+            );
+          },
+        },
+        {
+          accessorKey: 'driver',
+          header: 'Assigned Driver',
+          cell: ({ row }) => {
+            const driver = row.original.driver;
+            if (!driver) return <span className="text-muted-foreground text-xs italic">Unassigned</span>;
+            return (
+              <div className="flex items-center gap-2 text-xs font-bold text-foreground tracking-tight">
+                <User className="h-3.5 w-3.5 opacity-40" />
+                {`${driver.firstName} ${driver.lastName}`}
+              </div>
+            );
+          },
+        },
+        {
+          accessorKey: 'companyName',
+          header: 'Company',
+          cell: ({ row }) => (
+            <div className="flex items-center gap-2 text-xs font-bold text-foreground tracking-tight uppercase">
+              <Building2 className="h-3.5 w-3.5 opacity-40 text-primary" />
+              {row.getValue('companyName') || <span className="text-muted-foreground opacity-40">—</span>}
+            </div>
+          ),
+        },
+        {
+          accessorKey: 'status',
+          header: 'Status',
+          cell: ({ row }) => {
+            const status = row.original.status;
+
+            let badgeClass = "bg-muted/30 text-muted-foreground border-muted-foreground/20";
+            let icon = <AlertTriangle className="h-3 w-3" />;
+
+            if (status === IdTagStatus.ACCEPTED) {
+              badgeClass = "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+              icon = <CheckCircle2 className="h-3 w-3" />;
+            } else if (status === IdTagStatus.BLOCKED) {
+              badgeClass = "bg-destructive/10 text-destructive border-destructive/20";
+              icon = <XCircle className="h-3 w-3" />;
+            } else if (status === IdTagStatus.EXPIRED) {
+              badgeClass = "bg-amber-500/10 text-amber-500 border-amber-500/20";
+              icon = <AlertTriangle className="h-3 w-3" />;
+            }
+
+            return (
+              <Badge variant="outline" className={`${badgeClass} font-bold px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-widest flex items-center gap-1 w-fit`}>
+                {icon}
+                {status}
               </Badge>
             );
-          }
-          return (
-            <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
-              <MapPin className="h-3.5 w-3.5 text-primary/70" />
-              <span>{locs.length} {locs.length === 1 ? 'Location' : 'Locations'}</span>
+          },
+        },
+        {
+          accessorKey: 'expiryDate',
+          header: 'Expiry',
+          cell: ({ row }) => (
+            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground/80 tracking-tight">
+              <Calendar className="h-3.5 w-3.5 opacity-40" />
+              {row.getValue('expiryDate') ? formatDate(row.getValue('expiryDate')) : 'Never'}
             </div>
-          );
+          ),
         },
-      },
-      {
-        accessorKey: 'driver',
-        header: 'Assigned Driver',
-        cell: ({ row }) => {
-          const driver = row.original.driver;
-          if (!driver) return <span className="text-muted-foreground text-xs italic">Unassigned</span>;
-          return (
-            <div className="flex items-center gap-2 text-xs font-bold text-foreground tracking-tight">
-              <User className="h-3.5 w-3.5 opacity-40" />
-              {`${driver.firstName} ${driver.lastName}`}
+        {
+          id: 'actions',
+          header: 'Actions',
+          cell: ({ row }) => (
+            <div className="flex items-center gap-2">
+              <ProtectedAction permission={AppPermission.ID_TAG_UPDATE}>
+                <ActionIconButton
+                  tone="primary"
+                  tooltip="Edit"
+                  icon={<Edit2 className="h-3.5 w-3.5" />}
+                  onClick={() => {
+                    setSelectedIdTag(row.original);
+                    setIsFormModalOpen(true);
+                  }}
+                />
+              </ProtectedAction>
+              <ProtectedAction permission={AppPermission.ID_TAG_DELETE}>
+                <ActionIconButton
+                  tone="destructive"
+                  tooltip="Delete"
+                  icon={<Trash2 className="h-3.5 w-3.5" />}
+                  onClick={() => setIdTagToDelete(row.original.idTag)}
+                />
+              </ProtectedAction>
             </div>
-          );
+          ),
         },
-      },
-      {
-        accessorKey: 'companyName',
-        header: 'Company',
-        cell: ({ row }) => (
-          <div className="flex items-center gap-2 text-xs font-bold text-foreground tracking-tight uppercase">
-            <Building2 className="h-3.5 w-3.5 opacity-40 text-primary" />
-            {row.getValue('companyName') || <span className="text-muted-foreground opacity-40">—</span>}
-          </div>
-        ),
-      },
-      {
-        accessorKey: 'status',
-        header: 'Status',
-        cell: ({ row }) => {
-          const status = row.original.status;
+      ];
 
-          let badgeClass = "bg-muted/30 text-muted-foreground border-muted-foreground/20";
-          let icon = <AlertTriangle className="h-3 w-3" />;
+      if (isSiteManager) {
+        return allCols.filter(
+          (col) =>
+            (col as any).accessorKey !== 'locations' &&
+            (col as any).accessorKey !== 'companyName' &&
+            col.id !== 'locations' &&
+            col.id !== 'companyName'
+        );
+      }
 
-          if (status === IdTagStatus.ACCEPTED) {
-            badgeClass = "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
-            icon = <CheckCircle2 className="h-3 w-3" />;
-          } else if (status === IdTagStatus.BLOCKED) {
-            badgeClass = "bg-destructive/10 text-destructive border-destructive/20";
-            icon = <XCircle className="h-3 w-3" />;
-          } else if (status === IdTagStatus.EXPIRED) {
-            badgeClass = "bg-amber-500/10 text-amber-500 border-amber-500/20";
-            icon = <AlertTriangle className="h-3 w-3" />;
-          }
-
-          return (
-            <Badge variant="outline" className={`${badgeClass} font-bold px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-widest flex items-center gap-1 w-fit`}>
-              {icon}
-              {status}
-            </Badge>
-          );
-        },
-      },
-      {
-        accessorKey: 'expiryDate',
-        header: 'Expiry',
-        cell: ({ row }) => (
-          <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground/80 tracking-tight">
-            <Calendar className="h-3.5 w-3.5 opacity-40" />
-            {row.getValue('expiryDate') ? formatDate(row.getValue('expiryDate')) : 'Never'}
-          </div>
-        ),
-      },
-      {
-        id: 'actions',
-        header: 'Actions',
-        cell: ({ row }) => (
-          <div className="flex items-center gap-2">
-            <ProtectedAction permission={AppPermission.ID_TAG_UPDATE}>
-              <ActionIconButton
-                tone="primary"
-                tooltip="Edit"
-                icon={<Edit2 className="h-3.5 w-3.5" />}
-                onClick={() => {
-                  setSelectedIdTag(row.original);
-                  setIsFormModalOpen(true);
-                }}
-              />
-            </ProtectedAction>
-            <ProtectedAction permission={AppPermission.ID_TAG_DELETE}>
-              <ActionIconButton
-                tone="destructive"
-                tooltip="Delete"
-                icon={<Trash2 className="h-3.5 w-3.5" />}
-                onClick={() => setIdTagToDelete(row.original.idTag)}
-              />
-            </ProtectedAction>
-          </div>
-        ),
-      },
-    ],
-    []
+      return allCols;
+    },
+    [isSiteManager]
   );
 
   if (error) {
@@ -345,7 +363,7 @@ export function IdTagsContainer() {
                       </span>
                       <p className="text-sm font-semibold">{tag.expiryDate ? formatDate(tag.expiryDate) : 'Never'}</p>
                     </div>
-                    {tag.companyName && (
+                    {!isSiteManager && tag.companyName && (
                       <div className="space-y-1">
                         <span className="text-[9px] font-bold uppercase text-muted-foreground/50 tracking-wider flex items-center gap-1">
                           <Building2 className="h-2.5 w-2.5" /> Company

@@ -42,14 +42,7 @@ import { DeleteDriverModal } from '../components/DeleteDriverModal';
 
 export function DriversContainer() {
   const router = useRouter();
-  const { hasPermission, roles, hasRole } = useAuth();
-  const isSiteManager = useMemo(() => {
-    return (
-      hasRole(AppRole.SITE_MANAGER) ||
-      hasRole(AppRole.SITE_MANAGER.toLowerCase()) ||
-      (Array.isArray(roles) && roles.some(r => r.toUpperCase() === AppRole.SITE_MANAGER))
-    );
-  }, [roles, hasRole]);
+  const { hasPermission } = useAuth();
   const canUpdate = hasPermission(AppPermission.DRIVER_UPDATE);
   const defaultTab = canUpdate ? 'config' : 'drivers';
 
@@ -93,28 +86,24 @@ export function DriversContainer() {
                 <span className="font-bold tracking-tight text-foreground">
                   {`${row.original.firstName} ${row.original.lastName}`.trim()}
                 </span>
-                {!isSiteManager && (
-                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium">
-                    <Mail className="h-2.5 w-2.5 opacity-60" />
-                    {row.original.email}
-                  </div>
-                )}
+                <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium">
+                  <Mail className="h-2.5 w-2.5 opacity-60" />
+                  {row.original.email}
+                </div>
               </div>
             </div>
           ),
         },
-        ...(!isSiteManager ? [
-          {
-            accessorKey: 'phoneNumber',
-            header: 'Contact',
-            cell: ({ row }) => (
-              <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground/80 tracking-tight">
-                <Phone className="h-3.5 w-3.5 opacity-40" />
-                {row.getValue('phoneNumber') || 'N/A'}
-              </div>
-            ),
-          } as ColumnDef<Driver>
-        ] : []),
+        {
+          accessorKey: 'phoneNumber',
+          header: 'Contact',
+          cell: ({ row }) => (
+            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground/80 tracking-tight">
+              <Phone className="h-3.5 w-3.5 opacity-40" />
+              {row.getValue('phoneNumber') || 'N/A'}
+            </div>
+          ),
+        },
         {
           accessorKey: 'isActive',
           header: 'Status',
@@ -177,7 +166,7 @@ export function DriversContainer() {
       ];
       return cols;
     },
-    [isSiteManager, router]
+    [router]
   );
 
   if (error) {
@@ -311,12 +300,10 @@ export function DriversContainer() {
                           <span className="font-bold text-foreground">
                             {`${driver.firstName} ${driver.lastName}`.trim()}
                           </span>
-                          {!isSiteManager && (
-                            <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 mt-0.5">
-                              <Mail className="h-2.5 w-2.5" />
-                              {driver.email}
-                            </span>
-                          )}
+                          <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 mt-0.5">
+                            <Mail className="h-2.5 w-2.5" />
+                            {driver.email}
+                          </span>
                         </div>
                       </div>
                       <Badge
@@ -332,15 +319,13 @@ export function DriversContainer() {
                       </Badge>
                     </div>
 
-                    <div className={cn("grid gap-4 py-1", isSiteManager ? "grid-cols-1" : "grid-cols-2")}>
-                      {!isSiteManager && (
-                        <div className="space-y-1">
-                          <span className="text-[9px] font-bold uppercase text-muted-foreground/50 tracking-wider flex items-center gap-1">
-                            <Phone className="h-2.5 w-2.5" /> Contact
-                          </span>
-                          <p className="text-sm font-semibold">{driver.phoneNumber || 'N/A'}</p>
-                        </div>
-                      )}
+                    <div className="grid grid-cols-2 gap-4 py-1">
+                      <div className="space-y-1">
+                        <span className="text-[9px] font-bold uppercase text-muted-foreground/50 tracking-wider flex items-center gap-1">
+                          <Phone className="h-2.5 w-2.5" /> Contact
+                        </span>
+                        <p className="text-sm font-semibold">{driver.phoneNumber || 'N/A'}</p>
+                      </div>
                       <div className="space-y-1">
                         <span className="text-[9px] font-bold uppercase text-muted-foreground/50 tracking-wider flex items-center gap-1">
                           <Calendar className="h-2.5 w-2.5" /> Joined
