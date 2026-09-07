@@ -32,6 +32,8 @@ import { reportingService } from '@/services/reporting.service';
 import { stationService } from '@/services/station.service';
 import { locationService } from '@/services/location.service';
 
+import { getDashboardSavedDateRange } from '@/lib/date';
+
 // Import the reusable report selection components
 import { ReportTypeSelector, Step as DownloadStep } from '@/features/dashboard/components/reports/ReportTypeSelector';
 import { LocationStationTree } from '@/features/dashboard/components/reports/LocationStationTree';
@@ -39,17 +41,13 @@ import { ColumnsSelector } from '@/features/dashboard/components/reports/Columns
 
 const SITE_MANAGER_COLUMNS = [
   'id',
+  'driverEmail',
   'stationName',
-  'locationName',
-  'connectorId',
-  'pluggedAt',
   'startTime',
   'endTime',
-  'unpluggedAt',
   'durationMinutes',
   'energyDeliveredKwh',
-  'currentSpeed',
-  'peakKwh',
+  'totalCost',
   'status',
 ];
 
@@ -63,6 +61,7 @@ const AVAILABLE_COLUMNS = [
   { id: 'locationName', label: 'Location Name' },
   { id: 'userFirstName', label: 'User First Name' },
   { id: 'userLastName', label: 'User Last Name' },
+  { id: 'driverEmail', label: 'Driver Email' },
   { id: 'connectorId', label: 'Port ID' },
   { id: 'connectorType', label: 'Connector Type' },
   { id: 'connectorMaxPower', label: 'Port Maximum Kw' },
@@ -72,6 +71,7 @@ const AVAILABLE_COLUMNS = [
   { id: 'unpluggedAt', label: 'Connection end datetime' },
   { id: 'durationMinutes', label: 'Duration (Minutes)' },
   { id: 'energyDeliveredKwh', label: 'Energy consumed' },
+  { id: 'totalCost', label: 'Total Cost' },
   { id: 'co2Emitted', label: 'CO2 Emitted (kg)' },
   { id: 'currentSpeed', label: 'Speed (kW)' },
   { id: 'peakKwh', label: 'Peak Power (kW)' },
@@ -195,16 +195,12 @@ export function ReportsDownloadTab() {
   const [selectedLocationIds, setSelectedLocationIds] = useState<Set<string>>(new Set());
   const [selectedStationIds, setSelectedStationIds] = useState<Set<string>>(new Set());
 
-  // Default date range: Last 7 days to now
-  const getInitialDateRange = () => {
-    const from = new Date();
-    from.setDate(from.getDate() - 7);
-    from.setHours(0, 0, 0, 0);
-    const to = new Date();
-    return { from, to };
-  };
+  // Date range pre-populated from Dashboard filter selection
+  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>(getDashboardSavedDateRange({ forReports: true }));
 
-  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>(getInitialDateRange());
+  useEffect(() => {
+    setDateRange(getDashboardSavedDateRange({ forReports: true }));
+  }, []);
 
   // Fetch locations and stations when entering any configuration step
   useEffect(() => {
@@ -244,7 +240,7 @@ export function ReportsDownloadTab() {
     setSelectedIntervalColumns(DEFAULT_INTERVAL_COLUMNS);
     setExportForRecipient(false);
     setSelectedRecipient('calstart');
-    setDateRange(getInitialDateRange());
+    setDateRange(getDashboardSavedDateRange({ forReports: true }));
     setSelectedLocationIds(new Set());
     setSelectedStationIds(new Set());
     setExpandedLocationIds(new Set());

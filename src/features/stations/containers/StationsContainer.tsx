@@ -45,6 +45,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useAuth } from '@/contexts/AuthContext';
+import { isSiteManagerUser } from '@/contexts/EnvironmentContext';
 import { Separator } from '@/components/ui/separator';
 
 export function StationsContainer() {
@@ -52,6 +54,8 @@ export function StationsContainer() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const isSiteManager = isSiteManagerUser(user);
 
   // Filter States (Fully URL-based)
   const [search, setSearch] = useState(() => searchParams.get('name') || '');
@@ -155,7 +159,8 @@ export function StationsContainer() {
   };
 
   const columns: ColumnDef<Station>[] = useMemo(
-    () => [
+    () => {
+      const allCols: ColumnDef<Station>[] = [
       {
         accessorKey: 'name',
         header: 'Name',
@@ -286,9 +291,14 @@ export function StationsContainer() {
           </div>
         ),
       },
-    ],
-    [router]
-  );
+    ];
+
+    if (isSiteManager) {
+      return allCols.filter((col) => col.id !== 'environment' && (col as any).accessorKey !== 'environment');
+    }
+
+    return allCols;
+  }, [router, isSiteManager]);
 
 
   if (error) {
@@ -501,7 +511,7 @@ export function StationsContainer() {
                         >
                           {station.name}
                         </h3>
-                        {station.location?.locationEnv && (
+                        {!isSiteManager && station.location?.locationEnv && (
                           <Badge
                             variant="outline"
                             className={cn(

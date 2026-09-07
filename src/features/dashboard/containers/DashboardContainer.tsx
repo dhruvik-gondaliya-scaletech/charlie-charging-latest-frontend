@@ -29,6 +29,8 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { StationLogs } from '@/features/stations/components/StationLogs';
 import { SessionStatus } from '@/types';
 
+import { getDashboardDateRange } from '@/lib/date';
+
 export function DashboardContainer() {
   const [isReportsModalOpen, setIsReportsModalOpen] = useState(false);
   const [viewLogsSession, setViewLogsSession] = useState<{ stationId: string; sessionId: string } | null>(null);
@@ -102,43 +104,21 @@ export function DashboardContainer() {
     }
   }, [customRange]);
 
-  const dateParams = useMemo(() => {
-    const now = new Date();
-    switch (selectedRange) {
-      case 'Today': {
-        const from = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
-        const to = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-        return { fromDate: from.toISOString(), toDate: to.toISOString() };
-      }
-      case '48hrs': {
-        const from = new Date(now.getTime() - 48 * 60 * 60 * 1000);
-        return { fromDate: from.toISOString(), toDate: now.toISOString() };
-      }
-      case 'This Month': {
-        const from = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
-        const to = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
-        return { fromDate: from.toISOString(), toDate: to.toISOString() };
-      }
-      case 'Last Month': {
-        const from = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0, 0);
-        const to = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
-        return { fromDate: from.toISOString(), toDate: to.toISOString() };
-      }
-      case 'Custom': {
-        if (customRange.from) {
-          const from = new Date(customRange.from.getFullYear(), customRange.from.getMonth(), customRange.from.getDate(), 0, 0, 0, 0);
-          const to = customRange.to
-            ? new Date(customRange.to.getFullYear(), customRange.to.getMonth(), customRange.to.getDate(), 23, 59, 59, 999)
-            : new Date(customRange.from.getFullYear(), customRange.from.getMonth(), customRange.from.getDate(), 23, 59, 59, 999);
-          return { fromDate: from.toISOString(), toDate: to.toISOString() };
-        }
-        return {};
-      }
-      case 'All Time':
-      default:
-        return {};
-    }
+  const dashboardDateRange = useMemo(() => {
+    return getDashboardDateRange(selectedRange, customRange);
   }, [selectedRange, customRange]);
+
+  const dashboardReportsDateRange = useMemo(() => {
+    return getDashboardDateRange(selectedRange, customRange, { forReports: true });
+  }, [selectedRange, customRange]);
+
+  const dateParams = useMemo(() => {
+    if (!dashboardDateRange.from && !dashboardDateRange.to) return {};
+    return {
+      fromDate: dashboardDateRange.from ? dashboardDateRange.from.toISOString() : undefined,
+      toDate: dashboardDateRange.to ? dashboardDateRange.to.toISOString() : undefined,
+    };
+  }, [dashboardDateRange]);
 
   // Establish and track WebSocket connection
   useWebSocketConnection();
@@ -462,7 +442,11 @@ export function DashboardContainer() {
           </motion.div>
         </div>
       </motion.div>
-      <DownloadReportsModal isOpen={isReportsModalOpen} onClose={() => setIsReportsModalOpen(false)} />
+      <DownloadReportsModal
+        isOpen={isReportsModalOpen}
+        onClose={() => setIsReportsModalOpen(false)}
+        initialDateRange={dashboardReportsDateRange}
+      />
 
       <Dialog open={viewLogsSession !== null} onOpenChange={(open) => !open && setViewLogsSession(null)}>
         <DialogContent className="w-[calc(100vw-2rem)] md:w-[calc(100vw-256px-4rem)] max-w-[1550px] sm:max-w-none md:max-w-[1550px] md:left-[calc(50%+128px)] max-h-[96vh] h-[96vh] bg-card border-border/40 text-foreground p-4 md:p-6 rounded-3xl shadow-xl z-50 flex flex-col gap-4 overflow-hidden">
