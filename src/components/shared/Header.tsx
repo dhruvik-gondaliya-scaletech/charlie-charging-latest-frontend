@@ -1,20 +1,57 @@
 'use client';
 
+import Link from 'next/link';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { usePathname } from 'next/navigation';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Breadcrumbs } from './Breadcrumbs';
 import { BrandLogo } from './BrandLogo';
 import { useEnvironment, isSiteManagerUser } from '@/contexts/EnvironmentContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
-import { Environment } from '@/constants/constants';
+import { Environment, FRONTEND_ROUTES } from '@/constants/constants';
+
+const ALLOWED_ENV_SWITCH_ROUTES = [
+  FRONTEND_ROUTES.DASHBOARD,
+  FRONTEND_ROUTES.STATIONS,
+  FRONTEND_ROUTES.LOCATIONS,
+  FRONTEND_ROUTES.TARIFF,
+  FRONTEND_ROUTES.REPORTS,
+  FRONTEND_ROUTES.WEBHOOKS,
+];
 
 export function Header() {
   const { theme, setTheme } = useTheme();
   const { environment, setEnvironment } = useEnvironment();
   const { user } = useAuth();
+  const pathname = usePathname();
   const isSiteManager = isSiteManagerUser(user);
+
+  const normalizedPathname = pathname ? pathname.replace(/\/$/, '') : '';
+  const isSwitchAllowed = ALLOWED_ENV_SWITCH_ROUTES.includes(normalizedPathname);
+
+  const handleEnvSwitch = (targetEnv: Environment) => {
+    if (!isSwitchAllowed) {
+      toast.warning(
+        <span>
+          Environment selection cannot be changed on this page. If you want to change it, please{' '}
+          <Link
+            href={FRONTEND_ROUTES.DASHBOARD}
+            className="font-semibold underline underline-offset-2 hover:opacity-80 transition-opacity"
+          >
+            click here to go to Dashboard
+          </Link>
+          .
+        </span>
+      );
+      return;
+    }
+    if (environment !== targetEnv) {
+      setEnvironment(targetEnv);
+    }
+  };
 
   return (
     <header className="border-b bg-card h-16 md:h-[101px] flex items-center shrink-0">
@@ -34,7 +71,7 @@ export function Header() {
               <Button
                 variant={null}
                 size={null}
-                onClick={() => setEnvironment(Environment.DEV)}
+                onClick={() => handleEnvSwitch(Environment.DEV)}
                 className={cn(
                   'relative z-10 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold transition-colors duration-200 cursor-pointer',
                   environment === Environment.DEV
@@ -47,7 +84,7 @@ export function Header() {
               <Button
                 variant={null}
                 size={null}
-                onClick={() => setEnvironment(Environment.PROD)}
+                onClick={() => handleEnvSwitch(Environment.PROD)}
                 className={cn(
                   'relative z-10 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold transition-colors duration-200 cursor-pointer',
                   environment === Environment.PROD
