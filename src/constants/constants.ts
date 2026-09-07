@@ -27,8 +27,10 @@ export const API_CONFIG = {
         drivers: {
             base: "/drivers",
             appConfig: "/drivers/app-config",
+            stats: "/drivers/stats",
             byId: (id: string) => `/drivers/${id}`,
             sessions: (id: string) => `/drivers/${id}/sessions`,
+            resendInvite: (id: string) => `/drivers/${id}/resend-invite`,
         },
         idTags: {
             base: "/id-tags",

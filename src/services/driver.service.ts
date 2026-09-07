@@ -11,6 +11,12 @@ class DriverService {
     return httpService.get<Driver>(API_CONFIG.endpoints.drivers.byId(id));
   }
 
+  async getDriverStats() {
+    return httpService.get<{ total: number; invited: number; completed: number }>(
+      API_CONFIG.endpoints.drivers.stats,
+    );
+  }
+
   async createDriver(data: CreateDriverData) {
     return httpService.post<Driver>(API_CONFIG.endpoints.drivers.base, data);
   }
@@ -27,6 +33,10 @@ class DriverService {
 
   async deleteDriver(id: string) {
     return httpService.delete<{ message: string }>(API_CONFIG.endpoints.drivers.byId(id));
+  }
+
+  async resendInvitation(id: string) {
+    return httpService.post<{ message: string }>(API_CONFIG.endpoints.drivers.resendInvite(id));
   }
 }
 

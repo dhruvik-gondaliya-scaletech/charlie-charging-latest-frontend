@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useForm } from 'react-hook-form';
+import { useQuery } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { driverSchema, DriverFormValues } from '@/lib/validations/driver.schema';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
@@ -9,7 +10,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useCreateDriver } from '@/hooks/post/useCreateDriver';
-import { Mail, User, Phone, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
+import { useDebounce } from '@/hooks/use-debounce';
+import { locationService } from '@/services/location.service';
+import { Environment } from '@/constants/constants';
+import { Location } from '@/types';
+import { Mail, User, MapPin, Search, Loader2, X } from 'lucide-react';
 
 interface DriverFormModalProps {
   isOpen: boolean;
@@ -18,11 +23,14 @@ interface DriverFormModalProps {
 
 export function DriverFormModal({ isOpen, onClose }: DriverFormModalProps) {
   const createDriver = useCreateDriver();
-  const [showPassword, setShowPassword] = React.useState(false);
+  const [locationSearch, setLocationSearch] = React.useState('');
+  const debouncedLocationSearch = useDebounce(locationSearch, 400);
   const {
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<DriverFormValues>({
     resolver: zodResolver(driverSchema),
@@ -30,19 +38,35 @@ export function DriverFormModal({ isOpen, onClose }: DriverFormModalProps) {
       firstName: '',
       lastName: '',
       email: '',
-      password: '',
-      phoneNumber: '',
+      locationId: '',
     }
   });
+
+  const selectedLocationId = watch('locationId');
+
+  const { data: prodLocationsResponse, isLoading: locationsLoading } = useQuery({
+    queryKey: ['locations', Environment.PROD, { search: debouncedLocationSearch }],
+    queryFn: () => locationService.getAllLocations(Environment.PROD, { search: debouncedLocationSearch || undefined }),
+    staleTime: 60000,
+  });
+
+  const prodLocations = React.useMemo(() => {
+    const locations = Array.isArray(prodLocationsResponse)
+      ? (prodLocationsResponse as Location[])
+      : ((prodLocationsResponse as { data?: Location[] } | undefined)?.data ?? []);
+    return locations;
+  }, [prodLocationsResponse]);
+
+  const selectedLocation = prodLocations.find((loc) => loc.id === selectedLocationId);
 
   const onSubmit = (data: DriverFormValues) => {
     createDriver.mutate({
       ...data,
-      password: data.password || undefined,
+      locationId: data.locationId || undefined,
     }, {
       onSuccess: () => {
         reset();
-        setShowPassword(false);
+        setLocationSearch('');
         onClose();
       },
     });
@@ -53,7 +77,7 @@ export function DriverFormModal({ isOpen, onClose }: DriverFormModalProps) {
       isOpen={isOpen}
       onClose={() => {
         reset();
-        setShowPassword(false);
+        setLocationSearch('');
         onClose();
       }}
       title="Register New Driver"
@@ -134,45 +158,60 @@ export function DriverFormModal({ isOpen, onClose }: DriverFormModalProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 ml-1">Access Password</Label>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
-            <Input
-              id="password"
-              type={showPassword ? 'text' : 'password'}
-              placeholder="••••••••"
-              className="pl-10 pr-10 h-11 bg-muted/20 border-border/40 focus:ring-primary/20 rounded-xl font-bold"
-              autoComplete="new-password"
-              {...register('password')}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center text-muted-foreground/50 hover:text-muted-foreground focus:outline-none"
-            >
-              {showPassword ? (
-                <EyeOff className="h-4 w-4 cursor-pointer" />
-              ) : (
-                <Eye className="h-4 w-4 cursor-pointer" />
-              )}
-            </button>
+          <div className="flex items-center justify-between ml-1">
+            <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">Location (Optional)</Label>
+            {selectedLocation && (
+              <button
+                type="button"
+                onClick={() => setValue('locationId', '', { shouldValidate: true })}
+                className="flex items-center gap-1 text-[10px] font-bold text-muted-foreground/60 hover:text-destructive"
+              >
+                <X className="h-3 w-3" /> Clear
+              </button>
+            )}
           </div>
-          {errors.password && <p className="text-[10px] font-bold text-destructive uppercase tracking-widest ml-1">{errors.password.message}</p>}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="phoneNumber" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 ml-1">Phone Number (Optional)</Label>
           <div className="relative">
-            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
             <Input
-              id="phoneNumber"
-              placeholder="+1 (555) 000-0000"
+              type="text"
+              placeholder={selectedLocation ? selectedLocation.name : "Search production locations..."}
+              value={locationSearch}
+              onChange={(e) => setLocationSearch(e.target.value)}
               className="pl-10 h-11 bg-muted/20 border-border/40 focus:ring-primary/20 rounded-xl font-bold"
-              autoComplete="tel"
-              {...register('phoneNumber')}
             />
           </div>
-          {errors.phoneNumber && <p className="text-[10px] font-bold text-destructive uppercase tracking-widest ml-1">{errors.phoneNumber.message}</p>}
+          {locationsLoading ? (
+            <div className="flex items-center text-xs text-muted-foreground/60 ml-1">
+              <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+              Loading locations...
+            </div>
+          ) : prodLocations.length === 0 ? (
+            <p className="text-xs text-muted-foreground/60 ml-1">No production locations found.</p>
+          ) : (
+            <div className="max-h-40 overflow-y-auto border border-border/40 bg-muted/10 rounded-xl p-2 space-y-1">
+              {prodLocations.map((loc) => {
+                const isSelected = selectedLocationId === loc.id;
+                return (
+                  <button
+                    key={loc.id}
+                    type="button"
+                    onClick={() =>
+                      setValue('locationId', isSelected ? '' : loc.id, { shouldValidate: true })
+                    }
+                    className={`flex items-center gap-2 w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                      isSelected
+                        ? 'bg-primary/15 text-primary'
+                        : 'text-foreground/80 hover:bg-muted/40'
+                    }`}
+                  >
+                    <MapPin className="h-3.5 w-3.5 shrink-0 opacity-60" />
+                    <span className="truncate">{loc.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          {errors.locationId && <p className="text-[10px] font-bold text-destructive uppercase tracking-widest ml-1">{errors.locationId.message}</p>}
         </div>
 
       </form>

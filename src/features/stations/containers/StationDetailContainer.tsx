@@ -53,6 +53,7 @@ import {
     MeterValuesEvent,
     TransactionEvent
 } from '@/lib/realtime.service';
+import { formatOfflineSince } from '@/lib/date';
 import {
     invalidateQueriesDebounced,
     updateStationDetailCache
@@ -521,17 +522,24 @@ export function StationDetailContainer() {
                     />
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                         <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black tracking-tight text-foreground truncate">{station.name}</h1>
-                        <Badge
-                            variant="outline"
-                            className={cn(
-                                "w-fit px-3 py-1 rounded-full border shadow-sm font-bold uppercase tracking-widest text-[10px]",
-                                station.status === ChargingStatus.AVAILABLE ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/30" :
-                                    station.status === ChargingStatus.CHARGING ? "bg-blue-500/10 text-blue-500 border-blue-500/30" :
-                                        "bg-destructive/10 text-destructive border-destructive/30"
+                        <div className="flex items-center gap-2">
+                            <Badge
+                                variant="outline"
+                                className={cn(
+                                    "w-fit px-3 py-1 rounded-full border shadow-sm font-bold uppercase tracking-widest text-[10px]",
+                                    station.status === ChargingStatus.AVAILABLE ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/30" :
+                                        station.status === ChargingStatus.CHARGING ? "bg-blue-500/10 text-blue-500 border-blue-500/30" :
+                                            "bg-destructive/10 text-destructive border-destructive/30"
+                                )}
+                            >
+                                {station.status}
+                            </Badge>
+                            {station.status === ChargingStatus.OFFLINE && station.lastHeartbeat && (
+                                <span className="text-xs font-semibold text-muted-foreground">
+                                    {formatOfflineSince(station.lastHeartbeat)}
+                                </span>
                             )}
-                        >
-                            {station.status}
-                        </Badge>
+                        </div>
                     </div>
                     <div className="flex items-center gap-3 text-muted-foreground mt-2">
                         <div className="flex items-center gap-1.5 text-sm font-medium">

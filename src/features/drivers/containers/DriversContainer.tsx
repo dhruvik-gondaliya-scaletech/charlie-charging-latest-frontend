@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { useDebounce } from '@/hooks/use-debounce';
 import { motion } from 'framer-motion';
 import { ColumnDef } from '@tanstack/react-table';
-import { useDrivers } from '@/hooks/get/useDrivers';
+import { useDrivers, useDriverStats } from '@/hooks/get/useDrivers';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -18,12 +18,14 @@ import {
   ShieldAlert,
   Zap,
   ListClockIcon,
+  Clock,
+  Send,
   Settings, Users as UsersListIcon, Trash2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Table } from '@/components/shared/Table';
-import { Driver, AppPermission, AppRole } from '@/types';
+import { Driver, DriverStatus, AppPermission, AppRole } from '@/types';
 import { formatDate } from '@/lib/date';
 import { StatCard } from '../../dashboard/components/StatCard';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -37,6 +39,7 @@ import { ActionIconButton } from '@/components/shared/ActionIconButton';
 import { ProtectedAction } from '@/components/shared/ProtectedAction';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDeleteDriver } from '@/hooks/delete/useDeleteDriver';
+import { useResendDriverInvitation } from '@/hooks/post/useResendDriverInvitation';
 import { DeleteDriverModal } from '../components/DeleteDriverModal';
 
 
@@ -60,19 +63,18 @@ export function DriversContainer() {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [driverToDelete, setDriverToDelete] = useState<Driver | null>(null);
   const deleteDriverMutation = useDeleteDriver();
+  const resendInvitationMutation = useResendDriverInvitation();
 
   const driversList: Driver[] = drivers || [];
   const totalCount = drivers?.meta?.total ?? driversList.length;
   const totalPages = drivers?.meta?.totalPages ?? Math.ceil((driversList.length || 1) / pageSize);
 
-  const stats = useMemo(() => {
-    if (!driversList) return { total: 0, active: 0, inactive: 0 };
-    return {
-      total: totalCount || driversList.length,
-      active: driversList.filter((d) => d.isActive).length,
-      inactive: driversList.filter((d) => !d.isActive).length,
-    };
-  }, [driversList, totalCount]);
+  const { data: driverStats } = useDriverStats();
+  const stats = {
+    total: driverStats?.total ?? 0,
+    invited: driverStats?.invited ?? 0,
+    completed: driverStats?.completed ?? 0,
+  };
 
   const columns: ColumnDef<Driver>[] = useMemo(
     () => {
@@ -126,6 +128,27 @@ export function DriversContainer() {
           },
         },
         {
+          accessorKey: 'status',
+          header: 'Invitation',
+          cell: ({ row }) => {
+            const isCompleted = row.original.status === DriverStatus.COMPLETED;
+
+            if (isCompleted) return (
+              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 font-bold px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-widest flex items-center gap-1 w-fit">
+                <CheckCircle2 className="h-3 w-3" />
+                Completed
+              </Badge>
+            );
+
+            return (
+              <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20 font-bold px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-widest flex items-center gap-1 w-fit">
+                <Clock className="h-3 w-3" />
+                Invited
+              </Badge>
+            );
+          },
+        },
+        {
           accessorKey: 'createdAt',
           header: 'Registration',
           cell: ({ row }) => (
@@ -152,6 +175,20 @@ export function DriversContainer() {
                 }
                 icon={<ListClockIcon className="h-3.5 w-3.5" />}
               />
+              {row.original.status !== DriverStatus.COMPLETED && (
+                <ProtectedAction permission={AppPermission.DRIVER_UPDATE}>
+                  <ActionIconButton
+                    tooltip="Resend Invite"
+                    tone="warning"
+                    disabled={
+                      resendInvitationMutation.isPending &&
+                      resendInvitationMutation.variables === row.original.id
+                    }
+                    onClick={() => resendInvitationMutation.mutate(row.original.id)}
+                    icon={<Send className="h-3.5 w-3.5" />}
+                  />
+                </ProtectedAction>
+              )}
               <ProtectedAction permission={AppPermission.DRIVER_DELETE}>
                 <ActionIconButton
                   tooltip="Delete Driver"
@@ -166,7 +203,7 @@ export function DriversContainer() {
       ];
       return cols;
     },
-    [router]
+    [router, resendInvitationMutation]
   );
 
   if (error) {
@@ -238,20 +275,20 @@ export function DriversContainer() {
                 description="Enrolled drivers in network"
               />
               <StatCard
-                title="Active Drivers"
-                value={stats.active}
+                title="Invited"
+                value={stats.invited}
+                icon={Clock}
+                color="text-amber-500"
+                bottomRightGlobe="bg-amber-500"
+                description="Drivers awaiting registration"
+              />
+              <StatCard
+                title="Completed Registration"
+                value={stats.completed}
                 icon={CheckCircle2}
                 color="text-emerald-500"
                 bottomRightGlobe="bg-emerald-500"
-                description="Drivers with active accounts"
-              />
-              <StatCard
-                title="Inactive Drivers"
-                value={stats.inactive}
-                icon={XCircle}
-                color="text-destructive"
-                bottomRightGlobe="bg-destructive"
-                description="Drivers with disabled access"
+                description="Drivers who completed sign-up"
               />
             </motion.div>
 

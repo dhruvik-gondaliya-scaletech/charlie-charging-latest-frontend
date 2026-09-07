@@ -34,7 +34,7 @@ import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table } from '@/components/shared/Table';
 import { Station, ChargingStatus, LocationEnv, PaginatedResponse, AppPermission } from '@/types';
-import { formatDate } from '@/lib/date';
+import { formatDate, formatOfflineSince } from '@/lib/date';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import { cn } from '@/lib/utils';
 import { ProtectedAction } from '@/components/shared/ProtectedAction';
@@ -227,13 +227,21 @@ export function StationsContainer() {
             colorClasses = "bg-muted text-muted-foreground border-border";
           }
 
+          const lastHeartbeat = row.original.lastHeartbeat;
           return (
-            <Badge
-              variant="outline"
-              className={cn("capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm", colorClasses)}
-            >
-              {status}
-            </Badge>
+            <div className="flex flex-col gap-0.5">
+              <Badge
+                variant="outline"
+                className={cn("capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm w-fit", colorClasses)}
+              >
+                {status}
+              </Badge>
+              {status === ChargingStatus.OFFLINE && lastHeartbeat && (
+                <span className="text-[11px] font-medium text-muted-foreground">
+                  {formatOfflineSince(lastHeartbeat)}
+                </span>
+              )}
+            </div>
           );
         },
       },
@@ -529,12 +537,19 @@ export function StationsContainer() {
                         {station.chargePointId}
                       </code>
                     </div>
-                    <Badge
-                      variant="outline"
-                      className={cn("capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm", colorClasses)}
-                    >
-                      {status}
-                    </Badge>
+                    <div className="flex flex-col items-end gap-0.5">
+                      <Badge
+                        variant="outline"
+                        className={cn("capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm", colorClasses)}
+                      >
+                        {status}
+                      </Badge>
+                      {status === ChargingStatus.OFFLINE && station.lastHeartbeat && (
+                        <span className="text-[10px] font-medium text-muted-foreground">
+                          {formatOfflineSince(station.lastHeartbeat)}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 pt-2">

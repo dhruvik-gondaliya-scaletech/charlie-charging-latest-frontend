@@ -49,6 +49,7 @@ export interface Station {
   isActive: boolean;
   maxPower: number;
   lastActiveDate?: string;
+  lastHeartbeat?: string;
   connectorTypes: string[];
   location?: Location;
   locationId: string;
@@ -366,6 +367,11 @@ export enum TokenType {
   CUSTOM = 'Custom (OCPP 1.6)',
 }
 
+export enum DriverStatus {
+  INVITED = 'Invited',
+  COMPLETED = 'Completed',
+}
+
 export interface Driver {
   id: string;
   firstName: string;
@@ -373,6 +379,8 @@ export interface Driver {
   email: string;
   phoneNumber?: string;
   isActive: boolean;
+  status?: DriverStatus;
+  locationId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -396,8 +404,7 @@ export interface CreateDriverData {
   firstName: string;
   lastName: string;
   email: string;
-  password?: string;
-  phoneNumber?: string;
+  locationId?: string;
 }
 
 export interface CreateIdTagData {
