@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useDebounce } from '@/hooks/use-debounce';
 import { motion } from 'framer-motion';
 import { ColumnDef } from '@tanstack/react-table';
 import { useDriver } from '@/hooks/get/useDrivers';
 import { useDriverSessions } from '@/hooks/get/useDriverSessions';
+import { useDriverSessionStats } from '@/hooks/get/useDriverSessionStats';
 import { Badge } from '@/components/ui/badge';
 import {
   Zap,
@@ -16,6 +17,7 @@ import {
   Clock,
   Banknote,
   Leaf,
+  Tag,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { fadeInUp, staggerContainer } from '@/lib/motion';
@@ -29,6 +31,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export function DriverSessionsContainer() {
   const { id } = useParams();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const fromPage = searchParams.get('from');
+
+  const backLabel = fromPage === 'id-tags' ? 'Return to ID Tags' : 'Return to Driver Registry';
+  const backHref = fromPage === 'id-tags' ? FRONTEND_ROUTES.ID_TAGS : FRONTEND_ROUTES.DRIVERS;
+
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
@@ -49,27 +58,37 @@ export function DriverSessionsContainer() {
     return [];
   }, [sessionsResponse, isPaginated]);
 
-  const totalCount = isPaginated ? (sessionsResponse as any).meta?.total || 0 : sessions.length;
+  const totalCount = useMemo(() => {
+    if (!sessionsResponse) return 0;
+    if (isPaginated) return (sessionsResponse as any).meta?.totalItems ?? (sessionsResponse as any).total ?? 0;
+    if (Array.isArray(sessionsResponse)) return sessionsResponse.length;
+    return 0;
+  }, [sessionsResponse, isPaginated]);
+
+  const { data: sessionStats } = useDriverSessionStats(id as string);
 
   const stats = useMemo(() => {
-    if (!sessions) return { totalEnergy: 0, totalDuration: 0, totalCost: 0, count: 0 };
     return {
-      totalEnergy: sessions.reduce((acc, s) => acc + (s.energyDeliveredKwh || 0), 0),
-      totalDuration: sessions.reduce((acc, s) => acc + (s.durationMinutes || 0), 0),
-      totalCost: sessions.reduce((acc, s) => acc + (s.totalCost || 0), 0),
-      count: totalCount || sessions.length,
+      totalEnergy: sessionStats?.totalEnergyKwh ?? sessions.reduce((acc, s) => acc + (s.energyDeliveredKwh || 0), 0),
+      totalDuration: sessionStats?.totalDurationMinutes ?? sessions.reduce((acc, s) => acc + (s.durationMinutes || 0), 0),
+      totalCost: sessionStats?.totalCost ?? sessions.reduce((acc, s) => acc + (s.totalCost || 0), 0),
+      count: sessionStats?.sessionCount ?? (totalCount || sessions.length),
+      currency: sessionStats?.currency || sessions?.[0]?.currency || 'USD',
     };
-  }, [sessions, totalCount]);
+  }, [sessionStats, sessions, totalCount]);
 
   const columns: ColumnDef<DriverSession>[] = useMemo(
     () => [
       {
         accessorKey: 'stationName',
         header: 'Station & Connector',
+        minSize: 180,
         cell: ({ row }) => (
           <div className="flex items-center gap-3">
-            <div className="flex flex-col">
-              <span className="font-bold tracking-tight text-foreground">{row.original.stationName}</span>
+            <div className="flex flex-col min-w-0">
+              <span className="font-bold tracking-tight text-foreground truncate" title={row.original.stationName}>
+                {row.original.stationName}
+              </span>
               <div className="flex items-center gap-1.5 text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest mt-0.5">
                 <span>{row.original.connectorType || 'Type 2'}</span>
               </div>
@@ -78,19 +97,35 @@ export function DriverSessionsContainer() {
         ),
       },
       {
+        accessorKey: 'idTag',
+        header: 'ID Tag',
+        minSize: 180,
+        cell: ({ row }) => {
+          const val = row.original.idTag;
+          if (!val) return <span className="text-muted-foreground text-xs font-bold">-</span>;
+          return (
+            <div className="flex items-center gap-1.5 font-mono text-xs font-bold text-foreground max-w-[200px]" title={val}>
+              <Tag className="h-3.5 w-3.5 text-sky-500 shrink-0" />
+              <span className="truncate">{val}</span>
+            </div>
+          );
+        },
+      },
+      {
         accessorKey: 'remoteStartTime',
         header: 'Remote Start',
+        minSize: 135,
         cell: ({ row }) => {
           const val = row.original.remoteStartTime;
           if (!val) return <span className="text-muted-foreground text-xs font-bold">-</span>;
           return (
             <div className="flex items-center gap-3 opacity-80">
-              <Clock className="h-3.5 w-3.5 text-indigo-500" />
+              <Clock className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
               <div className="flex flex-col">
-                <span className="text-[11px] font-black uppercase text-foreground tracking-tight">
+                <span className="text-[11px] font-black uppercase text-foreground tracking-tight whitespace-nowrap">
                   {formatDate(val, 'MMM dd, yyyy')}
                 </span>
-                <span className="text-[10px] font-bold text-muted-foreground opacity-60">
+                <span className="text-[10px] font-bold text-muted-foreground opacity-60 whitespace-nowrap">
                   {formatTime(val)}
                 </span>
               </div>
@@ -101,17 +136,18 @@ export function DriverSessionsContainer() {
       {
         accessorKey: 'startTime',
         header: 'Start Time',
+        minSize: 140,
         cell: ({ row }) => {
           const val = row.original.startTime;
           if (!val) return <span className="text-muted-foreground text-xs font-bold">-</span>;
           return (
             <div className="flex items-center gap-3">
-              <Calendar className="h-3.5 w-3.5" />
+              <Calendar className="h-3.5 w-3.5 shrink-0" />
               <div className="flex flex-col">
-                <span className="text-[11px] font-black uppercase text-foreground tracking-tight">
+                <span className="text-[11px] font-black uppercase text-foreground tracking-tight whitespace-nowrap">
                   {formatDate(val, 'MMM dd, yyyy')}
                 </span>
-                <span className="text-[10px] font-bold text-muted-foreground opacity-60">
+                <span className="text-[10px] font-bold text-muted-foreground opacity-60 whitespace-nowrap">
                   {formatTime(val)}
                 </span>
               </div>
@@ -122,17 +158,18 @@ export function DriverSessionsContainer() {
       {
         accessorKey: 'remoteStopTime',
         header: 'Remote Stop',
+        minSize: 135,
         cell: ({ row }) => {
           const val = row.original.remoteStopTime;
           if (!val) return <span className="text-muted-foreground text-xs font-bold">-</span>;
           return (
             <div className="flex items-center gap-3 opacity-80">
-              <Clock className="h-3.5 w-3.5 text-pink-500" />
+              <Clock className="h-3.5 w-3.5 text-pink-500 shrink-0" />
               <div className="flex flex-col">
-                <span className="text-[11px] font-black uppercase text-foreground tracking-tight">
+                <span className="text-[11px] font-black uppercase text-foreground tracking-tight whitespace-nowrap">
                   {formatDate(val, 'MMM dd, yyyy')}
                 </span>
-                <span className="text-[10px] font-bold text-muted-foreground opacity-60">
+                <span className="text-[10px] font-bold text-muted-foreground opacity-60 whitespace-nowrap">
                   {formatTime(val)}
                 </span>
               </div>
@@ -143,9 +180,10 @@ export function DriverSessionsContainer() {
       {
         accessorKey: 'energyDeliveredKwh',
         header: 'Energy Yield',
+        minSize: 125,
         cell: ({ row }) => (
-          <div className="flex items-center gap-2 font-black text-sm tracking-tight text-foreground">
-            <Zap className="h-4 w-4 text-emerald-500" />
+          <div className="flex items-center gap-2 font-black text-sm tracking-tight text-foreground whitespace-nowrap">
+            <Zap className="h-4 w-4 text-emerald-500 shrink-0" />
             <span>{row.original.energyDeliveredKwh.toFixed(2)}</span>
             <span className="text-[9px] text-muted-foreground uppercase tracking-widest opacity-40 italic">kWh</span>
           </div>
@@ -154,12 +192,13 @@ export function DriverSessionsContainer() {
       {
         id: 'co2Emitted',
         header: 'CO2 Emitted',
+        minSize: 125,
         cell: ({ row }) => {
           const energy = row.original.energyDeliveredKwh || 0;
           const co2Emitted = energy * 0.273;
           return (
-            <div className="flex items-center gap-2 font-black text-sm tracking-tight text-foreground">
-              <Leaf className="h-4 w-4 text-emerald-500" />
+            <div className="flex items-center gap-2 font-black text-sm tracking-tight text-foreground whitespace-nowrap">
+              <Leaf className="h-4 w-4 text-emerald-500 shrink-0" />
               <span>{co2Emitted.toFixed(2)}</span>
               <span className="text-[9px] text-muted-foreground uppercase tracking-widest opacity-40 italic">kg</span>
             </div>
@@ -169,9 +208,10 @@ export function DriverSessionsContainer() {
       {
         accessorKey: 'durationMinutes',
         header: 'Duration',
+        minSize: 110,
         cell: ({ row }) => (
-          <div className="flex items-center gap-2 text-xs font-bold tracking-tight">
-            <Clock className="h-4 w-4 text-blue-500" />
+          <div className="flex items-center gap-2 text-xs font-bold tracking-tight whitespace-nowrap">
+            <Clock className="h-4 w-4 text-blue-500 shrink-0" />
             <span>{row.original.durationMinutes}</span>
             <span className="text-[9px] uppercase tracking-widest opacity-40">Min</span>
           </div>
@@ -180,12 +220,13 @@ export function DriverSessionsContainer() {
       {
         accessorKey: 'totalCost',
         header: 'Financials',
+        minSize: 115,
         cell: ({ row }) => (
-          <div className="flex items-center gap-1.5 font-black text-sm text-primary tracking-tight">
-            <Banknote className="h-4 w-4 text-amber-500" />
-            {new Intl.NumberFormat('en-IN', {
+          <div className="flex items-center gap-1.5 font-black text-sm text-primary tracking-tight whitespace-nowrap">
+            <Banknote className="h-4 w-4 text-amber-500 shrink-0" />
+            {new Intl.NumberFormat('en-US', {
               style: 'currency',
-              currency: row.original.currency || 'INR',
+              currency: row.original.currency || 'USD',
             }).format(row.original.totalCost)}
           </div>
         ),
@@ -193,6 +234,7 @@ export function DriverSessionsContainer() {
       {
         accessorKey: 'status',
         header: 'State',
+        minSize: 115,
         cell: ({ row }) => {
           const status = row.original.status;
           return (
@@ -258,7 +300,19 @@ export function DriverSessionsContainer() {
       className="space-y-6 sm:space-y-8 p-4 sm:p-6 md:p-8 max-w-[1600px] mx-auto"
     >
       <motion.div variants={fadeInUp} className="space-y-1">
-        <BackButton href={FRONTEND_ROUTES.DRIVERS} label="Return to Driver Registry" />
+        <BackButton
+          href={backHref}
+          label={backLabel}
+          onClick={() => {
+            if (fromPage === 'id-tags') {
+              router.push(FRONTEND_ROUTES.ID_TAGS);
+            } else if (typeof window !== 'undefined' && window.history.length > 1) {
+              router.back();
+            } else {
+              router.push(FRONTEND_ROUTES.DRIVERS);
+            }
+          }}
+        />
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tighter bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
             {driver?.firstName} {driver?.lastName}
@@ -304,9 +358,9 @@ export function DriverSessionsContainer() {
         />
         <StatCard
           title="Resource Allocation"
-          value={new Intl.NumberFormat('en-IN', {
+          value={new Intl.NumberFormat('en-US', {
             style: 'currency',
-            currency: sessions?.[0]?.currency || 'INR',
+            currency: stats.currency,
             maximumFractionDigits: 0
           }).format(stats.totalCost)}
           icon={Banknote}
@@ -347,6 +401,12 @@ export function DriverSessionsContainer() {
                   <h4 className="text-base font-black tracking-tight text-foreground">{session.stationName}</h4>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">{session.connectorType || 'Type 2'}</span>
+                    {session.idTag && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-sky-500 bg-sky-500/10 px-2 py-0.5 rounded-md">
+                        <Tag className="h-2.5 w-2.5" />
+                        {session.idTag}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <Badge

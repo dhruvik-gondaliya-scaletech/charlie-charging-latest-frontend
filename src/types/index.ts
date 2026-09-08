@@ -334,6 +334,7 @@ export interface User {
 
 export interface DriverSession {
   id: string;
+  idTag?: string | null;
   stationId: string;
   stationName: string;
   connectorId: number;

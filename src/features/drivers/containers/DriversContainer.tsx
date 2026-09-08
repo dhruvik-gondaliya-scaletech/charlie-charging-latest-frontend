@@ -38,6 +38,7 @@ import { DriverAppConfig } from '../components/DriverAppConfig';
 import { ActionIconButton } from '@/components/shared/ActionIconButton';
 import { ProtectedAction } from '@/components/shared/ProtectedAction';
 import { useAuth } from '@/contexts/AuthContext';
+import { isSiteManagerUser } from '@/contexts/EnvironmentContext';
 import { useDeleteDriver } from '@/hooks/delete/useDeleteDriver';
 import { useResendDriverInvitation } from '@/hooks/post/useResendDriverInvitation';
 import { DeleteDriverModal } from '../components/DeleteDriverModal';
@@ -45,8 +46,9 @@ import { DeleteDriverModal } from '../components/DeleteDriverModal';
 
 export function DriversContainer() {
   const router = useRouter();
-  const { hasPermission } = useAuth();
-  const canUpdate = hasPermission(AppPermission.DRIVER_UPDATE);
+  const { user, hasPermission } = useAuth();
+  const isSiteManager = isSiteManagerUser(user);
+  const canUpdate = hasPermission(AppPermission.DRIVER_UPDATE) && !isSiteManager;
   const defaultTab = canUpdate ? 'config' : 'drivers';
 
   const [search, setSearch] = useState('');
@@ -239,30 +241,34 @@ export function DriversContainer() {
         </motion.div>
 
         <Tabs key={defaultTab} defaultValue={defaultTab} className="w-full space-y-8">
-          <TabsList className="bg-muted/40 p-1.5 border border-border/40 rounded-2xl backdrop-blur-md h-auto flex-wrap sm:flex-nowrap w-fit gap-1 shadow-inner">
-            <ProtectedAction permission={AppPermission.DRIVER_UPDATE}>
+          {!isSiteManager && canUpdate && (
+            <TabsList className="bg-muted/40 p-1.5 border border-border/40 rounded-2xl backdrop-blur-md h-auto flex-wrap sm:flex-nowrap w-fit gap-1 shadow-inner">
+              <ProtectedAction permission={AppPermission.DRIVER_UPDATE}>
+                <TabsTrigger
+                  value="config"
+                  className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md font-bold uppercase tracking-wider text-[11px] transition-all flex items-center gap-2 cursor-pointer hover:bg-muted/20 hover:text-foreground text-muted-foreground"
+                >
+                  <Settings className="h-3.5 w-3.5" />
+                  App Configuration
+                </TabsTrigger>
+              </ProtectedAction>
               <TabsTrigger
-                value="config"
+                value="drivers"
                 className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md font-bold uppercase tracking-wider text-[11px] transition-all flex items-center gap-2 cursor-pointer hover:bg-muted/20 hover:text-foreground text-muted-foreground"
               >
-                <Settings className="h-3.5 w-3.5" />
-                App Configuration
+                <UsersListIcon className="h-3.5 w-3.5" />
+                Drivers
               </TabsTrigger>
-            </ProtectedAction>
-            <TabsTrigger
-              value="drivers"
-              className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md font-bold uppercase tracking-wider text-[11px] transition-all flex items-center gap-2 cursor-pointer hover:bg-muted/20 hover:text-foreground text-muted-foreground"
-            >
-              <UsersListIcon className="h-3.5 w-3.5" />
-              Drivers
-            </TabsTrigger>
-          </TabsList>
+            </TabsList>
+          )}
 
-          <ProtectedAction permission={AppPermission.DRIVER_UPDATE}>
-            <TabsContent value="config">
-              <DriverAppConfig />
-            </TabsContent>
-          </ProtectedAction>
+          {!isSiteManager && (
+            <ProtectedAction permission={AppPermission.DRIVER_UPDATE}>
+              <TabsContent value="config">
+                <DriverAppConfig />
+              </TabsContent>
+            </ProtectedAction>
+          )}
 
           <TabsContent value="drivers" className="space-y-8">
             <motion.div variants={staggerItem} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

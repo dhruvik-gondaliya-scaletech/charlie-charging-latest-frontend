@@ -30,6 +30,7 @@ export const API_CONFIG = {
             stats: "/drivers/stats",
             byId: (id: string) => `/drivers/${id}`,
             sessions: (id: string) => `/drivers/${id}/sessions`,
+            sessionStats: (id: string) => `/drivers/${id}/session-stats`,
             resendInvite: (id: string) => `/drivers/${id}/resend-invite`,
         },
         idTags: {
