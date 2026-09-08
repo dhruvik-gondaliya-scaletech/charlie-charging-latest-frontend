@@ -549,8 +549,7 @@ export function Table<T>({
                               isScrolledRight
                             ),
                             minWidth: header.column.columnDef.minSize,
-                            maxWidth: header.column.columnDef.maxSize,
-                            width: header.column.columnDef.size !== 150 ? header.column.columnDef.size : (header.column.columnDef.minSize || undefined),
+                            maxWidth: header.column.columnDef.maxSize
                           }}
                         >
                           <div
@@ -620,8 +619,7 @@ export function Table<T>({
                                   isScrolledRight
                                 ),
                                 minWidth: cell.column.columnDef.minSize,
-                                maxWidth: cell.column.columnDef.maxSize,
-                                width: cell.column.columnDef.size !== 150 ? cell.column.columnDef.size : (cell.column.columnDef.minSize || undefined),
+                                maxWidth: cell.column.columnDef.maxSize
                               }}
                             >
                               {flexRender(
