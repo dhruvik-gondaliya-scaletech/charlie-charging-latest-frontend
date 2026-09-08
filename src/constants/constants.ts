@@ -34,6 +34,7 @@ export const API_CONFIG = {
         },
         idTags: {
             base: "/id-tags",
+            stats: "/id-tags/stats",
             byId: (idTag: string) => `/id-tags/${idTag}`,
         },
         stations: {

@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ColumnDef } from '@tanstack/react-table';
 import { useIdTags } from '@/hooks/get/useIdTags';
+import { useIdTagStats } from '@/hooks/get/useIdTagStats';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -56,16 +57,18 @@ export function IdTagsContainer() {
   const [selectedIdTag, setSelectedIdTag] = useState<IdTag | null>(null);
   const [idTagToDelete, setIdTagToDelete] = useState<string | null>(null);
 
+  const { data: idTagsStats } = useIdTagStats();
+
   const idTagsList = useMemo(() => idTags || [], [idTags]);
   const totalCount = idTags?.meta?.total ?? idTagsList.length;
 
   const stats = useMemo(() => {
     return {
-      total: totalCount,
-      active: idTagsList.filter(t => t.status === IdTagStatus.ACCEPTED).length,
-      blocked: idTagsList.filter(t => t.status === IdTagStatus.BLOCKED).length,
+      total: idTagsStats?.total ?? totalCount,
+      active: idTagsStats?.active ?? idTagsList.filter(t => t.status === IdTagStatus.ACCEPTED).length,
+      blocked: idTagsStats?.blocked ?? idTagsList.filter(t => t.status === IdTagStatus.BLOCKED).length,
     };
-  }, [totalCount, idTagsList]);
+  }, [idTagsStats, totalCount, idTagsList]);
 
   const columns: ColumnDef<IdTag>[] = useMemo(
     () => {

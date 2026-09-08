@@ -20,9 +20,19 @@ export interface PaginatedIdTagsResponse {
   };
 }
 
+export interface IdTagStats {
+  total: number;
+  active: number;
+  blocked: number;
+}
+
 class IdTagService {
   async getAllIdTags(params?: IdTagQueryParams) {
     return httpService.get<IdTag[] | PaginatedIdTagsResponse>(API_CONFIG.endpoints.idTags.base, { params });
+  }
+
+  async getIdTagStats() {
+    return httpService.get<IdTagStats>(API_CONFIG.endpoints.idTags.stats);
   }
 
   async getIdTagById(idTag: string) {
