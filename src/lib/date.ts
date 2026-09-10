@@ -113,3 +113,13 @@ export function getDashboardSavedDateRange(options?: { forReports?: boolean }): 
   return getDashboardDateRange(savedRange, customRange, options);
 }
 
+export const formatOfflineSince = (date?: string | Date | null): string | null => {
+  if (!date) return null;
+  const dateObj = typeof date === 'string' ? parseISO(date) : date;
+  if (!dateObj || isNaN(dateObj.getTime())) return null;
+  const formattedDate = format(dateObj, "MMM d, yyyy - h:mm");
+  const ampm = format(dateObj, 'a').toLowerCase();
+  return `since ${formattedDate}${ampm}`;
+};
+
+

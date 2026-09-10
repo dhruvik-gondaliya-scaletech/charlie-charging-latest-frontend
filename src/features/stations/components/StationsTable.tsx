@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
-import { formatDate } from '@/lib/date';
+import { formatDate, formatOfflineSince } from '@/lib/date';
 import { FRONTEND_ROUTES } from '@/constants/constants';
 import { ActionIconButton } from '@/components/shared/ActionIconButton';
 
@@ -44,17 +44,27 @@ export function StationsTable({ stations, globalFilter, onGlobalFilterChange, on
       header: 'Status',
       cell: ({ row }) => {
         const status = row.getValue('status') as string;
+        const lastHeartbeat = row.original.lastHeartbeat;
+        const isOffline = status?.toLowerCase() === 'offline';
         return (
-          <Badge
-            variant={
-              status === 'available' ? 'default' :
-                status === 'charging' ? 'secondary' :
-                  status === 'offline' ? 'destructive' :
-                    'outline'
-            }
-          >
-            {status}
-          </Badge>
+          <div className="flex flex-col gap-0.5">
+            <Badge
+              variant={
+                status === 'available' ? 'default' :
+                  status === 'charging' ? 'secondary' :
+                    isOffline ? 'destructive' :
+                      'outline'
+              }
+              className="w-fit"
+            >
+              {status}
+            </Badge>
+            {isOffline && lastHeartbeat && (
+              <span className="text-[11px] font-medium text-muted-foreground">
+                {formatOfflineSince(lastHeartbeat)}
+              </span>
+            )}
+          </div>
         );
       },
     },

@@ -9,6 +9,7 @@ import { Zap } from 'lucide-react';
 import { Station, ChargingStatus } from '@/types';
 import { useTariffs } from '@/hooks/get/useBilling';
 import { cn } from '@/lib/utils';
+import { formatOfflineSince } from '@/lib/date';
 
 import { FRONTEND_ROUTES } from '@/constants/constants';
 import {
@@ -74,13 +75,21 @@ export function LocationStations({ stations, isLoading }: LocationStationsProps)
                         colorClasses = "bg-muted text-muted-foreground border-border";
                     }
 
+                    const lastHeartbeat = row.original.lastHeartbeat;
                     return (
-                        <Badge
-                            variant="outline"
-                            className={cn("capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm text-[10px] tracking-widest", colorClasses)}
-                        >
-                            {status}
-                        </Badge>
+                        <div className="flex flex-col gap-0.5">
+                            <Badge
+                                variant="outline"
+                                className={cn("capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm text-[10px] tracking-widest w-fit", colorClasses)}
+                            >
+                                {status}
+                            </Badge>
+                            {status === ChargingStatus.OFFLINE && lastHeartbeat && (
+                                <span className="text-[10px] font-medium text-muted-foreground">
+                                    {formatOfflineSince(lastHeartbeat)}
+                                </span>
+                            )}
+                        </div>
                     );
                 },
             },
