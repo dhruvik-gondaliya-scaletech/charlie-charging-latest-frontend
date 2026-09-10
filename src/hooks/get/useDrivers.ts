@@ -37,3 +37,11 @@ export const useDriver = (id: string) => {
     staleTime: 30000,
   });
 };
+
+export const useDriverStats = () => {
+  return useQuery({
+    queryKey: ['drivers', 'stats'],
+    queryFn: () => driverService.getDriverStats(),
+    staleTime: 30000,
+  });
+};

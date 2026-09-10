@@ -2,6 +2,14 @@ import httpService from '@/lib/http-service';
 import { API_CONFIG } from '@/constants/constants';
 import { Driver, CreateDriverData, DriverSession } from '@/types';
 
+export interface DriverSessionStats {
+  sessionCount: number;
+  totalEnergyKwh: number;
+  totalDurationMinutes: number;
+  totalCost: number;
+  currency: string;
+}
+
 class DriverService {
   async getAllDrivers(params?: { search?: string; name?: string; page?: number; limit?: number }) {
     return httpService.get<Driver[] | { data: Driver[]; meta: any }>(API_CONFIG.endpoints.drivers.base, { params });
@@ -9,6 +17,16 @@ class DriverService {
 
   async getDriverById(id: string) {
     return httpService.get<Driver>(API_CONFIG.endpoints.drivers.byId(id));
+  }
+
+  async getDriverStats() {
+    return httpService.get<{ total: number; invited: number; completed: number }>(
+      API_CONFIG.endpoints.drivers.stats,
+    );
+  }
+
+  async getDriverSessionStats(id: string) {
+    return httpService.get<DriverSessionStats>(API_CONFIG.endpoints.drivers.sessionStats(id));
   }
 
   async createDriver(data: CreateDriverData) {
@@ -27,6 +45,10 @@ class DriverService {
 
   async deleteDriver(id: string) {
     return httpService.delete<{ message: string }>(API_CONFIG.endpoints.drivers.byId(id));
+  }
+
+  async resendInvitation(id: string) {
+    return httpService.post<{ message: string }>(API_CONFIG.endpoints.drivers.resendInvite(id));
   }
 }
 

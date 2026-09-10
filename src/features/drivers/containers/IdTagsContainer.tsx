@@ -4,8 +4,10 @@ import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ColumnDef } from '@tanstack/react-table';
 import { useIdTags } from '@/hooks/get/useIdTags';
+import { useIdTagStats } from '@/hooks/get/useIdTagStats';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 import {
   CreditCard,
   Plus,
@@ -20,6 +22,7 @@ import {
   Building2,
   Tag,
   MapPin,
+  ExternalLink,
 } from 'lucide-react';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Table } from '@/components/shared/Table';
@@ -27,7 +30,7 @@ import { IdTag, IdTagStatus, AppPermission } from '@/types';
 import { formatDate } from '@/lib/date';
 import { StatCard } from '../../dashboard/components/StatCard';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { DEFAULT_PAGE_SIZE } from '@/constants/constants';
+import { DEFAULT_PAGE_SIZE, FRONTEND_ROUTES } from '@/constants/constants';
 import { IdTagFormModal } from '../components/IdTagFormModal';
 import { useDeleteIdTag } from '@/hooks/delete/useDeleteIdTag';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
@@ -56,16 +59,18 @@ export function IdTagsContainer() {
   const [selectedIdTag, setSelectedIdTag] = useState<IdTag | null>(null);
   const [idTagToDelete, setIdTagToDelete] = useState<string | null>(null);
 
+  const { data: idTagsStats } = useIdTagStats();
+
   const idTagsList = useMemo(() => idTags || [], [idTags]);
   const totalCount = idTags?.meta?.total ?? idTagsList.length;
 
   const stats = useMemo(() => {
     return {
-      total: totalCount,
-      active: idTagsList.filter(t => t.status === IdTagStatus.ACCEPTED).length,
-      blocked: idTagsList.filter(t => t.status === IdTagStatus.BLOCKED).length,
+      total: idTagsStats?.total ?? totalCount,
+      active: idTagsStats?.active ?? idTagsList.filter(t => t.status === IdTagStatus.ACCEPTED).length,
+      blocked: idTagsStats?.blocked ?? idTagsList.filter(t => t.status === IdTagStatus.BLOCKED).length,
     };
-  }, [totalCount, idTagsList]);
+  }, [idTagsStats, totalCount, idTagsList]);
 
   const columns: ColumnDef<IdTag>[] = useMemo(
     () => {
@@ -73,16 +78,43 @@ export function IdTagsContainer() {
         {
           accessorKey: 'idTag',
           header: 'RFID Tag ID',
-          cell: ({ row }) => (
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/5 text-primary border border-primary/10">
-                <CreditCard className="h-4 w-4" />
+          cell: ({ row }) => {
+            const tag = row.original;
+            const driver = tag.driver;
+            const driverId = tag.driverId || driver?.id;
+            const hasDriver = Boolean(driverId && driver && driver.id);
+
+            if (hasDriver && driver) {
+              const driverName = `${driver.firstName} ${driver.lastName}`.trim();
+              const driverUrl = `${FRONTEND_ROUTES.DRIVER_DETAILS(driverId!)}?name=${encodeURIComponent(driverName)}&from=id-tags`;
+
+              return (
+                <Link
+                  href={driverUrl}
+                  className="flex items-center gap-3 group/tag cursor-pointer"
+                  title={`View sessions for ${driverName}`}
+                >
+                  <div className="p-2 rounded-lg bg-primary/5 text-primary border border-primary/10 group-hover/tag:bg-primary/10 group-hover/tag:border-primary/20 transition-colors">
+                    <CreditCard className="h-4 w-4" />
+                  </div>
+                  <span className="font-bold tracking-tight text-foreground uppercase group-hover/tag:text-primary group-hover/tag:underline underline-offset-4 transition-colors">
+                    {row.getValue('idTag')}
+                  </span>
+                </Link>
+              );
+            }
+
+            return (
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/5 text-primary border border-primary/10">
+                  <CreditCard className="h-4 w-4" />
+                </div>
+                <span className="font-bold tracking-tight text-foreground uppercase">
+                  {row.getValue('idTag')}
+                </span>
               </div>
-              <span className="font-bold tracking-tight text-foreground uppercase">
-                {row.getValue('idTag')}
-              </span>
-            </div>
-          ),
+            );
+          },
         },
         {
           accessorKey: 'idTagType',
@@ -118,13 +150,27 @@ export function IdTagsContainer() {
           accessorKey: 'driver',
           header: 'Assigned Driver',
           cell: ({ row }) => {
-            const driver = row.original.driver;
-            if (!driver) return <span className="text-muted-foreground text-xs italic">Unassigned</span>;
+            const tag = row.original;
+            const driver = tag.driver;
+            const driverId = tag.driverId || driver?.id;
+            const hasDriver = Boolean(driverId && driver && driver.id);
+
+            if (!hasDriver || !driver) {
+              return <span className="text-muted-foreground text-xs italic">Unassigned</span>;
+            }
+
+            const driverName = `${driver.firstName} ${driver.lastName}`.trim();
+            const driverUrl = `${FRONTEND_ROUTES.DRIVER_DETAILS(driverId!)}?name=${encodeURIComponent(driverName)}&from=id-tags`;
+
             return (
-              <div className="flex items-center gap-2 text-xs font-bold text-foreground tracking-tight">
-                <User className="h-3.5 w-3.5 opacity-40" />
-                {`${driver.firstName} ${driver.lastName}`}
-              </div>
+              <Link
+                href={driverUrl}
+                className="flex items-center gap-2 text-xs font-bold text-foreground tracking-tight hover:text-primary hover:underline underline-offset-4 transition-colors cursor-pointer group"
+                title={`View ${driverName}'s sessions`}
+              >
+                <User className="h-3.5 w-3.5 opacity-40 group-hover:opacity-100 group-hover:text-primary transition-all" />
+                <span>{driverName}</span>
+              </Link>
             );
           },
         },
@@ -337,17 +383,34 @@ export function IdTagsContainer() {
                 <div className="bg-card border border-border rounded-[1.5rem] p-5 shadow-sm space-y-4">
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-3">
-                      <div className="p-2.5 rounded-xl bg-primary/5 text-primary border border-primary/10">
+                      <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20">
                         <CreditCard className="h-5 w-5" />
                       </div>
                       <div className="flex flex-col">
-                        <span className="font-black tracking-widest text-foreground uppercase text-lg leading-tight">
-                          {tag.idTag}
-                        </span>
-                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
-                          <User className="h-3 w-3 opacity-60" />
-                          {tag.driver ? `${tag.driver.firstName} ${tag.driver.lastName}` : 'Unassigned'}
-                        </div>
+                        {Boolean(tag.driverId && tag.driver && tag.driver.id) ? (
+                          <Link
+                            href={`${FRONTEND_ROUTES.DRIVER_DETAILS(tag.driverId || tag.driver!.id)}?name=${encodeURIComponent(`${tag.driver!.firstName} ${tag.driver!.lastName}`)}&from=id-tags`}
+                            className="group"
+                          >
+                            <span className="font-black tracking-widest text-foreground uppercase text-lg leading-tight group-hover:text-primary group-hover:underline">
+                              {tag.idTag}
+                            </span>
+                            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-bold uppercase tracking-wider mt-0.5 group-hover:text-primary">
+                              <User className="h-3 w-3 opacity-60" />
+                              {`${tag.driver!.firstName} ${tag.driver!.lastName}`}
+                            </div>
+                          </Link>
+                        ) : (
+                          <>
+                            <span className="font-black tracking-widest text-foreground uppercase text-lg leading-tight">
+                              {tag.idTag}
+                            </span>
+                            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-bold uppercase tracking-wider mt-0.5">
+                              <User className="h-3 w-3 opacity-60" />
+                              Unassigned
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                     <Badge variant="outline" className={`${badgeClass} font-bold px-2.5 py-0.5 rounded-full text-[9px] uppercase tracking-widest flex items-center gap-1`}>
