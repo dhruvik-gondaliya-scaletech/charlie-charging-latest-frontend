@@ -41,6 +41,8 @@ export interface GetStationsParams extends PaginationParams {
   locationId?: string;
   type?: string;
   visibility?: string;
+  sortBy?: string;
+  sortOrder?: 'ASC' | 'DESC';
 }
 
 export interface GetOcppLogsParams {
