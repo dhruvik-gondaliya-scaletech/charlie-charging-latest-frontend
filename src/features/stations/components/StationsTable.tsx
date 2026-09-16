@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   useReactTable,
@@ -8,7 +9,8 @@ import {
   ColumnDef,
   flexRender,
 } from '@tanstack/react-table';
-import { Station } from '@/types';
+import { Station, AppPermission } from '@/types';
+import { useHasPermission } from '@/lib/permissions';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -27,96 +29,106 @@ interface StationsTableProps {
 export function StationsTable({ stations, globalFilter, onGlobalFilterChange, onDelete }: StationsTableProps) {
   const router = useRouter();
 
-  const columns: ColumnDef<Station>[] = [
-    {
-      accessorKey: 'name',
-      header: 'Name',
-      cell: ({ row }) => (
-        <div className="font-medium">{row.getValue('name')}</div>
-      ),
-    },
-    {
-      accessorKey: 'chargePointId',
-      header: 'Charge Point ID',
-    },
-    {
-      accessorKey: 'status',
-      header: 'Status',
-      cell: ({ row }) => {
-        const status = row.getValue('status') as string;
-        const lastHeartbeat = row.original.lastHeartbeat;
-        const isOffline = status?.toLowerCase() === 'offline';
-        return (
-          <div className="flex flex-col gap-0.5">
-            <Badge
-              variant={
-                status === 'available' ? 'default' :
-                  status === 'charging' ? 'secondary' :
-                    isOffline ? 'destructive' :
-                      'outline'
-              }
-              className="w-fit"
+  const canUpdateStation = useHasPermission(AppPermission.STATION_UPDATE);
+  const canDeleteStation = useHasPermission(AppPermission.STATION_DELETE);
+  const hasActionPermission = canUpdateStation || canDeleteStation;
+
+  const columns: ColumnDef<Station>[] = useMemo(
+    () => {
+      const cols: ColumnDef<Station>[] = [
+        {
+          accessorKey: 'name',
+          header: 'Name',
+          cell: ({ row }) => (
+            <div
+              className="font-medium cursor-pointer hover:text-primary transition-colors"
+              onClick={() => router.push(`${FRONTEND_ROUTES.STATIONS_DETAILS(row.original.id)}?name=${encodeURIComponent(row.original.name)}`)}
             >
-              {status}
-            </Badge>
-            {isOffline && lastHeartbeat && (
-              <span className="text-[11px] font-medium text-muted-foreground">
-                {formatOfflineSince(lastHeartbeat)}
-              </span>
-            )}
-          </div>
-        );
-      },
+              {row.getValue('name')}
+            </div>
+          ),
+        },
+        {
+          accessorKey: 'location.name',
+          header: 'Location',
+          cell: ({ row }) => row.original.location?.name || '-',
+        },
+        {
+          accessorKey: 'status',
+          header: 'Status',
+          cell: ({ row }) => {
+            const status = row.getValue('status') as string;
+            let variant: 'default' | 'secondary' | 'destructive' | 'outline' = 'outline';
+            if (status === 'AVAILABLE') variant = 'default';
+            if (status === 'CHARGING') variant = 'secondary';
+            if (status === 'FAULTED' || status === 'UNAVAILABLE') variant = 'destructive';
+
+            return <Badge variant={variant}>{status}</Badge>;
+          },
+        },
+        {
+          accessorKey: 'vendor',
+          header: 'Vendor',
+          cell: ({ row }) => row.getValue('vendor') || '-',
+        },
+        {
+          accessorKey: 'model',
+          header: 'Model',
+          cell: ({ row }) => row.getValue('model') || '-',
+        },
+        {
+          accessorKey: 'maxPower',
+          header: 'Max Power (kW)',
+          cell: ({ row }) => `${row.getValue('maxPower')} kW`,
+        },
+        {
+          accessorKey: 'createdAt',
+          header: 'Created',
+          cell: ({ row }) => formatDate(row.getValue('createdAt')),
+        },
+      ];
+
+      if (hasActionPermission) {
+        cols.push({
+          id: 'actions',
+          header: 'Actions',
+          cell: ({ row }) => (
+            <div className="flex items-center gap-2">
+              <ActionIconButton
+                tone="info"
+                tooltip="View"
+                icon={<Eye className="h-4 w-4" />}
+                onClick={() => router.push(`${FRONTEND_ROUTES.STATIONS_DETAILS(row.original.id)}?name=${encodeURIComponent(row.original.name)}`)}
+              />
+              {canUpdateStation && (
+                <ActionIconButton
+                  tone="primary"
+                  tooltip="Edit"
+                  icon={<Pencil className="h-4 w-4" />}
+                  onClick={() => router.push(`${FRONTEND_ROUTES.STATIONS_EDIT(row.original.id)}?name=${encodeURIComponent(row.original.name)}`)}
+                />
+              )}
+              {canDeleteStation && (
+                <ActionIconButton
+                  tone="destructive"
+                  tooltip="Delete"
+                  icon={<Trash2 className="h-4 w-4" />}
+                  onClick={() => {
+                    if (confirm('Are you sure you want to delete this station?')) {
+                      onDelete(row.original.id);
+                    }
+                  }}
+                />
+              )}
+            </div>
+          ),
+        });
+      }
+
+      return cols;
     },
-    {
-      accessorKey: 'vendor',
-      header: 'Vendor',
-    },
-    {
-      accessorKey: 'model',
-      header: 'Model',
-    },
-    {
-      accessorKey: 'maxPower',
-      header: 'Max Power (kW)',
-      cell: ({ row }) => `${row.getValue('maxPower')} kW`,
-    },
-    {
-      accessorKey: 'createdAt',
-      header: 'Created',
-      cell: ({ row }) => formatDate(row.getValue('createdAt')),
-    },
-    {
-      id: 'actions',
-      header: 'Actions',
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <ActionIconButton
-            tone="info"
-            tooltip="View"
-            icon={<Eye className="h-4 w-4" />}
-            onClick={() => router.push(`${FRONTEND_ROUTES.STATIONS_DETAILS(row.original.id)}?name=${encodeURIComponent(row.original.name)}`)}
-          />
-          <ActionIconButton
-            tone="primary"
-            tooltip="Edit"
-            icon={<Pencil className="h-4 w-4" />}
-            onClick={() => router.push(`${FRONTEND_ROUTES.STATIONS_EDIT(row.original.id)}?name=${encodeURIComponent(row.original.name)}`)}
-          />
-          <ActionIconButton
-            tone="destructive"
-            tooltip="Delete"
-            icon={<Trash2 className="h-4 w-4" />}
-            onClick={() => {
-              if (confirm('Are you sure you want to delete this station?')) {
-                onDelete(row.original.id);
-              }
-            }}
-          />
-        </div>
-      ),
-    },
-  ];
+    [router, onDelete, canUpdateStation, canDeleteStation, hasActionPermission]
+  );
 
   const table = useReactTable({
     data: stations,
