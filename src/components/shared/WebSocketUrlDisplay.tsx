@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Copy, Check, Terminal, Key } from 'lucide-react';
+import { Copy, Check, Terminal, Key, Fingerprint } from 'lucide-react';
 import { WEBSOCKET_CONFIG } from '@/constants/constants';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -14,9 +14,11 @@ interface WebSocketUrlDisplayProps {
 export default function WebSocketUrlDisplay({ chargePointId, serialNumber, tenantSlug, password }: WebSocketUrlDisplayProps) {
     const [copied, setCopied] = useState(false);
     const [passwordCopied, setPasswordCopied] = useState(false);
+    const [identityCopied, setIdentityCopied] = useState(false);
 
     // Clean WebSocket URL: wss://ocpp.scaleev.xyz
     const wsUrl = WEBSOCKET_CONFIG.ocppUrl.replace(/\/ocpp\/?$/, '');
+    const identityValue = serialNumber || chargePointId;
 
     const handleCopy = async () => {
         try {
@@ -25,6 +27,16 @@ export default function WebSocketUrlDisplay({ chargePointId, serialNumber, tenan
             setTimeout(() => setCopied(false), 2000);
         } catch (err) {
             console.error('Failed to copy:', err);
+        }
+    };
+
+    const handleIdentityCopy = async () => {
+        try {
+            await navigator.clipboard.writeText(identityValue);
+            setIdentityCopied(true);
+            setTimeout(() => setIdentityCopied(false), 2000);
+        } catch (err) {
+            console.error('Failed to copy identity:', err);
         }
     };
 
@@ -39,115 +51,112 @@ export default function WebSocketUrlDisplay({ chargePointId, serialNumber, tenan
     };
 
     return (
-        <div className="space-y-6">
-            <div className="p-6 bg-primary/5 border border-primary/20 rounded-2xl flex gap-4 items-start">
-                <div className="p-2 rounded-xl bg-primary/10 text-primary shrink-0">
-                    <Terminal className="h-5 w-5" />
-                </div>
-                <div className="space-y-2">
-                    <h4 className="text-sm font-black uppercase tracking-widest text-primary">OCPP Connection Endpoint</h4>
-                    <p className="text-sm text-muted-foreground font-medium leading-relaxed">
-                        Use this secure WebSocket URL to configure your hardware. The charge point will use this persistent connection to communicate with the CSMS management platform.
-                    </p>
-                </div>
+        <div className="space-y-5">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+                Configure your hardware's network settings using the credentials below. The charge point will use these to maintain a persistent secure connection to the CSMS.
+            </p>
+
+            <div className="space-y-2.5">
+                <CopyableFieldRow
+                    icon={Terminal}
+                    title="Connection Endpoint"
+                    description="The secure WebSocket URL"
+                    value={wsUrl}
+                    colorClass="bg-primary/10 text-primary"
+                    copied={copied}
+                    onCopy={handleCopy}
+                />
+
+                <CopyableFieldRow
+                    icon={Fingerprint}
+                    title="Connection Identity"
+                    description="Charge Point Identity / Station ID"
+                    value={identityValue}
+                    colorClass="bg-blue-500/10 text-blue-500"
+                    copied={identityCopied}
+                    onCopy={handleIdentityCopy}
+                />
+
+                {password && (
+                    <CopyableFieldRow
+                        icon={Key}
+                        title="Connection Password"
+                        description="Basic Auth / Authorization Key"
+                        value={password}
+                        colorClass="bg-violet-500/10 text-violet-400"
+                        copied={passwordCopied}
+                        onCopy={handlePasswordCopy}
+                    />
+                )}
             </div>
 
-            <div className="relative group">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-violet-500/20 rounded-2xl blur opacity-0 group-hover:opacity-100 transition duration-1000 group-hover:duration-200" />
-                <div className="relative flex gap-2 bg-background/50 backdrop-blur-md border border-border/40 p-2 rounded-2xl items-center shadow-xl">
-                    <div className="flex-1 px-4 py-2 font-mono text-xs text-primary/80 truncate select-all">
-                        {wsUrl}
-                    </div>
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={handleCopy}
-                        className="h-10 w-10 shrink-0 rounded-xl hover:bg-primary/10 transition-colors"
-                    >
-                        <AnimatePresence mode="wait">
-                            {copied ? (
-                                <motion.div
-                                    key="check"
-                                    initial={{ scale: 0, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    exit={{ scale: 0, opacity: 0 }}
-                                >
-                                    <Check className="h-4 w-4 text-emerald-500" />
-                                </motion.div>
-                            ) : (
-                                <motion.div
-                                    key="copy"
-                                    initial={{ scale: 0, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    exit={{ scale: 0, opacity: 0 }}
-                                >
-                                    <Copy className="h-4 w-4" />
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </Button>
-                </div>
-            </div>
-
-            {password && (
-                <div className="space-y-6 pt-2">
-                    <div className="p-6 bg-violet-500/5 border border-violet-500/20 rounded-2xl flex gap-4 items-start">
-                        <div className="p-2 rounded-xl bg-violet-500/10 text-violet-400 shrink-0">
-                            <Key className="h-5 w-5" />
-                        </div>
-                        <div className="space-y-2">
-                            <h4 className="text-sm font-black uppercase tracking-widest text-violet-400">OCPP Connection Password</h4>
-                            <p className="text-sm text-muted-foreground font-medium leading-relaxed">
-                                Copy this password and configure it in your station settings (Basic Auth / Authorization Key).
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="relative group">
-                        <div className="absolute -inset-0.5 bg-gradient-to-r from-violet-500/20 to-primary/20 rounded-2xl blur opacity-0 group-hover:opacity-100 transition duration-1000 group-hover:duration-200" />
-                        <div className="relative flex gap-2 bg-background/50 backdrop-blur-md border border-border/40 p-2 rounded-2xl items-center shadow-xl">
-                            <div className="flex-1 px-4 py-2 font-mono text-xs text-violet-400/80 truncate select-all">
-                                {password}
-                            </div>
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                onClick={handlePasswordCopy}
-                                className="h-10 w-10 shrink-0 rounded-xl hover:bg-violet-500/10 transition-colors"
-                            >
-                                <AnimatePresence mode="wait">
-                                    {passwordCopied ? (
-                                        <motion.div
-                                            key="check-pwd"
-                                            initial={{ scale: 0, opacity: 0 }}
-                                            animate={{ scale: 1, opacity: 1 }}
-                                            exit={{ scale: 0, opacity: 0 }}
-                                        >
-                                            <Check className="h-4 w-4 text-emerald-500" />
-                                        </motion.div>
-                                    ) : (
-                                        <motion.div
-                                            key="copy-pwd"
-                                            initial={{ scale: 0, opacity: 0 }}
-                                            animate={{ scale: 1, opacity: 1 }}
-                                            exit={{ scale: 0, opacity: 0 }}
-                                        >
-                                            <Copy className="h-4 w-4" />
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            <div className="flex items-center gap-2 px-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                <div className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
+            <div className="flex items-center gap-2 px-1 pt-1 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 Protocol version standard: OCPP 1.6-J / 2.0.1
             </div>
         </div>
     );
 }
+
+const CopyableFieldRow = ({
+    icon: Icon,
+    title,
+    description,
+    value,
+    colorClass,
+    copied,
+    onCopy,
+}: {
+    icon: React.ElementType;
+    title: string;
+    description: string;
+    value: string;
+    colorClass: string;
+    copied: boolean;
+    onCopy: () => void;
+}) => (
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 bg-background/40 hover:bg-background/60 border border-border/40 rounded-xl gap-3 transition-colors group">
+        <div className="flex items-center gap-3 overflow-hidden">
+            <div className={`p-2 rounded-lg shrink-0 ${colorClass}`}>
+                <Icon className="h-4 w-4" />
+            </div>
+            <div className="truncate">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-foreground/90 truncate">{title}</h4>
+                <p className="text-[11px] text-muted-foreground truncate mt-0.5">{description}</p>
+            </div>
+        </div>
+        
+        <div className="flex items-center gap-2 bg-background/80 border border-border/50 group-hover:border-border/80 rounded-lg p-1 pl-3 shrink-0 max-w-full transition-colors shadow-sm">
+            <span className="font-mono text-xs text-foreground/80 truncate max-w-[220px] select-all">{value}</span>
+            <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={onCopy}
+                className="h-7 w-7 rounded-md hover:bg-foreground/5 transition-colors shrink-0"
+            >
+                <AnimatePresence mode="wait">
+                    {copied ? (
+                        <motion.div
+                            key="check"
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0, opacity: 0 }}
+                        >
+                            <Check className="h-3.5 w-3.5 text-emerald-500" />
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="copy"
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0, opacity: 0 }}
+                        >
+                            <Copy className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground/70 transition-colors" />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </Button>
+        </div>
+    </div>
+);
