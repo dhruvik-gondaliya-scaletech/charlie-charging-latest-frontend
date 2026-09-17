@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { WebhookDelivery, WebhookDeliveryStatus, WebhookEvent, AppPermission } from '@/types';
+import { useHasPermission } from '@/lib/permissions';
 import { ProtectedAction } from '@/components/shared/ProtectedAction';
 import { formatDateTime, formatTimeAgo } from '@/lib/date';
 import { staggerContainer, staggerItem } from '@/lib/motion';
@@ -137,107 +138,120 @@ export function WebhookLogsContainer() {
         }
     };
 
+    const canRetryWebhook = useHasPermission(AppPermission.WEBHOOK_RETRY);
+
     const columns: ColumnDef<WebhookDelivery>[] = useMemo(
-        () => [
-            {
-                accessorKey: 'createdAt',
-                header: 'Timestamp',
-                cell: ({ row }) => (
-                    <div className="flex flex-col min-w-[140px]">
-                        <span className="font-bold text-sm text-foreground">
-                            {formatDateTime(row.original.createdAt)}
-                        </span>
-                        <span className="text-[10px] uppercase font-black text-muted-foreground tracking-tighter mt-0.5">
-                            {formatTimeAgo(row.original.createdAt)}
-                        </span>
-                    </div>
-                ),
-            },
-            {
-                accessorKey: 'eventType',
-                header: 'Event Stream',
-                cell: ({ row }) => (
-                    <div className="flex items-center gap-3">
-                        <Badge
-                            variant="outline"
-                            className={cn(
-                                'rounded-full border shadow-sm px-2.5 py-0.5 text-[10px] uppercase font-bold flex items-center gap-2',
-                                getEventColor(row.original.eventType)
-                            )}
-                        >
-                            <Zap className="h-3 w-3" />
-                            {row.original.eventType}
-                        </Badge>
-                    </div>
-                ),
-            },
-            {
-                accessorKey: 'status',
-                header: 'Delivery Status',
-                cell: ({ row }) => getStatusBadge(row.original.status),
-            },
-            {
-                accessorKey: 'responseStatus',
-                header: 'Server Response',
-                cell: ({ row }) => {
-                    const status = row.original.responseStatus;
-                    return (
-                        <div className="flex items-center gap-2">
-                            <span className={`font-mono font-bold text-sm ${status && status < 300 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                                {status || '---'}
+        () => {
+            const cols: ColumnDef<WebhookDelivery>[] = [
+                {
+                    accessorKey: 'createdAt',
+                    header: 'Timestamp',
+                    cell: ({ row }) => (
+                        <div className="flex flex-col min-w-[140px]">
+                            <span className="font-bold text-sm text-foreground">
+                                {formatDateTime(row.original.createdAt)}
                             </span>
-                            {row.original.errorMessage && (
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <AlertCircle className="h-4 w-4 text-rose-500 cursor-help opacity-70 hover:opacity-100 transition-opacity" />
-                                    </TooltipTrigger>
-                                    <TooltipContent className="max-w-[300px] p-3 bg-card/95 backdrop-blur-md border-primary/20 shadow-2xl rounded-2xl">
-                                        <p className="text-[11px] font-bold uppercase text-muted-foreground mb-1 tracking-widest">Error Detail</p>
-                                        <p className="text-xs font-medium leading-relaxed">{row.original.errorMessage}</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            )}
+                            <span className="text-[10px] uppercase font-black text-muted-foreground tracking-tighter mt-0.5">
+                                {formatTimeAgo(row.original.createdAt)}
+                            </span>
                         </div>
-                    );
+                    ),
                 },
-            },
-            {
-                accessorKey: 'attemptCount',
-                header: 'Attempts',
-                cell: ({ row }) => (
-                    <div className="flex items-center gap-2.5">
-                        <div className="w-6 h-6 rounded-md bg-muted/50 border border-muted-foreground/10 flex items-center justify-center text-[10px] font-black">
-                            {row.original.attemptCount}
-                        </div>
-                        <span className="text-muted-foreground uppercase text-[10px] font-black tracking-widest opacity-60">Sequence</span>
-                    </div>
-                ),
-            },
-            {
-                id: 'actions',
-                header: 'Actions',
-                cell: ({ row }) => {
-                    const canRetry = row.original.status === WebhookDeliveryStatus.FAILED;
-                    return (
-                        <div className="flex justify-start pr-2">
-                            {canRetry && (
-                                <ProtectedAction permission={AppPermission.WEBHOOK_RETRY}>
-                                    <ActionIconButton
-                                        tone="primary"
-                                        tooltip="Retry"
-                                        onClick={() => retryMutation.mutate(row.original.id)}
-                                        disabled={retryMutation.isPending}
-                                        icon={<RotateCcw className={`h-4 w-4 ${retryMutation.isPending ? 'animate-spin' : ''}`} />}
-                                        className="rounded-xl h-9 w-9"
-                                    />
-                                </ProtectedAction>
-                            )}
-                        </div>
-                    );
+                {
+                    accessorKey: 'eventType',
+                    header: 'Event Context',
+                    cell: ({ row }) => {
+                        const event = row.original.eventType;
+                        return (
+                            <div className="flex items-center gap-2">
+                                <Badge
+                                    variant="outline"
+                                    className={`font-mono text-[10px] font-black uppercase px-2.5 py-0.5 rounded-lg border ${getEventColor(event)}`}
+                                >
+                                    <Zap className="h-3 w-3 mr-1" />
+                                    {event}
+                                </Badge>
+                            </div>
+                        );
+                    },
                 },
-            },
-        ],
-        [retryMutation]
+                {
+                    accessorKey: 'status',
+                    header: 'Delivery Status',
+                    cell: ({ row }) => {
+                        const status = row.getValue('status') as WebhookDeliveryStatus;
+                        const isSuccess = status === WebhookDeliveryStatus.SUCCESS;
+                        const isFailed = status === WebhookDeliveryStatus.FAILED;
+
+                        return (
+                            <div className="flex items-center gap-2">
+                                <Badge
+                                    variant="outline"
+                                    className={`font-black text-[10px] uppercase px-2.5 py-0.5 rounded-lg border flex items-center gap-1.5 ${
+                                        isSuccess
+                                            ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                                            : isFailed
+                                            ? 'bg-destructive/10 text-destructive border-destructive/20'
+                                            : 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                                    }`}
+                                >
+                                    {isSuccess && <CheckCircle2 className="h-3.5 w-3.5" />}
+                                    {isFailed && <XCircle className="h-3.5 w-3.5" />}
+                                    {!isSuccess && !isFailed && <Clock className="h-3.5 w-3.5 animate-pulse" />}
+                                    {status}
+                                </Badge>
+                                {row.original.responseStatus && (
+                                    <span className={`font-mono text-xs font-bold ${isSuccess ? 'text-emerald-500' : 'text-destructive'}`}>
+                                        [{row.original.responseStatus}]
+                                    </span>
+                                )}
+                            </div>
+                        );
+                    },
+                },
+                {
+                    accessorKey: 'attemptCount',
+                    header: 'Attempts',
+                    cell: ({ row }) => (
+                        <div className="flex flex-col">
+                            <div className="font-mono text-xs font-bold text-foreground">
+                                {row.original.attemptCount}
+                            </div>
+                            <span className="text-muted-foreground uppercase text-[10px] font-black tracking-widest opacity-60">Sequence</span>
+                        </div>
+                    ),
+                },
+            ];
+
+            if (canRetryWebhook) {
+                cols.push({
+                    id: 'actions',
+                    header: 'Actions',
+                    cell: ({ row }) => {
+                        const canRetry = row.original.status === WebhookDeliveryStatus.FAILED;
+                        return (
+                            <div className="flex justify-start pr-2">
+                                {canRetry && (
+                                    <ProtectedAction permission={AppPermission.WEBHOOK_RETRY}>
+                                        <ActionIconButton
+                                            tone="primary"
+                                            tooltip="Retry"
+                                            onClick={() => retryMutation.mutate(row.original.id)}
+                                            disabled={retryMutation.isPending}
+                                            icon={<RotateCcw className={`h-4 w-4 ${retryMutation.isPending ? 'animate-spin' : ''}`} />}
+                                            className="rounded-xl h-9 w-9"
+                                        />
+                                    </ProtectedAction>
+                                )}
+                            </div>
+                        );
+                    },
+                });
+            }
+
+            return cols;
+        },
+        [retryMutation, canRetryWebhook]
     );
 
     const stats = useMemo(() => {

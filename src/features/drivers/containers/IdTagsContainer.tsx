@@ -27,6 +27,7 @@ import {
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Table } from '@/components/shared/Table';
 import { IdTag, IdTagStatus, AppPermission } from '@/types';
+import { useHasPermission } from '@/lib/permissions';
 import { formatDate } from '@/lib/date';
 import { StatCard } from '../../dashboard/components/StatCard';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -43,6 +44,9 @@ import { ProtectedAction } from '@/components/shared/ProtectedAction';
 export function IdTagsContainer() {
   const { user } = useAuth();
   const isSiteManager = isSiteManagerUser(user);
+  const canUpdateIdTag = useHasPermission(AppPermission.ID_TAG_UPDATE);
+  const canDeleteIdTag = useHasPermission(AppPermission.ID_TAG_DELETE);
+  const hasActionPermission = canUpdateIdTag || canDeleteIdTag;
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 400);
   const [page, setPage] = useState(1);
@@ -222,7 +226,10 @@ export function IdTagsContainer() {
             </div>
           ),
         },
-        {
+      ];
+
+      if (hasActionPermission) {
+        allCols.push({
           id: 'actions',
           header: 'Actions',
           cell: ({ row }) => (
@@ -248,8 +255,8 @@ export function IdTagsContainer() {
               </ProtectedAction>
             </div>
           ),
-        },
-      ];
+        });
+      }
 
       if (isSiteManager) {
         return allCols.filter(
@@ -263,7 +270,7 @@ export function IdTagsContainer() {
 
       return allCols;
     },
-    [isSiteManager]
+    [isSiteManager, hasActionPermission]
   );
 
   if (error) {

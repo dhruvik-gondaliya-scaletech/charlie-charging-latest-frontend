@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Plus, RefreshCw, Shield, Pencil, Trash2, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { ColumnDef } from '@tanstack/react-table';
 import { Role, AppRole } from '@/types';
+import { useIsSuperAdmin } from '@/lib/permissions';
 import { useRoles } from '@/hooks/get/useRbac';
 import { RoleDeleteDialog } from '@/features/rbac/components/RoleDeleteDialog';
 import { Button } from '@/components/ui/button';
@@ -18,113 +19,126 @@ import { FRONTEND_ROUTES } from '@/constants/constants';
 export function RolesContainer() {
   const { data: roles, isLoading, isError, refetch } = useRoles();
   const [deleteTarget, setDeleteTarget] = useState<Role | null>(null);
+  const isSuperAdmin = useIsSuperAdmin();
 
-  const columns: ColumnDef<Role>[] = [
-    {
-      id: 'name',
-      accessorKey: 'name',
-      header: 'Role Name',
-      cell: ({ row }) => {
-        const formattedName = row.original.name
-          .split('_')
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-          .join(' ');
-        return (
-          <div className="flex items-center gap-3">
-            <Link
-              href={`${FRONTEND_ROUTES.RBAC_ROLE_DETAIL(row.original.id)}?name=${encodeURIComponent(formattedName)}`}
-              className="flex items-center gap-3 group/link min-w-0"
-            >
-              <div className="min-w-0">
-                <p className="font-medium text-foreground truncate group-hover/link:text-primary transition-colors">
+  const columns: ColumnDef<Role>[] = useMemo(
+    () => {
+      const cols: ColumnDef<Role>[] = [
+        {
+          id: 'name',
+          accessorKey: 'name',
+          header: 'Role Name',
+          cell: ({ row }) => {
+            const formattedName = row.original.name
+              .split('_')
+              .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+              .join(' ');
+            return (
+              <div className="flex items-center gap-3">
+                <Link
+                  href={`${FRONTEND_ROUTES.RBAC_ROLE_DETAIL(row.original.id)}?name=${encodeURIComponent(formattedName)}`}
+                  className="font-bold text-foreground hover:text-primary transition-colors hover:underline flex items-center gap-2"
+                >
                   {formattedName}
-                </p>
-                {row.original.description && (
-                  <p className="text-xs text-muted-foreground truncate mt-0.5">
-                    {row.original.description}
-                  </p>
+                </Link>
+                {row.original.isSystem && (
+                  <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 text-[10px] uppercase font-extrabold px-2 py-0.5">
+                    <Lock className="h-3 w-3 mr-1 opacity-70" />
+                    System
+                  </Badge>
                 )}
               </div>
-            </Link>
-          </div>
-        );
-      },
-      minSize: 220,
-    },
-    {
-      id: 'type',
-      header: 'Type',
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          {row.original.isSystem ? (
-            <Badge
-              variant="outline"
-              className="border-amber-500/40 bg-amber-500/10 text-amber-500 text-xs gap-1"
-            >
-              <Lock className="h-3 w-3" />
-              System
-            </Badge>
-          ) : <Badge
-            variant="outline"
-            className="border-green-500/40 bg-green-500/10 text-green-500 text-xs gap-1"
-          >
-            <Shield className="h-3 w-3" />
-            Custom
-          </Badge>}
-        </div>
-      ),
-      minSize: 180,
-    },
-    {
-      id: 'permissions',
-      header: 'Permissions',
-      cell: ({ row }) => {
-        const permCount =
-          row.original.permissions?.length ??
-          (row.original as Role & { rolePermissions?: unknown[] }).rolePermissions?.length ??
-          0;
-        return (
-          <span className="text-sm text-muted-foreground">
-            {permCount} permission{permCount !== 1 ? 's' : ''}
-          </span>
-        );
-      },
-      minSize: 130,
-    },
-    {
-      id: 'actions',
-      header: 'Actions',
-      cell: ({ row }) => {
-        const role = row.original;
-        if (role.isSystem) {
-          return (
-            <span className="text-xs text-muted-foreground italic font-medium">
-              System roles are read-only
+            );
+          },
+          minSize: 220,
+        },
+        {
+          id: 'permissionsCount',
+          header: 'Permission Scope',
+          cell: ({ row }) => {
+            const count = row.original.permissions?.length ?? 0;
+            return (
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="font-mono text-xs font-bold px-2.5 py-0.5">
+                  {count} {count === 1 ? 'permission' : 'permissions'}
+                </Badge>
+              </div>
+            );
+          },
+          minSize: 180,
+        },
+        {
+          id: 'description',
+          header: 'Description',
+          cell: ({ row }) => (
+            <span className="text-xs text-muted-foreground font-medium">
+              {row.original.description || '-'}
             </span>
-          );
-        }
-        return (
-          <div className="flex items-center gap-1">
-            <ProtectedAction role={AppRole.SUPER_ADMIN}>
-              <ActionIconButton
-                tooltip="Edit"
-                tone="primary"
-                icon={<Pencil className="h-4 w-4" />}
-                href={FRONTEND_ROUTES.RBAC_ROLE_EDIT(role.id)}
-              />
-              <ActionIconButton
-                tooltip="Delete"
-                tone="destructive"
-                icon={<Trash2 className="h-4 w-4" />}
-                onClick={() => setDeleteTarget(role)}
-              />
-            </ProtectedAction>
-          </div>
-        );
-      },
-      minSize: 180,
+          ),
+          minSize: 180,
+        },
+        {
+          id: 'roleType',
+          header: 'Type',
+          cell: ({ row }) => {
+            const isSystem = row.original.isSystem;
+            return (
+              <Badge
+                variant="outline"
+                className={
+                  isSystem
+                    ? 'bg-amber-500/10 text-amber-500 border-amber-500/20 font-bold uppercase text-[10px]'
+                    : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 font-bold uppercase text-[10px]'
+                }
+              >
+                {isSystem ? 'System Managed' : 'Custom'}
+              </Badge>
+            );
+          },
+          minSize: 130,
+        },
+      ];
+
+      if (isSuperAdmin) {
+        cols.push({
+          id: 'actions',
+          header: 'Actions',
+          cell: ({ row }) => {
+            const role = row.original;
+            if (role.isSystem) {
+              return (
+                <span className="text-xs text-muted-foreground italic font-medium">
+                  System roles are read-only
+                </span>
+              );
+            }
+            return (
+              <div className="flex items-center gap-1">
+                <ProtectedAction role={AppRole.SUPER_ADMIN}>
+                  <ActionIconButton
+                    tooltip="Edit"
+                    tone="primary"
+                    icon={<Pencil className="h-4 w-4" />}
+                    href={FRONTEND_ROUTES.RBAC_ROLE_EDIT(role.id)}
+                  />
+                  <ActionIconButton
+                    tooltip="Delete"
+                    tone="destructive"
+                    icon={<Trash2 className="h-4 w-4" />}
+                    onClick={() => setDeleteTarget(role)}
+                  />
+                </ProtectedAction>
+              </div>
+            );
+          },
+          minSize: 180,
+        });
+      }
+
+      return cols;
     },
-  ];
+    [isSuperAdmin]
+  );
 
   if (isError) {
     return (
