@@ -26,6 +26,7 @@ import { cn } from '@/lib/utils';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Table } from '@/components/shared/Table';
 import { Driver, DriverStatus, AppPermission, AppRole } from '@/types';
+import { useHasPermission } from '@/lib/permissions';
 import { formatDate } from '@/lib/date';
 import { StatCard } from '../../dashboard/components/StatCard';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -78,6 +79,10 @@ export function DriversContainer() {
     completed: driverStats?.completed ?? 0,
   };
 
+  const canUpdateDriver = useHasPermission(AppPermission.DRIVER_UPDATE);
+  const canDeleteDriver = useHasPermission(AppPermission.DRIVER_DELETE);
+  const hasActionPermission = canUpdateDriver || canDeleteDriver;
+
   const columns: ColumnDef<Driver>[] = useMemo(
     () => {
       const cols: ColumnDef<Driver>[] = [
@@ -87,7 +92,16 @@ export function DriversContainer() {
           cell: ({ row }) => (
             <div className="flex items-center gap-3">
               <div className="flex flex-col">
-                <span className="font-bold tracking-tight text-foreground">
+                <span
+                  className="font-bold tracking-tight text-foreground cursor-pointer hover:text-primary transition-colors"
+                  onClick={() =>
+                    router.push(
+                      `${FRONTEND_ROUTES.DRIVER_DETAILS(row.original.id)}?name=${encodeURIComponent(
+                        `${row.original.firstName} ${row.original.lastName}`
+                      )}`
+                    )
+                  }
+                >
                   {`${row.original.firstName} ${row.original.lastName}`.trim()}
                 </span>
                 <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium">
@@ -160,7 +174,10 @@ export function DriversContainer() {
             </div>
           ),
         },
-        {
+      ];
+
+      if (hasActionPermission) {
+        cols.push({
           id: 'actions',
           header: 'Actions',
           cell: ({ row }) => (
@@ -201,11 +218,12 @@ export function DriversContainer() {
               </ProtectedAction>
             </div>
           ),
-        },
-      ];
+        });
+      }
+
       return cols;
     },
-    [router, resendInvitationMutation]
+    [router, resendInvitationMutation, hasActionPermission]
   );
 
   if (error) {

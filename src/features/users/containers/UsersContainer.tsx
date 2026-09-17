@@ -27,6 +27,7 @@ import { useDeleteUser } from '@/hooks/delete/useUserMutations';
 import { staggerContainer, staggerItem } from '@/lib/motion';
 import { Table } from '@/components/shared/Table';
 import { AppPermission, User, AppRole } from '@/types';
+import { useHasPermission } from '@/lib/permissions';
 import { ProtectedAction } from '@/components/shared/ProtectedAction';
 import { formatDate } from '@/lib/date';
 import { UserInvitationModal } from '../components/UserInvitationModal';
@@ -37,6 +38,7 @@ import { DEFAULT_PAGE_SIZE, FRONTEND_ROUTES } from '@/constants/constants';
 import { ActionIconButton } from '@/components/shared/ActionIconButton';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import { useAuth } from '@/contexts/AuthContext';
+import { cn } from '@/lib/utils';
 import { useRoles } from '@/hooks/get/useRbac';
 
 export function UsersContainer() {
@@ -48,6 +50,11 @@ export function UsersContainer() {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
   const [editTarget, setEditTarget] = useState<User | null>(null);
+
+  const canInviteUser = useHasPermission(AppPermission.USERS_INVITE);
+  const canUpdateUser = useHasPermission(AppPermission.USERS_UPDATE);
+  const canDeleteUser = useHasPermission(AppPermission.USERS_DELETE);
+  const hasActionPermission = isSuperAdmin || canInviteUser || canUpdateUser || canDeleteUser;
 
   const stats = useMemo(() => {
     if (!users) return { total: 0, active: 0, pending: 0 };
@@ -68,145 +75,169 @@ export function UsersContainer() {
   };
 
   const columns: ColumnDef<User>[] = useMemo(
-    () => [
-      {
-        accessorKey: 'firstName',
-        header: 'Enterprise Identity',
-        cell: ({ row }) => (
-          <div className="flex items-center gap-3">
-            <div className="flex flex-col">
-              <span className="font-bold tracking-tight text-foreground">
-                {row.original.firstName || row.original.lastName ? `${row.original.firstName || ''} ${row.original.lastName || ''}`.trim() : 'New Operator'}
-              </span>
-              <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium">
-                <Mail className="h-2.5 w-2.5 opacity-60" />
-                {row.original.email}
+    () => {
+      const cols: ColumnDef<User>[] = [
+        {
+          accessorKey: 'firstName',
+          header: 'Enterprise Identity',
+          cell: ({ row }) => (
+            <div className="flex items-center gap-3">
+              <div className="flex flex-col">
+                <span className="font-bold tracking-tight text-foreground">
+                  {`${row.original.firstName || ''} ${row.original.lastName || ''}`.trim() || 'New Operator'}
+                </span>
+                <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium">
+                  <Mail className="h-2.5 w-2.5 opacity-60" />
+                  {row.original.email}
+                </div>
               </div>
             </div>
-          </div>
-        ),
-      },
-      {
-        accessorKey: 'role',
-        header: 'Security Tier',
-        cell: ({ row }) => (
-          <Badge variant="outline" className="capitalize font-black px-2.5 py-0.5 rounded-full border bg-muted/30 text-[10px] tracking-tight flex items-center gap-1 w-fit">
-            <Shield className="h-3 w-3 opacity-60" />
-            {row.getValue('role')}
-          </Badge>
-        ),
-      },
-      {
-        accessorKey: 'isActive',
-        header: 'Status',
-        cell: ({ row }) => {
-          const isActive = row.original.isActive;
-          const isVerified = row.original.isEmailVerified;
-
-          if (!isActive) return (
-            <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20 font-bold px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-widest flex items-center gap-1 w-fit">
-              <XCircle className="h-3 w-3" />
-              Inactive
-            </Badge>
-          );
-
-          if (!isVerified) return (
-            <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20 font-bold px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-widest flex items-center gap-1 w-fit">
-              <Activity className="h-3 w-3" />
-              Pending
-            </Badge>
-          );
-
-          return (
-            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 font-bold px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-widest flex items-center gap-1 w-fit">
-              <CheckCircle2 className="h-3 w-3" />
-              Active
-            </Badge>
-          );
+          ),
         },
-      },
-      {
-        accessorKey: 'createdAt',
-        header: 'Onboarding Date',
-        cell: ({ row }) => {
-          const val = row.getValue('createdAt') as string | undefined;
-          return (
-            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground/80 tracking-tight">
-              <Calendar className="h-3.5 w-3.5 opacity-40" />
-              {val ? formatDate(val) : 'N/A'}
-            </div>
-          );
-        },
-      },
-      {
-        id: 'actions',
-        header: 'Actions',
-        cell: ({ row }) => {
-          const user = row.original;
-          const isPending = !user.isActive || !user.isEmailVerified;
+        {
+          accessorKey: 'role',
+          header: 'Assigned Role',
+          cell: ({ row }) => {
+            const roleStr = String(row.original.role || '').toUpperCase();
+            const isSuper = roleStr === 'SUPER_ADMIN' || roleStr === 'SUPERADMIN';
+            const isAdmin = roleStr === 'ADMIN';
 
-          return (
-            <div className="flex items-center gap-2">
-              {isSuperAdmin && (
-                <Link href={FRONTEND_ROUTES.RBAC_USER(user.id)}>
+            return (
+              <Badge
+                variant="outline"
+                className={cn(
+                  "font-bold px-2.5 py-0.5 rounded-full border text-[10px] uppercase tracking-wider flex items-center gap-1 w-fit",
+                  isSuper
+                    ? "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                    : isAdmin
+                    ? "bg-purple-500/10 text-purple-500 border-purple-500/20"
+                    : "bg-blue-500/10 text-blue-500 border-blue-500/20"
+                )}
+              >
+                <Shield className="h-3 w-3" />
+                {row.original.role || 'User'}
+              </Badge>
+            );
+          },
+        },
+        {
+          accessorKey: 'isActive',
+          header: 'Status',
+          cell: ({ row }) => {
+            const user = row.original;
+            const isActive = user.isActive;
+            const isVerified = user.isEmailVerified;
+
+            if (!isActive) return (
+              <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20 font-bold px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-widest flex items-center gap-1 w-fit">
+                <XCircle className="h-3 w-3" />
+                Inactive
+              </Badge>
+            );
+
+            if (!isVerified) return (
+              <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20 font-bold px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-widest flex items-center gap-1 w-fit">
+                <Activity className="h-3 w-3" />
+                Pending Verification
+              </Badge>
+            );
+
+            return (
+              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 font-bold px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-widest flex items-center gap-1 w-fit">
+                <CheckCircle2 className="h-3 w-3" />
+                Active
+              </Badge>
+            );
+          },
+        },
+        {
+          accessorKey: 'createdAt',
+          header: 'Onboarded',
+          cell: ({ row }) => {
+            const val = row.getValue('createdAt') as string | undefined;
+            return (
+              <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground/80 tracking-tight">
+                <Calendar className="h-3.5 w-3.5 opacity-40" />
+                {val ? formatDate(val) : 'N/A'}
+              </div>
+            );
+          },
+        },
+      ];
+
+      if (hasActionPermission) {
+        cols.push({
+          id: 'actions',
+          header: 'Actions',
+          cell: ({ row }) => {
+            const user = row.original;
+            const isPending = !user.isActive || !user.isEmailVerified;
+
+            return (
+              <div className="flex items-center gap-2">
+                {isSuperAdmin && (
+                  <Link href={FRONTEND_ROUTES.RBAC_USER(user.id)}>
+                    <ActionIconButton
+                      tooltip="Access Control"
+                      tone="primary"
+                      icon={<Key className="h-3 w-3" />}
+                    />
+                  </Link>
+                )}
+                <ProtectedAction permission={AppPermission.USERS_INVITE}>
                   <ActionIconButton
-                    tooltip="Access Control"
+                    tooltip="Resend Invitation"
                     tone="primary"
-                    icon={<Key className="h-3 w-3" />}
-                  />
-                </Link>
-              )}
-              <ProtectedAction permission={AppPermission.USERS_INVITE}>
-                <ActionIconButton
-                  tooltip="Resend Invitation"
-                  tone="primary"
-                  disabled={!isPending || inviteUser.isPending}
-                  onClick={() => {
-                    const roleStr = String(user.role || '').toUpperCase();
-                    const userRoleName = 
-                        roleStr === 'SUPER_ADMIN' || roleStr === 'SUPERADMIN' ? AppRole.SUPER_ADMIN : 
-                        roleStr === 'SITE_MANAGER' || roleStr === 'SITEMANAGER' || roleStr === 'OPERATOR' ? AppRole.SITE_MANAGER : 
-                        roleStr === 'VIEWER' ? AppRole.VIEWER :
-                        AppRole.ADMIN;
-                    const targetRoleId = allRoles?.find(
-                      r => r.name === userRoleName ||
-                           r.name.toUpperCase().replace('_', '').replace(' ', '') === userRoleName.replace('_', '')
-                    )?.id || '';
+                    disabled={!isPending || inviteUser.isPending}
+                    onClick={() => {
+                      const roleStr = String(user.role || '').toUpperCase();
+                      const userRoleName = 
+                          roleStr === 'SUPER_ADMIN' || roleStr === 'SUPERADMIN' ? AppRole.SUPER_ADMIN : 
+                          roleStr === 'SITE_MANAGER' || roleStr === 'SITEMANAGER' || roleStr === 'OPERATOR' ? AppRole.SITE_MANAGER : 
+                          roleStr === 'VIEWER' ? AppRole.VIEWER :
+                          AppRole.ADMIN;
+                      const targetRoleId = allRoles?.find(
+                        r => r.name === userRoleName ||
+                             r.name.toUpperCase().replace('_', '').replace(' ', '') === userRoleName.replace('_', '')
+                      )?.id || '';
 
-                    inviteUser.mutate({
-                      email: user.email,
-                      roleId: targetRoleId,
-                    });
-                  }}
-                  icon={inviteUser.isPending ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                  ) : (
-                    <Mail className="h-3 w-3" />
-                  )}
-                />
-              </ProtectedAction>
-              <ProtectedAction permission={AppPermission.USERS_UPDATE}>
-                <ActionIconButton
-                  tooltip="Edit User"
-                  tone="default"
-                  onClick={() => setEditTarget(user)}
-                  icon={<Pencil className="h-3 w-3" />}
-                />
-              </ProtectedAction>
-              <ProtectedAction permission={AppPermission.USERS_DELETE}>
-                <ActionIconButton
-                  tooltip="Delete User"
-                  tone="destructive"
-                  onClick={() => setDeleteTarget(user)}
-                  icon={<Trash2 className="h-3 w-3" />}
-                />
-              </ProtectedAction>
-            </div>
-          );
-        },
-      },
-    ],
-    [inviteUser, isSuperAdmin, allRoles]
+                      inviteUser.mutate({
+                        email: user.email,
+                        roleId: targetRoleId,
+                      });
+                    }}
+                    icon={inviteUser.isPending ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Mail className="h-3 w-3" />
+                    )}
+                  />
+                </ProtectedAction>
+                <ProtectedAction permission={AppPermission.USERS_UPDATE}>
+                  <ActionIconButton
+                    tooltip="Edit User"
+                    tone="default"
+                    onClick={() => setEditTarget(user)}
+                    icon={<Pencil className="h-3 w-3" />}
+                  />
+                </ProtectedAction>
+                <ProtectedAction permission={AppPermission.USERS_DELETE}>
+                  <ActionIconButton
+                    tooltip="Delete User"
+                    tone="destructive"
+                    onClick={() => setDeleteTarget(user)}
+                    icon={<Trash2 className="h-3 w-3" />}
+                  />
+                </ProtectedAction>
+              </div>
+            );
+          },
+        });
+      }
+
+      return cols;
+    },
+    [inviteUser, isSuperAdmin, allRoles, hasActionPermission]
   );
 
   if (error) {

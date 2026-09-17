@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/tooltip';
 import { FRONTEND_ROUTES, DEFAULT_PAGE_SIZE } from '@/constants/constants';
 import { useAuth } from '@/contexts/AuthContext';
+import { useHasPermission } from '@/lib/permissions';
 import { isSiteManagerUser } from '@/contexts/EnvironmentContext';
 import { useDebounce } from '@/hooks/use-debounce';
 
@@ -35,6 +36,9 @@ export function LocationsContainer() {
   const pathname = usePathname();
   const { user } = useAuth();
   const isSiteManager = isSiteManagerUser(user);
+  const canUpdateLocation = useHasPermission(AppPermission.LOCATION_UPDATE);
+  const canDeleteLocation = useHasPermission(AppPermission.LOCATION_DELETE);
+  const hasActionPermission = canUpdateLocation || canDeleteLocation;
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
@@ -236,7 +240,10 @@ export function LocationsContainer() {
           );
         },
       },
-      {
+    ];
+
+    if (hasActionPermission) {
+      allCols.push({
         id: 'actions',
         header: 'Actions',
         cell: ({ row }) => (
@@ -274,15 +281,15 @@ export function LocationsContainer() {
             </ProtectedAction>
           </div>
         ),
-      },
-    ];
+      });
+    }
 
     if (isSiteManager) {
       return allCols.filter((col) => (col as any).accessorKey !== 'locationEnv' && col.id !== 'locationEnv');
     }
 
     return allCols;
-  }, [handleEdit, handleViewDetails, handleDelete, isSiteManager]);
+  }, [handleEdit, handleViewDetails, handleDelete, isSiteManager, hasActionPermission]);
 
   if (error) {
     return (

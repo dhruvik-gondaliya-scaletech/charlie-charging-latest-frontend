@@ -38,6 +38,7 @@ import { formatDate, formatOfflineSince } from '@/lib/date';
 import { AnimatedModal } from '@/components/shared/AnimatedModal';
 import { cn } from '@/lib/utils';
 import { ProtectedAction } from '@/components/shared/ProtectedAction';
+import { useHasPermission } from '@/lib/permissions';
 import { DEFAULT_PAGE_SIZE, FRONTEND_ROUTES } from '@/constants/constants';
 import {
   Tooltip,
@@ -56,12 +57,19 @@ export function StationsContainer() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const isSiteManager = isSiteManagerUser(user);
+  const canUpdateStation = useHasPermission(AppPermission.STATION_UPDATE);
+  const canDeleteStation = useHasPermission(AppPermission.STATION_DELETE);
+  const hasActionPermission = canUpdateStation || canDeleteStation;
 
   // Filter States (Fully URL-based)
   const [search, setSearch] = useState(() => searchParams.get('name') || '');
   const [status, setStatus] = useState<string>(() => searchParams.get('status') || 'ALL');
   const [type, setType] = useState<string>(() => searchParams.get('type') || 'ALL');
   const [visibility, setVisibility] = useState<string>(() => searchParams.get('visibility') || 'ALL');
+  const [sortBy, setSortBy] = useState<string | undefined>(() => searchParams.get('sortBy') || undefined);
+  const [sortOrder, setSortOrder] = useState<'ASC' | 'DESC' | undefined>(
+    () => (searchParams.get('sortOrder')?.toUpperCase() as 'ASC' | 'DESC') || undefined
+  );
 
   const debouncedSearch = useDebounce(search, 500);
 
@@ -72,12 +80,14 @@ export function StationsContainer() {
     if (status !== 'ALL') params.set('status', status);
     if (type !== 'ALL') params.set('type', type);
     if (visibility !== 'ALL') params.set('visibility', visibility);
+    if (sortBy) params.set('sortBy', sortBy);
+    if (sortOrder) params.set('sortOrder', sortOrder);
 
     const queryString = params.toString();
     const newPath = queryString ? `${pathname}?${queryString}` : pathname;
 
     router.replace(newPath, { scroll: false });
-  }, [debouncedSearch, status, type, visibility, pathname, router]);
+  }, [debouncedSearch, status, type, visibility, sortBy, sortOrder, pathname, router]);
 
   // Pagination state
   const [page, setPage] = useState(1);
@@ -88,6 +98,8 @@ export function StationsContainer() {
     status: status === 'ALL' ? undefined : status,
     type: type === 'ALL' ? undefined : type,
     visibility: visibility === 'ALL' ? undefined : visibility,
+    sortBy,
+    sortOrder,
     page,
     limit,
   });
@@ -144,10 +156,12 @@ export function StationsContainer() {
     setStatus('ALL');
     setType('ALL');
     setVisibility('ALL');
+    setSortBy(undefined);
+    setSortOrder(undefined);
     router.replace(pathname, { scroll: false });
   };
 
-  const isFiltered = search !== '' || status !== 'ALL' || type !== 'ALL' || visibility !== 'ALL';
+  const isFiltered = search !== '' || status !== 'ALL' || type !== 'ALL' || visibility !== 'ALL' || sortBy !== undefined || sortOrder !== undefined;
 
   const handleEdit = (station: Station) => {
     router.push(`${FRONTEND_ROUTES.STATIONS_EDIT(station.id)}?name=${encodeURIComponent(station.name)}`);
@@ -274,9 +288,13 @@ export function StationsContainer() {
           </div>
         ),
       },
-      {
+    ];
+
+    if (hasActionPermission) {
+      allCols.push({
         id: 'actions',
         header: 'Actions',
+        enableSorting: false,
         cell: ({ row }) => (
           <div className="flex items-center gap-1">
             <ProtectedAction permission={AppPermission.STATION_UPDATE}>
@@ -298,15 +316,15 @@ export function StationsContainer() {
             </ProtectedAction>
           </div>
         ),
-      },
-    ];
+      });
+    }
 
     if (isSiteManager) {
       return allCols.filter((col) => col.id !== 'environment' && (col as any).accessorKey !== 'environment');
     }
 
     return allCols;
-  }, [router, isSiteManager]);
+  }, [router, isSiteManager, handleEdit, handleDelete, hasActionPermission]);
 
 
   if (error) {
@@ -491,6 +509,19 @@ export function StationsContainer() {
             maxHeight="650px"
             className="border-none shadow-none"
             manualPagination={true}
+            manualSorting={true}
+            sortByKey={sortBy}
+            sortOrder={sortOrder ? (sortOrder.toLowerCase() as 'asc' | 'desc') : undefined}
+            onSortingChange={(newSorting) => {
+              if (newSorting && newSorting.length > 0) {
+                setSortBy(newSorting[0].id);
+                setSortOrder(newSorting[0].desc ? 'DESC' : 'ASC');
+              } else {
+                setSortBy(undefined);
+                setSortOrder(undefined);
+              }
+              setPage(1);
+            }}
             totalCount={totalStationCount}
             pageIndex={page - 1}
             onPageChange={(newPage) => setPage(newPage + 1)}

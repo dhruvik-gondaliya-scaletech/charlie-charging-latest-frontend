@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useMemo } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { Shield, Trash2, Info } from 'lucide-react';
@@ -12,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { useOcpiCredentials } from '@/hooks/get/useOcpi';
 import { useDeleteOcpiCredential } from '@/hooks/post/useOcpiMutations';
 import { AppPermission } from '@/types';
+import { useHasPermission } from '@/lib/permissions';
 import { ProtectedAction } from '@/components/shared/ProtectedAction';
 import { ActionIconButton } from '@/components/shared/ActionIconButton';
 import { CopyButton } from '@/components/shared/CopyButton';
@@ -23,7 +25,6 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { OcpiPartyDetailsModal } from './OcpiPartyDetailsModal';
-import { useState } from 'react';
 
 export function OcpiCredentialsList() {
     const [selectedParty, setSelectedParty] = useState<OcpiCredential | null>(null);
@@ -50,130 +51,114 @@ export function OcpiCredentialsList() {
     };
 
 
+    const canManageOcpi = useHasPermission(AppPermission.OCPI_MANAGE);
+
     const handleViewDetails = (party: OcpiCredential) => {
         setSelectedParty(party);
         setIsDetailsOpen(true);
     };
-    const columns: ColumnDef<OcpiCredential>[] = [
-        {
-            accessorKey: 'partyId',
-            header: 'Party ID',
-            size: 90,
-            cell: ({ row }) => (
-                <div className="flex items-center gap-2">
-                    {row.original.partyId || 'PENDING'}
-                </div>
-            ),
-        },
-        {
-            accessorKey: 'countryCode',
-            header: 'Country',
-            size: 80,
-            cell: ({ row }) => row.original.countryCode || '-',
-        },
-        {
-            accessorKey: 'partnerVersionsUrl',
-            header: 'URL',
-            cell: ({ row }) => (
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <span className="max-w-[200px] truncate font-mono text-xs text-muted-foreground block cursor-help">
-                                {row.original.partnerVersionsUrl}
-                            </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p className="text-xs">
-                                {row.original.partnerVersionsUrl}
-                            </p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-            ),
-        },
-        {
-            id: 'status',
-            header: 'Status',
-            size: 100,
-            cell: ({ row }) => {
-                const hasHandshake = !!row.original.tokenB && !!row.original.tokenC;
-                const colorClasses = hasHandshake
-                    ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-                    : 'bg-blue-500/10 text-blue-500 border-blue-500/20';
 
-                return (
-                    <Badge
-                        variant="outline"
-                        className={cn('capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm', colorClasses)}
-                    >
-                        {hasHandshake ? 'connected' : 'registered'}
-                    </Badge>
-                );
-            },
+    const columns: ColumnDef<OcpiCredential>[] = useMemo(
+        () => {
+            const cols: ColumnDef<OcpiCredential>[] = [
+                {
+                    accessorKey: 'partyId',
+                    header: 'Party ID',
+                    size: 90,
+                    cell: ({ row }) => (
+                        <div
+                            className="flex items-center gap-2 cursor-pointer hover:text-primary font-semibold transition-colors"
+                            onClick={() => handleViewDetails(row.original)}
+                        >
+                            {row.original.partyId || 'PENDING'}
+                        </div>
+                    ),
+                },
+                {
+                    accessorKey: 'countryCode',
+                    header: 'Country',
+                    size: 80,
+                    cell: ({ row }) => (
+                        <Badge variant="outline" className="font-mono text-xs">
+                            {row.original.countryCode}
+                        </Badge>
+                    ),
+                },
+                {
+                    accessorKey: 'roles',
+                    header: 'Roles',
+                    cell: ({ row }) => {
+                        const roles = row.original.roles || [];
+                        return (
+                            <div className="flex flex-wrap gap-1">
+                                {roles.map((r, i) => (
+                                    <Badge key={i} variant="secondary" className="text-[10px] uppercase font-bold px-2 py-0.5">
+                                        {r.role} ({r.party_id})
+                                    </Badge>
+                                ))}
+                            </div>
+                        );
+                    },
+                },
+                {
+                    accessorKey: 'token',
+                    header: 'TOKEN (C) / (A)',
+                    cell: ({ row }) => (
+                        <div className="flex flex-col gap-1 text-xs">
+                            <div className="flex items-center gap-1.5 font-mono text-[11px]">
+                                <span className="text-muted-foreground font-sans font-bold">C:</span>
+                                <span className="truncate max-w-[90px]">{row.original.tokenC || '—'}</span>
+                                {row.original.tokenC && <CopyButton value={row.original.tokenC} className="h-4 w-4 p-0" />}
+                            </div>
+                            <div className="flex items-center gap-1.5 font-mono text-[11px]">
+                                <span className="text-muted-foreground font-sans font-bold">A:</span>
+                                <span className="truncate max-w-[90px]">{row.original.tokenA || '—'}</span>
+                                {row.original.tokenA && <CopyButton value={row.original.tokenA} className="h-4 w-4 p-0" />}
+                            </div>
+                        </div>
+                    ),
+                },
+                {
+                    accessorKey: 'partnerVersionsUrl',
+                    header: 'Endpoint URL',
+                    cell: ({ row }) => (
+                        <span className="font-mono text-xs text-muted-foreground truncate max-w-[180px] block" title={row.original.partnerVersionsUrl}>
+                            {row.original.partnerVersionsUrl}
+                        </span>
+                    ),
+                },
+            ];
+
+            if (canManageOcpi) {
+                cols.push({
+                    id: 'actions',
+                    header: 'Actions',
+                    size: 80,
+                    cell: ({ row }) => (
+                        <div className="flex items-center justify-start gap-1">
+                            <ActionIconButton
+                                tone="info"
+                                tooltip="View Details"
+                                icon={<Info className="h-4 w-4" />}
+                                onClick={() => handleViewDetails(row.original)}
+                            />
+                            <ProtectedAction permission={AppPermission.OCPI_MANAGE}>
+                                <ActionIconButton
+                                    tone="destructive"
+                                    tooltip="Delete Connection"
+                                    icon={<Trash2 className="h-4 w-4" />}
+                                    onClick={() => onDelete(row.original.id)}
+                                />
+                            </ProtectedAction>
+                        </div>
+                    ),
+                });
+            }
+
+            return cols;
         },
-        {
-            accessorKey: 'tokenA',
-            header: 'Registration Token',
-            size: 180,
-            cell: ({ row }) => (
-                <div className="flex items-center gap-2">
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <div className="flex flex-col gap-1 cursor-help">
-                                    <span className="text-[10px] text-muted-foreground uppercase font-bold">Token A</span>
-                                    <code className="text-[10px] bg-muted px-1.5 py-0.5 rounded truncate max-w-[110px] block">
-                                        {row.original.tokenA}
-                                    </code>
-                                </div>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p className="text-xs">
-                                    {row.original.tokenA}
-                                </p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                    {row.original.tokenA && (
-                        <CopyButton value={row.original.tokenA} toastMessage="Registration Token copied" />
-                    )}
-                </div>
-            ),
-        },
-        {
-            accessorKey: 'updatedAt',
-            header: 'Last Updated',
-            size: 120,
-            cell: ({ row }) => (
-                <span className="text-xs text-muted-foreground block">
-                    {row.original.updatedAt ? format(new Date(row.original.updatedAt), 'MMM d, p') : '-'}
-                </span>
-            ),
-        },
-        {
-            id: 'actions',
-            header: 'Actions',
-            size: 80,
-            cell: ({ row }) => (
-                <div className="flex items-center justify-start gap-1">
-                    <ActionIconButton
-                        tone="info"
-                        tooltip="View Details"
-                        icon={<Info className="h-4 w-4" />}
-                        onClick={() => handleViewDetails(row.original)}
-                    />
-                    <ProtectedAction permission={AppPermission.OCPI_MANAGE}>
-                        <ActionIconButton
-                            tone="destructive"
-                            tooltip="Delete Connection"
-                            icon={<Trash2 className="h-4 w-4" />}
-                            onClick={() => onDelete(row.original.id)}
-                        />
-                    </ProtectedAction>
-                </div>
-            ),
-        },
-    ];
+        [canManageOcpi, onDelete]
+    );
 
     const renderMobileCard = (item: OcpiCredential) => {
         const hasHandshake = item.roles && item.roles.length > 0;
