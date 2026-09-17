@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table } from '@/components/shared/Table';
 import { WebhookConfiguration, WebhookEvent, AppEnvironment, AppPermission } from '@/types';
+import { useHasPermission } from '@/lib/permissions';
 import { ProtectedAction } from '@/components/shared/ProtectedAction';
 import { formatDate } from '@/lib/date';
 import { staggerContainer, staggerItem } from '@/lib/motion';
@@ -108,8 +109,13 @@ export function WebhooksContainer() {
     }
   }, [updateWebhook]);
 
+  const canUpdateWebhook = useHasPermission(AppPermission.WEBHOOK_UPDATE);
+  const canDeleteWebhook = useHasPermission(AppPermission.WEBHOOK_DELETE);
+  const hasActionPermission = canUpdateWebhook || canDeleteWebhook;
+
   const columns: ColumnDef<WebhookConfiguration>[] = useMemo(
-    () => [
+    () => {
+      const cols: ColumnDef<WebhookConfiguration>[] = [
       {
         accessorKey: 'name',
         header: 'Webhook Integration',
@@ -271,7 +277,10 @@ export function WebhooksContainer() {
           </div>
         ),
       },
-      {
+    ];
+
+    if (hasActionPermission) {
+      cols.push({
         id: 'actions',
         header: 'Actions',
         cell: ({ row }) => (
@@ -325,9 +334,12 @@ export function WebhooksContainer() {
           </div>
         ),
         meta: { headerAlign: 'center' }
-      },
-    ],
-    [handleDelete, handleToggleStatus]
+      });
+    }
+
+    return cols;
+    },
+    [handleDelete, handleToggleStatus, hasActionPermission]
   );
 
   return (

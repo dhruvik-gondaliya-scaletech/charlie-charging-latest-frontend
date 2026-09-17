@@ -50,6 +50,7 @@ import {
 } from '@/services/compliance.service';
 import { cn } from '@/lib/utils';
 import { ProtectedAction } from '@/components/shared/ProtectedAction';
+import { useHasPermission } from '@/lib/permissions';
 import { AppPermission } from '@/types';
 
 interface ReportItem {
@@ -189,7 +190,10 @@ export function ConnectorUptime({
       .join(' ');
   };
 
-  const downtimeColumns = useMemo<ColumnDef<ConnectorDowntimeInterval>[]>(() => [
+  const canReportUpdate = useHasPermission(AppPermission.REPORTS_UPDATE);
+
+  const downtimeColumns = useMemo<ColumnDef<ConnectorDowntimeInterval>[]>(() => {
+    const cols: ColumnDef<ConnectorDowntimeInterval>[] = [
     {
       id: 'classification',
       header: 'Classification',
@@ -289,7 +293,10 @@ export function ConnectorUptime({
         );
       }
     },
-    {
+  ];
+
+  if (canReportUpdate) {
+    cols.push({
       id: 'actions',
       header: 'Actions',
       cell: ({ row }) => (
@@ -307,8 +314,11 @@ export function ConnectorUptime({
           </ProtectedAction>
         </div>
       )
-    }
-  ], [handleOpenOverride]);
+    });
+  }
+
+  return cols;
+  }, [handleOpenOverride, canReportUpdate]);
 
   const reportColumns = useMemo<ColumnDef<ReportItem>[]>(() => [
     {

@@ -14,6 +14,7 @@ import { staggerContainer, staggerItem } from '@/lib/motion';
 import { formatDate } from '@/lib/date';
 import { cn } from '@/lib/utils';
 import { AppPermission, AppEnvironment } from '@/types';
+import { useHasPermission } from '@/lib/permissions';
 import { ProtectedAction } from '@/components/shared/ProtectedAction';
 import { Table } from '@/components/shared/Table';
 import { Button } from '@/components/ui/button';
@@ -46,8 +47,13 @@ export function TariffContainer() {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedTariff, setSelectedTariff] = useState<Tariff | null>(null);
 
+  const canUpdateTariff = useHasPermission(AppPermission.TARIFF_UPDATE);
+  const canDeleteTariff = useHasPermission(AppPermission.TARIFF_DELETE);
+  const hasActionPermission = canUpdateTariff || canDeleteTariff;
+
   const columns: ColumnDef<Tariff>[] = useMemo(
-    () => [
+    () => {
+      const cols: ColumnDef<Tariff>[] = [
       {
         accessorKey: 'name',
         header: 'Name',
@@ -58,18 +64,17 @@ export function TariffContainer() {
         header: 'Environment',
         cell: ({ row }) => {
           const env = row.original.environment as AppEnvironment;
-          const colorClasses = env === AppEnvironment.PRODUCTION
-            ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-            : 'bg-blue-500/10 text-blue-500 border-blue-500/20';
           return (
             <Badge
               variant="outline"
               className={cn(
-                'capitalize font-bold px-2.5 py-0.5 rounded-full border shadow-sm',
-                colorClasses
+                "text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-md border tracking-wider",
+                env === AppEnvironment.PRODUCTION
+                  ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                  : "bg-blue-500/10 text-blue-500 border-blue-500/20"
               )}
             >
-              {env === AppEnvironment.PRODUCTION ? 'PROD' : 'DEV'}
+              {env === AppEnvironment.PRODUCTION ? 'Prod' : 'Dev'}
             </Badge>
           );
         },
@@ -77,57 +82,54 @@ export function TariffContainer() {
       {
         accessorKey: 'pricePerKwh',
         header: 'Price / kWh',
+        cell: ({ row }) => (
+          <div className="flex items-center gap-1 font-bold">
+            <span className="text-[10px] text-muted-foreground uppercase">{row.original.currency}</span>
+            <span>{Number(row.getValue('pricePerKwh')).toFixed(2)}</span>
+          </div>
+        ),
+      },
+      {
+        accessorKey: 'serviceFeePercentage',
+        header: 'Service Fee',
         cell: ({ row }) => {
-          const currency = row.original.currency || '—';
-          const value = row.getValue<number>('pricePerKwh');
+          const fee = Number(row.getValue('serviceFeePercentage') || 0);
           return (
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="bg-background">
-                {currency}
-              </Badge>
-              <span className="font-bold">{Number(value ?? 0).toFixed(2)}</span>
+            <div className="font-semibold text-xs text-muted-foreground">
+              {fee > 0 ? `${fee.toFixed(2)}%` : '0.00%'}
             </div>
           );
         },
       },
       {
-        accessorKey: 'serviceFeePercentage',
-        header: 'Service Fee',
-        cell: ({ row }) => (
-          <span className="font-bold">{Number(row.getValue<number>('serviceFeePercentage') ?? 0).toFixed(2)}%</span>
-        ),
-      },
-      {
         accessorKey: 'connectionFee',
         header: 'Connection Fee',
         cell: ({ row }) => {
-          const currency = row.original.currency || '—';
-          const value = row.getValue<number>('connectionFee');
+          const fee = Number(row.getValue('connectionFee') || 0);
           return (
-            <span className="font-bold">
-              {currency} {Number(value ?? 0).toFixed(2)}
-            </span>
+            <div className="font-semibold text-xs text-muted-foreground">
+              {fee > 0 ? `${row.original.currency} ${fee.toFixed(2)}` : 'USD 0.00'}
+            </div>
           );
         },
       },
       {
-        accessorKey: 'idleFee',
+        accessorKey: 'idleFeePerMinute',
         header: 'Idle Fee',
         cell: ({ row }) => {
-          const isEnabled = row.original.isIdleFeeEnabled;
-          if (!isEnabled) {
-            return <span className="font-bold text-muted-foreground text-xs bg-muted/40 px-2 py-0.5 rounded-md">Disabled</span>;
+          const enabled = row.original.isIdleFeeEnabled;
+          const fee = Number(row.original.idleFeePerMinute || 0);
+          if (!enabled || fee <= 0) {
+            return (
+              <Badge variant="outline" className="bg-muted text-muted-foreground border-border text-[10px] px-2 py-0.5 font-bold uppercase">
+                Disabled
+              </Badge>
+            );
           }
-          const currency = row.original.currency || '—';
-          const value = row.original.idleFeePerMinute;
           return (
-            <div className="flex flex-col gap-0.5">
-              <span className="font-bold text-sm">
-                {currency} {Number(value ?? 0).toFixed(2)} <span className="text-xs text-muted-foreground font-medium">/ min</span>
-              </span>
-              <span className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
-                Grace: {row.original.idleGracePeriodMinutes}m
-              </span>
+            <div className="flex items-center gap-1 font-semibold text-xs">
+              <span className="text-amber-500">{row.original.currency} {fee.toFixed(2)}</span>
+              <span className="text-[10px] text-muted-foreground font-normal">/ min (after {row.original.idleGracePeriodMinutes || 0}m)</span>
             </div>
           );
         },
@@ -137,7 +139,10 @@ export function TariffContainer() {
         header: 'Created',
         cell: ({ row }) => <span className="text-xs text-muted-foreground">{formatDate(row.getValue('createdAt'))}</span>,
       },
-      {
+    ];
+
+    if (hasActionPermission) {
+      cols.push({
         id: 'actions',
         header: 'Actions',
         cell: ({ row }) => (
@@ -167,9 +172,12 @@ export function TariffContainer() {
             </ProtectedAction>
           </div>
         ),
-      },
-    ],
-    []
+      });
+    }
+
+    return cols;
+    },
+    [hasActionPermission]
   );
 
   const onCreateSubmit = (values: TariffFormData) => {

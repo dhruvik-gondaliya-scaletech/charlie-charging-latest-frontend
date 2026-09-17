@@ -81,6 +81,7 @@ interface TableProps<T> {
   manualPagination?: boolean;
   manualSorting?: boolean;
   manualSearching?: boolean;
+  onSortingChange?: (sorting: SortingState) => void;
 }
 
 
@@ -174,6 +175,7 @@ export function Table<T>({
   pageIndex: externalPageIndex,
   onPageChange,
   onPageSizeChange,
+  onSortingChange: externalOnSortingChange,
   renderMobileCard,
 }: TableProps<T>) {
 
@@ -229,12 +231,12 @@ export function Table<T>({
     setCurrentPage(0);
   }, [data]);
 
-  // Only reset sorting when data or default sort changes (not on every click)
+  // Only reset sorting when default sort props change (not on every data fetch)
   useEffect(() => {
     if (sortByKey && sortOrder) {
       setSorting([{ id: sortByKey, desc: sortOrder === "desc" }]);
     }
-  }, [data, sortByKey, sortOrder]);
+  }, [sortByKey, sortOrder]);
 
   // Initialize and sync currentPageSize with pageSize prop
   useEffect(() => {
@@ -283,7 +285,13 @@ export function Table<T>({
       columnPinning,
     },
     onColumnPinningChange: setColumnPinning,
-    onSortingChange: setSorting,
+    onSortingChange: (updaterOrValue) => {
+      setSorting((oldSorting) => {
+        const nextSorting = typeof updaterOrValue === "function" ? updaterOrValue(oldSorting) : updaterOrValue;
+        externalOnSortingChange?.(nextSorting);
+        return nextSorting;
+      });
+    },
     pageCount: manualPagination
       ? Math.ceil((totalCount || 0) / currentPageSize)
       : Math.ceil(filteredData.length / currentPageSize),
@@ -418,13 +426,16 @@ export function Table<T>({
   // Custom header click handler for sorting
   function handleHeaderClick(columnId: string) {
     setSorting((prev) => {
+      let nextSorting: SortingState;
       if (prev.length === 0 || prev[0].id !== columnId) {
         // New column: always start with desc
-        return [{ id: columnId, desc: true }];
+        nextSorting = [{ id: columnId, desc: true }];
       } else {
         // Same column: toggle desc/asc
-        return [{ id: columnId, desc: !prev[0].desc }];
+        nextSorting = [{ id: columnId, desc: !prev[0].desc }];
       }
+      externalOnSortingChange?.(nextSorting);
+      return nextSorting;
     });
   }
 
