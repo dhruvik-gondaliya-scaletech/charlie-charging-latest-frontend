@@ -115,25 +115,25 @@ const CopyableFieldRow = ({
     copied: boolean;
     onCopy: () => void;
 }) => (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 bg-background/40 hover:bg-background/60 border border-border/40 rounded-xl gap-3 transition-colors group">
-        <div className="flex items-center gap-3 overflow-hidden">
+    <div className="flex flex-col p-4 bg-background/40 hover:bg-background/60 border border-border/40 rounded-xl gap-3 transition-colors group">
+        <div className="flex items-center gap-3">
             <div className={`p-2 rounded-lg shrink-0 ${colorClass}`}>
                 <Icon className="h-4 w-4" />
             </div>
-            <div className="truncate">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-foreground/90 truncate">{title}</h4>
-                <p className="text-[11px] text-muted-foreground truncate mt-0.5">{description}</p>
+            <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-foreground/90">{title}</h4>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{description}</p>
             </div>
         </div>
         
-        <div className="flex items-center gap-2 bg-background/80 border border-border/50 group-hover:border-border/80 rounded-lg p-1 pl-3 shrink-0 max-w-full transition-colors shadow-sm">
-            <span className="font-mono text-xs text-foreground/80 truncate max-w-[220px] select-all">{value}</span>
+        <div className="flex items-center gap-2 bg-background/80 border border-border/50 group-hover:border-border/80 rounded-lg p-1.5 pl-3 transition-colors shadow-sm w-full">
+            <span className="font-mono text-xs text-foreground/80 truncate flex-1 select-all">{value}</span>
             <Button
                 type="button"
                 variant="ghost"
                 size="icon"
                 onClick={onCopy}
-                className="h-7 w-7 rounded-md hover:bg-foreground/5 transition-colors shrink-0"
+                className="h-8 w-8 rounded-md hover:bg-foreground/5 transition-colors shrink-0"
             >
                 <AnimatePresence mode="wait">
                     {copied ? (
@@ -143,7 +143,7 @@ const CopyableFieldRow = ({
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0, opacity: 0 }}
                         >
-                            <Check className="h-3.5 w-3.5 text-emerald-500" />
+                            <Check className="h-4 w-4 text-emerald-500" />
                         </motion.div>
                     ) : (
                         <motion.div
@@ -152,7 +152,7 @@ const CopyableFieldRow = ({
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0, opacity: 0 }}
                         >
-                            <Copy className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground/70 transition-colors" />
+                            <Copy className="h-4 w-4 text-muted-foreground group-hover:text-foreground/70 transition-colors" />
                         </motion.div>
                     )}
                 </AnimatePresence>

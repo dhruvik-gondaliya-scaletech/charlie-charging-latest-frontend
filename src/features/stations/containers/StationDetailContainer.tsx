@@ -681,8 +681,8 @@ export function StationDetailContainer() {
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <div className="lg:col-span-2 space-y-6">
                                 {/* Technical Specifications */}
-                                <Card className="border-border/40 bg-card/20 backdrop-blur-sm rounded-3xl overflow-hidden border shadow-sm h-full">
-                                    <CardHeader className="pb-4">
+                                <Card className="border-border/40 bg-card/20 backdrop-blur-sm rounded-3xl overflow-hidden border shadow-sm h-full gap-2">
+                                    <CardHeader className="pb-0 pt-2">
                                         <div className="flex items-center gap-3">
                                             <div className="p-2 rounded-xl bg-primary/10 text-primary shadow-sm">
                                                 <Cpu className="h-5 w-5" />
@@ -729,9 +729,8 @@ export function StationDetailContainer() {
                             </div>
 
                             <div className="lg:col-span-1 space-y-6">
-                                {/* Connection URL */}
-                                <Card className="border-border/40 bg-card/20 backdrop-blur-sm rounded-3xl overflow-hidden border shadow-sm">
-                                    <CardHeader className="pb-4">
+                                <Card className="border-border/40 bg-card/20 backdrop-blur-sm rounded-3xl overflow-hidden border shadow-sm gap-2">
+                                    <CardHeader className="pb-0 pt-2">
                                         <div className="flex items-center gap-3">
                                             <div className="p-2 rounded-xl bg-violet-500/10 text-violet-500 shadow-sm">
                                                 <Terminal className="h-5 w-5" />
