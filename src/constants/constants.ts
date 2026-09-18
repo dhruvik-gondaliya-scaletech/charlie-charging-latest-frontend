@@ -41,6 +41,7 @@ export const API_CONFIG = {
         stations: {
             create: (env: string) => `/stations?env=${env}`,
             base: (env: string) => `/stations?env=${env}`,
+            checkIdentityAvailability: (identity: string) => `/stations/check-availability/${identity}`,
             stats: (env: string) => `/stations/stats?env=${env}`,
             byId: (env: string, id: string) => `/stations/${id}?env=${env}`,
             update: (env: string, id: string) => `/stations/${id}?env=${env}`,

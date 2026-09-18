@@ -84,6 +84,10 @@ class StationService {
     return httpService.post<Station>(API_CONFIG.endpoints.stations.create(env), stationData);
   }
 
+  async checkIdentityAvailability(identity: string) {
+    return httpService.get<{ available: boolean }>(API_CONFIG.endpoints.stations.checkIdentityAvailability(identity));
+  }
+
   async updateStation(env: string, id: string, stationData: UpdateStationData) {
     return httpService.patch<Station>(API_CONFIG.endpoints.stations.update(env, id), stationData);
   }
