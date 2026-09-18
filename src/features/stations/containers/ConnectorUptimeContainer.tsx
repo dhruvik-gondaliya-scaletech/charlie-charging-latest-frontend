@@ -161,6 +161,11 @@ export function ConnectorUptimeContainer({ stationId, connectorId }: ConnectorUp
   const [evidence, setEvidence] = useState('');
   const [overrideNotes, setOverrideNotes] = useState('');
 
+  // Pagination State for Downtime Intervals
+  const [intervalsPage, setIntervalsPage] = useState(1);
+  const [intervalsLimit, setIntervalsLimit] = useState(10);
+  const intervalsOffset = (intervalsPage - 1) * intervalsLimit;
+
   // Data Fetching Hooks
   const { data: uptimeData, isLoading: isUptimeLoading } = useConnectorUptime(
     connectorId,
@@ -170,6 +175,8 @@ export function ConnectorUptimeContainer({ stationId, connectorId }: ConnectorUp
 
   const { data: downtimeIntervals, isLoading: isIntervalsLoading } = useDowntimeIntervals(
     connectorId || undefined,
+    intervalsLimit,
+    intervalsOffset,
   );
 
   const { data: complianceReport, isLoading: isReportLoading } = useComplianceReport(
@@ -293,6 +300,10 @@ export function ConnectorUptimeContainer({ stationId, connectorId }: ConnectorUp
       isUptimeLoading={isUptimeLoading}
       downtimeIntervals={downtimeIntervals}
       isIntervalsLoading={isIntervalsLoading}
+      intervalsPage={intervalsPage}
+      intervalsLimit={intervalsLimit}
+      setIntervalsPage={setIntervalsPage}
+      setIntervalsLimit={setIntervalsLimit}
       complianceReport={complianceReport}
       isReportLoading={isReportLoading}
       overrideModalOpen={overrideModalOpen}

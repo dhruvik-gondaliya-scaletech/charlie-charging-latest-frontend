@@ -41,6 +41,7 @@ export const API_CONFIG = {
         stations: {
             create: (env: string) => `/stations?env=${env}`,
             base: (env: string) => `/stations?env=${env}`,
+            checkIdentityAvailability: (identity: string) => `/stations/check-availability/${identity}`,
             stats: (env: string) => `/stations/stats?env=${env}`,
             byId: (env: string, id: string) => `/stations/${id}?env=${env}`,
             update: (env: string, id: string) => `/stations/${id}?env=${env}`,
@@ -255,7 +256,7 @@ export const AUTH_CONFIG = {
 
 export const WEBSOCKET_CONFIG = {
     url: process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000",
-    ocppUrl: process.env.NEXT_PUBLIC_CSMS_WEBSOCKET_BASE_URL || "ws://localhost:9220/ocpp",
+    ocppUrl: process.env.NEXT_PUBLIC_CSMS_WEBSOCKET_BASE_URL || "wss://ocpp.scaleev.xyz",
 }
 
 export const CONNECTOR_OPTIONS = [

@@ -13,6 +13,15 @@ export const useStations = (params?: GetStationsParams) => {
   });
 };
 
+export const useCheckIdentityAvailability = (identity: string) => {
+  return useQuery({
+    queryKey: ['identity-availability', identity],
+    queryFn: () => stationService.checkIdentityAvailability(identity),
+    enabled: !!identity && identity.length > 2,
+    staleTime: 60000,
+  });
+};
+
 export const useStationStats = () => {
   const { environment } = useEnvironment();
   return useQuery({

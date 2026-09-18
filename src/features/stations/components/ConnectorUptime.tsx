@@ -77,6 +77,10 @@ interface ConnectorUptimeProps {
   isUptimeLoading: boolean;
   downtimeIntervals: ConnectorDowntimeInterval[] | undefined;
   isIntervalsLoading: boolean;
+  intervalsPage?: number;
+  intervalsLimit?: number;
+  setIntervalsPage?: (page: number) => void;
+  setIntervalsLimit?: (limit: number) => void;
   complianceReport: any;
   isReportLoading: boolean;
 
@@ -111,6 +115,10 @@ export function ConnectorUptime({
   isUptimeLoading,
   downtimeIntervals,
   isIntervalsLoading,
+  intervalsPage,
+  intervalsLimit,
+  setIntervalsPage,
+  setIntervalsLimit,
   complianceReport,
   isReportLoading,
   overrideModalOpen,
@@ -319,6 +327,14 @@ export function ConnectorUptime({
 
   return cols;
   }, [handleOpenOverride, canReportUpdate]);
+
+  const intervalsTotalCount = useMemo(() => {
+    if (!downtimeIntervals) return 0;
+    const currentPage = intervalsPage || 1;
+    const currentLimit = intervalsLimit || 10;
+    const isFullPage = downtimeIntervals.length === currentLimit;
+    return (currentPage - 1) * currentLimit + downtimeIntervals.length + (isFullPage ? 1 : 0);
+  }, [downtimeIntervals, intervalsPage, intervalsLimit]);
 
   const reportColumns = useMemo<ColumnDef<ReportItem>[]>(() => [
     {
@@ -549,8 +565,16 @@ export function ConnectorUptime({
                 data={downtimeIntervals || []}
                 columns={downtimeColumns}
                 isLoading={isIntervalsLoading}
-                pageSize={10}
+                pageSize={intervalsLimit || 10}
                 showPagination={true}
+                manualPagination={true}
+                totalCount={intervalsTotalCount}
+                pageIndex={(intervalsPage || 1) - 1}
+                onPageChange={(newPage) => setIntervalsPage?.(newPage + 1)}
+                onPageSizeChange={(newLimit) => {
+                  setIntervalsLimit?.(newLimit);
+                  setIntervalsPage?.(1);
+                }}
                 emptyState={
                   <div className="py-12 text-center flex flex-col items-center justify-center">
                     <div className="p-4 bg-muted/20 text-muted-foreground/80 rounded-full mb-3">

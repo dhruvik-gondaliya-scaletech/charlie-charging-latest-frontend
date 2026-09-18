@@ -35,7 +35,9 @@ import {
     Info,
     Terminal,
     Activity,
-    Save
+    Save,
+    XCircle,
+    Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
@@ -46,6 +48,8 @@ import { useBrands } from '@/hooks/get/useBrands';
 import { useModels } from '@/hooks/get/useModels';
 import { useConnectorTypes } from '@/hooks/get/useConnectorTypes';
 import { useTariffs } from '@/hooks/get/useBilling';
+import { useCheckIdentityAvailability } from '@/hooks/get/useStations';
+import { useDebounce } from '@/hooks/use-debounce';
 import { brandService } from '@/services/brand.service';
 import { Brand, ConnectorType } from '@/types';
 
@@ -122,6 +126,11 @@ export function StationWizard({
 
     const { data: tariffs, isLoading: tariffsLoading } = useTariffs();
 
+    const chargePointIdValue = form.watch('chargePointId');
+    const debouncedCp = useDebounce(chargePointIdValue, 1000);
+    const shouldCheckCp = !isEdit && debouncedCp && debouncedCp.length > 2;
+    const { data: cpAvailability, isLoading: isCpChecking } = useCheckIdentityAvailability(shouldCheckCp ? debouncedCp : '');
+
     // Handle auto-filling brand ID if initialData has a vendor name
     useEffect(() => {
         if (initialData?.vendor && !selectedBrandId && !hasFetchedBrandRef.current) {
@@ -177,6 +186,13 @@ export function StationWizard({
         if (step === 2) fieldsToValidate = ['serialNumber', 'chargePointId', 'type', 'locationId', 'tariffId', 'visibility', 'password'];
 
         const isValid = await form.trigger(fieldsToValidate);
+        
+        if (step === 2 && isValid && !isEdit) {
+            if (isCpChecking || (cpAvailability && cpAvailability.available === false)) {
+                return;
+            }
+        }
+
         if (isValid) setStep(prev => Math.min(prev + 1, 4));
     };
 
@@ -204,6 +220,13 @@ export function StationWizard({
         }
 
         const isValid = await form.trigger(fieldsToValidate);
+        
+        if (targetStep > 2 && isValid && !isEdit) {
+            if (isCpChecking || (cpAvailability && cpAvailability.available === false)) {
+                return;
+            }
+        }
+
         if (isValid) {
             setStep(targetStep);
         }
@@ -453,7 +476,25 @@ export function StationWizard({
                                                             title={isEdit ? "Charge point ID is locked" : ""}
                                                         />
                                                     </FormControl>
-                                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1.5 opacity-70">OCPP network identifier</p>
+                                                    {shouldCheckCp ? (
+                                                        <div className="mt-2 flex items-center gap-1.5 text-xs font-medium">
+                                                            {isCpChecking ? (
+                                                                <><Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" /><span className="text-muted-foreground">Checking availability...</span></>
+                                                            ) : cpAvailability?.available ? (
+                                                                <><CheckCircle2 className="h-3.5 w-3.5 text-green-500" /><span className="text-green-500">Charge Point ID is available</span></>
+                                                            ) : (
+                                                                <><XCircle className="h-3.5 w-3.5 text-red-500" /><span className="text-red-500">Charge Point ID is already taken</span></>
+                                                            )}
+                                                        </div>
+                                                    ) : isEdit ? (
+                                                        <p className="text-[10px] font-bold uppercase tracking-widest mt-1.5 text-muted-foreground opacity-70">
+                                                            Charge point ID cannot be changed
+                                                        </p>
+                                                    ) : (
+                                                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-1.5 opacity-70">
+                                                            UNIQUE CHARGER ID
+                                                        </p>
+                                                    )}
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
@@ -758,6 +799,7 @@ export function StationWizard({
 
                                         <WebSocketUrlDisplay
                                             chargePointId={form.watch('chargePointId')}
+                                            serialNumber={form.watch('serialNumber')}
                                             tenantSlug={tenantSlug}
                                             password={form.watch('password')}
                                         />
